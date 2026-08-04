@@ -141,3 +141,11 @@ This README was updated for the pull request.
 ## Assignment Update
 
 This README was updated for the GitHub Pull Request.
+
+## Mock UX Design
+
+**Figma Link:**
+https://www.figma.com/design/1GTyDDJbYo06F2Ucb4SjcO/Cambium?node-id=0-1&t=jCSIkVvJvqZvkrbo-1
+
+This mock UX demonstrates the application's primary screens,
+navigation flow, and major user journeys for the Cambium platform.
