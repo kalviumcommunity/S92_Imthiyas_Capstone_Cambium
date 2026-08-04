@@ -130,6 +130,14 @@ To become the intelligent operating system that researchers rely on to discover 
 
 ## 👨‍💻 Author
 
-**Your Name**
+**Shaik Mohamed Imthiyas T**
 
 Capstone Project – Kalvium
+
+## Update
+
+This README was updated for the pull request.
+
+## Assignment Update
+
+This README was updated for the GitHub Pull Request.
