@@ -6,6 +6,7 @@ const connectDB = require("./config/db");
 const opportunityRoutes = require("./routes/opportunityRoutes");
 const userRoutes = require("./routes/userRoutes");
 const bookmarkRoutes = require("./routes/bookmarkRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 dotenv.config();
 
@@ -17,15 +18,27 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Health check endpoint
+// Health check endpoint (GET)
 app.get("/", (req, res) => {
-  res.send("Server is running with Database Read & Write support...");
+  res.status(200).json({
+    status: "Active",
+    message: "Cambium API Server is running...",
+    endpoints: {
+      opportunities: "/api/research-opportunities",
+      stats: "/api/research-opportunities/stats",
+      upcomingDeadlines: "/api/research-opportunities/upcoming-deadlines",
+      users: "/api/users",
+      bookmarks: "/api/bookmarks",
+      notifications: "/api/notifications",
+    },
+  });
 });
 
-// API Routes
+// API GET & CRUD Routes
 app.use("/api/research-opportunities", opportunityRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 const PORT = process.env.PORT || 5000;
 

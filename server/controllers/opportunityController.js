@@ -1,15 +1,19 @@
 const ResearchOpportunity = require("../models/ResearchOpportunity");
 
-// @desc    Get all research opportunities
+// @desc    Get all research opportunities (with filtering, tag search, and text search)
 // @route   GET /api/research-opportunities
 // @access  Public
 const getOpportunities = async (req, res) => {
   try {
-    const { type, search } = req.query;
+    const { type, search, tag } = req.query;
     let query = {};
 
     if (type) {
       query.type = type;
+    }
+
+    if (tag) {
+      query.tags = { $in: [tag] };
     }
 
     if (search) {
@@ -60,6 +64,60 @@ const getOpportunityById = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server Error: Invalid ID or fetch error",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Get opportunity categories and statistics
+// @route   GET /api/research-opportunities/stats
+// @access  Public
+const getOpportunityStats = async (req, res) => {
+  try {
+    const totalCount = await ResearchOpportunity.countDocuments();
+    const grantCount = await ResearchOpportunity.countDocuments({ type: "Grant" });
+    const cfpCount = await ResearchOpportunity.countDocuments({ type: "CFP" });
+    const journalCount = await ResearchOpportunity.countDocuments({ type: "Journal" });
+    const paperCount = await ResearchOpportunity.countDocuments({ type: "Paper" });
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        total: totalCount,
+        grants: grantCount,
+        cfps: cfpCount,
+        journals: journalCount,
+        papers: paperCount,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error: Unable to fetch stats",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Get opportunities with upcoming deadlines
+// @route   GET /api/research-opportunities/upcoming-deadlines
+// @access  Public
+const getUpcomingDeadlines = async (req, res) => {
+  try {
+    const now = new Date();
+    const opportunities = await ResearchOpportunity.find({
+      deadline: { $gte: now },
+    }).sort({ deadline: 1 });
+
+    res.status(200).json({
+      success: true,
+      count: opportunities.length,
+      data: opportunities,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error: Unable to fetch upcoming deadlines",
       error: error.message,
     });
   }
@@ -169,6 +227,8 @@ const deleteOpportunity = async (req, res) => {
 module.exports = {
   getOpportunities,
   getOpportunityById,
+  getOpportunityStats,
+  getUpcomingDeadlines,
   createOpportunity,
   updateOpportunity,
   deleteOpportunity,
