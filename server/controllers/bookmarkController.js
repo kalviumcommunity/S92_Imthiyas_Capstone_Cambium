@@ -1,7 +1,7 @@
 const Bookmark = require("../models/Bookmark");
 const User = require("../models/User");
 
-// @desc    Get bookmarks
+// @desc    Get all bookmarks
 // @route   GET /api/bookmarks
 // @access  Public
 const getBookmarks = async (req, res) => {
@@ -24,6 +24,29 @@ const getBookmarks = async (req, res) => {
   }
 };
 
+// @desc    Get bookmarks for specific user
+// @route   GET /api/bookmarks/user/:userId
+// @access  Public
+const getUserBookmarks = async (req, res) => {
+  try {
+    const bookmarks = await Bookmark.find({ user: req.params.userId }).populate(
+      "opportunity"
+    );
+
+    res.status(200).json({
+      success: true,
+      count: bookmarks.length,
+      data: bookmarks,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error: Unable to fetch user bookmarks",
+      error: error.message,
+    });
+  }
+};
+
 // @desc    Create bookmark
 // @route   POST /api/bookmarks
 // @access  Public
@@ -41,7 +64,6 @@ const createBookmark = async (req, res) => {
 
     const bookmark = await Bookmark.create({ user, opportunity });
 
-    // Optionally update user's bookmarks array
     await User.findByIdAndUpdate(user, {
       $addToSet: { bookmarks: bookmark._id },
     });
@@ -74,7 +96,6 @@ const deleteBookmark = async (req, res) => {
       });
     }
 
-    // Pull from user's bookmarks array
     await User.findByIdAndUpdate(bookmark.user, {
       $pull: { bookmarks: bookmark._id },
     });
@@ -95,6 +116,7 @@ const deleteBookmark = async (req, res) => {
 
 module.exports = {
   getBookmarks,
+  getUserBookmarks,
   createBookmark,
   deleteBookmark,
 };
