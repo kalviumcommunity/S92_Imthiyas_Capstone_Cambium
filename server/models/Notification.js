@@ -7,6 +7,10 @@ const notificationSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    opportunity: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ResearchOpportunity",
+    },
     message: {
       type: String,
       required: true,

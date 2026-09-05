@@ -7,6 +7,7 @@ const opportunityRoutes = require("./routes/opportunityRoutes");
 const userRoutes = require("./routes/userRoutes");
 const bookmarkRoutes = require("./routes/bookmarkRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const relationshipRoutes = require("./routes/relationshipRoutes");
 
 dotenv.config();
 
@@ -22,23 +23,23 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "Active",
-    message: "Cambium API Server is running...",
+    message: "Cambium API Server running with Entity Relationships support...",
     endpoints: {
       opportunities: "/api/research-opportunities",
-      stats: "/api/research-opportunities/stats",
-      upcomingDeadlines: "/api/research-opportunities/upcoming-deadlines",
       users: "/api/users",
       bookmarks: "/api/bookmarks",
       notifications: "/api/notifications",
+      relationships: "/api/relationships/overview",
     },
   });
 });
 
-// API GET & CRUD Routes
+// API Routes
 app.use("/api/research-opportunities", opportunityRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/relationships", relationshipRoutes);
 
 const PORT = process.env.PORT || 5000;
 
