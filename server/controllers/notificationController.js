@@ -79,8 +79,65 @@ const createNotification = async (req, res) => {
   }
 };
 
+// @desc    Mark single notification as read (PUT)
+// @route   PUT /api/notifications/:id/read
+// @access  Public
+const markNotificationAsRead = async (req, res) => {
+  try {
+    const notification = await Notification.findByIdAndUpdate(
+      req.params.id,
+      { isRead: true },
+      { new: true }
+    );
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Notification marked as read",
+      data: notification,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error updating notification status",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Mark all notifications for a user as read (PUT)
+// @route   PUT /api/notifications/user/:userId/read-all
+// @access  Public
+const markAllNotificationsAsRead = async (req, res) => {
+  try {
+    const result = await Notification.updateMany(
+      { user: req.params.userId, isRead: false },
+      { isRead: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: `${result.modifiedCount} notifications marked as read`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error marking all notifications as read",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getNotifications,
   getUserNotifications,
   createNotification,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
 };
