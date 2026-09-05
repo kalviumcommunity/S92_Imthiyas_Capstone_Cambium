@@ -24,6 +24,12 @@ const userSchema = new mongoose.Schema(
         ref: "Bookmark",
       },
     ],
+    createdOpportunities: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ResearchOpportunity",
+      },
+    ],
   },
   {
     timestamps: true,
