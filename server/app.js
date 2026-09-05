@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 
+const authRoutes = require("./routes/authRoutes");
 const opportunityRoutes = require("./routes/opportunityRoutes");
 const userRoutes = require("./routes/userRoutes");
 const bookmarkRoutes = require("./routes/bookmarkRoutes");
@@ -23,8 +24,12 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "Active",
-    message: "Cambium API Server running with Entity Relationships support...",
+    message: "Cambium API Server running with Username & Password Auth...",
     endpoints: {
+      auth: {
+        register: "POST /api/auth/register",
+        login: "POST /api/auth/login",
+      },
       opportunities: "/api/research-opportunities",
       users: "/api/users",
       bookmarks: "/api/bookmarks",
@@ -35,6 +40,7 @@ app.get("/", (req, res) => {
 });
 
 // API Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/research-opportunities", opportunityRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bookmarks", bookmarkRoutes);
