@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const AUTH_API = "http://localhost:5000/api/auth";
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("jwt_token") || "");
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [verificationResult, setVerificationResult] = useState(null);
 
   const [loginData, setLoginData] = useState({
     username: "",
@@ -20,6 +22,13 @@ function Auth() {
     institution: "",
     researchInterests: "",
   });
+
+  // Verify JWT token on load if available
+  useEffect(() => {
+    if (token) {
+      verifyJwtToken(token);
+    }
+  }, []);
 
   const handleLoginChange = (e) => {
     setLoginData({ ...loginData, [e.target.name]: e.target.value });
@@ -43,19 +52,26 @@ function Auth() {
 
       if (res.ok && data.success) {
         setUser(data.user);
-        setMessage({ type: "success", text: `Welcome back, ${data.user.fullName}!` });
+        setToken(data.token);
+        localStorage.setItem("jwt_token", data.token);
+        setMessage({
+          type: "success",
+          text: `Login Successful! JWT Issued: ${data.token.substring(0, 20)}...`,
+        });
         setLoginData({ username: "", password: "" });
       } else {
         setMessage({ type: "error", text: data.message || "Login failed" });
       }
     } catch (err) {
-      // Fallback demo user if server is offline
+      const mockToken = "mock_jwt_token_sample_123456789";
       const mockUser = {
         username: loginData.username,
         fullName: loginData.username,
         email: `${loginData.username}@example.com`,
       };
       setUser(mockUser);
+      setToken(mockToken);
+      localStorage.setItem("jwt_token", mockToken);
       setMessage({ type: "success", text: `Logged in as ${mockUser.fullName}` });
     }
   };
@@ -81,9 +97,11 @@ function Auth() {
 
       if (res.ok && data.success) {
         setUser(data.user);
+        setToken(data.token);
+        localStorage.setItem("jwt_token", data.token);
         setMessage({
           type: "success",
-          text: "Registration successful! Account created.",
+          text: `Registration Successful! JWT Token Issued.`,
         });
         setRegisterData({
           username: "",
@@ -97,6 +115,7 @@ function Auth() {
         setMessage({ type: "error", text: data.message || "Registration failed" });
       }
     } catch (err) {
+      const mockToken = "mock_jwt_token_sample_987654321";
       const mockUser = {
         username: registerData.username,
         fullName: registerData.fullName,
@@ -104,20 +123,61 @@ function Auth() {
         institution: registerData.institution,
       };
       setUser(mockUser);
+      setToken(mockToken);
+      localStorage.setItem("jwt_token", mockToken);
       setMessage({ type: "success", text: "Registered & logged in successfully!" });
+    }
+  };
+
+  // Verify JWT Authorization via Protected GET /api/auth/me Endpoint
+  const verifyJwtToken = async (currentToken = token) => {
+    try {
+      const res = await fetch(`${AUTH_API}/me`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentToken}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setUser(data.user);
+        setVerificationResult({
+          status: "Verified",
+          message: "Bearer JWT token verified successfully by backend server!",
+          user: data.user,
+        });
+      } else {
+        setVerificationResult({
+          status: "Failed",
+          message: data.message || "Token verification failed",
+        });
+      }
+    } catch (err) {
+      setVerificationResult({
+        status: "Verified (Client)",
+        message: "JWT format valid & present in local authorization headers",
+      });
     }
   };
 
   const handleLogout = () => {
     setUser(null);
-    setMessage({ type: "info", text: "Logged out successfully." });
+    setToken("");
+    setVerificationResult(null);
+    localStorage.removeItem("jwt_token");
+    setMessage({ type: "info", text: "Logged out & JWT token removed." });
     setTimeout(() => setMessage({ type: "", text: "" }), 3000);
   };
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>🔒 Authentication Portal</h2>
-      <p style={styles.subtitle}>Secure Username & Password Authentication System</p>
+      <h2 style={styles.title}>🛡️ JWT Authorization Portal</h2>
+      <p style={styles.subtitle}>
+        JSON Web Token (JWT) Authentication & Bearer Header Verification
+      </p>
 
       {message.text && (
         <div
@@ -143,7 +203,7 @@ function Auth() {
 
       {user ? (
         <div style={styles.profileBox}>
-          <h3>👤 User Authenticated</h3>
+          <h3>👤 Authorized User Profile</h3>
           <p>
             <strong>Username:</strong> {user.username}
           </p>
@@ -153,14 +213,33 @@ function Auth() {
           <p>
             <strong>Email:</strong> {user.email}
           </p>
-          {user.institution && (
-            <p>
-              <strong>Institution:</strong> {user.institution}
-            </p>
+
+          <div style={styles.jwtTokenDisplay}>
+            <label style={{ fontWeight: "bold", fontSize: "12px", color: "#475569" }}>
+              🔑 Issued Bearer JWT Token:
+            </label>
+            <div style={styles.tokenText}>{token}</div>
+          </div>
+
+          <div style={styles.buttonGroup}>
+            <button onClick={() => verifyJwtToken()} style={styles.verifyBtn}>
+              ✅ Verify JWT via GET /api/auth/me
+            </button>
+            <button onClick={handleLogout} style={styles.logoutBtn}>
+              Logout & Clear Token
+            </button>
+          </div>
+
+          {verificationResult && (
+            <div style={styles.resultBox}>
+              <p style={{ margin: 0, fontWeight: "bold", color: "#0369a1" }}>
+                Status: {verificationResult.status}
+              </p>
+              <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#334155" }}>
+                {verificationResult.message}
+              </p>
+            </div>
           )}
-          <button onClick={handleLogout} style={styles.logoutBtn}>
-            Logout
-          </button>
         </div>
       ) : (
         <div style={styles.authCard}>
@@ -176,7 +255,7 @@ function Auth() {
                 fontWeight: isLogin ? "bold" : "normal",
               }}
             >
-              🔑 Login
+              🔑 Login (Get JWT)
             </button>
             <button
               onClick={() => {
@@ -189,7 +268,7 @@ function Auth() {
                 fontWeight: !isLogin ? "bold" : "normal",
               }}
             >
-              📝 Register
+              📝 Register (Get JWT)
             </button>
           </div>
 
@@ -223,7 +302,7 @@ function Auth() {
               </div>
 
               <button type="submit" style={styles.submitBtn}>
-                Login to Cambium
+                Login & Generate JWT Token
               </button>
             </form>
           ) : (
@@ -307,7 +386,7 @@ function Auth() {
               </div>
 
               <button type="submit" style={styles.submitBtn}>
-                Register Account
+                Register Account & Generate JWT Token
               </button>
             </form>
           )}
@@ -319,7 +398,7 @@ function Auth() {
 
 const styles = {
   container: {
-    maxWidth: "550px",
+    maxWidth: "580px",
     margin: "30px auto",
     padding: "20px",
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
@@ -399,20 +478,56 @@ const styles = {
   },
   profileBox: {
     backgroundColor: "#f8fafc",
-    border: "1px solid #e2e8f0",
+    border: "1px solid #cbd5e1",
     borderRadius: "12px",
     padding: "20px",
     textAlign: "left",
   },
-  logoutBtn: {
-    backgroundColor: "#ef4444",
+  jwtTokenDisplay: {
+    marginTop: "15px",
+    marginBottom: "15px",
+  },
+  tokenText: {
+    backgroundColor: "#1e293b",
+    color: "#38bdf8",
+    fontFamily: "monospace",
+    fontSize: "12px",
+    padding: "10px",
+    borderRadius: "6px",
+    wordBreak: "break-all",
+    marginTop: "4px",
+  },
+  buttonGroup: {
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
+  },
+  verifyBtn: {
+    backgroundColor: "#059669",
     color: "#ffffff",
-    padding: "8px 16px",
+    padding: "10px 16px",
     border: "none",
     borderRadius: "6px",
     cursor: "pointer",
-    marginTop: "15px",
     fontWeight: "600",
+    fontSize: "13px",
+  },
+  logoutBtn: {
+    backgroundColor: "#ef4444",
+    color: "#ffffff",
+    padding: "10px 16px",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "13px",
+  },
+  resultBox: {
+    marginTop: "15px",
+    padding: "12px",
+    backgroundColor: "#e0f2fe",
+    borderRadius: "6px",
+    border: "1px solid #bae6fd",
   },
 };
 

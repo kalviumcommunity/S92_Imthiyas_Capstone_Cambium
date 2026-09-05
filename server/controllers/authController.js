@@ -1,6 +1,7 @@
 const User = require("../models/User");
+const generateToken = require("../utils/generateToken");
 
-// @desc    Register a new user (Username & Password Signup)
+// @desc    Register a new user (Username & Password Signup + JWT generation)
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
@@ -47,9 +48,13 @@ const registerUser = async (req, res) => {
       researchInterests: researchInterests || [],
     });
 
+    // Generate JWT token
+    const token = generateToken(user._id);
+
     res.status(201).json({
       success: true,
       message: "User registered successfully!",
+      token,
       user: {
         _id: user._id,
         username: user.username,
@@ -69,7 +74,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-// @desc    Authenticate user & login (Username & Password Login)
+// @desc    Authenticate user & login (Username & Password Login + JWT generation)
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = async (req, res) => {
@@ -109,9 +114,13 @@ const loginUser = async (req, res) => {
       });
     }
 
+    // Generate JWT token
+    const token = generateToken(user._id);
+
     res.status(200).json({
       success: true,
       message: "Login successful!",
+      token,
       user: {
         _id: user._id,
         username: user.username,
@@ -130,7 +139,36 @@ const loginUser = async (req, res) => {
   }
 };
 
+// @desc    Get currently authenticated user details via JWT Authorization
+// @route   GET /api/auth/me
+// @access  Private (Protected by JWT)
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User authorization verified via Bearer JWT",
+      user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error fetching authorized user",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
+  getMe,
 };
