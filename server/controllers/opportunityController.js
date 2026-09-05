@@ -236,7 +236,7 @@ const getRecommendedOpportunities = async (req, res) => {
   }
 };
 
-// @desc    Update research opportunity
+// @desc    Update research opportunity (PUT)
 // @route   PUT /api/research-opportunities/:id
 // @access  Public
 const updateOpportunity = async (req, res) => {
@@ -263,6 +263,41 @@ const updateOpportunity = async (req, res) => {
     res.status(400).json({
       success: false,
       message: "Error updating opportunity",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Update opportunity tags (PUT)
+// @route   PUT /api/research-opportunities/:id/tags
+// @access  Public
+const updateOpportunityTags = async (req, res) => {
+  try {
+    const { tags } = req.body;
+    const tagsArray = Array.isArray(tags) ? tags : [tags];
+
+    const opportunity = await ResearchOpportunity.findByIdAndUpdate(
+      req.params.id,
+      { $addToSet: { tags: { $each: tagsArray } } },
+      { new: true }
+    );
+
+    if (!opportunity) {
+      return res.status(404).json({
+        success: false,
+        message: "Research opportunity not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Opportunity tags updated successfully",
+      data: opportunity,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: "Error updating opportunity tags",
       error: error.message,
     });
   }
@@ -307,5 +342,6 @@ module.exports = {
   createMultipleOpportunities,
   getRecommendedOpportunities,
   updateOpportunity,
+  updateOpportunityTags,
   deleteOpportunity,
 };
