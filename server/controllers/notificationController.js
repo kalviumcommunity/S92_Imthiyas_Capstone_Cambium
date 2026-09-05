@@ -46,7 +46,41 @@ const getUserNotifications = async (req, res) => {
   }
 };
 
+// @desc    Create new notification (POST)
+// @route   POST /api/notifications
+// @access  Public
+const createNotification = async (req, res) => {
+  try {
+    const { user, message } = req.body;
+
+    if (!user || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide user and message for the notification",
+      });
+    }
+
+    const notification = await Notification.create({
+      user,
+      message,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Notification created successfully",
+      data: notification,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: "Error creating notification",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getNotifications,
   getUserNotifications,
+  createNotification,
 };

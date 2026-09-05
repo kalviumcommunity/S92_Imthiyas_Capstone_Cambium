@@ -6,12 +6,20 @@ const {
   getOpportunityStats,
   getUpcomingDeadlines,
   createOpportunity,
+  createMultipleOpportunities,
+  getRecommendedOpportunities,
   updateOpportunity,
   deleteOpportunity,
 } = require("../controllers/opportunityController");
 
 // GET /api/research-opportunities & POST /api/research-opportunities
 router.route("/").get(getOpportunities).post(createOpportunity);
+
+// POST /api/research-opportunities/bulk (Bulk creation)
+router.route("/bulk").post(createMultipleOpportunities);
+
+// POST /api/research-opportunities/recommendations (AI Recommendations)
+router.route("/recommendations").post(getRecommendedOpportunities);
 
 // GET /api/research-opportunities/stats
 router.route("/stats").get(getOpportunityStats);

@@ -123,7 +123,7 @@ const getUpcomingDeadlines = async (req, res) => {
   }
 };
 
-// @desc    Create new research opportunity
+// @desc    Create new research opportunity (POST)
 // @route   POST /api/research-opportunities
 // @access  Public
 const createOpportunity = async (req, res) => {
@@ -145,7 +145,7 @@ const createOpportunity = async (req, res) => {
       deadline,
       description,
       link,
-      tags,
+      tags: tags || [],
     });
 
     res.status(201).json({
@@ -157,6 +157,80 @@ const createOpportunity = async (req, res) => {
     res.status(400).json({
       success: false,
       message: "Validation Error: Unable to create opportunity",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Bulk create research opportunities (POST)
+// @route   POST /api/research-opportunities/bulk
+// @access  Public
+const createMultipleOpportunities = async (req, res) => {
+  try {
+    const opportunitiesList = Array.isArray(req.body)
+      ? req.body
+      : req.body.opportunities;
+
+    if (!opportunitiesList || !Array.isArray(opportunitiesList) || opportunitiesList.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide an array of research opportunities to insert",
+      });
+    }
+
+    const createdOpportunities = await ResearchOpportunity.insertMany(
+      opportunitiesList
+    );
+
+    res.status(201).json({
+      success: true,
+      count: createdOpportunities.length,
+      message: `${createdOpportunities.length} research opportunities created successfully`,
+      data: createdOpportunities,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: "Bulk creation failed",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Fetch personalized recommendations based on interests (POST)
+// @route   POST /api/research-opportunities/recommendations
+// @access  Public
+const getRecommendedOpportunities = async (req, res) => {
+  try {
+    const { interests, type } = req.body;
+
+    let query = {};
+    if (type) {
+      query.type = type;
+    }
+
+    if (interests && Array.isArray(interests) && interests.length > 0) {
+      const regexArray = interests.map((item) => new RegExp(item, "i"));
+      query.$or = [
+        { tags: { $in: regexArray } },
+        { title: { $in: regexArray } },
+        { description: { $in: regexArray } },
+      ];
+    }
+
+    const opportunities = await ResearchOpportunity.find(query)
+      .limit(10)
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: opportunities.length,
+      data: opportunities,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching recommendations",
       error: error.message,
     });
   }
@@ -230,6 +304,8 @@ module.exports = {
   getOpportunityStats,
   getUpcomingDeadlines,
   createOpportunity,
+  createMultipleOpportunities,
+  getRecommendedOpportunities,
   updateOpportunity,
   deleteOpportunity,
 };

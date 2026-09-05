@@ -46,12 +46,19 @@ const getUserById = async (req, res) => {
   }
 };
 
-// @desc    Create new user profile
+// @desc    Create new user profile (POST)
 // @route   POST /api/users
 // @access  Public
 const createUser = async (req, res) => {
   try {
     const { fullName, email, institution, researchInterests } = req.body;
+
+    if (!fullName || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide fullName and email",
+      });
+    }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -65,7 +72,7 @@ const createUser = async (req, res) => {
       fullName,
       email,
       institution,
-      researchInterests,
+      researchInterests: researchInterests || [],
     });
 
     res.status(201).json({
@@ -77,6 +84,41 @@ const createUser = async (req, res) => {
     res.status(400).json({
       success: false,
       message: "Validation Error: Unable to create user",
+      error: error.message,
+    });
+  }
+};
+
+// @desc    Add research interests to user profile (POST)
+// @route   POST /api/users/:id/interests
+// @access  Public
+const addUserInterests = async (req, res) => {
+  try {
+    const { interests } = req.body;
+    const interestsArray = Array.isArray(interests) ? interests : [interests];
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { $addToSet: { researchInterests: { $each: interestsArray } } },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Research interests updated successfully",
+      data: user,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: "Error adding research interests",
       error: error.message,
     });
   }
@@ -117,5 +159,6 @@ module.exports = {
   getUsers,
   getUserById,
   createUser,
+  addUserInterests,
   updateUser,
 };
