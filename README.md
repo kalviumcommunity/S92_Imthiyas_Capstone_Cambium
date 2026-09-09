@@ -96,29 +96,28 @@ To build an intelligent platform that enables researchers to discover funding op
 
 ---
 
-## 🛠️ Tech Stack (Planned)
+## 🛠️ Architecture & Technology Stack
 
-### Frontend
-- React.js
-- Tailwind CSS
-
-### Backend
-- Node.js
-- Express.js
-
-### Database
-- MongoDB
-
-### Authentication
-- Clerk / Firebase Authentication
-
-### AI & APIs
-- OpenAI API (Future)
-- Research APIs (Semantic Scholar, Crossref, OpenAlex, etc.)
-
-### Version Control
-- Git
-- GitHub
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | Next.js + React + TypeScript | Modern Product Web Application |
+| **UI** | Tailwind CSS + shadcn/ui | Premium Design System & UI Components |
+| **Server State** | TanStack Query | API Data Fetching & Caching |
+| **Client State** | Zustand | Minimal Local UI State Management |
+| **Forms & Validation** | React Hook Form + Zod | Type-safe Form Handling & Schema Validation |
+| **Core Backend** | Node.js + TypeScript + NestJS | Modular Enterprise Business/Product API |
+| **API Contract** | REST + OpenAPI (Swagger) | Authoritative Public & Internal API Contract |
+| **Realtime** | WebSockets / SSE | Live Updates & AI Streaming |
+| **AI Backend** | Python + FastAPI + Pydantic | Specialized AI/ML & Ingestion Services |
+| **Primary Database** | PostgreSQL (`cambium`) | Relational System of Record (Normalized 3NF) |
+| **Vector Search** | pgvector | High-performance Embeddings & Semantic Retrieval |
+| **Cache & Queues** | Redis + BullMQ | Fast In-Memory Caching, Rate Limiting & Background Jobs |
+| **Object Storage** | S3-Compatible Storage | Documents, Research Papers, PDFs & Attachments |
+| **Search Engine** | PostgreSQL FTS + pgvector | Hybrid Keyword (Full-Text Search) + Semantic Retrieval |
+| **Authentication** | OAuth 2.0 / OIDC + JWT | Secure Authentication & Session Management |
+| **Authorization** | RBAC + Resource-Level ACL | Fine-grained Access Control |
+| **Testing** | Vitest + Playwright | Unit, Integration & End-to-End Testing |
+| **Environment** | Git + GitHub + Docker Compose | Local-first Reproducible Development |
 
 ---
 
