@@ -1,0 +1,10 @@
+{
+  "description": "Showcases Cambium's key features and benefits through an engaging landing page designed to attract and inform potential users effectively.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

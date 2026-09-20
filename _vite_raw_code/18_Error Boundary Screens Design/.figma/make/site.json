@@ -1,0 +1,10 @@
+{
+  "description": "Provides elegant error boundary screens for academic users, ensuring a seamless experience during disruptions while maintaining a calm, professional aesthetic.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

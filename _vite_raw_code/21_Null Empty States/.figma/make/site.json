@@ -1,0 +1,10 @@
+{
+  "description": "This collaboration hub connects researchers, allowing them to find peers, share interests, and manage their projects efficiently in a streamlined workspace.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

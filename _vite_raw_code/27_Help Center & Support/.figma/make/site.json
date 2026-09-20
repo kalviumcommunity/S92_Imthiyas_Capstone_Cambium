@@ -1,0 +1,10 @@
+{
+  "description": "This user-friendly Help Center and Support Modal offers seamless access to guides and direct support for users, enhancing their experience and resolving issues efficiently.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "description": "Generates customizable, visually calming loading skeleton screens with smooth shimmer effects to enhance user experience during Next.js page transitions.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

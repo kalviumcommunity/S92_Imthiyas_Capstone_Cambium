@@ -1,0 +1,10 @@
+{
+  "description": "Manage subscription plans, track AI usage with real-time progress, and review billing history in a secure, enterprise-grade dashboard for seamless billing control.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

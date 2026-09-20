@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'DM Serif Display', Georgia, serif;
+
+  --color-surface: #F9F8F6;
+  --color-panel: #F2F0EC;
+  --color-rule: #E3DED8;
+  --color-ink: #1A1917;
+  --color-ink-2: #4A4844;
+  --color-ink-3: #78756F;
+  --color-ink-4: #A8A59F;
+  --color-accent: #2B5840;
+  --color-accent-mid: #3D7558;
+  --color-accent-subtle: #EBF2EE;
+  --color-info: #2D4A8A;
+  --color-info-subtle: #EBF0FA;
+  --color-warn: #86621F;
+  --color-warn-subtle: #FAF3E8;
+  --color-danger: #8B2727;
+  --color-danger-subtle: #FAF0EF;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #D0CBC4 transparent;
+}
+
+*:not(:hover)::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #D0CBC4;
+  border-radius: 9px;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}

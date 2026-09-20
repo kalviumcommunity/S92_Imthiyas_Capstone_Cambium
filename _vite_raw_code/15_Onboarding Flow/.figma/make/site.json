@@ -1,0 +1,10 @@
+{
+  "description": "Streamline your research setup by connecting your academic identity, selecting interests and topics, and importing publications for a personalized experience.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -1,0 +1,1543 @@
+CAMBIUM — RESEARCH OPERATING SYSTEM
+LANDING PAGE — HIGH-FIDELITY FIGMA DESIGN GENERATION PROMPT
+
+IMPORTANT:
+Do NOT return a UX specification, wireframe, textual description, or code-only solution.
+
+ACTUALLY CREATE THE VISUAL DESIGN.
+
+Generate a high-fidelity, editable Figma landing page using editable frames, text layers, vectors, Auto Layout, reusable components, variants, styles, variables, and prototype-ready interaction states wherever supported.
+
+The result must feel like a real premium product launch website designed by a world-class product design team.
+
+==================================================
+01 — PRODUCT
+==================================================
+
+Product name:
+CAMBIUM
+
+Category:
+Research Operating System
+
+Cambium is a unified digital environment for researchers, scholars, academics, students, faculty, research labs, universities, and R&D teams.
+
+Cambium connects:
+
+Academic Identity
+Research Workspace
+Research Notes
+Papers
+Publications
+Projects
+Researchers
+Labs
+Collaboration
+Grants
+Conferences
+Journals
+Scholarships
+Fellowships
+Datasets
+Research Activity
+Research Opportunities
+Research Intelligence
+
+Core idea:
+
+"The place where a researcher's entire academic journey lives."
+
+Cambium is NOT:
+
+- a generic SaaS dashboard
+- a job board
+- a grant database
+- a social media clone
+- a generic AI chatbot
+- a university ERP
+- a generic productivity application
+
+==================================================
+02 — DESIGN QUALITY BAR
+==================================================
+
+Use these products only as quality references.
+
+DO NOT copy their layouts, branding, components, or visual identity.
+
+LinkedIn
+→ academic professional identity
+
+Notion
+→ research workspace and knowledge
+
+GitHub
+→ research portfolio and contribution history
+
+X / Twitter
+→ research conversation and announcements
+
+Google Scholar
+→ publications and citations
+
+Semantic Scholar
+→ paper discovery
+
+ResearchRabbit
+→ research exploration
+
+Perplexity
+→ intelligent discovery
+
+Linear
+→ clarity and interaction quality
+
+Stripe
+→ premium visual polish
+
+Apple
+→ simplicity and restraint
+
+The final design must feel:
+
+Academic
+Technological
+Editorial
+Premium
+Intelligent
+Calm
+Trustworthy
+Modern
+Alive
+
+Avoid:
+
+- generic AI SaaS aesthetics
+- excessive purple gradients
+- excessive glassmorphism
+- excessive rounded cards
+- huge decorative gradients
+- stock illustrations
+- corporate cliché imagery
+- excessive shadows
+- excessive animation
+- dashboard-like appearance
+- visually noisy layouts
+
+==================================================
+03 — BRAND DIRECTION
+==================================================
+
+Create an original Cambium visual language.
+
+Primary visual character:
+
+Warm editorial academic design + modern software precision.
+
+Base background:
+
+#FAF9F6
+
+Primary text:
+
+#1E1E1C
+
+Secondary text:
+
+#6B6B66
+
+Tertiary text:
+
+#9C9C96
+
+Border:
+
+#E8E6E0
+
+Primary accent:
+
+Muted botanical moss green.
+
+Use the green sparingly.
+
+Green should primarily indicate:
+
+- primary CTA
+- active states
+- selected states
+- important research nodes
+- highlighted relationships
+- subtle research signals
+
+Do NOT fill the entire page with green.
+
+Use warm off-white, charcoal, soft neutrals, and subtle moss accents.
+
+==================================================
+04 — TYPOGRAPHY
+==================================================
+
+Primary typeface:
+
+Inter or Geist.
+
+Optional editorial serif:
+
+Source Serif 4 or another restrained academic serif.
+
+Use serif ONLY for selected editorial statements and potentially the hero headline.
+
+Typography should feel:
+
+Intelligent
+Editorial
+Academic
+Precise
+Readable
+
+Desktop scale:
+
+Hero:
+64–80px
+
+Section headings:
+44–56px
+
+Subheadings:
+28–36px
+
+Card headings:
+20–24px
+
+Body:
+17–19px
+
+UI:
+14–16px
+
+Caption:
+12–13px
+
+Use generous line-height.
+
+Avoid excessive bold typography.
+
+Use strong typographic hierarchy.
+
+==================================================
+05 — DESKTOP CANVAS
+==================================================
+
+Primary viewport:
+
+1440px wide.
+
+Create a vertically scrollable landing page approximately 9000–11000px tall depending on content.
+
+Desktop grid:
+
+12 columns
+88px outer margins
+24px gutters
+1280px maximum content width
+
+Everything must align consistently to the grid.
+
+Create responsive layouts for:
+
+1440px
+1024px
+768px
+390px
+
+==================================================
+06 — GLOBAL NAVIGATION
+==================================================
+
+Create a premium sticky navigation.
+
+Left:
+
+CAMBIUM logo / wordmark.
+
+Navigation:
+
+Discover
+Research
+Opportunities
+Community
+
+Right:
+
+Sign in
+
+Primary CTA:
+
+Create your research identity
+
+Initial state:
+
+transparent / subtle background.
+
+Scrolled state:
+
+warm translucent background
+backdrop blur
+subtle bottom border
+
+Create reusable navigation components and states.
+
+==================================================
+07 — HERO
+==================================================
+
+The hero is the most important visual moment.
+
+The visitor should immediately understand:
+
+"Research is alive."
+
+Eyebrow:
+
+THE RESEARCH OPERATING SYSTEM
+
+Main headline:
+
+Your research world, connected.
+
+Supporting copy:
+
+Discover ideas, build your academic identity, collaborate with researchers, explore opportunities, and organize the knowledge behind your work — all in one living research environment.
+
+Primary CTA:
+
+Create your research identity
+
+Secondary CTA:
+
+Explore Cambium
+
+DO NOT create a generic SaaS hero with a laptop screenshot.
+
+Instead create a sophisticated research ecosystem visualization.
+
+Hero layout:
+
+LEFT:
+
+Eyebrow
+Headline
+Supporting copy
+Primary CTA
+Secondary CTA
+
+RIGHT / BACKGROUND:
+
+Elegant research ecosystem visualization.
+
+Nodes:
+
+AI Researcher
+Computer Vision
+Research Paper
+Research Project
+NeurIPS 2026
+Research Grant
+Research Lab
+Dataset
+
+Example researcher node:
+
+Dr. Maya Chen
+Computer Vision Researcher
+
+Example paper:
+
+Vision-Language Models
+for Scientific Discovery
+
+Example opportunity:
+
+NSF Research Grant
+Deadline · 18 days
+
+Example project:
+
+Multimodal Scientific Discovery
+
+Use thin elegant connection lines.
+
+The graph should feel alive, sophisticated, and editorial.
+
+It must NOT look like a technical network diagram.
+
+==================================================
+08 — HERO MOTION
+==================================================
+
+Create prototype-ready motion.
+
+Sequence:
+
+0ms
+Background appears.
+
+100ms
+Navigation settles.
+
+200ms
+Headline fades and rises approximately 12px.
+
+350ms
+Supporting text appears.
+
+500ms
+Primary CTA appears.
+
+600ms
+Ecosystem visualization appears.
+
+700ms+
+Research nodes appear progressively.
+
+Connections resolve after related nodes appear.
+
+Motion timing:
+
+Micro:
+150–200ms
+
+Standard:
+200–300ms
+
+Major:
+400–700ms
+
+Graph stagger:
+40–80ms
+
+No bouncing.
+
+No excessive parallax.
+
+No scroll-jacking.
+
+Respect reduced-motion preferences.
+
+==================================================
+09 — TRUST SECTION
+==================================================
+
+Headline:
+
+Built for the people moving research forward.
+
+Show academic user categories:
+
+Undergraduate Researchers
+Graduate Researchers
+PhD Scholars
+Faculty
+Research Labs
+Academic Institutions
+R&D Teams
+
+Keep this section restrained.
+
+Do not use fake company logos or fabricated institutional endorsements.
+
+==================================================
+10 — PROBLEM SECTION
+==================================================
+
+Headline:
+
+Research shouldn't begin with twenty browser tabs.
+
+Supporting text:
+
+Research information is scattered across publications, funding portals, conference websites, academic profiles, spreadsheets, documents, and communities.
+
+Visually show fragmented research sources:
+
+Papers
+Grants
+Conferences
+Journals
+Researchers
+Datasets
+Labs
+
+Then visually converge them into:
+
+CAMBIUM
+
+The visual story:
+
+Fragmented → Connected
+
+Do not use generic three-card problem blocks.
+
+==================================================
+11 — RESEARCH LIFECYCLE
+==================================================
+
+Headline:
+
+One system for the entire research lifecycle.
+
+Create an elegant research lifecycle visualization.
+
+Stages:
+
+Discover
+→
+Explore
+→
+Connect
+→
+Work
+→
+Publish
+→
+Share
+→
+Grow
+
+Use thin connecting lines and editorial typography.
+
+==================================================
+12 — ACADEMIC IDENTITY
+==================================================
+
+Headline:
+
+More than a profile.
+Your research identity.
+
+Create a high-fidelity Cambium researcher profile.
+
+Profile:
+
+Dr. Maya Chen
+
+PhD Researcher · Computer Vision
+
+MIT Computer Science
+
+Researching multimodal learning, scientific imaging, and AI for discovery.
+
+Research interests:
+
+Computer Vision
+Multimodal AI
+Scientific ML
+Medical Imaging
+
+Metrics:
+
+27 Publications
+1.8k Citations
+8 Projects
+34 Collaborators
+
+Tabs:
+
+Overview
+Research
+Projects
+Publications
+Activity
+Notes
+
+The visual should combine:
+
+LinkedIn academic identity
++
+GitHub research activity
++
+Google Scholar publications
++
+Notion public research notes
++
+Research portfolio
+
+Make this one of the strongest sections.
+
+==================================================
+13 — RESEARCH WORKSPACE
+==================================================
+
+Headline:
+
+Your research has a home.
+
+Create a sophisticated Notion-inspired research workspace.
+
+Sidebar:
+
+Research Workspace
+
+Literature Review
+Research Notes
+Experiments
+Ideas
+Reading List
+Thesis
+Draft Papers
+References
+
+Main document:
+
+Multimodal Learning — Literature Review
+
+Research Question:
+
+How can multimodal models improve scientific literature discovery?
+
+Key findings:
+
+Cross-modal retrieval improves discovery quality.
+
+Domain-specific embeddings outperform generic representations.
+
+Citation context provides useful relevance signals.
+
+Show:
+
+References
+Citations
+Tags
+Notes
+Equations
+Paper cards
+
+It should look like a real research workspace.
+
+==================================================
+14 — RESEARCH COMMUNITY
+==================================================
+
+Headline:
+
+Research is better together.
+
+Create a professional academic community feed.
+
+Example post:
+
+Dr. Arjun Rao
+Machine Learning Researcher · IISc
+
+"We just released our benchmark for low-resource scientific language models."
+
+Actions:
+
+Comment
+Share
+Save
+Follow
+
+Second post:
+
+Looking for collaborators
+
+Working on multimodal medical imaging and looking for researchers with expertise in clinical validation.
+
+Tags:
+
+Medical Imaging
+Computer Vision
+Collaboration
+
+The feed should feel scholarly.
+
+Do NOT make it look like Instagram.
+
+==================================================
+15 — RESEARCH ACTIVITY
+==================================================
+
+Headline:
+
+Every contribution becomes part of your research story.
+
+Create a GitHub-inspired research contribution graph.
+
+Research activities:
+
+Published Paper
+Updated Dataset
+Completed Experiment
+Presented Conference
+Added Literature Review
+Started Collaboration
+Submitted Grant
+Released Code
+Published Research Note
+
+Show:
+
+2026 Research Activity
+
+Use subtle contribution cells.
+
+The visual should communicate continuous academic progress.
+
+==================================================
+16 — OPPORTUNITY DISCOVERY
+==================================================
+
+Headline:
+
+Find the opportunities that fit your research.
+
+Create a sophisticated opportunity discovery interface.
+
+Tabs:
+
+Grants
+Conferences
+Journals
+Fellowships
+Scholarships
+CFPs
+
+Example opportunity:
+
+AI for Climate Research
+
+National Science Foundation
+
+Grant
+
+Deadline:
+18 days
+
+Funding:
+$250,000
+
+Tags:
+
+AI
+Climate
+Research
+
+Second:
+
+NeurIPS 2026
+
+Conference
+
+Submission deadline:
+September 18
+
+Topics:
+
+Machine Learning
+AI
+Representation Learning
+
+Third:
+
+Research Fellowship
+
+Global Research Foundation
+
+Deadline:
+October 4
+
+Cards should be information-rich but calm.
+
+==================================================
+17 — PAPER DISCOVERY
+==================================================
+
+Headline:
+
+Follow ideas, not just citations.
+
+Create a sophisticated academic paper discovery interface.
+
+Paper:
+
+Foundation Models for Scientific Discovery
+
+Authors:
+
+Maya Chen
+Arjun Rao
+Elena Park
+
+2026
+
+Metrics:
+
+2,418 citations
+
+Topics:
+
+Scientific ML
+Foundation Models
+Knowledge Discovery
+
+Create a subtle relationship visualization:
+
+References
+Related Papers
+Citations
+Research Topics
+
+==================================================
+18 — COLLABORATION
+==================================================
+
+Headline:
+
+Meet the researchers your work is already pointing toward.
+
+Create researcher recommendation cards.
+
+Researcher:
+
+Dr. Elena Park
+
+Computational Biology
+
+Stanford University
+
+Research:
+
+Protein Design
+Generative AI
+Bioinformatics
+
+Shared interests:
+
+3
+
+Mutual research topics:
+
+5
+
+CTA:
+
+Explore profile
+
+Second researcher:
+
+Dr. Arjun Rao
+
+IISc · Machine Learning
+
+Looking for collaborators in:
+
+Scientific NLP
+
+==================================================
+19 — INTELLIGENCE
+==================================================
+
+Do NOT create a generic chatbot section.
+
+Headline:
+
+Intelligence that works around your research.
+
+Show contextual intelligence inside a research workflow.
+
+Example:
+
+User is viewing a paper.
+
+Cambium Research Insight:
+
+This paper connects strongly with your work on multimodal scientific discovery.
+
+Potential next steps:
+
+Explore 12 related papers
+
+See 4 researchers working in this area
+
+Find 3 relevant grants
+
+Compare 6 publication venues
+
+The AI should feel contextual and embedded.
+
+Never make the section feel like:
+
+"Ask our AI anything."
+
+==================================================
+20 — RESEARCH PORTFOLIO
+==================================================
+
+Headline:
+
+Your research, from first question to published work.
+
+Create a GitHub-inspired research portfolio.
+
+Project:
+
+Multimodal Scientific Discovery
+
+Status:
+Active
+
+Collaborators:
+
+Maya Chen
+Arjun Rao
+Elena Park
+
+Publications:
+4
+
+Datasets:
+2
+
+Experiments:
+18
+
+Second project:
+
+Medical Imaging Foundation Models
+
+Status:
+Published
+
+Publications:
+7
+
+Citations:
+1.2k
+
+==================================================
+21 — SIGNATURE ECOSYSTEM SECTION
+==================================================
+
+Headline:
+
+Everything connects.
+
+This must be one of the strongest visual moments on the entire landing page.
+
+Create a large research ecosystem map.
+
+Central node:
+
+YOUR RESEARCH
+
+Connected nodes:
+
+Papers
+People
+Projects
+Labs
+Topics
+Journals
+Conferences
+Funding
+Datasets
+Notes
+
+Use elegant relationship lines.
+
+Use different node types subtly.
+
+Create a visual system that can later become a signature Cambium interaction.
+
+The visualization should feel organic and alive.
+
+==================================================
+22 — DARK IMMERSIVE SECTION
+==================================================
+
+Create one premium dark section around the intelligence/ecosystem experience.
+
+Background:
+
+Deep charcoal.
+
+Text:
+
+Warm off-white.
+
+Accent:
+
+Muted moss.
+
+Keep it sophisticated.
+
+Do not turn the whole website dark.
+
+==================================================
+23 — TESTIMONIALS
+==================================================
+
+Headline:
+
+Built around the way research actually happens.
+
+Use realistic placeholder personas.
+
+Do not claim they are real customers.
+
+Example:
+
+"“Cambium gives my research a place to live — not just a list of papers.”"
+
+Dr. Maya Chen
+
+Computer Vision Researcher
+
+Second:
+
+"“The difference is that everything is connected to the work I'm actually doing.”"
+
+Arjun Rao
+
+PhD Researcher
+
+Use restrained editorial typography.
+
+==================================================
+24 — FINAL CTA
+==================================================
+
+Headline:
+
+Your research deserves a home.
+
+Supporting copy:
+
+Build your academic identity. Discover what's next. Connect your ideas, people, and opportunities.
+
+Primary CTA:
+
+Create your research identity
+
+Secondary CTA:
+
+Explore Cambium
+
+Background:
+
+Subtle simplified research ecosystem fading into the background.
+
+==================================================
+25 — FOOTER
+==================================================
+
+Cambium
+
+The Research Operating System.
+
+Product:
+
+Discover
+Research
+Opportunities
+Community
+Workspace
+
+Research:
+
+Papers
+Journals
+Conferences
+Grants
+Collaborations
+
+Company:
+
+About
+Careers
+Contact
+
+Resources:
+
+Documentation
+Research Guide
+Help Center
+
+Bottom:
+
+© 2026 Cambium
+
+Privacy
+Terms
+Security
+
+==================================================
+26 — VISUAL RHYTHM
+==================================================
+
+Do NOT make every section a grid of cards.
+
+Alternate visual composition.
+
+Use:
+
+Large typography
+Product interfaces
+Editorial statements
+Research visualizations
+Split layouts
+Dense academic interfaces
+Quiet whitespace
+Dark immersive moments
+Portfolio interfaces
+Data visualizations
+
+The landing page must feel art-directed.
+
+It should have rhythm.
+
+Avoid repetitive card layouts.
+
+==================================================
+27 — PRODUCT MOCKUPS
+==================================================
+
+All product mockups must be actual editable UI.
+
+Do NOT use placeholder rectangles saying:
+
+Dashboard
+AI
+Research
+Interface
+
+Instead create believable product interfaces containing:
+
+Realistic typography
+Navigation
+Academic data
+Buttons
+Tags
+Avatars
+Charts
+Papers
+Projects
+Opportunities
+Researchers
+Metadata
+
+==================================================
+28 — COMPONENT LIBRARY
+==================================================
+
+Create reusable components.
+
+Navigation:
+
+Nav/Container
+Nav/Logo
+Nav/Link
+Nav/Button-Primary
+Nav/Button-Ghost
+
+Buttons:
+
+Button/Primary
+Button/Secondary
+Button/Ghost
+Button/Icon
+
+Cards:
+
+Card/Paper
+Card/Opportunity
+Card/Researcher
+Card/Project
+Card/Publication
+
+Profile:
+
+Profile/MiniCard
+Profile/HeaderBlock
+
+Research Graph:
+
+Graph/Node-Researcher
+Graph/Node-Paper
+Graph/Node-Project
+Graph/Node-Opportunity
+Graph/Node-Topic
+Graph/Connection
+
+Tags:
+
+Tag/Research
+Tag/Topic
+Tag/Opportunity
+
+Badges:
+
+Badge/Deadline
+Badge/Status
+
+Structural:
+
+Section/Header
+Footer/Container
+Footer/Column
+
+Use Auto Layout.
+
+Use reusable styles.
+
+Use components and variants instead of duplicated UI wherever practical.
+
+==================================================
+29 — COMPONENT STATES
+==================================================
+
+Buttons:
+
+Default
+Hover
+Pressed
+Focused
+Disabled
+Loading
+
+Cards:
+
+Default
+Hover
+Selected
+
+Navigation:
+
+Top
+Scrolled
+
+Graph nodes:
+
+Default
+Hover
+Selected
+Connected
+
+Card hover:
+
+Subtle elevation.
+
+Approximately:
+
+translateY(-2px)
+
+150–200ms ease-out.
+
+No exaggerated scaling.
+
+Focus state:
+
+2px visible accent outline.
+
+==================================================
+30 — SPACING SYSTEM
+==================================================
+
+Use 8px base spacing.
+
+Tokens:
+
+2
+4
+8
+12
+16
+24
+32
+48
+64
+96
+120
+160
+
+Large sections should breathe.
+
+Do not compress the page.
+
+Do not add unnecessary spacing between related elements.
+
+==================================================
+31 — RESPONSIVE DESIGN
+==================================================
+
+Create responsive versions.
+
+Desktop:
+
+1440px
+
+Tablet:
+
+1024px
+768px
+
+Mobile:
+
+390px
+
+At 1024:
+
+Reduce navigation density.
+
+At 768:
+
+Stack major layouts.
+
+At 390:
+
+Single-column layout.
+
+Full-width CTA buttons.
+
+Minimum 44×44px touch targets.
+
+Simplify the ecosystem graph.
+
+Do NOT simply scale the desktop design down.
+
+Recompose the layouts.
+
+==================================================
+32 — ACCESSIBILITY
+==================================================
+
+Use:
+
+WCAG AA contrast.
+
+Visible keyboard focus.
+
+Clear semantic hierarchy.
+
+No information communicated by color alone.
+
+44×44px minimum touch target.
+
+Readable text sizes.
+
+Reduced-motion alternative.
+
+Meaningful labels for visualizations.
+
+==================================================
+33 — LAYER NAMING
+==================================================
+
+Use meaningful layer names.
+
+Examples:
+
+Hero/Headline
+
+Hero/CTA-Primary
+
+Hero/EcosystemGraph
+
+Hero/EcosystemGraph/Node-Paper
+
+Hero/EcosystemGraph/Node-Researcher
+
+Nav/Logo
+
+Nav/Button-Primary
+
+ResearchProfile/Header
+
+ResearchProfile/Publications
+
+ResearchWorkspace/Sidebar
+
+ResearchWorkspace/Document
+
+OpportunityHub/Card
+
+Do NOT create meaningless names such as:
+
+Group 14
+Frame 227
+Rectangle 45
+Vector 93
+
+==================================================
+34 — FIGMA FILE ORGANIZATION
+==================================================
+
+Create:
+
+01 — Desktop
+
+02 — Tablet
+
+03 — Mobile
+
+04 — Components
+
+05 — Design Tokens
+
+06 — Prototype
+
+Primary page:
+
+01 — Desktop
+
+Use a 1440px viewport.
+
+==================================================
+35 — DESIGN TOKENS
+==================================================
+
+Create reusable variables/styles for:
+
+Colors
+Typography
+Spacing
+Borders
+Radius
+Shadows
+
+Avoid arbitrary values where a reusable token should exist.
+
+==================================================
+36 — PREMIUM UX DETAILS
+==================================================
+
+Add subtle details that make the design feel exceptionally polished.
+
+Examples:
+
+Subtle node highlighting.
+
+Paper relationships appearing when hovering.
+
+Opportunity cards revealing deadline context.
+
+Researcher cards showing shared research interests.
+
+Navigation becoming translucent on scroll.
+
+Subtle section entrance transitions.
+
+Elegant button hover states.
+
+Subtle border transitions.
+
+Research graph connections becoming brighter when related.
+
+Small metadata appearing progressively.
+
+Micro-interactions should feel intentional.
+
+Never add animation just for decoration.
+
+==================================================
+37 — ANTI-PATTERNS
+==================================================
+
+DO NOT:
+
+Create a generic AI SaaS landing page.
+
+Use purple AI gradients everywhere.
+
+Use excessive glassmorphism.
+
+Use giant meaningless illustrations.
+
+Use stock photography as the main visual language.
+
+Create a generic dashboard hero.
+
+Make every section a card grid.
+
+Use excessive rounded rectangles.
+
+Use heavy shadows.
+
+Use excessive neon colors.
+
+Make the interface look like LinkedIn.
+
+Make the interface look like Notion.
+
+Make the interface look like GitHub.
+
+Copy existing product layouts.
+
+Use fake customer logos.
+
+Use fake statistics presented as real.
+
+Use lorem ipsum.
+
+Use placeholder UI such as "Lorem ipsum", "Dashboard", "AI Feature", etc.
+
+==================================================
+38 — FINAL DESIGN DIRECTIVE
+==================================================
+
+Design Cambium as a NEW CATEGORY.
+
+Do not communicate:
+
+"LinkedIn for researchers."
+
+Do not communicate:
+
+"Notion for academics."
+
+Do not communicate:
+
+"AI-powered research SaaS."
+
+Communicate:
+
+CAMBIUM IS THE LIVING OPERATING SYSTEM FOR A RESEARCHER'S ENTIRE ACADEMIC WORLD.
+
+The visitor should understand within seconds:
+
+I can build my research identity here.
+
+I can organize my research here.
+
+I can discover papers here.
+
+I can discover opportunities here.
+
+I can find collaborators here.
+
+I can share my work here.
+
+I can build my research portfolio here.
+
+My entire research journey can live here.
+
+The final visual result must feel:
+
+Premium
+Original
+Academic
+Intelligent
+Editorial
+Modern
+Trustworthy
+Calm
+Alive
+
+Do not merely describe this design.
+
+ACTUALLY GENERATE THE EDITABLE FIGMA DESIGN.
+
+Prioritize visual quality, hierarchy, spacing, typography, composition, component consistency, and product storytelling.
+
+Make the landing page feel like a product that could realistically launch in 2026.

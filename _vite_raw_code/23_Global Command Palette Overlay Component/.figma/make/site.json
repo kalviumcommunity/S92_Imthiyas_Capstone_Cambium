@@ -1,0 +1,10 @@
+{
+  "description": "Effortlessly search and access academic papers, people, and commands with a sleek, user-friendly interface designed for researchers and scholars.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

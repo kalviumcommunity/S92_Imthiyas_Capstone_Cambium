@@ -1,0 +1,10 @@
+{
+  "description": "Enables users to create and customize web page designs effortlessly, enhancing visual appeal and user experience for websites and apps.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

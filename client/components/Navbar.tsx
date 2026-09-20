@@ -1,17 +1,20 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/lib/store/useAuthStore";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Sparkles,
-  Bookmark,
   Compass,
+  Bookmark,
+  LogOut,
   PlusCircle,
   LogIn,
-  LogOut,
-  User,
   ExternalLink,
+  BookOpen,
+  Users,
 } from "lucide-react";
 
 interface NavbarProps {
@@ -23,105 +26,103 @@ export default function Navbar({ onOpenCreate }: NavbarProps) {
   const { user, isAuthenticated, logout } = useAuthStore();
 
   const navLinks = [
-    { name: "Discover", href: "/opportunities", icon: Compass },
-    { name: "Saved Bookmarks", href: "/bookmarks", icon: Bookmark },
+    { name: "Discover", href: "/opportunities" },
+    { name: "Research", href: "/opportunities?type=grant" },
+    { name: "Opportunities", href: "/opportunities" },
+    { name: "Community", href: "/bookmarks" },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b border-slate-800/80">
+    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand Logo */}
+        {/* Left: Logo & Brand Name */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform duration-200">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <span className="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-blue-400 bg-clip-text text-transparent">
-              Cambium
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.svg"
+            alt="Cambium Logo"
+            className="w-8 h-8 object-contain transition-transform group-hover:scale-105"
+          />
+          <div className="flex items-center gap-2">
+            <span className="font-serif text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+              CAMBIUM
             </span>
-            <span className="hidden sm:inline-block ml-2 text-[10px] font-semibold uppercase tracking-widest text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-full">
-              Intelligence
+            <span className="hidden lg:inline-block text-[10px] font-semibold uppercase tracking-widest text-primary bg-accent/70 border border-border px-2 py-0.5 rounded-full">
+              OS
             </span>
           </div>
         </Link>
 
-        {/* Navigation Links */}
+        {/* Center Links */}
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((item) => {
-            const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3.5 py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-blue-600/15 text-blue-400 border border-blue-500/30"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+                    ? "text-primary font-semibold bg-accent/50"
+                    : "text-ink-muted hover:text-foreground hover:bg-accent/30"
                 }`}
               >
-                <Icon className="w-4 h-4" />
                 {item.name}
               </Link>
             );
           })}
-          <a
-            href="http://localhost:5000/api/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition-colors"
-          >
-            <span>OpenAPI Docs</span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
         </nav>
 
-        {/* Action Controls */}
+        {/* Right Actions */}
         <div className="flex items-center gap-3">
           {onOpenCreate && isAuthenticated && (
-            <button
+            <Button
               onClick={onOpenCreate}
-              className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-md shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              size="sm"
+              variant="outline"
+              className="gap-1.5 text-xs h-9"
             >
-              <PlusCircle className="w-4 h-4" />
+              <PlusCircle className="w-3.5 h-3.5 text-primary" />
               <span className="hidden sm:inline">Post Opportunity</span>
-            </button>
+            </Button>
           )}
 
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white">
-                  {user?.fullName ? user.fullName[0].toUpperCase() : "R"}
-                </div>
-                <div className="text-left">
-                  <p className="text-xs font-medium text-slate-200 leading-tight">
-                    {user?.fullName || user?.username}
-                  </p>
-                  {user?.institution && (
-                    <p className="text-[10px] text-slate-400 leading-tight truncate max-w-[120px]">
-                      {user.institution}
-                    </p>
-                  )}
-                </div>
-              </div>
+              <Link
+                href="/bookmarks"
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-card hover:bg-accent/40 text-xs text-foreground transition-colors"
+              >
+                <Avatar className="w-6 h-6 border border-border">
+                  <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
+                    {user?.fullName ? user.fullName[0].toUpperCase() : "R"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="font-medium truncate max-w-[100px]">
+                  {user?.fullName || user?.username}
+                </span>
+              </Link>
 
-              <button
+              <Button
+                variant="ghost"
+                size="icon-sm"
                 onClick={logout}
                 title="Sign Out"
-                className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 rounded-lg border border-transparent hover:border-rose-900/40 transition-colors"
+                className="text-ink-muted hover:text-error"
               >
                 <LogOut className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           ) : (
-            <Link
-              href="/auth"
-              className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-slate-200 hover:text-white bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 rounded-lg transition-all"
-            >
-              <LogIn className="w-4 h-4 text-blue-400" />
-              <span>Sign In</span>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Button asChild variant="ghost" size="sm" className="text-xs h-9 font-medium">
+                <Link href="/auth">Sign in</Link>
+              </Button>
+
+              <Button asChild size="sm" className="text-xs h-9 font-medium bg-primary text-primary-foreground hover:bg-primary/90">
+                <Link href="/auth">Create your research identity</Link>
+              </Button>
+            </div>
           )}
         </div>
       </div>

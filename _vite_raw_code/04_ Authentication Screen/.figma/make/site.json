@@ -1,0 +1,10 @@
+{
+  "description": "This web application streamlines the account creation process for researchers, enabling them to build their academic identity and connect with peers.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

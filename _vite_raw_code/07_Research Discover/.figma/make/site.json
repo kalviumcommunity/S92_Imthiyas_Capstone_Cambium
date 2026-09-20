@@ -1,0 +1,10 @@
+{
+  "description": "Explore curated content and discover new interests tailored to your preferences, enhancing your online experience and engagement.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

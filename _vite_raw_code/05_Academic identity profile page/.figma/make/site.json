@@ -1,0 +1,10 @@
+{
+  "description": "Create and manage comprehensive academic identity profiles that showcase qualifications, publications, and achievements for researchers and educators.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
