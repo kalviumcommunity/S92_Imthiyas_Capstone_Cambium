@@ -1,0 +1,10 @@
+{
+  "description": "Effortlessly access and read comprehensive legal documents like Privacy Policies and Terms, designed for clarity and accessibility for all users.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

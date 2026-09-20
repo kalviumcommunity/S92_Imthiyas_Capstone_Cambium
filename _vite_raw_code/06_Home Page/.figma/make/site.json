@@ -1,0 +1,10 @@
+{
+  "description": "Enterprise dashboard delivering a clean, data-rich interface for researchers to track updates, manage tasks, and explore relevant insights efficiently.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

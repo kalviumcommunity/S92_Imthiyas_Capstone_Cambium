@@ -1,0 +1,10 @@
+{
+  "description": "Transform research papers into interactive reading workspaces with AI support for summarization, note-taking, and contextual insights, enhancing academic research.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+@import 'tailwindcss';
+
+:root {
+  --bg: #F8F6F2;
+  --surface: #FFFFFF;
+  --surface-2: #F3F1ED;
+  --border: #E4E0D8;
+  --border-subtle: #EDE9E3;
+  --text-1: #1A1917;
+  --text-2: #5C5852;
+  --text-3: #9B9690;
+  --green: #3A6B50;
+  --green-dim: #4E8A67;
+  --green-bg: #EEF5F1;
+  --green-border: #C8DDD3;
+  --blue: #3A5FA0;
+  --blue-bg: #EEF2F9;
+  --blue-border: #C4D0E8;
+  --amber: #B07D3A;
+  --amber-bg: #FDF5EA;
+  --purple: #6B4D9A;
+  --purple-bg: #F3EFFA;
+  --red-bg: #FDF0EF;
+  --red: #B04A3A;
+}
+
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+*:hover {
+  scrollbar-width: thin;
+  scrollbar-color: #D4D0C8 transparent;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-serif { font-family: 'Lora', Georgia, serif; }
+.font-mono-code { font-family: 'JetBrains Mono', monospace; }
+
+::selection {
+  background: #C8DDD3;
+  color: var(--text-1);
+}

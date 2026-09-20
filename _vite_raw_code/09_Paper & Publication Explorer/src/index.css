@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+@import 'tailwindcss';
+
+@theme {
+  --color-ink:        #1C1916;
+  --color-ink-2:      #6B6460;
+  --color-ink-3:      #9E9890;
+  --color-parchment:  #F5F2EE;
+  --color-surface:    #FDFCFA;
+  --color-surface-2:  #EEEAE4;
+  --color-hairline:   #E3DED8;
+  --color-forest:     #2A5C45;
+  --color-forest-dim: #3A7358;
+  --color-forest-bg:  #EAF2EC;
+  --color-link:       #1B4B82;
+  --color-link-bg:    #EBF0F7;
+  --color-amber:      #92400E;
+  --color-amber-bg:   #FEF3E2;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-parchment);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  box-sizing: border-box;
+}
+*::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

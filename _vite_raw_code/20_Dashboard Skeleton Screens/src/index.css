@@ -1,0 +1,23 @@
+@import 'tailwindcss';
+
+@keyframes shimmer {
+  0% {
+    background-position: -800px 0;
+  }
+  100% {
+    background-position: 800px 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #F7F6F1 0%,
+    #F7F6F1 30%,
+    #FFFFFF 50%,
+    #F7F6F1 70%,
+    #F7F6F1 100%
+  );
+  background-size: 1600px 100%;
+  animation: shimmer 2.4s ease-in-out infinite;
+}

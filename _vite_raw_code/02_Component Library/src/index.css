@@ -1,0 +1,93 @@
+@import 'https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400;1,8..60,500&display=swap';
+@import 'tailwindcss';
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Manrope', system-ui, sans-serif;
+  background-color: #F7F6F1;
+  color: #17201D;
+  -webkit-font-smoothing: antialiased;
+}
+
+@theme {
+  --font-sans: 'Manrope', system-ui, sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, serif;
+
+  /* Canvas & Surface — warm cream with green undertone */
+  --color-canvas: #F7F6F1;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F0F4F1;
+  --color-surface-3: #E8EDE9;
+
+  /* Ink — near-black with green cast */
+  --color-ink: #17201D;
+  --color-ink-2: #66716C;
+  --color-ink-3: #90A099;
+
+  /* Borders — greenish grey */
+  --color-line: #DDE2DE;
+  --color-line-2: #C4CCC7;
+
+  /* Brand primary — forest green (replaces navy across all components) */
+  --color-navy: #173F35;
+  --color-navy-mid: #285C4D;
+  --color-navy-light: #DCEBE4;
+
+  /* Sage — success states */
+  --color-sage: #1D5C3E;
+  --color-sage-light: #DCF0E6;
+
+  /* Amber — warnings & deadlines */
+  --color-amber: #7A5210;
+  --color-amber-light: #FEF3E7;
+
+  /* Crimson — errors */
+  --color-crimson: #8B1D1D;
+  --color-crimson-light: #FEF2F2;
+
+  /* Iris — AI components (restrained slate, not purple) */
+  --color-iris: #2E4A6B;
+  --color-iris-light: #E8EFF6;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #C4CCC7;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #A0ABA3;
+  }
+
+  ::selection {
+    background: #DCEBE4;
+    color: #173F35;
+  }
+
+  input[type="range"] {
+    accent-color: var(--color-navy);
+  }
+
+  input[type="date"] {
+    color-scheme: light;
+  }
+}

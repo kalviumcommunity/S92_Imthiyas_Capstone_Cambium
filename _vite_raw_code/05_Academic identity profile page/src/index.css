@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'DM Serif Display', Georgia, serif;
+
+  --color-ivory: #F6F4EF;
+  --color-ivory-dark: #EDEBE4;
+  --color-charcoal: #1A1A18;
+  --color-charcoal-mid: #2E2E2B;
+  --color-muted: #7A786F;
+  --color-muted-light: #A8A59C;
+  --color-border: #DEDAD2;
+  --color-border-light: #E8E5DF;
+  --color-green: #2E5E1E;
+  --color-green-mid: #3B7425;
+  --color-green-light: #EAF1E6;
+  --color-green-muted: #C6DDB9;
+  --color-white: #FFFFFF;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+* {
+  scrollbar-width: none;
+}
+
+textarea:focus,
+input:focus,
+select:focus {
+  outline: none;
+}
+
+.chip-selected {
+  background: var(--color-green-light);
+  border-color: var(--color-green-mid);
+  color: var(--color-green);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-enter {
+  animation: fadeIn 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-enter { animation: none; }
+  * { transition: none !important; }
+}

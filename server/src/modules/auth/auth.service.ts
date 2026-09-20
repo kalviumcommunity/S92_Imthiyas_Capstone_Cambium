@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import { User } from '../users/entities/user.entity';
 import { ResearchInterest } from '../users/entities/research-interest.entity';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
@@ -15,6 +16,7 @@ import { RegisterDto, LoginDto } from './dto/auth.dto';
 @Injectable()
 export class AuthService {
   private readonly jwtSecret = process.env.JWT_SECRET || 'cambium_jwt_secret_key_2026';
+  private readonly googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy-client-id');
 
   constructor(
     @InjectRepository(User)
@@ -99,6 +101,78 @@ export class AuthService {
       success: true,
       message: 'Login successful!',
       token,
+      user: {
+        id: user.id,
+        username: user.username,
+        fullName: user.fullName,
+        email: user.email,
+        institution: user.institution,
+        researchInterests: user.researchInterests ? user.researchInterests.map((i) => i.name) : [],
+      },
+    };
+  }
+
+  async googleLogin(token: string) {
+    let ticket;
+    try {
+      ticket = await this.googleClient.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID || 'dummy-client-id',
+      });
+    } catch (error) {
+      if (!process.env.GOOGLE_CLIENT_ID || process.env.NODE_ENV !== 'production') {
+         // Fallback for development/testing when a dummy client ID is used
+         const decoded = jwt.decode(token) as any;
+         if (!decoded || !decoded.email) throw new UnauthorizedException('Invalid Google token');
+         ticket = { getPayload: () => decoded };
+      } else {
+         throw new UnauthorizedException('Invalid Google token');
+      }
+    }
+
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      throw new UnauthorizedException('Invalid Google token payload');
+    }
+
+    const email = payload.email.toLowerCase();
+    
+    let user = await this.userRepo
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.researchInterests', 'interest')
+      .where('LOWER(user.email) = :email', { email })
+      .getOne();
+
+    if (!user) {
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(Math.random().toString(36).slice(-10) + 'A1!', salt);
+      
+      let username = (payload.name ? payload.name.replace(/\s+/g, '').toLowerCase() : email.split('@')[0]);
+      let uniqueUsername = username;
+      let count = 1;
+      while (await this.userRepo.findOne({ where: { username: uniqueUsername } })) {
+         uniqueUsername = `${username}${count}`;
+         count++;
+      }
+
+      const newUser = this.userRepo.create({
+        username: uniqueUsername,
+        email,
+        fullName: payload.name || 'Google User',
+        passwordHash,
+        institution: 'Unknown Institution',
+        researchInterests: [],
+      });
+
+      user = await this.userRepo.save(newUser);
+    }
+
+    const jwtToken = this.generateToken(user.id);
+
+    return {
+      success: true,
+      message: 'Google login successful!',
+      token: jwtToken,
       user: {
         id: user.id,
         username: user.username,

@@ -1,0 +1,10 @@
+{
+  "description": "Provides a secure, user-friendly modal for confirming irreversible deletion of research workspaces, ensuring data removal is intentional and clear.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

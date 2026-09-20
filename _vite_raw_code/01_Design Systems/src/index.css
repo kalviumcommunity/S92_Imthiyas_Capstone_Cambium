@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap');
+@import 'tailwindcss';
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+@theme {
+  --font-sans: 'Manrope', system-ui, sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, serif;
+
+  /* Surfaces — warm cream foundation */
+  --color-surface-base: #F7F6F1;
+  --color-surface-raised: #FFFFFF;
+  --color-surface-sunken: #EEECE6;
+  --color-surface-inverse: #173F35;
+
+  /* Text */
+  --color-ink-primary: #17201D;
+  --color-ink-secondary: #66716C;
+  --color-ink-tertiary: #9CAAA5;
+  --color-ink-inverse: #F7F6F1;
+
+  /* Borders */
+  --color-edge-default: #DDE2DE;
+  --color-edge-strong: #B8C4C0;
+  --color-edge-hover: #66716C;
+  --color-edge-focus: #173F35;
+
+  /* Accent — Forest / Moss greens from brand */
+  --color-moss-050: #EFF5F2;
+  --color-moss-100: #DCEBE4;
+  --color-moss-300: #7EB5A0;
+  --color-moss-500: #285C4D;
+  --color-moss-600: #173F35;
+  --color-moss-700: #0D2B22;
+
+  /* Semantic states */
+  --color-semantic-success: #285C4D;
+  --color-semantic-warning: #856214;
+  --color-semantic-error: #8C3225;
+  --color-semantic-info: #1E5A72;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #B8C4C0;
+  border-radius: 99px;
+}

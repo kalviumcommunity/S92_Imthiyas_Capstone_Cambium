@@ -1,0 +1,10 @@
+{
+  "description": "Displays a visually engaging, timeline-based changelog highlighting software updates with clear status tags and smooth scroll animations for easy tracking.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
