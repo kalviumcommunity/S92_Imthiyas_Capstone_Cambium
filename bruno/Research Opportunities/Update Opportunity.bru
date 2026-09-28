@@ -1,0 +1,11 @@
+meta {
+  name: Update Opportunity
+  type: http
+  seq: 13
+}
+
+put {
+  url: {{baseUrl}}/api/research-opportunities/:id
+  body: json
+  auth: none
+}
