@@ -1,0 +1,11 @@
+meta {
+  name: Mark All as Read
+  type: http
+  seq: 23
+}
+
+put {
+  url: {{baseUrl}}/api/notifications/user/:userId/read-all
+  body: json
+  auth: none
+}

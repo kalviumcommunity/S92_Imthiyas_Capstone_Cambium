@@ -1,0 +1,11 @@
+meta {
+  name: Update User Interests
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/users/:id/interests
+  body: json
+  auth: none
+}

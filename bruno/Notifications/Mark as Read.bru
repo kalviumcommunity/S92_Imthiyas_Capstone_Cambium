@@ -1,0 +1,11 @@
+meta {
+  name: Mark as Read
+  type: http
+  seq: 22
+}
+
+put {
+  url: {{baseUrl}}/api/notifications/:id/read
+  body: json
+  auth: none
+}

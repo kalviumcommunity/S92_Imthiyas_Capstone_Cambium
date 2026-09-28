@@ -1,0 +1,11 @@
+meta {
+  name: Update Tags
+  type: http
+  seq: 14
+}
+
+put {
+  url: {{baseUrl}}/api/research-opportunities/:id/tags
+  body: json
+  auth: none
+}
