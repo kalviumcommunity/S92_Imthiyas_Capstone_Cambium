@@ -230,7 +230,7 @@ export function PaperSection() {
                 Foundation Models for Scientific Discovery
               </h3>
               <div className="text-[13px] text-muted-foreground flex gap-2 flex-wrap">
-                {["Maya Chen", "Arjun Rao", "Elena Park"].map((a, i) => (
+                {["Imthiyas", "Arjun Rao", "Elena Park"].map((a, i) => (
                   <span key={a}>
                     {a}
                     {i < 2 ? "," : ""}

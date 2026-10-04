@@ -9,7 +9,8 @@
     "init:db": "npm --prefix server run init:db",
     "client:dev": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
-    "build": "npm --prefix server run build",
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "build": "npm run server:build && npm run client:build",
     "test": "npm --prefix server run test"
   },
   "keywords": [
@@ -22,5 +23,8 @@
     "semantic-search"
   ],
   "author": "Shaik Mohamed Imthiyas T",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
 }

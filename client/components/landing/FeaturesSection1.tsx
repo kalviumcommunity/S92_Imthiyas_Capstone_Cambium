@@ -95,11 +95,11 @@ export function IdentitySection() {
           <div className="bg-[#F0EEE8] pt-7 px-7 border-b border-border">
             <div className="flex gap-5 items-start mb-5">
               <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl shrink-0">
-                MC
+                IM
               </div>
               <div className="flex-1">
                 <div className="font-bold text-[17px] text-foreground tracking-tight">
-                  Dr. Maya Chen
+                  Imthiyas
                 </div>
                 <div className="text-[13px] text-muted-foreground mt-1">
                   PhD Researcher · Computer Vision

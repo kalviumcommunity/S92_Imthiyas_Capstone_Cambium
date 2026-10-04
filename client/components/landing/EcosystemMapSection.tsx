@@ -46,7 +46,7 @@ export function IntelligenceSection() {
               Foundation Models for Scientific Discovery
             </div>
             <div className="text-xs text-[#F5F4F0]/40 mt-1">
-              Chen, Rao, Park · NeurIPS 2026
+              Imthiyas, Rao, Park · NeurIPS 2026
             </div>
           </div>
 

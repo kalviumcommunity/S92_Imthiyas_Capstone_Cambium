@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,56 +6,81 @@
 @layer base {
   :root {
     /* -------------------------------------------------------------------------
-     * Cambium Design System — Core Design Tokens (Brand SSOT)
-     * "Research, connected." Scholarly, restrained, deeply human, and editorial.
+     * Cambium Master Design System — Living Materials & Editorial Typography
+     * 01 Mineral Sand (#F2EBDD) · 02 Living Algae (#66866A)
+     * 03 Rootwood (#805B43) · 04 Forest Ink (#202920)
      * ------------------------------------------------------------------------- */
-    --font-sans: 'Manrope', system-ui, sans-serif;
-    --font-serif: 'Source Serif 4', Georgia, serif;
+    --font-serif: 'Newsreader', Georgia, serif;
+    --font-sans: 'Instrument Sans', 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+    --font-editorial: var(--font-serif);
+    --font-interface: var(--font-sans);
+    --font-data: var(--font-mono);
 
-    /* Surfaces — warm cream foundation */
-    --color-surface-base: #F7F6F1;
+    /* Living Materials Extended Palette */
+    --color-parchment: #FAF7F0;     /* Primary Canvas */
+    --color-mineral-sand: #F2EBDD;  /* Warm Section Foundation */
+    --color-limestone: #E4DCCB;     /* Subtle Surface & Dividers */
+    --color-sage-mist: #DCE6D7;     /* Selected States & Highlights */
+    --color-living-algae: #66866A;  /* Brand Accent */
+    --color-canopy: #3E6248;        /* Primary Action & Strong Accent */
+    --color-deep-moss: #293E30;     /* Dark Botanical Surface */
+    --color-rootwood: #805B43;      /* Secondary Accent & Provenance */
+    --color-loam: #B89A78;          /* Charts & Supporting Detail */
+    --color-forest-ink: #202920;    /* Primary Text & Headings */
+    --color-bark-grey: #62685E;     /* Secondary Text */
+    --color-quiet-stone: #85877B;   /* Tertiary Metadata */
+
+    /* Semantic Status Tokens */
+    --color-status-success: #326B49;
+    --color-status-warning: #8A5A12;
+    --color-status-error: #B33D35;
+    --color-status-info: #365F8D;
+    --color-status-neutral: #62685E;
+
+    /* Base UI Mappings */
+    --background: var(--color-parchment);
+    --foreground: var(--color-forest-ink);
+    --card: #FFFFFF;
+    --card-foreground: var(--color-forest-ink);
+    --primary: var(--color-canopy);
+    --primary-foreground: #FAF7F0;
+    --secondary: var(--color-living-algae);
+    --secondary-foreground: #FFFFFF;
+    --muted: var(--color-mineral-sand);
+    --muted-foreground: var(--color-bark-grey);
+    --accent: var(--color-sage-mist);
+    --accent-foreground: var(--color-canopy);
+    --border: var(--color-limestone);
+    --input: var(--color-limestone);
+    --ring: var(--color-canopy);
+    --radius: 0.5rem;
+
+    /* Living Materials Extended Aliases for UI & Tailwind */
+    --color-surface-base: var(--color-parchment);
     --color-surface-raised: #FFFFFF;
-    --color-surface-sunken: #EEECE6;
-    --color-surface-inverse: #173F35;
+    --color-surface-sunken: var(--color-mineral-sand);
+    --color-ink-primary: var(--color-forest-ink);
+    --color-ink-secondary: var(--color-bark-grey);
+    --color-ink-tertiary: var(--color-quiet-stone);
+    --color-edge-default: var(--color-limestone);
+    --color-edge-strong: var(--color-living-algae);
+    --color-edge-hover: var(--color-canopy);
+    --color-edge-focus: var(--color-canopy);
+    --color-moss-050: var(--color-mineral-sand);
+    --color-moss-100: var(--color-sage-mist);
+    --color-moss-200: #C2D6BB;
+    --color-moss-300: var(--color-living-algae);
+    --color-moss-500: var(--color-living-algae);
+    --color-moss-600: var(--color-canopy);
+    --color-moss-700: var(--color-deep-moss);
 
-    /* Text */
-    --color-ink-primary: #17201D;
-    --color-ink-secondary: #66716C;
-    --color-ink-tertiary: #9CAAA5;
-    --color-ink-inverse: #F7F6F1;
-
-    /* Borders */
-    --color-edge-default: #DDE2DE;
-    --color-edge-strong: #B8C4C0;
-    --color-edge-hover: #66716C;
-    --color-edge-focus: #173F35;
-
-    /* Accent — Forest / Moss greens from brand */
-    --color-moss-050: #EFF5F2;
-    --color-moss-100: #DCEBE4;
-    --color-moss-300: #7EB5A0;
-    --color-moss-500: #285C4D;
-    --color-moss-600: #173F35;
-    --color-moss-700: #0D2B22;
-
-    /* Semantic states */
-    --color-semantic-success: #285C4D;
-    --color-semantic-warning: #856214;
-    --color-semantic-error: #8C3225;
-    --color-semantic-info: #1E5A72;
-
-    /* Standard shadcn/ui Semantic Variables */
-    --background: var(--color-surface-base);
-    --foreground: var(--color-ink-primary);
-
-    --card: var(--color-surface-raised);
-    --card-foreground: var(--color-ink-primary);
 
     --popover: var(--color-surface-raised);
     --popover-foreground: var(--color-ink-primary);
 
-    --primary: var(--color-surface-inverse);
-    --primary-foreground: var(--color-surface-raised);
+    --primary: var(--color-moss-600);
+    --primary-foreground: var(--color-surface-base);
 
     --secondary: var(--color-moss-500);
     --secondary-foreground: var(--color-surface-raised);
@@ -64,7 +89,7 @@
     --muted-foreground: var(--color-ink-secondary);
 
     --accent: var(--color-moss-100);
-    --accent-foreground: var(--color-surface-inverse);
+    --accent-foreground: var(--color-moss-600);
 
     --destructive: var(--color-semantic-error);
     --destructive-foreground: var(--color-surface-raised);
@@ -81,21 +106,29 @@
     --border-hover: var(--color-edge-hover);
     --border-focus: var(--color-edge-focus);
 
-    /* Elevation Shadows (Subtle, green-tinted, border-driven) */
+    /* Elevation Shadows (Soft, diffused, multi-layered human shadows) */
     --shadow-elevation-0: none;
-    --shadow-elevation-1: 0 1px 3px rgba(23, 63, 53, 0.07);
-    --shadow-elevation-2: 0 4px 14px rgba(23, 63, 53, 0.10);
-    --shadow-elevation-3: 0 16px 40px rgba(23, 63, 53, 0.14);
+    --shadow-elevation-1: 0 2px 6px -1px rgba(10, 12, 16, 0.04), 0 1px 3px rgba(10, 12, 16, 0.02);
+    --shadow-elevation-2: 0 4px 20px -2px rgba(10, 12, 16, 0.04), 0 12px 32px -6px rgba(10, 12, 16, 0.06);
+    --shadow-elevation-3: 0 20px 80px -10px rgba(27, 59, 43, 0.10);
   }
 
   * {
     border-color: var(--border);
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  section[id] {
+    scroll-margin-top: 80px;
+  }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-sans), 'Manrope', system-ui, sans-serif;
+    font-family: var(--font-sans), 'Plus Jakarta Sans', system-ui, sans-serif;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -104,24 +137,40 @@
 
 @layer utilities {
   /* -------------------------------------------------------------------------
-   * Elevation & Shadow Utilities (Subtle, green-tinted, border-driven)
+   * Tactile Grid & Hard Shadow Utilities (Anti-AI Ledger Engine)
    * ------------------------------------------------------------------------- */
-  .elevation-0 {
-    border: 1px solid var(--border-default);
-    box-shadow: var(--shadow-elevation-0);
+  .bg-dot-grid {
+    background-image: radial-gradient(rgba(17, 19, 18, 0.12) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
-  .elevation-1 {
-    border: 1px solid var(--border-default);
-    box-shadow: var(--shadow-elevation-1);
+  .bg-dot-grid-dark {
+    background-image: radial-gradient(rgba(237, 237, 232, 0.12) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
-  .elevation-2 {
-    box-shadow: var(--shadow-elevation-2);
+  .shadow-hard {
+    box-shadow: 4px 4px 0px 0px rgba(17, 19, 18, 1);
   }
 
-  .elevation-3 {
-    box-shadow: var(--shadow-elevation-3);
+  .shadow-hard-sm {
+    box-shadow: 2px 2px 0px 0px rgba(17, 19, 18, 1);
+  }
+
+  .shadow-hard-moss {
+    box-shadow: 4px 4px 0px 0px #1A4D3E;
+  }
+
+  .shadow-inner-hairline {
+    box-shadow: inset 0 0 0 1px #DCE0DC;
+  }
+
+  .shadow-oled-inner {
+    box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.7);
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
   }
 
   /* -------------------------------------------------------------------------
@@ -144,79 +193,120 @@
   }
 
   /* -------------------------------------------------------------------------
-   * Editorial Typography Scale Helpers
+   * Editorial Typography & Utility Scale Helpers (Cambium Master Specification)
+   * 01 Newsreader (Editorial) · 02 Instrument Sans (Interface) · 03 IBM Plex Mono (Data)
    * ------------------------------------------------------------------------- */
+  .font-editorial {
+    font-family: var(--font-serif), 'Newsreader', Georgia, serif;
+  }
+
+  .font-interface {
+    font-family: var(--font-sans), 'Instrument Sans', system-ui, sans-serif;
+  }
+
+  .font-data {
+    font-family: var(--font-mono), 'IBM Plex Mono', monospace;
+  }
+
+  .border-hairline {
+    border-color: var(--color-limestone);
+  }
+
+  .shadow-premium {
+    box-shadow: 0 4px 20px -2px rgba(32, 41, 32, 0.04), 0 12px 40px -6px rgba(32, 41, 32, 0.06);
+  }
+
+  .shadow-elevated {
+    box-shadow: 0 20px 80px -10px rgba(62, 98, 72, 0.10);
+  }
+
   .text-display-xl {
-    font-family: var(--font-serif), 'Source Serif 4', Georgia, serif;
-    font-size: 64px;
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
+    font-family: var(--font-serif), 'Newsreader', Georgia, serif;
+    font-size: clamp(3.25rem, 6vw, 4rem); /* 64px desktop / 70px line-height */
+    font-weight: 400;
+    line-height: 1.09;
+    letter-spacing: -0.025em;
   }
 
   .text-display-lg {
-    font-family: var(--font-serif), 'Source Serif 4', Georgia, serif;
-    font-size: 48px;
-    font-weight: 700;
-    line-height: 1.15;
+    font-family: var(--font-serif), 'Newsreader', Georgia, serif;
+    font-size: clamp(2.5rem, 4.5vw, 3.25rem); /* 52px / 58px */
+    font-weight: 400;
+    line-height: 1.12;
     letter-spacing: -0.02em;
   }
 
   .text-heading-1 {
-    font-family: var(--font-serif), 'Source Serif 4', Georgia, serif;
-    font-size: 32px;
-    font-weight: 700;
-    line-height: 1.25;
-    letter-spacing: -0.01em;
+    font-family: var(--font-serif), 'Newsreader', Georgia, serif;
+    font-size: clamp(2rem, 3.5vw, 2.75rem); /* 44px / 50px */
+    font-weight: 500;
+    line-height: 1.14;
+    letter-spacing: -0.015em;
   }
 
   .text-heading-2 {
-    font-family: var(--font-sans), 'Manrope', sans-serif;
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 1.3;
+    font-family: var(--font-serif), 'Newsreader', Georgia, serif;
+    font-size: 34px; /* 34px / 41px */
+    font-weight: 500;
+    line-height: 1.21;
     letter-spacing: -0.01em;
   }
 
   .text-heading-3 {
-    font-family: var(--font-sans), 'Manrope', sans-serif;
-    font-size: 18px;
+    font-family: var(--font-serif), 'Newsreader', Georgia, serif;
+    font-size: 26px; /* 26px / 33px */
+    font-weight: 600;
+    line-height: 1.27;
+  }
+
+  .text-heading-4 {
+    font-family: var(--font-sans), 'Instrument Sans', system-ui, sans-serif;
+    font-size: 20px; /* 20px / 27px */
     font-weight: 600;
     line-height: 1.35;
   }
 
-  .text-body-lg {
-    font-family: var(--font-sans), 'Manrope', sans-serif;
-    font-size: 18px;
+  .text-lead-para {
+    font-family: var(--font-sans), 'Instrument Sans', system-ui, sans-serif;
+    font-size: 19px; /* 19px / 30px */
     font-weight: 400;
-    line-height: 1.6;
+    line-height: 1.58;
   }
 
   .text-body-default {
-    font-family: var(--font-sans), 'Manrope', sans-serif;
-    font-size: 15px;
+    font-family: var(--font-sans), 'Instrument Sans', system-ui, sans-serif;
+    font-size: 16px; /* 16px / 25px */
     font-weight: 400;
-    line-height: 1.6;
+    line-height: 1.56;
   }
 
   .text-body-sm {
-    font-family: var(--font-sans), 'Manrope', sans-serif;
-    font-size: 13px;
+    font-family: var(--font-sans), 'Instrument Sans', system-ui, sans-serif;
+    font-size: 14px; /* 14px / 21px */
     font-weight: 400;
     line-height: 1.5;
   }
 
   .text-label-meta {
-    font-family: var(--font-sans), 'Manrope', sans-serif;
-    font-size: 12px;
+    font-family: var(--font-sans), 'Instrument Sans', system-ui, sans-serif;
+    font-size: 12px; /* 12px / 17px */
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .text-research-data {
+    font-family: var(--font-mono), 'IBM Plex Mono', monospace;
+    font-size: 13px; /* 12-13px / 19px */
     font-weight: 500;
-    letter-spacing: 0.04em;
+    line-height: 1.46;
+    letter-spacing: 0.02em;
   }
 
   /* Paper Card Surface */
   .paper-surface {
-    background-color: var(--card);
-    border: 1px solid var(--border-default);
+    background-color: var(--color-parchment);
+    border: 1px solid var(--color-limestone);
   }
 }
 
@@ -261,6 +351,48 @@
   to   { stroke-dashoffset: 0; }
 }
 
+/* ── Float animations for auth network graph nodes ─────────────────────── */
+@keyframes float-a {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-6px); }
+}
+@keyframes float-b {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50%      { transform: translateY(6px) translateX(-3px); }
+}
+@keyframes float-c {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50%      { transform: translateY(-5px) translateX(4px); }
+}
+
+@keyframes node-drift-1 {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  33%      { transform: translateY(-7px) translateX(3px); }
+  66%      { transform: translateY(5px) translateX(-3px); }
+}
+@keyframes node-drift-2 {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  33%      { transform: translateY(6px) translateX(-4px); }
+  66%      { transform: translateY(-7px) translateX(3px); }
+}
+@keyframes node-drift-3 {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50%      { transform: translateY(-8px) translateX(-4px); }
+}
+@keyframes node-drift-4 {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50%      { transform: translateY(7px) translateX(4px); }
+}
+
+.animate-float-a { animation: float-a 4s ease-in-out infinite; }
+.animate-float-b { animation: float-b 5s ease-in-out infinite; }
+.animate-float-c { animation: float-c 4.5s ease-in-out infinite; }
+.animate-drift-1 { animation: node-drift-1 6s ease-in-out infinite; }
+.animate-drift-2 { animation: node-drift-2 7s ease-in-out infinite; }
+.animate-drift-3 { animation: node-drift-3 8s ease-in-out infinite; }
+.animate-drift-4 { animation: node-drift-4 6.5s ease-in-out infinite; }
+
+/* ── General animation helpers ─────────────────────────────────────────── */
 .animate-fade-up {
   animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -277,3 +409,249 @@
   stroke-dasharray: 300;
   animation: drawLine 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
+
+/* ── Auth form input — Cambium Living Materials precision ─────────────────── */
+.auth-input {
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid var(--color-limestone, #E4DCCB);
+  padding: 0 14px;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+  background: #FFFFFF;
+  color: var(--color-forest-ink, #202920);
+  font-family: var(--font-sans);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.auth-input::placeholder { color: var(--color-quiet-stone, #85877B); }
+.auth-input:focus {
+  border-color: var(--color-canopy, #3E6248);
+  box-shadow: 0 0 0 3px rgba(62, 98, 72, 0.15);
+  background: #FFFFFF;
+}
+
+/* ── Auth OAuth button ─────────────────────────────────────────────────── */
+.auth-oauth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid var(--color-limestone, #E4DCCB);
+  background: #FFFFFF;
+  color: var(--color-forest-ink, #202920);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.auth-oauth-btn:hover {
+  background: #F8F4EC;
+  border-color: var(--color-living-algae, #66866A);
+  color: var(--color-forest-ink, #202920);
+  box-shadow: 0 2px 8px rgba(32, 41, 32, 0.04);
+}
+.auth-oauth-btn:active {
+  transform: scale(0.995);
+}
+
+/* ── Auth submit button ────────────────────────────────────────────────── */
+.auth-submit-btn {
+  height: 44px;
+  border-radius: 8px;
+  background: var(--color-canopy, #3E6248);
+  color: var(--color-parchment, #FAF7F0);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-top: 4px;
+  box-shadow: 0 2px 8px rgba(62, 98, 72, 0.2);
+}
+.auth-submit-btn:hover {
+  background: var(--color-deep-moss, #293E30);
+  box-shadow: 0 4px 14px rgba(41, 62, 48, 0.3);
+}
+.auth-submit-btn:active {
+  transform: scale(0.995);
+}
+
+/* ── Academic Identity Profile — Step Animation ────────────────────────── */
+@keyframes stepFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.step-enter {
+  animation: stepFadeIn 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-enter { animation: none; }
+}
+
+/* ── Profile field inputs (Vite-exact focus ring) ───────────────────────── */
+.profile-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  background: #FFFFFF;
+  border: 1px solid #DEDAD2;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #1A1A18;
+  font-family: var(--font-sans);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+.profile-input::placeholder { color: #C0BDB5; }
+.profile-input:focus {
+  border-color: #2E5E1E;
+  box-shadow: 0 0 0 2px rgba(46,94,30,0.10);
+}
+
+.profile-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: #FFFFFF;
+  border: 1px solid #DEDAD2;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #1A1A18;
+  font-family: var(--font-sans);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+  resize: none;
+  line-height: 1.6;
+}
+.profile-textarea::placeholder { color: #C0BDB5; }
+.profile-textarea:focus {
+  border-color: #2E5E1E;
+  box-shadow: 0 0 0 2px rgba(46,94,30,0.10);
+}
+
+.profile-select {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  background: #FFFFFF;
+  border: 1px solid #DEDAD2;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #1A1A18;
+  font-family: var(--font-sans);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+}
+.profile-select:focus {
+  border-color: #2E5E1E;
+  box-shadow: 0 0 0 2px rgba(46,94,30,0.10);
+}
+
+.profile-chip {
+  padding: 6px 12px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #DEDAD2;
+  background: #FFFFFF;
+  color: #4A4845;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  line-height: 1;
+}
+.profile-chip:hover { border-color: #AAAA99; background: #F6F4EF; }
+.profile-chip.selected {
+  background: #EAF1E6;
+  border-color: #3B7425;
+  color: #2E5E1E;
+}
+
+.profile-link-input {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  background: #F6F4EF;
+  border: 1px solid #DEDAD2;
+  border-radius: 3px;
+  font-size: 13px;
+  color: #1A1A18;
+  font-family: var(--font-sans);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.profile-link-input::placeholder { color: #C0BDB5; }
+.profile-link-input:focus { border-color: #2E5E1E; }
+
+/* ── Living Botanical Knowledge Graph Keyframes ───────────────────────────── */
+@keyframes nodeDrift1 {
+  0%, 100% { transform: translate(0px, 0px); }
+  25% { transform: translate(7px, -9px); }
+  50% { transform: translate(-5px, 6px); }
+  75% { transform: translate(6px, 7px); }
+}
+
+@keyframes nodeDrift2 {
+  0%, 100% { transform: translate(0px, 0px); }
+  30% { transform: translate(-8px, 8px); }
+  60% { transform: translate(7px, -7px); }
+  85% { transform: translate(-4px, -5px); }
+}
+
+@keyframes nodeDrift3 {
+  0%, 100% { transform: translate(0px, 0px); }
+  35% { transform: translate(8px, 7px); }
+  70% { transform: translate(-9px, -6px); }
+  90% { transform: translate(5px, -4px); }
+}
+
+@keyframes nodeDrift4 {
+  0%, 100% { transform: translate(0px, 0px); }
+  25% { transform: translate(-6px, -8px); }
+  55% { transform: translate(9px, -4px); }
+  80% { transform: translate(-7px, 6px); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { filter: drop-shadow(0 0 2px rgba(46, 204, 113, 0.4)); opacity: 0.9; }
+  50% { filter: drop-shadow(0 0 12px rgba(46, 204, 113, 0.85)); opacity: 1; }
+}
+
+.animate-drift-1 {
+  animation: nodeDrift1 7s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.animate-drift-2 {
+  animation: nodeDrift2 8.5s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.animate-drift-3 {
+  animation: nodeDrift3 6.5s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.animate-drift-4 {
+  animation: nodeDrift4 9s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+

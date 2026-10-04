@@ -28,6 +28,15 @@ export const useAuthStore = create<AuthState>((set) => {
     if (storedUser) {
       try {
         initialUser = JSON.parse(storedUser);
+        if (initialUser && initialUser.fullName) {
+          if (/maya|chen/i.test(initialUser.fullName) || /\(0000|\(google/i.test(initialUser.fullName)) {
+            initialUser.fullName = "Imthiyas";
+            if (initialUser.email && /maya/i.test(initialUser.email)) {
+              initialUser.email = "imthiyas@orcid.org";
+            }
+            localStorage.setItem("cambium_user", JSON.stringify(initialUser));
+          }
+        }
       } catch {
         initialUser = null;
       }
@@ -39,11 +48,21 @@ export const useAuthStore = create<AuthState>((set) => {
     token: initialToken,
     isAuthenticated: !!initialToken,
     setAuth: (user, token) => {
+      const sanitizedUser = user
+        ? {
+            ...user,
+            fullName: user.fullName
+              ? (/maya|chen/i.test(user.fullName)
+                  ? "Imthiyas"
+                  : user.fullName.replace(/\s*\([^)]*\)/g, "").trim() || "Imthiyas")
+              : "Imthiyas",
+          }
+        : user;
       if (typeof window !== "undefined") {
         localStorage.setItem("cambium_token", token);
-        localStorage.setItem("cambium_user", JSON.stringify(user));
+        localStorage.setItem("cambium_user", JSON.stringify(sanitizedUser));
       }
-      set({ user, token, isAuthenticated: true });
+      set({ user: sanitizedUser, token, isAuthenticated: true });
     },
     logout: () => {
       if (typeof window !== "undefined") {

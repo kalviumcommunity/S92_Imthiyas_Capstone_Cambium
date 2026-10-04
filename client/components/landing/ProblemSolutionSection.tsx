@@ -98,12 +98,11 @@ function ProblemSection() {
             </p>
             <div className="p-8 bg-background border border-primary/20 border-t-2 border-t-primary rounded-lg shadow-[0_4px_24px_rgba(92,122,94,0.08)]">
               <div className="flex items-center gap-2.5 mb-5">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <circle cx="9" cy="9" r="8" stroke="currentColor" className="text-primary" strokeWidth="1.5" />
-                  <circle cx="9" cy="9" r="3.5" fill="currentColor" className="text-primary" />
-                </svg>
-                <span className="font-bold text-base tracking-tight text-foreground">
-                  CAMBIUM
+                <div className="w-6 h-6 rounded-full bg-[#FAF7F0] border border-[#E4DCCB] p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
+                  <img src="/logo.svg" alt="CAMBIUM Research Logo" className="w-full h-full object-contain" />
+                </div>
+                <span className="font-bold text-sm tracking-tight text-foreground uppercase">
+                  CAMBIUM <span className="font-light text-primary">RESEARCH</span>
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">

@@ -1,386 +1,587 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
+import CambiumLogo from '@/components/CambiumLogo'
+import { ArrowUpRight, User, AlertCircle, Sparkles } from 'lucide-react'
+import { CambiumIntroPreloader } from '@/components/landing/CambiumIntroPreloader'
 
-// ─── Tokens ─────────────────────────────────────────────────────────────────
+// ─── Design System Tokens (Cambium Master Living Materials System) ────────────
 const C = {
-  bg: '#FAF9F6',
-  charcoal: '#1E1E1C',
-  secondary: '#6B6B66',
-  tertiary: '#9C9C96',
-  rule: '#E8E6E0',
-  moss: '#5C7A5E',
-  mossLight: '#EAF0EA',
-  mossMid: '#4A6B4C',
-  darkBg: '#1C1C1A',
-  darkSurface: '#242422',
-  darkBorder: '#2E2E2C',
+  // Master Four Living Materials
+  mineralSand: '#F2EBDD',  // The warm paper foundation
+  livingAlgae: '#66866A',  // Life, discovery, verified activity
+  rootwood: '#805B43',     // Research heritage, provenance, depth
+  forestInk: '#202920',    // Authoritative ink for headings & navigation
+
+  // Extended Color System
+  parchment: '#FAF7F0',    // Primary canvas
+  limestone: '#E4DCCB',    // Subtle surface & dividers
+  sageMist: '#DCE6D7',     // Selected states & quiet highlights
+  canopy: '#3E6248',       // Primary action & strong accent
+  deepMoss: '#293E30',     // Dark botanical surface
+  loam: '#B89A78',         // Charts & supporting detail
+  barkGrey: '#62685E',     // Secondary text
+  quietStone: '#85877B',   // Tertiary metadata
+
+  // Semantic Status Tokens
+  statusSuccess: '#326B49',
+  statusWarning: '#8A5A12',
+  statusError: '#B33D35',
+  statusInfo: '#365F8D',
+  statusNeutral: '#62685E',
+
+  // System Role Aliases
+  bg: '#FAF7F0',           // Parchment primary canvas
+  surfaceRaised: '#FFFFFF',
+  surfaceSunken: '#F2EBDD', // Mineral Sand warm section background
+  surface2: '#E4DCCB',     // Limestone subtle surface
+  charcoal: '#202920',     // Forest Ink primary text
+  secondary: '#62685E',    // Bark Grey secondary text
+  tertiary: '#85877B',     // Quiet Stone metadata
+  rule: '#E4DCCB',         // Limestone dividers & hairline
+  borderStrong: '#66866A', // Living Algae brand accent
+  moss: '#3E6248',         // Canopy primary action
+  moss500: '#66866A',      // Living Algae
+  mossLight: '#DCE6D7',    // Sage Mist highlight
+  moss050: '#F2EBDD',      // Mineral Sand tint
+  mossMid: '#3E6248',      // Canopy
+  mossHover: '#293E30',    // Deep Moss
+  darkBg: '#293E30',       // Deep Moss dark botanical surface
+  darkSurface: '#202920',  // Forest Ink dark surface
+  darkBorder: '#3E6248',   // Canopy dark border
+  crimson: '#B33D35',      // Status Error
 }
 
-// ─── Navigation ──────────────────────────────────────────────────────────────
+// ─── Navigation (Mathematically Aligned Optical Grid) ─────────────────────────
 function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 40)
+    const handler = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handler, { passive: true })
     return () => window.removeEventListener('scroll', handler)
   }, [])
 
   return (
-    <header
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        transition: 'background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease',
-        background: scrolled ? 'rgba(250,249,246,0.88)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(12px)' : 'none',
-        WebkitBackdropFilter: scrolled ? 'blur(12px)' : 'none',
-        borderBottom: scrolled ? `1px solid ${C.rule}` : '1px solid transparent',
-      }}
-    >
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 88px', display: 'flex', alignItems: 'center', height: 64, gap: 40 }}>
-        {/* Logo */}
-        <div style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 18, letterSpacing: '-0.04em', color: C.charcoal, display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="9" stroke={C.moss} strokeWidth="1.5" />
-            <circle cx="10" cy="10" r="4" fill={C.moss} />
-          </svg>
-          CAMBIUM
-        </div>
+    <header className="w-full border-b border-[#E4DCCB] bg-[#FAF7F0]/90 backdrop-blur-md sticky top-0 z-50 transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        {/* Brand Architecture */}
+        <CambiumLogo size="md" href="/" />
 
-        {/* Nav links */}
-        <nav style={{ display: 'flex', gap: 32, marginLeft: 16 }} className="hidden-mobile">
-          {['Discover', 'Research', 'Opportunities', 'Community'].map((link) => (
+        {/* Core Navigation - Balanced Optical Centering */}
+        <nav className="hidden md:flex items-center gap-8">
+          {[
+            { label: 'Discover', href: '#discover' },
+            { label: 'Community', href: '#community' },
+            { label: 'Opportunity', href: '#opportunities' },
+            { label: 'Research', href: '#research' },
+          ].map(({ label, href }) => (
             <a
-              key={link}
-              href="#"
-              style={{
-                fontSize: 14,
-                fontWeight: 500,
-                color: C.secondary,
-                textDecoration: 'none',
-                letterSpacing: '-0.01em',
-                transition: 'color 0.15s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = C.charcoal }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = C.secondary }}
+              key={label}
+              href={href}
+              className="font-sans text-[14px] font-[450] text-[#62685E] hover:text-[#202920] tracking-[-0.01em] transition-colors duration-200 relative after:absolute after:bottom-[-29px] after:left-0 after:w-full after:h-[2px] after:bg-[#3E6248] after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 no-underline"
             >
-              {link}
+              {label}
             </a>
           ))}
         </nav>
 
-        <div style={{ flex: 1 }} />
-
-        {/* Right actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }} className="hidden-mobile">
-          <a
-            href="/sign-in"
-            style={{ fontSize: 14, fontWeight: 500, color: C.secondary, textDecoration: 'none', transition: 'color 0.15s' }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = C.charcoal }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = C.secondary }}
+        {/* Action Threshold */}
+        <div className="hidden md:flex items-center gap-5">
+          <Link 
+            href="/sign-in" 
+            className="font-sans text-[14px] font-medium text-[#62685E] hover:text-[#202920] transition-colors no-underline"
           >
             Sign in
-          </a>
-          <button
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: '#fff',
-              background: C.moss,
-              border: 'none',
-              padding: '9px 18px',
-              borderRadius: 6,
-              cursor: 'pointer',
-              letterSpacing: '-0.01em',
-              transition: 'background 0.15s',
-              whiteSpace: 'nowrap',
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.mossMid }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.moss }}
+          </Link>
+          <Link
+            href="/sign-up"
+            className="bg-[#3E6248] hover:bg-[#293E30] text-[#FAF7F0] px-5 py-2.5 rounded-full font-sans text-xs font-semibold tracking-wide uppercase shadow-sm shadow-[#3E6248]/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 inline-block text-center no-underline border border-[#66866A]/30"
           >
-            Create your research identity
-          </button>
+            Create Identity
+          </Link>
         </div>
 
         {/* Mobile menu button */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
-          className="mobile-menu-btn"
+          className="md:hidden p-2 text-[#202920] bg-transparent border-0 cursor-pointer"
           aria-label="Toggle menu"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={C.charcoal} strokeWidth="1.5">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="17" x2="21" y2="17" />
           </svg>
         </button>
       </div>
+
+      {/* Mobile Drawer */}
+      {menuOpen && (
+        <div className="md:hidden border-t border-[#E4DCCB] bg-[#FAF7F0] px-6 py-6 space-y-4">
+          {['Discover', 'Community', 'Opportunity', 'Research'].map((item) => (
+            <a
+              key={item}
+              href={`#${item.toLowerCase()}`}
+              onClick={() => setMenuOpen(false)}
+              className="block text-[15px] font-medium text-[#62685E] hover:text-[#202920] no-underline"
+            >
+              {item}
+            </a>
+          ))}
+          <div className="pt-4 border-t border-[#E4DCCB] flex flex-col gap-3">
+            <Link href="/sign-in" className="text-sm font-medium text-[#202920] no-underline">Sign in</Link>
+            <Link href="/sign-up" className="bg-[#3E6248] text-[#FAF7F0] px-4 py-2.5 rounded-full text-xs font-semibold text-center uppercase no-underline">Create Identity</Link>
+          </div>
+        </div>
+      )}
     </header>
   )
 }
 
-// ─── Hero Ecosystem Graph ─────────────────────────────────────────────────────
-function EcosystemGraph({ dark = false }: { dark?: boolean }) {
+// ─── Hero Ecosystem Graph (Living Interactive Network) ─────────────────────────
+function EcosystemGraph({ dark = false, selectedCategory = 'all' }: { dark?: boolean; selectedCategory?: string }) {
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null)
+
   const nodes = [
-    { id: 'researcher', x: 180, y: 170, type: 'researcher', label: 'Dr. Maya Chen', sub: 'Computer Vision', color: C.moss },
-    { id: 'paper',      x: 380, y: 110, type: 'paper',      label: 'Vision-Language Models', sub: 'for Scientific Discovery', color: dark ? '#4A6B4C' : '#5C7A5E' },
-    { id: 'topic',      x: 390, y: 260, type: 'topic',      label: 'Computer Vision', sub: 'Research Area', color: '#7A6B4A' },
-    { id: 'grant',      x: 90,  y: 290, type: 'grant',      label: 'NSF Research Grant', sub: 'Deadline · 18 days', color: '#6B4A4A' },
-    { id: 'conf',       x: 300, y: 380, type: 'conf',       label: 'NeurIPS 2026', sub: 'Conference', color: '#4A5B7A' },
-    { id: 'lab',        x: 60,  y: 140, type: 'lab',        label: 'Research Lab', sub: 'MIT CSAIL', color: '#6B5A7A' },
-    { id: 'project',    x: 440, y: 360, type: 'project',    label: 'Multimodal Discovery', sub: 'Active Project', color: '#5A7A6B' },
-    { id: 'dataset',    x: 220, y: 420, type: 'dataset',    label: 'Dataset', sub: 'Open Access', color: '#7A7A4A' },
+    { id: 'imthiyas', x: 380, y: 250, type: 'scholar', label: 'Imthiyas', sub: 'Cambium Architect · AI & Research Systems', color: '#3E6248', drift: 'animate-drift-1', isPrimary: true },
+    { id: 'aris',     x: 530, y: 195, type: 'scholar', label: 'Prof. Aris Thorne', sub: 'Stanford Bio-X · Bio-AI', color: '#66866A', drift: 'animate-drift-2' },
+    { id: 'elena',    x: 195, y: 175, type: 'scholar', label: 'Elena Rostova', sub: 'Cambridge · Graph ML', color: '#293E30', drift: 'animate-drift-3' },
+    { id: 'marcus',   x: 515, y: 385, type: 'scholar', label: 'Marcus Vance', sub: 'ETH Zürich · Foundation ML', color: '#3E6248', drift: 'animate-drift-4' },
+    
+    { id: 'paper1',   x: 235, y: 80,  type: 'paper',   label: 'Multimodal Foundations', sub: 'Nature MI · 2026', color: '#293E30', drift: 'animate-drift-2' },
+    { id: 'paper2',   x: 535, y: 80,  type: 'paper',   label: 'Cellular Topology GNN', sub: 'Bioinformatics · 2025', color: '#293E30', drift: 'animate-drift-1' },
+    { id: 'paper3',   x: 660, y: 280, type: 'paper',   label: 'Neural Graph Synthesis', sub: 'NeurIPS Oral · 2026', color: '#293E30', drift: 'animate-drift-3' },
+    { id: 'paper4',   x: 100, y: 260, type: 'paper',   label: 'Zero-Shot Proteomics', sub: 'ICLR Spotlight · 2026', color: '#293E30', drift: 'animate-drift-4' },
+
+    { id: 'topic1',   x: 380, y: 155, type: 'topic',   label: 'Multimodal AI', sub: 'Core Discipline', color: '#66866A', drift: 'animate-drift-4' },
+    { id: 'topic2',   x: 585, y: 450, type: 'topic',   label: 'Structural Proteomics', sub: 'Cross-Domain Area', color: '#66866A', drift: 'animate-drift-2' },
+    { id: 'topic3',   x: 190, y: 440, type: 'topic',   label: 'Graph Transformers', sub: 'Methodological Core', color: '#66866A', drift: 'animate-drift-1' },
+
+    { id: 'grant1',   x: 95,  y: 95,  type: 'grant',   label: 'NSF CAREER Award', sub: '$550,000 · 14d left', color: '#805B43', drift: 'animate-drift-3' },
+    { id: 'grant2',   x: 670, y: 175, type: 'grant',   label: 'NIH Innovator Grant', sub: '$1.25M · Open Stage', color: '#805B43', drift: 'animate-drift-1' },
+    { id: 'grant3',   x: 350, y: 445, type: 'grant',   label: 'Wellcome Discovery', sub: '£780k · Stage 2', color: '#805B43', drift: 'animate-drift-4' },
+
+    { id: 'lab1',     x: 220, y: 320, type: 'lab',     label: 'MIT CSAIL Lab', sub: 'Institutional Node', color: '#365F8D', drift: 'animate-drift-2' },
+    { id: 'lab2',     x: 425, y: 330, type: 'lab',     label: 'Stanford Bio-X', sub: 'Collaborative Center', color: '#365F8D', drift: 'animate-drift-3' },
+
+    { id: 'dataset1', x: 660, y: 380, type: 'dataset', label: 'OpenCell Graph v2.4', sub: '1.4M Relations', color: '#B89A78', drift: 'animate-drift-1' },
+    { id: 'dataset2', x: 80,  y: 380, type: 'dataset', label: 'BioSynthetica-40k', sub: 'Open Benchmark', color: '#B89A78', drift: 'animate-drift-3' },
+
+    { id: 'conf1',    x: 675, y: 70,  type: 'conf',    label: 'NeurIPS 2026', sub: 'Vancouver · Dec 2026', color: '#202920', drift: 'animate-drift-4' },
+    { id: 'conf2',    x: 380, y: 70,  type: 'conf',    label: 'ICLR 2026', sub: 'Vienna · May 2026', color: '#202920', drift: 'animate-drift-2' },
   ]
 
   const edges = [
-    ['researcher', 'paper'],
-    ['researcher', 'topic'],
-    ['researcher', 'grant'],
-    ['researcher', 'lab'],
-    ['paper', 'conf'],
-    ['paper', 'topic'],
-    ['paper', 'project'],
-    ['conf', 'dataset'],
-    ['project', 'dataset'],
+    ['imthiyas', 'paper1'],
+    ['imthiyas', 'paper2'],
+    ['imthiyas', 'topic1'],
+    ['imthiyas', 'lab1'],
+    ['imthiyas', 'lab2'],
+    ['imthiyas', 'grant1'],
+    ['aris', 'paper2'],
+    ['aris', 'grant2'],
+    ['aris', 'topic2'],
+    ['aris', 'lab2'],
+    ['elena', 'paper1'],
+    ['elena', 'paper3'],
+    ['elena', 'topic3'],
+    ['elena', 'dataset2'],
+    ['marcus', 'paper3'],
+    ['marcus', 'dataset1'],
+    ['marcus', 'lab2'],
+    ['paper1', 'conf2'],
+    ['paper1', 'topic1'],
+    ['paper2', 'conf1'],
+    ['paper2', 'topic2'],
+    ['paper3', 'conf1'],
+    ['paper4', 'topic3'],
+    ['paper4', 'grant1'],
+    ['lab1', 'grant1'],
+    ['lab2', 'grant3'],
+    ['dataset1', 'topic2'],
+    ['dataset2', 'topic3'],
   ]
 
   const getNode = (id: string) => nodes.find((n) => n.id === id)!
 
-  const textColor = dark ? 'rgba(250,249,246,0.9)' : C.charcoal
-  const subColor = dark ? 'rgba(250,249,246,0.45)' : C.secondary
-  const cardBg = dark ? C.darkSurface : C.bg
+  const isConnected = (id: string) => {
+    if (!hoveredNode) return true
+    if (hoveredNode === id) return true
+    return edges.some(([a, b]) => (a === hoveredNode && b === id) || (b === hoveredNode && a === id))
+  }
+
+  const isEdgeActive = (aId: string, bId: string) => {
+    if (!hoveredNode) return false
+    return aId === hoveredNode || bId === hoveredNode
+  }
+
+  const matchesCategory = (type: string) => {
+    if (!selectedCategory || selectedCategory === 'all') return true
+    return type === selectedCategory
+  }
+
+  const activeHoveredNodeData = hoveredNode ? getNode(hoveredNode) : null
+
+  const textColor = dark ? 'rgba(250,249,246,0.95)' : C.charcoal
+  const subColor = dark ? 'rgba(250,249,246,0.55)' : C.secondary
+  const cardBg = dark ? C.darkSurface : '#FFFFFF'
   const cardBorder = dark ? C.darkBorder : C.rule
 
   return (
-    <svg
-      viewBox="0 0 560 480"
-      style={{ width: '100%', height: '100%' }}
-      aria-label="Research ecosystem visualization showing connected research nodes"
-    >
-      {/* Subtle grid */}
-      <defs>
-        <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
-          <path d="M 24 0 L 0 0 0 24" fill="none" stroke={dark ? 'rgba(255,255,255,0.03)' : 'rgba(30,30,28,0.04)'} strokeWidth="0.5" />
-        </pattern>
-        <marker id="arrowMoss" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-          <circle cx="3" cy="3" r="1.5" fill={C.moss} opacity="0.5" />
-        </marker>
-      </defs>
-      <rect width="560" height="480" fill="url(#grid)" />
+    <div className="relative w-full h-full select-none">
+      <svg
+        viewBox="0 0 780 500"
+        style={{ width: '100%', height: '100%', overflow: 'visible' }}
+        aria-label="Interactive research knowledge network showing animated connected nodes"
+      >
+        {/* Subtle organic botanical grid */}
+        <defs>
+          <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+            <path d="M 28 0 L 0 0 0 28" fill="none" stroke={dark ? 'rgba(46,125,79,0.08)' : 'rgba(26,77,56,0.04)'} strokeWidth="0.6" />
+          </pattern>
+          <filter id="glowGreen" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+        <rect width="780" height="500" fill="url(#grid)" />
 
-      {/* Connection lines */}
-      {edges.map(([aId, bId], i) => {
-        const a = getNode(aId)
-        const b = getNode(bId)
-        return (
-          <line
-            key={i}
-            x1={a.x}
-            y1={a.y}
-            x2={b.x}
-            y2={b.y}
-            stroke={dark ? 'rgba(92,122,94,0.25)' : 'rgba(92,122,94,0.2)'}
-            strokeWidth="1"
-            className="connection-line"
-            style={{ animationDelay: `${0.6 + i * 0.07}s` }}
-          />
-        )
-      })}
+        {/* Dynamic Connection lines */}
+        {edges.map(([aId, bId], i) => {
+          const a = getNode(aId)
+          const b = getNode(bId)
+          if (!a || !b) return null
 
-      {/* Nodes */}
-      {nodes.map((node, i) => {
-        const isCenter = node.id === 'researcher'
-        const w = isCenter ? 148 : 130
-        const h = isCenter ? 52 : 44
-        return (
-          <g key={node.id} className="node-card" style={{ animationDelay: `${0.7 + i * 0.06}s` }}>
-            {/* Node dot on line intersection */}
-            <circle cx={node.x} cy={node.y} r={isCenter ? 4 : 3} fill={node.color} opacity="0.8" />
+          const active = isEdgeActive(aId, bId)
+          const visible = matchesCategory(a.type) || matchesCategory(b.type)
+          const strokeColor = active 
+            ? '#10B981' 
+            : dark 
+              ? 'rgba(46,125,79,0.25)' 
+              : 'rgba(26,77,56,0.14)'
+          const strokeWidth = active ? 2.4 : 1.2
 
-            {/* Card */}
-            <foreignObject
-              x={node.x - w / 2}
-              y={node.y - h - 8}
-              width={w}
-              height={h}
-              style={{ overflow: 'visible' }}
-            >
-              <div
+          return (
+            <g key={i}>
+              <line
+                x1={a.x}
+                y1={a.y}
+                x2={b.x}
+                y2={b.y}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                strokeDasharray={active ? 'none' : '4 4'}
                 style={{
-                  background: cardBg,
-                  border: `1px solid ${isCenter ? node.color + '55' : cardBorder}`,
-                  borderRadius: 6,
-                  padding: '6px 10px',
-                  boxShadow: isCenter
-                    ? `0 0 0 1px ${node.color}22, 0 4px 16px rgba(0,0,0,0.06)`
-                    : '0 2px 8px rgba(0,0,0,0.05)',
-                  fontFamily: 'Inter, sans-serif',
-                  cursor: 'default',
-                  transition: 'transform 0.15s, box-shadow 0.15s',
-                  borderTop: `2px solid ${node.color}`,
+                  transition: 'stroke 0.25s, stroke-width 0.25s, opacity 0.25s',
+                  opacity: visible ? (hoveredNode ? (active ? 1 : 0.15) : 0.85) : 0.08,
                 }}
+              />
+              {/* Traveling biological pulse particle on active or key highways */}
+              {(active || i % 4 === 0) && (
+                <circle r={active ? 2.8 : 2} fill={active ? '#10B981' : '#2ECC71'} opacity={active ? 0.95 : 0.45}>
+                  <animateMotion
+                    path={`M ${a.x} ${a.y} L ${b.x} ${b.y}`}
+                    dur={`${2.8 + (i % 3) * 1.1}s`}
+                    repeatCount="indefinite"
+                  />
+                </circle>
+              )}
+            </g>
+          )
+        })}
+
+        {/* Nodes with Organic Drifting Animation */}
+        {nodes.map((node) => {
+          const isCenter = node.isPrimary
+          const w = isCenter ? 156 : 138
+          const h = isCenter ? 54 : 46
+          const connected = isConnected(node.id)
+          const isHovered = hoveredNode === node.id
+          const catMatches = matchesCategory(node.type)
+
+          const opacity = catMatches ? (connected ? 1 : 0.25) : 0.15
+          const scale = isHovered ? 1.08 : (isCenter ? 1.03 : 1)
+
+          return (
+            <g
+              key={node.id}
+              className={node.drift}
+              style={{
+                transition: 'opacity 0.25s, transform 0.25s',
+                opacity,
+                cursor: 'pointer',
+              }}
+              onMouseEnter={() => setHoveredNode(node.id)}
+              onMouseLeave={() => setHoveredNode(null)}
+            >
+              {/* Pulsing glow aura on central/hovered nodes */}
+              {(isCenter || isHovered) && (
+                <circle
+                  cx={node.x}
+                  cy={node.y}
+                  r={isHovered ? 26 : 18}
+                  fill={node.color}
+                  opacity={isHovered ? 0.2 : 0.1}
+                  className="animate-pulse-glow"
+                />
+              )}
+
+              {/* Node pivot dot */}
+              <circle
+                cx={node.x}
+                cy={node.y}
+                r={isHovered ? 5.5 : (isCenter ? 4.5 : 3.2)}
+                fill={node.color}
+                opacity={0.95}
+                stroke="#FFFFFF"
+                strokeWidth={isHovered ? 1.8 : 1}
+              />
+
+              {/* Interactive Card */}
+              <foreignObject
+                x={node.x - w / 2}
+                y={node.y - h - 8}
+                width={w}
+                height={h}
+                style={{ overflow: 'visible' }}
               >
-                <div style={{ fontSize: isCenter ? 11 : 10, fontWeight: 600, color: textColor, letterSpacing: '-0.01em', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {node.label}
+                <div
+                  style={{
+                    background: isHovered ? '#FFFFFF' : cardBg,
+                    border: `1px solid ${isHovered ? node.color : (isCenter ? node.color + '88' : cardBorder)}`,
+                    borderRadius: 7,
+                    padding: '6px 10px',
+                    boxShadow: isHovered
+                      ? `0 0 0 2px ${node.color}33, 0 8px 24px rgba(12,30,21,0.14)`
+                      : isCenter
+                        ? `0 0 0 1px ${node.color}22, 0 4px 16px rgba(12,30,21,0.08)`
+                        : '0 2px 8px rgba(12,30,21,0.04)',
+                    fontFamily: 'var(--font-sans), sans-serif',
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'center bottom',
+                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                    borderTop: `2.5px solid ${node.color}`,
+                  }}
+                >
+                  <div style={{
+                    fontSize: isCenter ? 11.5 : 10.5,
+                    fontWeight: isHovered ? 700 : 600,
+                    color: isHovered ? '#0C1E15' : textColor,
+                    letterSpacing: '-0.01em',
+                    lineHeight: 1.25,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    {node.label}
+                  </div>
+                  <div style={{
+                    fontSize: 9,
+                    color: isHovered ? node.color : subColor,
+                    marginTop: 2,
+                    fontWeight: isHovered ? 500 : 400,
+                    letterSpacing: '0.01em',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}>
+                    {node.sub}
+                  </div>
                 </div>
-                <div style={{ fontSize: 9, color: subColor, marginTop: 2, letterSpacing: '0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {node.sub}
-                </div>
-              </div>
-            </foreignObject>
-          </g>
-        )
-      })}
-    </svg>
+              </foreignObject>
+            </g>
+          )
+        })}
+      </svg>
+
+      {/* Floating HUD Inspector Badge when inspecting a node */}
+      {activeHoveredNodeData && (
+        <div className="absolute bottom-3 left-3 bg-[#0C1E15]/95 backdrop-blur-md text-[#F9F6F0] border border-[#1A4D38] px-3.5 py-2.5 rounded-lg shadow-xl text-xs flex items-center gap-3 pointer-events-none transition-all duration-200">
+          <span className="w-2 h-2 rounded-full" style={{ background: activeHoveredNodeData.color }} />
+          <div>
+            <div className="font-semibold text-white tracking-tight">{activeHoveredNodeData.label}</div>
+            <div className="text-[10px] text-[#AEC2B4]">{activeHoveredNodeData.sub} · {activeHoveredNodeData.type.toUpperCase()}</div>
+          </div>
+          <div className="text-[10px] text-[#DBEDE2] bg-[#1A4D38] px-2 py-0.5 rounded font-mono">
+            Connected: {edges.filter(([a, b]) => a === activeHoveredNodeData.id || b === activeHoveredNodeData.id).length} edges
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
-// ─── Hero ─────────────────────────────────────────────────────────────────────
+// ─── Editorial Hero Section (Pure First Viewport Experience) ─────────────────
 function Hero() {
   return (
-    <section
-      style={{
-        minHeight: '100vh',
-        background: C.bg,
-        display: 'flex',
-        alignItems: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-        paddingTop: 64,
-      }}
-    >
-      {/* Subtle texture */}
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 70% 40%, rgba(92,122,94,0.04) 0%, transparent 60%)' }} />
+    <section className="w-full bg-[#FAF7F0] min-h-[calc(100vh-80px)] flex flex-col justify-between pt-8 md:pt-14 pb-8 md:pb-10 px-6 relative overflow-hidden border-b border-[#E4DCCB]">
+      {/* Subtle organic radial glow */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_75%_35%,rgba(62,98,72,0.06)_0%,transparent_65%)]" />
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '80px 88px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center', width: '100%' }}>
-        {/* Left: Copy */}
-        <div>
-          <div
-            className="animate-fade-up"
-            style={{
-              animationDelay: '0.2s',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: '0.12em',
-              color: C.moss,
-              marginBottom: 28,
-              textTransform: 'uppercase',
-            }}
-          >
-            <span style={{ width: 20, height: 1, background: C.moss, display: 'inline-block' }} />
-            The Research Operating System
+      <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col justify-center">
+        {/* Asymmetric 7/5 Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start my-auto">
+          {/* Left Column: Semantic Typographic Statement (7 Cols) */}
+          <div className="lg:col-span-7 flex flex-col items-start">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#E4DCCB] bg-[#F2EBDD] mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] animate-pulse" />
+              <span className="font-sans text-[11px] font-semibold tracking-wider text-[#3E6248] uppercase">
+                The Research Operating System
+              </span>
+            </div>
+
+            <h1 className="font-serif text-[clamp(2.75rem,5.6vw,4.75rem)] text-[#202920] font-normal leading-[1.08] tracking-tight mb-8">
+              Your research <br />
+              <span className="italic text-[#3E6248]">world, connected.</span>
+            </h1>
+
+            {/* Three Pillar Metadata Anchors */}
+            <div className="flex items-center gap-8 pt-4 border-t border-[#E4DCCB] w-full max-w-lg">
+              {[
+                ['Academic', 'Identity'],
+                ['Research', 'Workspace'],
+                ['Intelligent', 'Discovery'],
+              ].map(([sub, label]) => (
+                <div key={label}>
+                  <div className="font-sans text-xs uppercase tracking-wider text-[#62685E] font-medium">{sub}</div>
+                  <div className="font-serif text-base font-semibold text-[#202920] mt-0.5">{label}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <h1
-            className="animate-fade-up"
-            style={{
-              animationDelay: '0.2s',
-              fontFamily: "'Source Serif 4', Georgia, serif",
-              fontSize: 'clamp(48px, 5vw, 72px)',
-              fontWeight: 400,
-              lineHeight: 1.08,
-              letterSpacing: '-0.03em',
-              color: C.charcoal,
-              marginBottom: 28,
-            }}
-          >
-            Your research world,{' '}
-            <em style={{ fontStyle: 'italic', color: C.moss }}>connected.</em>
-          </h1>
+          {/* Right Column: Narrative Context & Actions (5 Cols) */}
+          <div className="lg:col-span-5 lg:pt-8 flex flex-col items-start gap-8">
+            <p className="font-sans text-[17px] md:text-[19px] font-normal text-[#62685E] leading-[1.62] tracking-normal">
+              Discover ideas, build your academic identity, collaborate with researchers, explore opportunities, and organize the knowledge behind your work — all in one living research environment.
+            </p>
 
-          <p
-            className="animate-fade-up"
-            style={{
-              animationDelay: '0.35s',
-              fontSize: 18,
-              lineHeight: 1.65,
-              color: C.secondary,
-              maxWidth: 480,
-              marginBottom: 44,
-              fontWeight: 400,
-            }}
-          >
-            Discover ideas, build your academic identity, collaborate with researchers, explore opportunities, and organize the knowledge behind your work — all in one living research environment.
-          </p>
-
-          <div className="animate-fade-up" style={{ animationDelay: '0.5s', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <button
-              style={{
-                fontSize: 14,
-                fontWeight: 600,
-                color: '#fff',
-                background: C.moss,
-                border: 'none',
-                padding: '14px 24px',
-                borderRadius: 6,
-                cursor: 'pointer',
-                letterSpacing: '-0.01em',
-                transition: 'background 0.15s, transform 0.15s',
-              }}
-              onMouseEnter={(e) => { const b = e.currentTarget; b.style.background = C.mossMid; b.style.transform = 'translateY(-1px)' }}
-              onMouseLeave={(e) => { const b = e.currentTarget; b.style.background = C.moss; b.style.transform = '' }}
-            >
-              Create your research identity
-            </button>
-            <button
-              style={{
-                fontSize: 14,
-                fontWeight: 500,
-                color: C.charcoal,
-                background: 'transparent',
-                border: `1px solid ${C.rule}`,
-                padding: '14px 24px',
-                borderRadius: 6,
-                cursor: 'pointer',
-                letterSpacing: '-0.01em',
-                transition: 'border-color 0.15s, transform 0.15s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-              onMouseEnter={(e) => { const b = e.currentTarget; b.style.borderColor = C.secondary; b.style.transform = 'translateY(-1px)' }}
-              onMouseLeave={(e) => { const b = e.currentTarget; b.style.borderColor = C.rule; b.style.transform = '' }}
-            >
-              Explore Cambium
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 7h8M8 4l3 3-3 3" /></svg>
-            </button>
-          </div>
-
-          <div className="animate-fade-up" style={{ animationDelay: '0.6s', marginTop: 56, display: 'flex', gap: 40 }}>
-            {[['Identity', 'Academic'], ['Workspace', 'Research'], ['Discovery', 'Intelligent']].map(([label, sub]) => (
-              <div key={label}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: C.charcoal }}>{label}</div>
-                <div style={{ fontSize: 12, color: C.tertiary, marginTop: 2 }}>{sub}</div>
-              </div>
-            ))}
+            <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
+              <Link
+                href="/sign-up"
+                className="w-full sm:w-auto bg-[#3E6248] hover:bg-[#293E30] text-[#FAF7F0] px-8 py-4 rounded-xl font-sans text-sm font-semibold tracking-tight transition-all shadow-md shadow-[#3E6248]/25 hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2 group no-underline border border-[#66866A]/40"
+              >
+                <span>Get started — it's free</span>
+                <ArrowUpRight className="w-4 h-4 text-[#FAF7F0]/80 group-hover:text-[#FAF7F0] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </Link>
+              <a
+                href="#knowledge-network"
+                className="w-full sm:w-auto border border-[#E4DCCB] hover:border-[#3E6248] text-[#202920] hover:bg-[#F2EBDD] px-8 py-4 rounded-xl font-sans text-sm font-medium transition-colors bg-[#FAF7F0] flex items-center justify-center no-underline"
+              >
+                Explore Cambium
+              </a>
+            </div>
           </div>
         </div>
 
-        {/* Right: Ecosystem graph */}
-        <div
-          className="animate-fade-in"
-          style={{
-            animationDelay: '0.6s',
-            height: 480,
-            position: 'relative',
-          }}
-        >
-          <EcosystemGraph />
+        {/* Scholarly Verification Ledger Strip (Stripe Press / Nature grade evidence metrics) */}
+        <div className="mt-10 lg:mt-12 pt-6 border-t border-[#E4DCCB] grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
+          <div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920]">120M+</div>
+            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] font-semibold mt-1">Indexed Publications</div>
+            <div className="font-mono text-[11px] text-[#85877B] mt-0.5">Crossref · PubMed · arXiv</div>
+          </div>
+          <div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920]">85,000+</div>
+            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] font-semibold mt-1">Active Opportunities</div>
+            <div className="font-mono text-[11px] text-[#85877B] mt-0.5">NSF · NIH · ERC Grants</div>
+          </div>
+          <div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920]">4.8M</div>
+            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] font-semibold mt-1">Verified Researchers</div>
+            <div className="font-mono text-[11px] text-[#85877B] mt-0.5">ORCID Anchor · Cryptographic</div>
+          </div>
+          <div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920]">100%</div>
+            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] font-semibold mt-1">Evidence-Linked</div>
+            <div className="font-mono text-[11px] text-[#85877B] mt-0.5">Inspectable Citations & DOIs</div>
+          </div>
+        </div>
+
+        {/* Scroll invitation to living knowledge network */}
+        <div className="mt-6 pt-4 flex items-center justify-between border-t border-[#E4DCCB]/60">
+          <a
+            href="#knowledge-network"
+            className="inline-flex items-center gap-2 font-mono text-xs text-[#62685E] hover:text-[#3E6248] transition-colors no-underline group cursor-pointer"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#66866A] group-hover:scale-125 transition-transform" />
+            <span>Explore Relational Knowledge Network</span>
+            <span className="group-hover:translate-y-0.5 transition-transform">↓</span>
+          </a>
+
         </div>
       </div>
+    </section>
+  )
+}
 
-      {/* Scroll indicator */}
-      <div style={{ position: 'absolute', bottom: 32, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-        <div style={{ fontSize: 11, letterSpacing: '0.1em', color: C.tertiary, textTransform: 'uppercase' }}>Scroll</div>
-        <div style={{ width: 1, height: 32, background: `linear-gradient(${C.tertiary}, transparent)` }} />
+// ─── Living Knowledge Network Section (Dedicated Full Showcase) ──────────────
+function KnowledgeGraphSection() {
+  const [graphCategory, setGraphCategory] = useState('all')
+
+  return (
+    <section id="knowledge-network" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '100px 24px', position: 'relative' }}>
+      {/* Subtle organic ambient glow */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+          <div>
+            <div className="inline-flex items-center gap-2 font-mono text-xs text-[#4ADE80] font-bold tracking-wider uppercase mb-3">
+              <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
+              03 / Living Intelligence · Relational Knowledge Network
+            </div>
+            <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal text-[#F5F4F0] tracking-tight">
+              Make the connections visible.
+            </h2>
+          </div>
+          <p className="font-sans text-base text-[rgba(245,244,240,0.72)] max-w-xl leading-relaxed">
+            Research grows at the intersections. Explore how papers, collaborators, funding streams, and foundational models connect organically across scientific disciplines.
+          </p>
+        </div>
+
+        {/* Integrated Relational Node Graph Exhibition Canvas (Sandal/Sand Box matching Photo 1) */}
+        <div className="w-full rounded-2xl border border-[#E4DCCB] bg-[#FAF7F0] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.35),0_4px_16px_rgba(0,0,0,0.12)] p-4 md:p-8 relative overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between pb-4 mb-4 border-b border-[#E4DCCB] gap-3 px-2">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#3E6248] animate-pulse" />
+              <span className="font-mono text-xs uppercase tracking-wider text-[#202920] font-bold">Relational Knowledge Network · Live Graph</span>
+            </div>
+
+            {/* Interactive Category Filter Pills */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { id: 'all', label: 'All (20)' },
+                { id: 'scholar', label: 'Scholars' },
+                { id: 'paper', label: 'Papers' },
+                { id: 'grant', label: 'Grants' },
+                { id: 'topic', label: 'Topics' },
+                { id: 'lab', label: 'Labs' },
+              ].map(({ id, label }) => (
+                <button
+                  key={id}
+                  onClick={() => setGraphCategory(id)}
+                  className={`text-[11px] font-sans px-3 py-1 rounded-full border transition-all cursor-pointer ${
+                    graphCategory === id
+                      ? 'bg-[#254A34] text-[#FAF7F0] border-[#254A34] font-semibold shadow-sm'
+                      : 'bg-[#FAF7F0] text-[#62685E] border-[#E4DCCB] hover:border-[#3E6248] hover:text-[#202920]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <span className="font-mono text-xs text-[#62685E] hidden md:inline">
+              Active Nodes: 20 · Cross-domain connections: 28 · Live Neural Drift
+            </span>
+          </div>
+
+          <div className="h-[460px] md:h-[540px] w-full">
+            <EcosystemGraph dark={false} selectedCategory={graphCategory} />
+          </div>
+        </div>
       </div>
     </section>
   )
@@ -502,11 +703,12 @@ function ProblemSection() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <circle cx="9" cy="9" r="8" stroke={C.moss} strokeWidth="1.5" />
-                  <circle cx="9" cy="9" r="3.5" fill={C.moss} />
-                </svg>
-                <span style={{ fontWeight: 700, fontSize: 16, letterSpacing: '-0.03em', color: C.charcoal }}>CAMBIUM</span>
+                <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#FAF7F0', border: '1px solid #E4DCCB', padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  <img src="/logo.svg" alt="CAMBIUM Research Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                </div>
+                <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em', color: C.charcoal, textTransform: 'uppercase' }}>
+                  CAMBIUM <span style={{ fontWeight: 300, color: C.moss }}>RESEARCH</span>
+                </span>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {sources.map((s) => (
@@ -522,68 +724,207 @@ function ProblemSection() {
   )
 }
 
-// ─── Lifecycle Section ────────────────────────────────────────────────────────
+// ─── Lifecycle Section (Fully Interactive 7-Stage Stepper) ───────────────────
 function LifecycleSection() {
-  const stages = ['Discover', 'Explore', 'Connect', 'Work', 'Publish', 'Share', 'Grow']
+  const [activeStage, setActiveStage] = useState(0)
+
+  const stages = [
+    {
+      name: 'Discover',
+      tagline: 'Formulate questions & surface hidden connections',
+      desc: 'Explore literature with semantic neural synthesis, identify emerging frontier topics, and track citation cascades before they trend.',
+      metrics: ['120M+ Papers Indexed', 'Semantic Citation Graphs', 'Daily Frontier Alerts'],
+      action: 'Query cross-disciplinary literature across Bio & AI',
+      accent: '#1A4D38',
+    },
+    {
+      name: 'Explore',
+      tagline: 'Trace citation networks & comparative methodologies',
+      desc: 'Deconstruct methodologies, compare experimental benchmarks across disciplines, and map methodological lineages across centuries of scholarship.',
+      metrics: ['Method Lineage Trees', 'Dataset Cross-Referencing', 'Co-citation Proximity'],
+      action: 'Compare transformer architectures for scientific data',
+      accent: '#256346',
+    },
+    {
+      name: 'Connect',
+      tagline: 'Find synergistic co-authors, labs & grants',
+      desc: 'Match with researchers working on complementary problems, discover high-synergy laboratories, and track relevant funding opportunities.',
+      metrics: ['Institutional Graph', 'Collaborator Matching', 'Grant Fit Scoring'],
+      action: 'Find active labs working on multimodal biomedical vision',
+      accent: '#1E5638',
+    },
+    {
+      name: 'Work',
+      tagline: 'Organize notes, code, datasets & experimental logs',
+      desc: 'A structured, bi-directional research workspace that brings literature notes, experimental hypotheses, and collaborative drafts into one living canvas.',
+      metrics: ['Bi-directional Linking', 'LaTeX & Markdown Native', 'Zotero & BibTeX Sync'],
+      action: 'Open structured literature matrix with live citations',
+      accent: '#1A4D38',
+    },
+    {
+      name: 'Publish',
+      tagline: 'Author camera-ready papers & preprints seamlessly',
+      desc: 'Prepare manuscripts with automated citation verification, institutional formatting templates, and peer-review ready exports for top venues.',
+      metrics: ['Automated Reference Formatting', 'Preprint Server Dispatch', 'Reproducibility Check'],
+      action: 'Compile camera-ready submission for NeurIPS or Nature',
+      accent: '#285C42',
+    },
+    {
+      name: 'Share',
+      tagline: 'Distribute datasets, models & findings to the community',
+      desc: 'Disseminate your preprints, interactive benchmarks, and supplementary data with verified digital object identifiers (DOIs) and citation anchors.',
+      metrics: ['Permanent DOI Minting', 'Open Access Repository', 'Community Peer Notes'],
+      action: 'Publish benchmark dataset with interactive visualization',
+      accent: '#1A4D38',
+    },
+    {
+      name: 'Grow',
+      tagline: 'Compound intellectual capital & academic reputation',
+      desc: 'Track real-time citation velocity, downstream patents and clinical impacts, funding renewals, and long-term research portfolio expansion.',
+      metrics: ['Citation Velocity Metrics', 'Downstream Impact Tracing', 'Tenure Dossier Export'],
+      action: 'Generate holistic academic impact report',
+      accent: '#123927',
+    },
+  ]
+
+  const current = stages[activeStage]
 
   return (
-    <section style={{ background: '#F5F4F0', borderTop: `1px solid ${C.rule}`, borderBottom: `1px solid ${C.rule}`, padding: '120px 88px' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center' }}>
-        <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em', color: C.charcoal, marginBottom: 16 }}>
+    <section id="discover" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '120px 88px', position: 'relative' }}>
+      {/* Subtle organic ambient glow */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
+
+      <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 10 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#4ADE80', textTransform: 'uppercase', marginBottom: 16 }}>
+          Scholarly Workflow Engine
+        </p>
+        <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em', color: '#F5F4F0', marginBottom: 16 }}>
           One system for the entire research lifecycle.
         </h2>
-        <p style={{ fontSize: 16, color: C.secondary, marginBottom: 64 }}>From first question to published work and beyond.</p>
+        <p style={{ fontSize: 16, color: 'rgba(245,244,240,0.72)', marginBottom: 56 }}>
+          From first question to published work and beyond. Click any stage to inspect the scholarly pipeline.
+        </p>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-          {stages.map((stage, i) => (
-            <div key={stage} style={{ display: 'flex', alignItems: 'center' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '0 8px',
-                  cursor: 'default',
-                }}
-              >
-                <div
+        {/* 7-Stage Stepper with State Tracking */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 0, marginBottom: 48 }}>
+          {stages.map((stage, i) => {
+            const isSelected = i === activeStage
+            const isPast = i < activeStage
+
+            return (
+              <div key={stage.name} style={{ display: 'flex', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveStage(i)}
+                  aria-label={`Step ${i + 1}: ${stage.name}`}
                   style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: '50%',
-                    border: `1.5px solid ${i === 0 ? C.moss : C.rule}`,
-                    background: i === 0 ? C.mossLight : C.bg,
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: i === 0 ? C.moss : C.tertiary,
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget as HTMLDivElement
-                    el.style.border = `1.5px solid ${C.moss}`
-                    el.style.background = C.mossLight
-                    el.style.color = C.moss
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget as HTMLDivElement
-                    el.style.border = i === 0 ? `1.5px solid ${C.moss}` : `1.5px solid ${C.rule}`
-                    el.style.background = i === 0 ? C.mossLight : C.bg
-                    el.style.color = i === 0 ? C.moss : C.tertiary
+                    gap: 12,
+                    padding: '0 12px',
+                    cursor: 'pointer',
+                    background: 'none',
+                    border: 'none',
+                    outline: 'none',
+                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                 >
-                  {i + 1}
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 500, color: C.charcoal }}>{stage}</span>
+                  <div
+                    style={{
+                      width: 52,
+                      height: 52,
+                      borderRadius: '50%',
+                      border: isSelected
+                        ? '2.5px solid #4ADE80'
+                        : isPast
+                          ? '2px solid #66866A'
+                          : '1.5px solid rgba(255,255,255,0.18)',
+                      background: isSelected
+                        ? '#3E6248'
+                        : isPast
+                          ? '#202920'
+                          : 'rgba(255,255,255,0.05)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: isSelected ? '#FFFFFF' : (isPast ? '#86EFAC' : 'rgba(245,244,240,0.45)'),
+                      transform: isSelected ? 'scale(1.15)' : 'scale(1)',
+                      boxShadow: isSelected
+                        ? '0 0 0 4px rgba(74,222,128,0.25), 0 6px 16px rgba(46,125,79,0.35)'
+                        : '0 2px 6px rgba(0,0,0,0.2)',
+                      transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }}
+                  >
+                    {isPast ? '✓' : i + 1}
+                  </div>
+                  <span style={{
+                    fontSize: 13.5,
+                    fontWeight: isSelected ? 700 : 500,
+                    color: isSelected ? '#FFFFFF' : 'rgba(245,244,240,0.65)',
+                    transition: 'color 0.2s',
+                  }}>
+                    {stage.name}
+                  </span>
+                </button>
+
+                {i < stages.length - 1 && (
+                  <div
+                    style={{
+                      width: 36,
+                      height: i < activeStage ? 2.5 : 1.5,
+                      background: i < activeStage ? '#66866A' : 'rgba(255,255,255,0.15)',
+                      marginBottom: 24,
+                      transition: 'background 0.3s, height 0.3s',
+                    }}
+                  />
+                )}
               </div>
-              {i < stages.length - 1 && (
-                <div style={{ width: 32, height: 1, background: C.rule, marginBottom: 20 }} />
-              )}
+            )
+          })}
+        </div>
+
+        {/* Dynamic Stage Details Preview Panel (White Card with Green Border matching Photo 2) */}
+        <div style={{
+          maxWidth: 820,
+          margin: '0 auto',
+          background: '#FFFFFF',
+          border: '1.5px solid #2A5A3B',
+          borderRadius: 14,
+          padding: '36px 44px',
+          boxShadow: '0 16px 48px rgba(0,0,0,0.25)',
+          textAlign: 'left',
+          transition: 'all 0.3s ease',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: '#264A35', textTransform: 'uppercase', background: '#D9E5D6', padding: '4px 12px', borderRadius: 4 }}>
+              STAGE 0{activeStage + 1} OF 07 · {current.name.toUpperCase()}
+            </span>
+            <span style={{ fontSize: 13.5, color: '#71786E', fontStyle: 'italic' }}>
+              {current.tagline}
+            </span>
+          </div>
+
+          <p style={{ fontSize: 16.5, lineHeight: 1.65, color: '#202920', marginBottom: 24 }}>
+            {current.desc}
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, borderTop: '1px solid #EBE4D5', paddingTop: 20 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {current.metrics.map((m) => (
+                <span key={m} style={{ fontSize: 12.5, fontWeight: 550, padding: '6px 14px', background: '#F1EAD9', border: '1px solid #E2D7C3', color: '#3A433D', borderRadius: 6 }}>
+                  {m}
+                </span>
+              ))}
             </div>
-          ))}
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: '#264A35' }}>
+              <span>Sample action:</span>
+              <span style={{ color: '#202920', fontWeight: 500 }}>"{current.action}"</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -631,9 +972,9 @@ function IdentitySection() {
             {/* Profile header */}
             <div style={{ background: '#F0EEE8', padding: '28px 28px 0', borderBottom: `1px solid ${C.rule}` }}>
               <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', marginBottom: 20 }}>
-                <div style={{ width: 64, height: 64, borderRadius: '50%', background: C.moss, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 20, flexShrink: 0 }}>MC</div>
+                <div style={{ width: 64, height: 64, borderRadius: '50%', background: C.moss, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 20, flexShrink: 0 }}>IM</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 17, color: C.charcoal, letterSpacing: '-0.02em' }}>Dr. Maya Chen</div>
+                  <div style={{ fontWeight: 700, fontSize: 17, color: C.charcoal, letterSpacing: '-0.02em' }}>Imthiyas</div>
                   <div style={{ fontSize: 13, color: C.secondary, marginTop: 3 }}>PhD Researcher · Computer Vision</div>
                   <div style={{ fontSize: 12, color: C.tertiary, marginTop: 2 }}>MIT Computer Science</div>
                   <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
@@ -716,7 +1057,7 @@ function IdentitySection() {
   )
 }
 
-// ─── Research Workspace Section ───────────────────────────────────────────────
+// ─── Research Workspace Section (Dark Green Archive Environment) ────────────
 function WorkspaceSection() {
   const sidebarItems = [
     { icon: '📁', label: 'Research Workspace', active: false, indent: 0 },
@@ -731,49 +1072,54 @@ function WorkspaceSection() {
   ]
 
   return (
-    <section style={{ background: '#F0EEE8', borderTop: `1px solid ${C.rule}`, padding: '120px 88px' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+    <section style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '120px 88px', position: 'relative' }}>
+      {/* Subtle organic ambient glow */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
+
+      <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative' }}>
         <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.moss, textTransform: 'uppercase', marginBottom: 16 }}>Research Workspace</p>
-          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em', color: C.charcoal, marginBottom: 16 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#4ADE80', textTransform: 'uppercase', marginBottom: 16 }}>
+            Research Workspace
+          </p>
+          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em', color: '#F5F4F0', marginBottom: 16 }}>
             Your research has a home.
           </h2>
-          <p style={{ fontSize: 17, color: C.secondary, maxWidth: 480, margin: '0 auto' }}>
+          <p style={{ fontSize: 17, color: 'rgba(245,244,240,0.72)', maxWidth: 520, margin: '0 auto' }}>
             Organize your notes, literature, experiments, and drafts in a structured research environment built for scholarly work.
           </p>
         </div>
 
-        {/* Workspace mockup */}
+        {/* Luminous High-Contrast Workspace Mockup */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '220px 1fr',
-          border: `1px solid ${C.rule}`,
-          borderRadius: 10,
+          gridTemplateColumns: '230px 1fr',
+          border: '1px solid rgba(255,255,255,0.12)',
+          borderRadius: 12,
           overflow: 'hidden',
-          boxShadow: '0 12px 48px rgba(0,0,0,0.07)',
-          background: C.bg,
-          minHeight: 480,
+          boxShadow: '0 24px 72px -12px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08)',
+          background: '#FFFFFF',
+          minHeight: 500,
         }}>
           {/* Sidebar */}
-          <div style={{ background: '#F5F4F0', borderRight: `1px solid ${C.rule}`, padding: '20px 0' }}>
-            <div style={{ padding: '0 16px 16px', borderBottom: `1px solid ${C.rule}`, marginBottom: 8 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', color: C.tertiary, textTransform: 'uppercase' }}>Workspace</div>
+          <div style={{ background: '#F6F5F1', borderRight: '1px solid #E2DDD3', padding: '20px 0' }}>
+            <div style={{ padding: '0 16px 16px', borderBottom: '1px solid #E2DDD3', marginBottom: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: '#526E5D', textTransform: 'uppercase' }}>Workspace</div>
             </div>
             {sidebarItems.map(({ icon, label, active, indent }) => (
               <div
                 key={label}
                 style={{
-                  padding: `7px ${16 + indent * 12}px`,
+                  padding: `8px ${16 + indent * 12}px`,
                   fontSize: 12.5,
-                  fontWeight: active ? 500 : 400,
-                  color: active ? C.charcoal : C.secondary,
-                  background: active ? C.mossLight : 'transparent',
-                  borderLeft: active ? `2px solid ${C.moss}` : '2px solid transparent',
+                  fontWeight: active ? 600 : 400,
+                  color: active ? '#0C1E15' : '#364D3F',
+                  background: active ? '#DBEDE2' : 'transparent',
+                  borderLeft: active ? '3px solid #1A4D38' : '3px solid transparent',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 8,
-                  transition: 'background 0.1s',
+                  transition: 'background 0.15s',
                 }}
               >
                 <span style={{ fontSize: 11 }}>{icon}</span>
@@ -782,61 +1128,61 @@ function WorkspaceSection() {
             ))}
           </div>
 
-          {/* Document */}
-          <div style={{ padding: 32, overflow: 'auto' }}>
+          {/* Document Content */}
+          <div style={{ padding: 36, overflow: 'auto', background: '#FFFFFF' }}>
             <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 11, color: C.tertiary }}>Literature Review</span>
-              <span style={{ fontSize: 11, color: C.tertiary }}>/</span>
-              <span style={{ fontSize: 11, fontWeight: 500, color: C.charcoal }}>Multimodal Learning</span>
+              <span style={{ fontSize: 11, color: '#668070' }}>Literature Review</span>
+              <span style={{ fontSize: 11, color: '#AEC2B4' }}>/</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#0C1E15' }}>Multimodal Learning</span>
             </div>
 
-            <h3 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 24, fontWeight: 600, color: C.charcoal, letterSpacing: '-0.02em', marginBottom: 8 }}>
+            <h3 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 26, fontWeight: 600, color: '#0C1E15', letterSpacing: '-0.02em', marginBottom: 12 }}>
               Multimodal Learning — Literature Review
             </h3>
 
-            <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
               {['Computer Vision', 'Multimodal AI', 'Foundation Models'].map((t) => (
-                <span key={t} style={{ fontSize: 11, fontWeight: 500, padding: '3px 8px', background: C.mossLight, color: C.mossMid, borderRadius: 4 }}>{t}</span>
+                <span key={t} style={{ fontSize: 11, fontWeight: 600, padding: '3px 9px', background: '#DBEDE2', color: '#1A4D38', borderRadius: 4 }}>{t}</span>
               ))}
             </div>
 
-            <div style={{ marginBottom: 24, padding: '16px 20px', background: '#F5F4F0', borderLeft: `3px solid ${C.moss}`, borderRadius: '0 6px 6px 0' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: C.moss, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>Research Question</div>
-              <p style={{ fontSize: 14, color: C.charcoal, lineHeight: 1.6 }}>How can multimodal models improve scientific literature discovery?</p>
+            <div style={{ marginBottom: 24, padding: '18px 22px', background: '#EEF7F2', borderLeft: '3px solid #1A4D38', borderRadius: '0 8px 8px 0' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#1A4D38', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Research Question</div>
+              <p style={{ fontSize: 14.5, color: '#0C1E15', lineHeight: 1.6, fontWeight: 450 }}>How can multimodal models improve scientific literature discovery?</p>
             </div>
 
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: C.charcoal, marginBottom: 12 }}>Key Findings</div>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#0C1E15', marginBottom: 12 }}>Key Findings</div>
               {[
                 'Cross-modal retrieval improves discovery quality significantly over single-modality approaches.',
                 'Domain-specific embeddings outperform generic representations in scientific contexts.',
                 'Citation context provides useful relevance signals for downstream ranking tasks.',
               ].map((finding, i) => (
-                <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 10, fontSize: 13, color: C.secondary, lineHeight: 1.6 }}>
-                  <span style={{ color: C.moss, fontWeight: 600, flexShrink: 0 }}>{i + 1}.</span>
+                <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 10, fontSize: 13.5, color: '#364D3F', lineHeight: 1.6 }}>
+                  <span style={{ color: '#1A4D38', fontWeight: 700, flexShrink: 0 }}>{i + 1}.</span>
                   {finding}
                 </div>
               ))}
             </div>
 
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: C.charcoal, marginBottom: 10 }}>Referenced Papers</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#0C1E15', marginBottom: 10 }}>Referenced Papers</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {[
                   { title: 'CLIP: Connecting Text and Images', venue: 'OpenAI · 2021', cited: true },
                   { title: 'Flamingo: a Visual Language Model', venue: 'DeepMind · 2022', cited: false },
                 ].map((p) => (
-                  <div key={p.title} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', border: `1px solid ${C.rule}`, borderRadius: 6 }}>
+                  <div key={p.title} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', border: '1px solid #D1DDD4', borderRadius: 6, background: '#FAFAF8' }}>
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <rect x="1" y="1" width="12" height="12" rx="2" stroke={C.tertiary} strokeWidth="1" />
-                      <line x1="3" y1="4.5" x2="11" y2="4.5" stroke={C.tertiary} strokeWidth="1" />
-                      <line x1="3" y1="7" x2="9" y2="7" stroke={C.tertiary} strokeWidth="1" />
+                      <rect x="1" y="1" width="12" height="12" rx="2" stroke="#668070" strokeWidth="1" />
+                      <line x1="3" y1="4.5" x2="11" y2="4.5" stroke="#668070" strokeWidth="1" />
+                      <line x1="3" y1="7" x2="9" y2="7" stroke="#668070" strokeWidth="1" />
                     </svg>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 12, fontWeight: 500, color: C.charcoal }}>{p.title}</div>
-                      <div style={{ fontSize: 11, color: C.tertiary }}>{p.venue}</div>
+                      <div style={{ fontSize: 12.5, fontWeight: 600, color: '#0C1E15' }}>{p.title}</div>
+                      <div style={{ fontSize: 11, color: '#668070' }}>{p.venue}</div>
                     </div>
-                    {p.cited && <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 6px', background: C.mossLight, color: C.mossMid, borderRadius: 3 }}>Cited</span>}
+                    {p.cited && <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', background: '#DBEDE2', color: '#1A4D38', borderRadius: 4 }}>Cited</span>}
                   </div>
                 ))}
               </div>
@@ -851,7 +1197,7 @@ function WorkspaceSection() {
 // ─── Community Section ─────────────────────────────────────────────────────────
 function CommunitySection() {
   return (
-    <section style={{ background: C.bg, padding: '120px 88px', borderTop: `1px solid ${C.rule}` }}>
+    <section id="community" style={{ background: C.bg, padding: '120px 88px', borderTop: `1px solid ${C.rule}` }}>
       <div style={{ maxWidth: 1280, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: 80, alignItems: 'center' }}>
         <div>
           <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.moss, textTransform: 'uppercase', marginBottom: 20 }}>Research Community</p>
@@ -1033,34 +1379,37 @@ function OpportunitiesSection() {
   const items = opportunities[activeTab as keyof typeof opportunities] || []
 
   return (
-    <section style={{ background: C.bg, borderTop: `1px solid ${C.rule}`, padding: '120px 88px' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+    <section id="opportunities" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '120px 88px', position: 'relative' }}>
+      {/* Subtle organic ambient glow */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
+
+      <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48, flexWrap: 'wrap', gap: 24 }}>
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.moss, textTransform: 'uppercase', marginBottom: 16 }}>Opportunity Discovery</p>
-            <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em', color: C.charcoal }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#4ADE80', textTransform: 'uppercase', marginBottom: 16 }}>Opportunity Discovery</p>
+            <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em', color: '#F5F4F0' }}>
               Find the opportunities that fit your research.
             </h2>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 0, borderBottom: `1px solid ${C.rule}`, marginBottom: 32 }}>
+        {/* Tabs Bar matching Photo 3 */}
+        <div style={{ display: 'flex', gap: 28, borderBottom: '1px solid rgba(255,255,255,0.12)', marginBottom: 36, overflowX: 'auto' }}>
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               style={{
-                padding: '10px 20px',
-                fontSize: 13,
-                fontWeight: 500,
+                padding: '12px 4px',
+                fontSize: 14,
+                fontWeight: activeTab === tab ? 600 : 450,
                 background: 'none',
                 border: 'none',
-                borderBottom: activeTab === tab ? `2px solid ${C.moss}` : '2px solid transparent',
-                color: activeTab === tab ? C.moss : C.secondary,
+                borderBottom: activeTab === tab ? '2.5px solid #4ADE80' : '2.5px solid transparent',
+                color: activeTab === tab ? '#FFFFFF' : 'rgba(245,244,240,0.65)',
                 cursor: 'pointer',
                 marginBottom: -1,
-                transition: 'color 0.15s',
+                transition: 'all 0.18s ease',
               }}
             >
               {tab}
@@ -1068,38 +1417,52 @@ function OpportunitiesSection() {
           ))}
         </div>
 
-        {/* Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+        {/* Cards Grid matching Photo 3 */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 }}>
           {items.map((opp) => (
             <div
               key={opp.title}
               style={{
-                background: C.bg,
-                border: `1px solid ${opp.hot ? C.moss + '44' : C.rule}`,
-                borderTop: `2px solid ${opp.hot ? C.moss : C.rule}`,
-                borderRadius: 8,
-                padding: 20,
+                background: '#FAF7F0',
+                border: '1px solid #E2D9C8',
+                borderRadius: 14,
+                padding: 24,
                 cursor: 'pointer',
-                transition: 'transform 0.15s, box-shadow 0.15s',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                transition: 'transform 0.18s ease, box-shadow 0.18s ease',
+                boxShadow: '0 16px 40px -10px rgba(0,0,0,0.32), 0 4px 12px rgba(0,0,0,0.12)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
               }}
-              onMouseEnter={(e) => { const el = e.currentTarget as HTMLDivElement; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 8px 24px rgba(0,0,0,0.07)' }}
-              onMouseLeave={(e) => { const el = e.currentTarget as HTMLDivElement; el.style.transform = ''; el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.03)' }}
+              onMouseEnter={(e) => { const el = e.currentTarget as HTMLDivElement; el.style.transform = 'translateY(-3px)'; el.style.boxShadow = '0 24px 52px -10px rgba(0,0,0,0.44), 0 8px 18px rgba(0,0,0,0.18)' }}
+              onMouseLeave={(e) => { const el = e.currentTarget as HTMLDivElement; el.style.transform = ''; el.style.boxShadow = '0 16px 40px -10px rgba(0,0,0,0.32), 0 4px 12px rgba(0,0,0,0.12)' }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                <span style={{ fontSize: 11, fontWeight: 500, padding: '3px 8px', background: '#F0EEE8', color: C.secondary, borderRadius: 4 }}>{opp.type}</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: opp.hot ? '#C05C3A' : C.tertiary, background: opp.hot ? '#FDF0EC' : '#F5F4F0', padding: '3px 8px', borderRadius: 4 }}>
-                  {opp.deadline} {opp.deadline.includes('days') ? 'left' : ''}
-                </span>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <span style={{ fontSize: 12, fontWeight: 500, padding: '3px 10px', background: '#EFEBE1', color: '#62685E', borderRadius: 6 }}>
+                    {opp.type}
+                  </span>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: '#B33D35', background: '#FDF1EE', padding: '3px 10px', borderRadius: 6 }}>
+                    {opp.deadline} {opp.deadline.includes('days') ? 'left' : ''}
+                  </span>
+                </div>
+                <h3 style={{ fontSize: 18, fontWeight: 650, color: '#1C251F', letterSpacing: '-0.02em', margin: '0 0 6px', lineHeight: 1.35 }}>
+                  {opp.title}
+                </h3>
+                <div style={{ fontSize: 13.5, color: '#62685E', marginBottom: 16 }}>
+                  {opp.org}
+                </div>
+                {opp.funding && (
+                  <div style={{ fontSize: 16, fontWeight: 600, color: '#1C251F', marginBottom: 18 }}>
+                    {opp.funding}
+                  </div>
+                )}
               </div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: C.charcoal, letterSpacing: '-0.02em', marginBottom: 6, lineHeight: 1.35 }}>{opp.title}</div>
-              <div style={{ fontSize: 12, color: C.secondary, marginBottom: 12 }}>{opp.org}</div>
-              {opp.funding && (
-                <div style={{ fontSize: 13, fontWeight: 600, color: C.moss, marginBottom: 12 }}>{opp.funding}</div>
-              )}
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: opp.funding ? 0 : 16 }}>
                 {opp.tags.map((t) => (
-                  <span key={t} style={{ fontSize: 11, padding: '3px 8px', border: `1px solid ${C.rule}`, borderRadius: 4, color: C.secondary }}>{t}</span>
+                  <span key={t} style={{ fontSize: 11.5, padding: '4px 10px', background: '#FAF7F0', border: '1px solid #DDD4C2', borderRadius: 6, color: '#62685E' }}>
+                    {t}
+                  </span>
                 ))}
               </div>
             </div>
@@ -1113,19 +1476,19 @@ function OpportunitiesSection() {
 // ─── Paper Discovery Section ──────────────────────────────────────────────────
 function PaperSection() {
   return (
-    <section style={{ background: '#F5F4F0', borderTop: `1px solid ${C.rule}`, padding: '120px 88px' }}>
+    <section id="research" style={{ background: '#F5F4F0', borderTop: `1px solid ${C.rule}`, padding: '120px 88px' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 80, alignItems: 'center' }}>
           {/* Paper card mockup */}
           <div>
-            <div style={{ background: C.bg, border: `1px solid ${C.rule}`, borderRadius: 10, padding: 28, boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+            <div style={{ background: C.bg, border: `1px solid ${C.rule}`, borderRadius: 10, padding: 28, boxShadow: '0 2px 8px rgba(32,41,32,0.03)' }}>
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 11, fontWeight: 600, color: C.tertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>Research Paper</div>
                 <h3 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 20, fontWeight: 400, color: C.charcoal, lineHeight: 1.35, letterSpacing: '-0.02em', marginBottom: 12 }}>
                   Foundation Models for Scientific Discovery
                 </h3>
                 <div style={{ fontSize: 13, color: C.secondary, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {['Maya Chen', 'Arjun Rao', 'Elena Park'].map((a, i) => (
+                  {['Imthiyas', 'Arjun Rao', 'Elena Park'].map((a, i) => (
                     <span key={a}>{a}{i < 2 ? ',' : ''}</span>
                   ))}
                   <span style={{ color: C.tertiary }}>· 2026</span>
@@ -1294,32 +1657,58 @@ function IntelligenceSection() {
             </div>
           </div>
 
-          {/* Insight panel mockup */}
+          {/* Insight panel mockup in Sandal/Sand matching Photo 1 & Opportunities cards */}
           <div>
-            {/* Paper context */}
-            <div style={{ background: C.darkSurface, border: `1px solid ${C.darkBorder}`, borderRadius: 8, padding: 20, marginBottom: 12 }}>
-              <div style={{ fontSize: 11, color: 'rgba(250,249,246,0.35)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>Currently reading</div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: '#F5F4F0', lineHeight: 1.4 }}>Foundation Models for Scientific Discovery</div>
-              <div style={{ fontSize: 12, color: 'rgba(250,249,246,0.4)', marginTop: 4 }}>Chen, Rao, Park · NeurIPS 2026</div>
+            {/* Paper context box */}
+            <div
+              style={{
+                background: '#FAF7F0',
+                border: '1px solid #E2D9C8',
+                borderRadius: 12,
+                padding: '20px 24px',
+                marginBottom: 14,
+                boxShadow: '0 12px 32px -8px rgba(0,0,0,0.28), 0 4px 12px rgba(0,0,0,0.12)',
+              }}
+            >
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#62685E', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+                Currently reading
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 650, color: '#1C251F', lineHeight: 1.35, letterSpacing: '-0.01em' }}>
+                Foundation Models for Scientific Discovery
+              </div>
+              <div style={{ fontSize: 13, color: '#62685E', marginTop: 4 }}>
+                Imthiyas, Rao, Park · NeurIPS 2026
+              </div>
             </div>
 
             {/* Insight card */}
-            <div style={{ background: C.darkSurface, border: `1px solid ${C.moss}44`, borderTop: `2px solid ${C.moss}`, borderRadius: 8, padding: 20 }}>
+            <div
+              style={{
+                background: '#FAF7F0',
+                border: '1px solid #E2D9C8',
+                borderTop: '3px solid #3E6248',
+                borderRadius: 14,
+                padding: '24px 26px',
+                boxShadow: '0 20px 48px -12px rgba(0,0,0,0.32), 0 6px 18px rgba(0,0,0,0.15)',
+              }}
+            >
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 16 }}>
-                <div style={{ width: 28, height: 28, borderRadius: '50%', background: `${C.moss}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <circle cx="7" cy="7" r="5" stroke={C.moss} strokeWidth="1.5" />
-                    <path d="M7 4.5v3M7 9v.5" stroke={C.moss} strokeWidth="1.5" strokeLinecap="round" />
+                <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#E2EDE5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="15" height="15" viewBox="0 0 14 14" fill="none">
+                    <circle cx="7" cy="7" r="5" stroke="#3E6248" strokeWidth="1.5" />
+                    <path d="M7 4.5v3M7 9v.5" stroke="#3E6248" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: C.moss }}>Cambium Research Insight</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#264A35', letterSpacing: '-0.01em' }}>
+                  Cambium Research Insight
+                </div>
               </div>
 
-              <p style={{ fontSize: 14, color: 'rgba(250,249,246,0.7)', lineHeight: 1.6, marginBottom: 20 }}>
-                This paper connects strongly with your work on multimodal scientific discovery. Several co-authors are active in areas you're exploring.
+              <p style={{ fontSize: 14.5, color: '#202920', lineHeight: 1.65, marginBottom: 20 }}>
+                This paper connects strongly with your work on multimodal scientific discovery. Several co-authors are active in areas you&apos;re exploring.
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
                   { label: 'Related papers to explore', count: '12 papers', icon: '→' },
                   { label: 'Researchers active in this area', count: '4 researchers', icon: '→' },
@@ -1332,18 +1721,28 @@ function IntelligenceSection() {
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      padding: '10px 14px',
-                      background: `${C.moss}11`,
-                      borderRadius: 6,
+                      padding: '12px 16px',
+                      background: '#F1EAD9',
+                      borderRadius: 8,
                       cursor: 'pointer',
-                      border: `1px solid ${C.darkBorder}`,
-                      transition: 'background 0.15s',
+                      border: '1px solid #E4DCCB',
+                      transition: 'background 0.15s, border-color 0.15s, transform 0.15s',
                     }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = `${C.moss}22` }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = `${C.moss}11` }}
+                    onMouseEnter={(e) => {
+                      const el = e.currentTarget as HTMLDivElement
+                      el.style.background = '#EAE2D0'
+                      el.style.borderColor = '#D8CEBB'
+                      el.style.transform = 'translateX(2px)'
+                    }}
+                    onMouseLeave={(e) => {
+                      const el = e.currentTarget as HTMLDivElement
+                      el.style.background = '#F1EAD9'
+                      el.style.borderColor = '#E4DCCB'
+                      el.style.transform = 'none'
+                    }}
                   >
-                    <span style={{ fontSize: 13, color: 'rgba(250,249,246,0.65)' }}>{label}</span>
-                    <span style={{ fontSize: 13, color: C.moss, fontWeight: 600 }}>{count} {icon}</span>
+                    <span style={{ fontSize: 13.5, color: '#202920', fontWeight: 500 }}>{label}</span>
+                    <span style={{ fontSize: 13, color: '#3E6248', fontWeight: 650 }}>{count} {icon}</span>
                   </div>
                 ))}
               </div>
@@ -1429,28 +1828,36 @@ function PortfolioSection() {
 // ─── Ecosystem Map Section (Dark) ─────────────────────────────────────────────
 function EcosystemMapSection() {
   return (
-    <section style={{ background: C.darkBg, borderTop: `1px solid #2E2E2C`, padding: '120px 88px' }}>
+    <section style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', padding: '120px 88px' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center' }}>
-        <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.moss, textTransform: 'uppercase', marginBottom: 20 }}>Research Ecosystem</p>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#4ADE80', textTransform: 'uppercase', marginBottom: 20 }}>Research Ecosystem</p>
         <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(36px, 4vw, 60px)', fontWeight: 400, lineHeight: 1.08, letterSpacing: '-0.03em', color: '#F5F4F0', marginBottom: 16 }}>
           Everything connects.
         </h2>
-        <p style={{ fontSize: 17, color: 'rgba(250,249,246,0.45)', marginBottom: 64, maxWidth: 480, margin: '0 auto 64px' }}>
+        <p style={{ fontSize: 17, color: 'rgba(250,249,246,0.72)', marginBottom: 64, maxWidth: 480, margin: '0 auto 64px' }}>
           Your research doesn't exist in isolation. Cambium maps the living network around your work.
         </p>
 
         {/* Large ecosystem SVG */}
         <div style={{ maxWidth: 700, margin: '0 auto', height: 500 }}>
-          <svg viewBox="0 0 700 500" style={{ width: '100%', height: '100%' }} aria-label="Research ecosystem map">
+          <svg viewBox="0 0 700 500" style={{ width: '100%', height: '100%', overflow: 'visible' }} aria-label="Research ecosystem map">
             <defs>
               <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor={C.moss} stopOpacity="0.15" />
+                <stop offset="0%" stopColor="#FAF7F0" stopOpacity="0.25">
+                  <animate attributeName="stop-opacity" values="0.15;0.35;0.15" dur="4s" repeatCount="indefinite" />
+                </stop>
                 <stop offset="100%" stopColor={C.moss} stopOpacity="0" />
               </radialGradient>
+              <clipPath id="centerCircleClip">
+                <circle cx="350" cy="250" r="66" />
+              </clipPath>
             </defs>
 
             {/* Glow behind center */}
-            <ellipse cx="350" cy="250" rx="120" ry="120" fill="url(#centerGlow)" />
+            <ellipse cx="350" cy="250" rx="140" ry="140" fill="url(#centerGlow)">
+               <animate attributeName="rx" values="120;160;120" dur="5s" repeatCount="indefinite" />
+               <animate attributeName="ry" values="120;160;120" dur="5s" repeatCount="indefinite" />
+            </ellipse>
 
             {/* Connection lines */}
             {[
@@ -1465,30 +1872,113 @@ function EcosystemMapSection() {
               [350, 250, 220, 60],   // Datasets
               [350, 250, 480, 60],   // Notes
             ].map(([x1, y1, x2, y2], i) => (
-              <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={`rgba(92,122,94,0.2)`} strokeWidth="1" strokeDasharray="4 4" />
+              <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(184, 178, 167, 0.4)" strokeWidth="1.5" strokeDasharray="6 6">
+                <animate attributeName="stroke-dashoffset" values="12;0" dur={`${1.5 + (i * 0.1)}s`} repeatCount="indefinite" />
+              </line>
             ))}
 
-            {/* Center node: YOUR RESEARCH */}
-            <circle cx="350" cy="250" r="52" fill={C.darkSurface} stroke={C.moss} strokeWidth="1.5" />
-            <text x="350" y="247" textAnchor="middle" fontFamily="Inter" fontSize="11" fontWeight="700" fill={C.moss} letterSpacing="0.08em">YOUR</text>
-            <text x="350" y="262" textAnchor="middle" fontFamily="Inter" fontSize="11" fontWeight="700" fill={C.moss} letterSpacing="0.08em">RESEARCH</text>
+            {/* Center node: CAMBIUM with Logo */}
+            <g 
+              style={{ cursor: 'pointer', transition: 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', transformOrigin: '350px 250px' }} 
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} 
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              <circle 
+                cx="350" 
+                cy="250" 
+                r="58" 
+                fill="#FAF7F0" 
+                stroke="#3E6248" 
+                strokeWidth="2.5" 
+                style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.35))' }}
+              >
+                <animate attributeName="stroke-width" values="2;4;2" dur="3s" repeatCount="indefinite" />
+              </circle>
+              {/* Cambium Fibonacci Spiral Logo */}
+              <image href="/logo.svg" x="328" y="206" width="44" height="44" />
+              <text 
+                x="350" 
+                y="272" 
+                textAnchor="middle" 
+                fontFamily="'Instrument Sans', sans-serif" 
+                fontSize="10" 
+                fontWeight="700" 
+                fill="#202920" 
+                letterSpacing="0.16em"
+              >
+                CAMBIUM
+              </text>
+            </g>
 
-            {/* Satellite nodes */}
+            {/* Satellite nodes in Sand colour with Uniform Grey Border */}
             {[
-              { label: 'Papers', x: 350, y: 64, color: '#6B7A5A' },
-              { label: 'People', x: 568, y: 128, color: '#4A6B8A' },
-              { label: 'Projects', x: 624, y: 272, color: '#5A6B7A' },
-              { label: 'Labs', x: 536, y: 416, color: '#6B5A7A' },
-              { label: 'Topics', x: 350, y: 440, color: '#7A7A4A' },
-              { label: 'Journals', x: 164, y: 416, color: '#7A6B5A' },
-              { label: 'Conferences', x: 76, y: 272, color: '#6B7A5A' },
-              { label: 'Funding', x: 132, y: 128, color: '#5A7A6B' },
-              { label: 'Datasets', x: 216, y: 52, color: '#7A6B4A' },
-              { label: 'Notes', x: 484, y: 52, color: '#5A6B5A' },
-            ].map(({ label, x, y, color }) => (
-              <g key={label}>
-                <circle cx={x} cy={y} r="28" fill={C.darkSurface} stroke={`${color}66`} strokeWidth="1" />
-                <text x={x} y={y + 4} textAnchor="middle" fontFamily="Inter" fontSize="10" fontWeight="500" fill="rgba(250,249,246,0.6)">{label}</text>
+              { label: 'Papers', x: 350, y: 64, delay: '0s' },
+              { label: 'People', x: 568, y: 128, delay: '-1s' },
+              { label: 'Projects', x: 624, y: 272, delay: '-2s' },
+              { label: 'Labs', x: 536, y: 416, delay: '-3s' },
+              { label: 'Topics', x: 350, y: 440, delay: '-0.5s' },
+              { label: 'Journals', x: 164, y: 416, delay: '-1.5s' },
+              { label: 'Conferences', x: 76, y: 272, delay: '-2.5s' },
+              { label: 'Funding', x: 132, y: 128, delay: '-3.5s' },
+              { label: 'Datasets', x: 216, y: 52, delay: '-0.8s' },
+              { label: 'Notes', x: 484, y: 52, delay: '-1.8s' },
+            ].map(({ label, x, y, delay }) => (
+              <g 
+                key={label}
+                style={{ 
+                  cursor: 'pointer', 
+                  transition: 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
+                  transformOrigin: `${x}px ${y}px`
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                <g>
+                  <animateTransform 
+                    attributeName="transform" 
+                    type="translate" 
+                    values="0,0; 0,-10; 0,0" 
+                    dur="6s" 
+                    begin={delay} 
+                    repeatCount="indefinite" 
+                  />
+                  {/* Sand Background Circle with Uniform Grey Border */}
+                  <circle 
+                    cx={x} cy={y} r="34" 
+                    fill="#FAF7F0" 
+                    stroke="#B8B2A7" 
+                    strokeWidth="1.75" 
+                    style={{ transition: 'stroke 0.25s, fill 0.25s', filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.28))' }} 
+                    onMouseEnter={(e) => {
+                      const el = e.currentTarget as SVGCircleElement
+                      el.style.fill = '#F2EAD8'
+                      el.style.stroke = '#8C8578'
+                    }}
+                    onMouseLeave={(e) => {
+                      const el = e.currentTarget as SVGCircleElement
+                      el.style.fill = '#FAF7F0'
+                      el.style.stroke = '#B8B2A7'
+                    }}
+                  />
+                  {/* Word inside with dark readable color */}
+                  <text 
+                    x={x} 
+                    y={y + 4.5} 
+                    textAnchor="middle" 
+                    fontFamily="'Instrument Sans', sans-serif" 
+                    fontSize="11.5" 
+                    fontWeight="600" 
+                    fill="#202920" 
+                    letterSpacing="-0.01em" 
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    {label}
+                  </text>
+                </g>
               </g>
             ))}
           </svg>
@@ -1501,7 +1991,7 @@ function EcosystemMapSection() {
 // ─── Testimonials ─────────────────────────────────────────────────────────────
 function TestimonialsSection() {
   const testimonials = [
-    { quote: "Cambium gives my research a place to live — not just a list of papers.", name: "Dr. Maya Chen", role: "Computer Vision Researcher", org: "MIT" },
+    { quote: "Cambium gives my research a place to live — not just a list of papers.", name: "Imthiyas", role: "Computer Vision Researcher", org: "MIT" },
     { quote: "The difference is that everything is connected to the work I'm actually doing.", name: "Arjun Rao", role: "PhD Researcher", org: "IISc" },
     { quote: "Finally, a research environment that understands how scholars actually work.", name: "Dr. Elena Park", role: "Computational Biology", org: "Stanford University" },
   ]
@@ -1565,46 +2055,52 @@ function CTASection() {
         </p>
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button
+          <Link
+            href="/sign-up"
             style={{
               fontSize: 15,
               fontWeight: 600,
-              color: '#fff',
+              color: '#F9F6F0',
               background: C.moss,
-              border: 'none',
-              padding: '16px 28px',
-              borderRadius: 6,
+              border: `1px solid ${C.moss500}`,
+              padding: '16px 32px',
+              borderRadius: 8,
               cursor: 'pointer',
               letterSpacing: '-0.01em',
-              transition: 'background 0.15s, transform 0.15s',
+              transition: 'background 0.15s, transform 0.15s, box-shadow 0.15s',
+              textDecoration: 'none',
+              display: 'inline-block',
+              boxShadow: '0 4px 16px rgba(26,77,56,0.25)',
             }}
-            onMouseEnter={(e) => { const b = e.currentTarget; b.style.background = C.mossMid; b.style.transform = 'translateY(-1px)' }}
+            onMouseEnter={(e) => { const b = e.currentTarget; b.style.background = C.mossHover; b.style.transform = 'translateY(-1px)' }}
             onMouseLeave={(e) => { const b = e.currentTarget; b.style.background = C.moss; b.style.transform = '' }}
           >
             Create your research identity
-          </button>
-          <button
+          </Link>
+          <Link
+            href="/discover"
             style={{
               fontSize: 15,
               fontWeight: 500,
-              color: C.charcoal,
-              background: 'transparent',
-              border: `1px solid ${C.rule}`,
-              padding: '16px 28px',
-              borderRadius: 6,
+              color: C.moss,
+              background: C.moss050,
+              border: `1.5px solid ${C.borderStrong}`,
+              padding: '16px 32px',
+              borderRadius: 8,
               cursor: 'pointer',
               letterSpacing: '-0.01em',
-              transition: 'border-color 0.15s',
-              display: 'flex',
+              transition: 'all 0.15s',
+              display: 'inline-flex',
               alignItems: 'center',
               gap: 8,
+              textDecoration: 'none',
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.secondary }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = C.rule }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = C.moss; (e.currentTarget as HTMLAnchorElement).style.background = C.mossLight }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = C.borderStrong; (e.currentTarget as HTMLAnchorElement).style.background = C.moss050 }}
           >
             Explore Cambium
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 7h8M8 4l3 3-3 3" /></svg>
-          </button>
+          </Link>
         </div>
       </div>
     </section>
@@ -1614,10 +2110,30 @@ function CTASection() {
 // ─── Footer ───────────────────────────────────────────────────────────────────
 function Footer() {
   const cols = [
-    { heading: 'Product', links: ['Discover', 'Research', 'Opportunities', 'Community', 'Workspace'] },
-    { heading: 'Research', links: ['Papers', 'Journals', 'Conferences', 'Grants', 'Collaborations'] },
-    { heading: 'Company', links: ['About', 'Careers', 'Contact'] },
-    { heading: 'Resources', links: ['Documentation', 'Research Guide', 'Help Center'] },
+    { heading: 'Product', links: [
+      { label: 'Discover', href: '/discover' },
+      { label: 'Research', href: '/publications' },
+      { label: 'Opportunities', href: '/opportunities' },
+      { label: 'Workspace', href: '/workspace' },
+      { label: 'Portfolio', href: '/portfolio' },
+    ]},
+    { heading: 'Research', links: [
+      { label: 'Papers', href: '/publications' },
+      { label: 'Journals', href: '/publications' },
+      { label: 'Conferences', href: '/discover' },
+      { label: 'Grants', href: '/opportunities' },
+      { label: 'Collaborations', href: '/discover' },
+    ]},
+    { heading: 'Company', links: [
+      { label: 'About', href: '/about' },
+      { label: 'Careers', href: '/careers' },
+      { label: 'Contact', href: '/contact' },
+    ]},
+    { heading: 'Resources', links: [
+      { label: 'Documentation', href: '/help' },
+      { label: 'Research Guide', href: '/help' },
+      { label: 'Help Center', href: '/help' },
+    ]},
   ]
 
   return (
@@ -1626,30 +2142,31 @@ function Footer() {
         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr repeat(4, 1fr)', gap: 48, marginBottom: 56 }}>
           {/* Brand */}
           <div>
-            <div style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 17, letterSpacing: '-0.04em', color: C.charcoal, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <circle cx="9" cy="9" r="8" stroke={C.moss} strokeWidth="1.5" />
-                <circle cx="9" cy="9" r="3.5" fill={C.moss} />
-              </svg>
-              CAMBIUM
+            <div style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 16, letterSpacing: '-0.03em', color: C.charcoal, display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#FAF7F0', border: '1px solid #E4DCCB', padding: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                <img src="/logo.svg" alt="CAMBIUM Research Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
+              <span style={{ textTransform: 'uppercase' }}>
+                CAMBIUM <span style={{ fontWeight: 300, color: C.moss }}>RESEARCH</span>
+              </span>
             </div>
-            <p style={{ fontSize: 13, color: C.tertiary, lineHeight: 1.6, maxWidth: 200 }}>The Research Operating System.</p>
+            <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6, maxWidth: 200 }}>The Research Operating System.</p>
           </div>
 
           {/* Link columns */}
           {cols.map(({ heading, links }) => (
             <div key={heading}>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: C.tertiary, textTransform: 'uppercase', marginBottom: 16 }}>{heading}</div>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: C.moss, textTransform: 'uppercase', marginBottom: 16 }}>{heading}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {links.map((link) => (
                   <a
-                    key={link}
-                    href="#"
+                    key={link.label}
+                    href={link.href}
                     style={{ fontSize: 13, color: C.secondary, textDecoration: 'none', transition: 'color 0.1s' }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = C.charcoal }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = C.moss }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = C.secondary }}
                   >
-                    {link}
+                    {link.label}
                   </a>
                 ))}
               </div>
@@ -1658,13 +2175,18 @@ function Footer() {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 24, borderTop: `1px solid ${C.rule}`, flexWrap: 'wrap', gap: 16 }}>
-          <span style={{ fontSize: 12, color: C.tertiary }}>© 2026 Cambium. All rights reserved.</span>
+          <span style={{ fontSize: 12, color: C.tertiary }}>© 2026 Cambium Research. All rights reserved.</span>
           <div style={{ display: 'flex', gap: 24 }}>
-            {['Privacy', 'Terms', 'Security'].map((link) => (
-              <a key={link} href="#" style={{ fontSize: 12, color: C.tertiary, textDecoration: 'none', transition: 'color 0.1s' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = C.secondary }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = C.tertiary }}>
-                {link}
+            {[
+              { label: 'Terms of Service', href: '/terms' },
+              { label: 'Privacy Policy', href: '/privacy' },
+              { label: 'AI Disclaimer', href: '/disclaimer' },
+              { label: 'Security & Help', href: '/help' },
+            ].map(({ label, href }) => (
+              <a key={label} href={href} style={{ fontSize: 12, color: C.secondary, textDecoration: 'none', transition: 'color 0.1s' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = C.moss }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = C.secondary }}>
+                {label}
               </a>
             ))}
           </div>
@@ -1674,11 +2196,77 @@ function Footer() {
   )
 }
 
+// ─── Human-Crafted Application Framework Component ───────────────────────────
+function StructuralSystem() {
+  const [open, setOpen] = useState(true)
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="fixed bottom-6 right-6 z-50 bg-[#293E30] text-[#FAF7F0] p-3 rounded-full shadow-xl border border-[#66866A]/60 hover:scale-105 transition-all cursor-pointer shadow-[0_8px_24px_rgba(0,0,0,0.3)]"
+        title="View Identity System"
+        aria-label="View Identity System"
+      >
+        <User className="w-4 h-4 text-[#FAF7F0]" />
+      </button>
+    )
+  }
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 max-w-sm">
+      <div className="bg-[#293E30]/95 text-[#FAF7F0] rounded-xl p-4 shadow-2xl border border-[#66866A]/60 flex items-center justify-between gap-4 w-full backdrop-blur-md transform transition-all duration-300 hover:scale-[1.01] shadow-[0_16px_40px_-8px_rgba(0,0,0,0.38)]">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-[#3E6248] rounded-lg text-[#FAF7F0] border border-[#66866A]/40 shadow-xs">
+            <User className="w-4 h-4" />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-sans text-xs font-semibold tracking-wide uppercase text-[#FAF7F0]">
+              Identity System Active
+            </span>
+            <span className="font-sans text-[11px] text-[#C7D4C9] mt-0.5">
+              Verified cryptographic ledger anchor
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="inline-flex items-center gap-1.5 bg-[#FAF7F0] border border-[#E4DCCB] px-2.5 py-0.5 rounded-full text-[#293E30] shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] animate-pulse" />
+            <span className="font-sans text-[10px] font-bold tracking-tight text-[#293E30]">Active</span>
+          </div>
+          <button
+            onClick={() => setOpen(false)}
+            className="text-[#C7D4C9] hover:text-[#FAF7F0] text-xs p-1 bg-transparent border-0 cursor-pointer ml-1 transition-colors"
+            title="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
+  const [replayIntro, setReplayIntro] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("intro") === "1" || params.get("splash") === "1") {
+        setReplayIntro(true);
+      }
+    }
+  }, []);
+
   return (
-    <div style={{ fontFamily: "'Inter', system-ui, sans-serif", background: C.bg }}>
+    <div style={{ fontFamily: "var(--font-sans), 'Instrument Sans', system-ui, sans-serif", background: C.bg }}>
+      <CambiumIntroPreloader forceShow={replayIntro} onComplete={() => setReplayIntro(false)} />
+      <Nav />
       <Hero />
+      <KnowledgeGraphSection />
       <TrustSection />
       <ProblemSection />
       <LifecycleSection />
@@ -1694,6 +2282,8 @@ export default function App() {
       <EcosystemMapSection />
       <TestimonialsSection />
       <CTASection />
+      <Footer />
+      <StructuralSystem />
     </div>
   )
 }

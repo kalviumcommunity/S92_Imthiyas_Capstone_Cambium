@@ -1,29 +1,35 @@
 import type { Metadata } from "next";
-import { Manrope, Source_Serif_4 } from "next/font/google";
+import { Plus_Jakarta_Sans, Newsreader, JetBrains_Mono } from "next/font/google";
 import { QueryProvider } from "@/lib/query-provider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import "./globals.css";
 
-const manrope = Manrope({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
   display: "swap",
 });
 
-const sourceSerif4 = Source_Serif_4({
+const newsreader = Newsreader({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-serif",
   display: "swap",
 });
 
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-data",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Cambium — AI-Powered Research Opportunity Discovery & Intelligence Platform",
+  title: "CAMBIUM Research — The Research Operating System",
   description:
-    "Unified research intelligence system aggregating grants, Calls for Papers, journals, and fellowships on an authoritative PostgreSQL + pgvector foundation.",
+    "Discover ideas, build your academic identity, collaborate with researchers, explore opportunities, and organize the knowledge behind your work.",
 };
 
 export default function RootLayout({
@@ -34,17 +40,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${manrope.variable} ${sourceSerif4.variable}`}
+      className={`${plusJakartaSans.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="min-h-screen flex flex-col justify-between bg-[#F7F6F1] text-[#17201D] font-sans antialiased">
+      <body className="min-h-screen bg-canvas text-ink-primary font-sans antialiased">
         <QueryProvider>
           <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "dummy-client-id"}>
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            {children}
           </GoogleOAuthProvider>
         </QueryProvider>
       </body>
     </html>
   );
 }
+

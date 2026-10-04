@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 
 export function TestimonialsSection() {
   const testimonials = [
-    { quote: "Cambium gives my research a place to live — not just a list of papers.", name: "Dr. Maya Chen", role: "Computer Vision Researcher", org: "MIT" },
+    { quote: "Cambium gives my research a place to live — not just a list of papers.", name: "Imthiyas", role: "Computer Vision Researcher", org: "MIT" },
     { quote: "The difference is that everything is connected to the work I'm actually doing.", name: "Arjun Rao", role: "PhD Researcher", org: "IISc" },
     { quote: "Finally, a research environment that understands how scholars actually work.", name: "Dr. Elena Park", role: "Computational Biology", org: "Stanford University" },
   ];
