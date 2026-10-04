@@ -6,7 +6,7 @@ import { ArrowRight } from "lucide-react";
 
 function EcosystemGraph({ dark = false }: { dark?: boolean }) {
   const nodes = [
-    { id: "researcher", x: 180, y: 170, type: "researcher", label: "Dr. Maya Chen", sub: "Computer Vision", color: "hsl(var(--primary))" },
+    { id: "researcher", x: 180, y: 170, type: "researcher", label: "Imthiyas", sub: "Computer Vision & AI", color: "hsl(var(--primary))" },
     { id: "paper", x: 380, y: 110, type: "paper", label: "Vision-Language Models", sub: "for Scientific Discovery", color: dark ? "#4A6B4C" : "#5C7A5E" },
     { id: "topic", x: 390, y: 260, type: "topic", label: "Computer Vision", sub: "Research Area", color: "#7A6B4A" },
     { id: "grant", x: 90, y: 290, type: "grant", label: "NSF Research Grant", sub: "Deadline · 18 days", color: "#6B4A4A" },

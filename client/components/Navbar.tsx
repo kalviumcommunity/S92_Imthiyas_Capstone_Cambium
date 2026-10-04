@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import CambiumLogo from "@/components/CambiumLogo";
 import {
   Compass,
   Bookmark,
@@ -26,32 +27,18 @@ export default function Navbar({ onOpenCreate }: NavbarProps) {
   const { user, isAuthenticated, logout } = useAuthStore();
 
   const navLinks = [
-    { name: "Discover", href: "/opportunities" },
-    { name: "Research", href: "/opportunities?type=grant" },
+    { name: "Discover", href: "/discover" },
+    { name: "Workspace", href: "/workspace" },
+    { name: "Research", href: "/publications" },
     { name: "Opportunities", href: "/opportunities" },
-    { name: "Community", href: "/bookmarks" },
+    { name: "Portfolio", href: "/portfolio" },
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border transition-colors">
+    <header className="sticky top-0 z-50 w-full bg-surface-raised/90 backdrop-blur-md border-b border-edge-default transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Left: Logo & Brand Name */}
-        <Link href="/" className="flex items-center gap-3 group">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo.svg"
-            alt="Cambium Logo"
-            className="w-8 h-8 object-contain transition-transform group-hover:scale-105"
-          />
-          <div className="flex items-center gap-2">
-            <span className="font-serif text-xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
-              CAMBIUM
-            </span>
-            <span className="hidden lg:inline-block text-[10px] font-semibold uppercase tracking-widest text-primary bg-accent/70 border border-border px-2 py-0.5 rounded-full">
-              OS
-            </span>
-          </div>
-        </Link>
+        {/* Left: Official Logo */}
+        <CambiumLogo size="md" badge="OS" href="/" />
 
         {/* Center Links */}
         <nav className="hidden md:flex items-center gap-1">
@@ -90,16 +77,17 @@ export default function Navbar({ onOpenCreate }: NavbarProps) {
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
               <Link
-                href="/bookmarks"
+                href="/profile"
                 className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-card hover:bg-accent/40 text-xs text-foreground transition-colors"
               >
-                <Avatar className="w-6 h-6 border border-border">
+                <Avatar className="w-6 h-6 border border-border overflow-hidden">
+                  <img src="/Profile.png" alt="User Profile" className="w-full h-full object-cover" />
                   <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
                     {user?.fullName ? user.fullName[0].toUpperCase() : "R"}
                   </AvatarFallback>
                 </Avatar>
                 <span className="font-medium truncate max-w-[100px]">
-                  {user?.fullName || user?.username}
+                  {(user?.fullName && !/maya|chen/i.test(user.fullName)) ? user.fullName : "Imthiyas"}
                 </span>
               </Link>
 
@@ -116,11 +104,11 @@ export default function Navbar({ onOpenCreate }: NavbarProps) {
           ) : (
             <div className="flex items-center gap-2">
               <Button asChild variant="ghost" size="sm" className="text-xs h-9 font-medium">
-                <Link href="/auth">Sign in</Link>
+                <Link href="/sign-in">Sign in</Link>
               </Button>
 
               <Button asChild size="sm" className="text-xs h-9 font-medium bg-primary text-primary-foreground hover:bg-primary/90">
-                <Link href="/auth">Create your research identity</Link>
+                <Link href="/sign-up">Create your research identity</Link>
               </Button>
             </div>
           )}

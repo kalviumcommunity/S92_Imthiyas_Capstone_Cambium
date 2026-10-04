@@ -38,26 +38,60 @@ const config: Config = {
         ring: "var(--ring)",
 
         // Design System Colors from Vite
+        canvas: "var(--color-surface-base)",
         surface: {
+          DEFAULT: "var(--color-surface-raised)",
           base: "var(--color-surface-base)",
           raised: "var(--color-surface-raised)",
           sunken: "var(--color-surface-sunken)",
           inverse: "var(--color-surface-inverse)",
+          2: "#F0F4F1",
+          3: "#E8EDE9",
         },
         ink: {
+          DEFAULT: "var(--color-ink-primary)",
           primary: "var(--color-ink-primary)",
           secondary: "var(--color-ink-secondary)",
           tertiary: "var(--color-ink-tertiary)",
           inverse: "var(--color-ink-inverse)",
+          2: "#66716C",
+          3: "#90A099",
         },
         edge: {
+          DEFAULT: "var(--color-edge-default)",
           default: "var(--color-edge-default)",
           strong: "var(--color-edge-strong)",
           hover: "var(--color-edge-hover)",
           focus: "var(--color-edge-focus)",
         },
+        line: {
+          DEFAULT: "var(--color-edge-default)",
+          2: "#C4CCC7",
+        },
+        navy: {
+          DEFAULT: "#173F35",
+          mid: "#285C4D",
+          light: "#DCEBE4",
+        },
+        sage: {
+          DEFAULT: "#1D5C3E",
+          light: "#DCF0E6",
+        },
+        amber: {
+          DEFAULT: "#7A5210",
+          light: "#FEF3E7",
+        },
+        crimson: {
+          DEFAULT: "#8B1D1D",
+          light: "#FEF2F2",
+        },
+        iris: {
+          DEFAULT: "#2E4A6B",
+          light: "#E8EFF6",
+        },
         moss: {
           50: "var(--color-moss-050)",
+          "050": "var(--color-moss-050)",
           100: "var(--color-moss-100)",
           300: "var(--color-moss-300)",
           500: "var(--color-moss-500)",
@@ -69,6 +103,14 @@ const config: Config = {
           warning: "var(--color-semantic-warning)",
           error: "var(--color-semantic-error)",
           info: "var(--color-semantic-info)",
+        },
+
+        // Luxury Editorial Tokens
+        brand: {
+          void: "#0A0C10",
+          cream: "#F9F6F0",
+          moss: "#1B3B2B",
+          clay: "#E2DCD2",
         },
 
         // Legacy Cambium mappings (kept for backward compatibility with shadcn)
@@ -85,12 +127,33 @@ const config: Config = {
         accent: {
           DEFAULT: "var(--accent)",
           foreground: "var(--accent-foreground)",
+          moss: "#3E6248",
+          mossHover: "#293E30",
+          crimson: "#B33D35",
         },
         "background-alt": "var(--color-surface-raised)",
+
+        // Cambium Master Living Materials Tokens
+        parchment: "#FAF7F0",
+        "mineral-sand": "#F2EBDD",
+        limestone: "#E4DCCB",
+        "sage-mist": "#DCE6D7",
+        "living-algae": "#66866A",
+        canopy: "#3E6248",
+        "deep-moss": "#293E30",
+        rootwood: "#805B43",
+        loam: "#B89A78",
+        "forest-ink": "#202920",
+        "bark-grey": "#62685E",
+        "quiet-stone": "#85877B",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "Manrope", "system-ui", "sans-serif"],
-        serif: ["var(--font-serif)", "Source Serif 4", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "Instrument Sans", "Plus Jakarta Sans", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "Newsreader", "Georgia", "serif"],
+        mono: ["var(--font-mono)", "IBM Plex Mono", "monospace"],
+        editorial: ["Newsreader", "Georgia", "serif"],
+        interface: ["Instrument Sans", "Plus Jakarta Sans", "system-ui", "sans-serif"],
+        data: ["IBM Plex Mono", "monospace"],
       },
       borderRadius: {
         none: "0px",
@@ -107,6 +170,8 @@ const config: Config = {
         elevation1: "var(--shadow-elevation-1)",
         elevation2: "var(--shadow-elevation-2)",
         elevation3: "var(--shadow-elevation-3)",
+        premium: "0 4px 20px -2px rgba(10, 12, 16, 0.03), 0 12px 40px -6px rgba(10, 12, 16, 0.05)",
+        elevated: "0 20px 80px -10px rgba(27, 59, 43, 0.08)",
       },
       spacing: {
         "0.5": "2px",
@@ -135,6 +200,25 @@ const config: Config = {
         "body-default": ["15px", { lineHeight: "1.6", fontWeight: "400" }],
         "body-sm": ["13px", { lineHeight: "1.5", fontWeight: "400" }],
         "label-meta": ["12px", { letterSpacing: "0.04em", fontWeight: "500" }],
+      },
+      keyframes: {
+        "float-a": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "float-b": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(8px)" },
+        },
+        "float-c": {
+          "0%, 100%": { transform: "translateY(0px) translateX(0px)" },
+          "50%": { transform: "translateY(-6px) translateX(4px)" },
+        },
+      },
+      animation: {
+        "float-a": "float-a 6s ease-in-out infinite",
+        "float-b": "float-b 8s ease-in-out infinite",
+        "float-c": "float-c 7s ease-in-out infinite",
       },
     },
   },

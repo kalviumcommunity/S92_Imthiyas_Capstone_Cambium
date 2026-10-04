@@ -71,7 +71,7 @@ export default function FeatureZigZag() {
           </ul>
         </motion.div>
 
-        {/* UI Card (Dr. Maya Chen Profile) */}
+        {/* UI Card (Imthiyas Profile) */}
         <motion.div
           className="lg:col-span-6"
           initial={{ opacity: 0, x: 20 }}
@@ -84,12 +84,12 @@ export default function FeatureZigZag() {
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16 border-2 border-primary/20">
                   <AvatarFallback className="bg-primary/10 text-primary text-xl font-serif font-bold">
-                    MC
+                    IM
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-serif text-xl font-bold text-foreground">Dr. Maya Chen</h3>
+                    <h3 className="font-serif text-xl font-bold text-foreground">Imthiyas</h3>
                     <Badge variant="success" shape="status">Verified PI</Badge>
                   </div>
                   <p className="text-xs text-ink-muted">
@@ -203,7 +203,7 @@ export default function FeatureZigZag() {
 
               <div className="flex flex-wrap items-center gap-2 pt-2">
                 <span className="text-xs text-ink-muted font-medium">Linked Citations:</span>
-                <Badge variant="default" shape="tag" className="font-mono text-[11px]">[Chen et al., 2025]</Badge>
+                <Badge variant="default" shape="tag" className="font-mono text-[11px]">[Imthiyas et al., 2025]</Badge>
                 <Badge variant="default" shape="tag" className="font-mono text-[11px]">[Bronstein et al., 2021]</Badge>
                 <Badge variant="default" shape="tag" className="font-mono text-[11px]">[AlphaFold3, 2024]</Badge>
               </div>
@@ -539,7 +539,7 @@ export default function FeatureZigZag() {
                 Foundation Models for Molecular Dynamics: Systematic Benchmark on 10M Conformations
               </h4>
               <p className="text-xs text-primary font-medium">
-                K. Patel, M. Chen, L. Gomez, A. Rao et al.
+                K. Patel, Imthiyas, L. Gomez, A. Rao et al.
               </p>
               <p className="text-xs text-ink-muted leading-relaxed">
                 We conduct an exhaustive evaluation of equivariant graph neural networks across 10 million ab-initio quantum chemical configurations, demonstrating sub-chemical accuracy on transition-state kinetics.
@@ -612,10 +612,10 @@ export default function FeatureZigZag() {
           <Card className="p-6 bg-card border-border shadow-elevation1 hover:shadow-elevation2 transition-all space-y-4">
             <div className="flex items-center gap-3">
               <Avatar className="w-12 h-12 border border-primary/20">
-                <AvatarFallback className="bg-primary/10 text-primary font-bold">MC</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary font-bold">IM</AvatarFallback>
               </Avatar>
               <div>
-                <h4 className="font-serif text-base font-bold text-foreground">Dr. Maya Chen</h4>
+                <h4 className="font-serif text-base font-bold text-foreground">Imthiyas</h4>
                 <p className="text-xs text-ink-muted">Stanford University</p>
               </div>
             </div>

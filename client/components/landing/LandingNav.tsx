@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
+import CambiumLogo from "@/components/CambiumLogo";
 
 export function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
@@ -24,17 +25,8 @@ export function LandingNav() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-20 h-16 flex items-center gap-10">
-        {/* Logo */}
-        <Link
-          href="/"
-          className="font-sans font-bold text-lg tracking-tight text-foreground flex items-center gap-2 shrink-0"
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="10" cy="10" r="9" stroke="currentColor" className="text-primary" strokeWidth="1.5" />
-            <circle cx="10" cy="10" r="4" fill="currentColor" className="text-primary" />
-          </svg>
-          CAMBIUM
-        </Link>
+        {/* Official Logo */}
+        <CambiumLogo size="md" href="/" />
 
         {/* Nav links */}
         <nav className="hidden md:flex gap-8 ml-4">
