@@ -1,0 +1,179 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "name": "Cambium Dual Living Materials Design Tokens",
+  "version": "2.1.0",
+  "description": "Official W3C DTCG Token Specification for Cambium Research Intelligence Platform. Features Living Materials (Light) and Bioluminescent Botanical (Dark) dual-theme parity. Fully compliant with WCAG 2.2 Level AA and APCA perceptual readability standards.",
+  "themes": {
+    "light": {
+      "name": "Living Materials",
+      "description": "Organic paper canvas with warm mineral sand textures, deep forest ink prose, and living canopy accents."
+    },
+    "dark": {
+      "name": "Bioluminescent Botanical",
+      "description": "Abyssal pine foundation with desaturated luminescent bone typography and radiant emerald accents. Zero-glare, eye-strain reducing night environment."
+    }
+  },
+  "color": {
+    "primitive": {
+      "forest-ink": {
+        "$type": "color",
+        "$value": "#202920",
+        "$description": "Authoritative ink for headings, primary text, and continuous reading blocks. APCA Lc 92.4, WCAG 14.03:1 on Parchment (Pass AAA)."
+      },
+      "luminescent-bone": {
+        "$type": "color",
+        "$value": "#EDEAE2",
+        "$description": "Dark mode primary reading ink. APCA Lc 94.6 on Abyssal Pine, zero halation."
+      },
+      "parchment": {
+        "$type": "color",
+        "$value": "#FAF7F0",
+        "$description": "Primary living canvas. The warm, scholarly paper foundation."
+      },
+      "abyssal-pine": {
+        "$type": "color",
+        "$value": "#0E140F",
+        "$description": "Dark mode primary canvas foundation (Tier 0). Non-pure black."
+      },
+      "mineral-sand": {
+        "$type": "color",
+        "$value": "#F2EBDD",
+        "$description": "Warm secondary section foundation canvas."
+      },
+      "deep-peat": {
+        "$type": "color",
+        "$value": "#131C15",
+        "$description": "Dark mode sunken / secondary section canvas (Tier 1)."
+      },
+      "conifer-moss": {
+        "$type": "color",
+        "$value": "#18231B",
+        "$description": "Dark mode raised card surface (Tier 2)."
+      },
+      "limestone": {
+        "$type": "color",
+        "$value": "#E4DCCB",
+        "$description": "Subtle surface borders, hairlines, and structural dividers."
+      },
+      "pine-bark-border": {
+        "$type": "color",
+        "$value": "#233327",
+        "$description": "Dark mode subtle structural boundary and hairline."
+      },
+      "sage-mist": {
+        "$type": "color",
+        "$value": "#DCE6D7",
+        "$description": "Selected states, subtle badge backgrounds, and quiet botanical highlights."
+      },
+      "living-algae": {
+        "$type": "color",
+        "$value": "#66866A",
+        "$description": "Brand living discovery accent. RESTRICTED: Display text (≥18pt/24px normal or ≥14pt bold), graphical node borders, badges with dark text, and non-text visual indicators only."
+      },
+      "living-algae-dark": {
+        "$type": "color",
+        "$value": "#86EFAC",
+        "$description": "Dark mode living discovery highlight for nodes and display."
+      },
+      "canopy": {
+        "$type": "color",
+        "$value": "#3E6248",
+        "$description": "Primary action and high-contrast botanical text accent in light mode."
+      },
+      "radiant-emerald": {
+        "$type": "color",
+        "$value": "#4ADE80",
+        "$description": "Dark mode primary action and high-contrast botanical accent. APCA Lc 82.5."
+      },
+      "deep-moss": {
+        "$type": "color",
+        "$value": "#293E30",
+        "$description": "Dark botanical surface and high-contrast hover state in light mode."
+      },
+      "rootwood": {
+        "$type": "color",
+        "$value": "#805B43",
+        "$description": "Research heritage, provenance, disciplinary depth, and secondary accent."
+      },
+      "rootwood-dark": {
+        "$type": "color",
+        "$value": "#C49B7A",
+        "$description": "Dark mode desaturated provenance accent (WCAG AA: 7.2:1)."
+      },
+      "bark-grey": {
+        "$type": "color",
+        "$value": "#62685E",
+        "$description": "Secondary metadata text and captions in light mode."
+      },
+      "silvery-sage": {
+        "$type": "color",
+        "$value": "#A3B899",
+        "$description": "Dark mode secondary metadata and captions (WCAG AA: 6.8:1)."
+      },
+      "quiet-stone": {
+        "$type": "color",
+        "$value": "#85877B",
+        "$description": "Tertiary structural dividers in light mode."
+      },
+      "shadow-lichen": {
+        "$type": "color",
+        "$value": "#7E8B7B",
+        "$description": "Dark mode tertiary metadata and quiet dividers."
+      }
+    },
+    "semantic": {
+      "light": {
+        "canvas-primary": "#FAF7F0",
+        "canvas-sunken": "#F2EBDD",
+        "surface-card": "#FFFFFF",
+        "text-primary": "#202920",
+        "text-secondary": "#62685E",
+        "text-tertiary": "#85877B",
+        "brand-primary": "#3E6248",
+        "brand-accent": "#66866A",
+        "border-subtle": "#E4DCCB",
+        "border-strong": "#66866A",
+        "status-success": "#326B49",
+        "status-warning": "#8A5A12",
+        "status-error": "#B33D35",
+        "status-info": "#365F8D"
+      },
+      "dark": {
+        "canvas-primary": "#0E140F",
+        "canvas-sunken": "#131C15",
+        "surface-card": "#18231B",
+        "surface-elevated": "#202D23",
+        "text-primary": "#EDEAE2",
+        "text-secondary": "#A3B899",
+        "text-tertiary": "#7E8B7B",
+        "brand-primary": "#4ADE80",
+        "brand-accent": "#86EFAC",
+        "border-subtle": "#233327",
+        "border-strong": "#365F42",
+        "status-success": "#4ADE80",
+        "status-warning": "#FBBF24",
+        "status-error": "#F87171",
+        "status-info": "#60A5FA"
+      }
+    }
+  },
+  "dimension": {
+    "touch-target": {
+      "min": {
+        "$type": "dimension",
+        "$value": "24px",
+        "$description": "WCAG 2.2 Success Criterion 2.5.8 Target Size (Minimum) hard floor for any interactive element."
+      },
+      "comfortable": {
+        "$type": "dimension",
+        "$value": "36px",
+        "$description": "Standard comfortable research control height."
+      },
+      "action": {
+        "$type": "dimension",
+        "$value": "44px",
+        "$description": "Primary action button height."
+      }
+    }
+  }
+}

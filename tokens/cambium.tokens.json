@@ -1,0 +1,305 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "name": "Cambium Living Materials Design Tokens",
+  "version": "2.0.0",
+  "description": "Official W3C DTCG Token Specification for Cambium Research Intelligence Platform. Fully compliant with WCAG 2.2 Level AA and APCA perceptual readability standards.",
+  "color": {
+    "primitive": {
+      "forest-ink": {
+        "$type": "color",
+        "$value": "#202920",
+        "$description": "Authoritative ink for headings, primary text, and continuous reading blocks. APCA Lc 92.4, WCAG 14.03:1 on Parchment (Pass AAA)."
+      },
+      "parchment": {
+        "$type": "color",
+        "$value": "#FAF7F0",
+        "$description": "Primary living canvas. The warm, scholarly paper foundation."
+      },
+      "mineral-sand": {
+        "$type": "color",
+        "$value": "#F2EBDD",
+        "$description": "Warm secondary section foundation canvas."
+      },
+      "limestone": {
+        "$type": "color",
+        "$value": "#E4DCCB",
+        "$description": "Subtle surface borders, hairlines, and structural dividers."
+      },
+      "sage-mist": {
+        "$type": "color",
+        "$value": "#DCE6D7",
+        "$description": "Selected states, subtle badge backgrounds, and quiet botanical highlights."
+      },
+      "living-algae": {
+        "$type": "color",
+        "$value": "#66866A",
+        "$description": "Brand living discovery accent. RESTRICTED: Display text (≥18pt/24px normal or ≥14pt bold), graphical node borders, badges with dark text, and non-text visual indicators only."
+      },
+      "living-algae-accessible": {
+        "$type": "color",
+        "$value": "#365F42",
+        "$description": "WCAG 2.2 AA compliant dark botanical green (4.65:1 on Parchment, 4.52:1 on Mineral Sand) for small metadata accents."
+      },
+      "canopy": {
+        "$type": "color",
+        "$value": "#3E6248",
+        "$description": "Primary action and high-contrast botanical text accent. WCAG 2.2 AA Pass (6.44:1 on Parchment, 5.81:1 on Mineral Sand), APCA Lc 73.2."
+      },
+      "deep-moss": {
+        "$type": "color",
+        "$value": "#293E30",
+        "$description": "Dark botanical surface and high-contrast hover state. WCAG 2.2 AA Pass (10.75:1 on Parchment, 9.69:1 on Mineral Sand)."
+      },
+      "rootwood": {
+        "$type": "color",
+        "$value": "#805B43",
+        "$description": "Research heritage, provenance, disciplinary depth, and secondary accent. WCAG 2.2 AA Pass (5.62:1 on Parchment)."
+      },
+      "loam": {
+        "$type": "color",
+        "$value": "#B89A78",
+        "$description": "Supporting chart coordinates, quantitative indicators, and tertiary graphics."
+      },
+      "bark-grey": {
+        "$type": "color",
+        "$value": "#62685E",
+        "$description": "Secondary metadata text and captions. WCAG 2.2 AA Pass (5.36:1 on Parchment, 4.84:1 on Mineral Sand). APCA Lc 63.8."
+      },
+      "quiet-stone": {
+        "$type": "color",
+        "$value": "#85877B",
+        "$description": "Tertiary structural dividers and non-text metadata indicators. RESTRICTED from continuous reading copy."
+      },
+      "pure-white": {
+        "$type": "color",
+        "$value": "#FFFFFF",
+        "$description": "Raised card surface."
+      }
+    },
+    "semantic": {
+      "text": {
+        "primary": {
+          "$type": "color",
+          "$value": "{color.primitive.forest-ink}",
+          "$description": "All primary copy, continuous reading prose, and headings. Enforces APCA Lc > 90."
+        },
+        "secondary": {
+          "$type": "color",
+          "$value": "{color.primitive.bark-grey}",
+          "$description": "Secondary captions, timestamps, and supporting metadata."
+        },
+        "accent": {
+          "$type": "color",
+          "$value": "{color.primitive.canopy}",
+          "$description": "Accessible botanical accent for text links and active states (6.44:1 contrast)."
+        },
+        "accent-dark": {
+          "$type": "color",
+          "$value": "{color.primitive.deep-moss}",
+          "$description": "Hover and high-contrast interactive text state."
+        },
+        "inverse": {
+          "$type": "color",
+          "$value": "{color.primitive.parchment}",
+          "$description": "Text rendered over dark botanical surfaces."
+        }
+      },
+      "canvas": {
+        "primary": {
+          "$type": "color",
+          "$value": "{color.primitive.parchment}"
+        },
+        "section-warm": {
+          "$type": "color",
+          "$value": "{color.primitive.mineral-sand}"
+        },
+        "surface-raised": {
+          "$type": "color",
+          "$value": "{color.primitive.pure-white}"
+        },
+        "surface-botanical": {
+          "$type": "color",
+          "$value": "{color.primitive.deep-moss}"
+        }
+      },
+      "brand": {
+        "display-accent": {
+          "$type": "color",
+          "$value": "{color.primitive.living-algae}",
+          "$description": "Living Algae for large titles (≥24px), large badges, node graphs, and non-text accents."
+        },
+        "text-accent": {
+          "$type": "color",
+          "$value": "{color.primitive.canopy}",
+          "$description": "Canopy for normal body text links, inline tags, and interactive buttons."
+        },
+        "provenance": {
+          "$type": "color",
+          "$value": "{color.primitive.rootwood}"
+        }
+      },
+      "border": {
+        "subtle": {
+          "$type": "color",
+          "$value": "{color.primitive.limestone}"
+        },
+        "strong": {
+          "$type": "color",
+          "$value": "{color.primitive.canopy}"
+        },
+        "living-accent": {
+          "$type": "color",
+          "$value": "{color.primitive.living-algae}"
+        }
+      },
+      "status": {
+        "success": {
+          "$type": "color",
+          "$value": "#326B49",
+          "$description": "WCAG AA Pass (5.89:1) for verified grants, publications, and identity proofs."
+        },
+        "warning": {
+          "$type": "color",
+          "$value": "#8A5A12",
+          "$description": "WCAG AA Pass (5.53:1) for approaching submission deadlines."
+        },
+        "error": {
+          "$type": "color",
+          "$value": "#B33D35",
+          "$description": "WCAG AA Pass (5.40:1) for critical validation failures."
+        },
+        "info": {
+          "$type": "color",
+          "$value": "#365F8D",
+          "$description": "WCAG AA Pass (6.18:1) for scholarly references and system notices."
+        }
+      }
+    }
+  },
+  "dimension": {
+    "touch-target": {
+      "min": {
+        "$type": "dimension",
+        "$value": "24px",
+        "$description": "WCAG 2.2 Success Criterion 2.5.8 Target Size (Minimum) hard floor for any interactive element."
+      },
+      "comfortable": {
+        "$type": "dimension",
+        "$value": "36px",
+        "$description": "Standard comfortable research control height."
+      },
+      "action": {
+        "$type": "dimension",
+        "$value": "44px",
+        "$description": "Primary action button height."
+      }
+    },
+    "space": {
+      "1": { "$type": "dimension", "$value": "4px" },
+      "2": { "$type": "dimension", "$value": "8px" },
+      "3": { "$type": "dimension", "$value": "12px" },
+      "4": { "$type": "dimension", "$value": "16px" },
+      "5": { "$type": "dimension", "$value": "20px" },
+      "6": { "$type": "dimension", "$value": "24px" },
+      "8": { "$type": "dimension", "$value": "32px" },
+      "10": { "$type": "dimension", "$value": "40px" },
+      "12": { "$type": "dimension", "$value": "48px" },
+      "16": { "$type": "dimension", "$value": "64px" },
+      "20": { "$type": "dimension", "$value": "80px" },
+      "24": { "$type": "dimension", "$value": "96px" }
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "editorial": {
+        "$type": "fontFamily",
+        "$value": ["Newsreader", "Georgia", "serif"],
+        "$description": "Humanist serif for display headings, pull quotes, and scholarly narratives."
+      },
+      "interface": {
+        "$type": "fontFamily",
+        "$value": ["Instrument Sans", "Plus Jakarta Sans", "system-ui", "sans-serif"],
+        "$description": "Contemporary clarity for UI controls, navigation, and data tables."
+      },
+      "data": {
+        "$type": "fontFamily",
+        "$value": ["IBM Plex Mono", "monospace"],
+        "$description": "Monospace for DOIs, hashes, metrics, and machine-readable data."
+      }
+    },
+    "scale": {
+      "display-xl": {
+        "fontSize": { "$type": "dimension", "$value": "64px" },
+        "lineHeight": { "$type": "dimension", "$value": "70px" },
+        "ratio": "1.09x",
+        "fontWeight": 400
+      },
+      "display-l": {
+        "fontSize": { "$type": "dimension", "$value": "52px" },
+        "lineHeight": { "$type": "dimension", "$value": "58px" },
+        "ratio": "1.11x",
+        "fontWeight": 400
+      },
+      "heading-1": {
+        "fontSize": { "$type": "dimension", "$value": "44px" },
+        "lineHeight": { "$type": "dimension", "$value": "50px" },
+        "ratio": "1.13x",
+        "fontWeight": 500
+      },
+      "heading-2": {
+        "fontSize": { "$type": "dimension", "$value": "34px" },
+        "lineHeight": { "$type": "dimension", "$value": "41px" },
+        "ratio": "1.20x",
+        "fontWeight": 500
+      },
+      "heading-3": {
+        "fontSize": { "$type": "dimension", "$value": "26px" },
+        "lineHeight": { "$type": "dimension", "$value": "33px" },
+        "ratio": "1.26x",
+        "fontWeight": 600
+      },
+      "heading-4": {
+        "fontSize": { "$type": "dimension", "$value": "20px" },
+        "lineHeight": { "$type": "dimension", "$value": "27px" },
+        "ratio": "1.35x",
+        "fontWeight": 600
+      },
+      "lead-paragraph": {
+        "fontSize": { "$type": "dimension", "$value": "19px" },
+        "lineHeight": { "$type": "dimension", "$value": "30px" },
+        "ratio": "1.57x",
+        "fontWeight": 400
+      },
+      "body": {
+        "fontSize": { "$type": "dimension", "$value": "16px" },
+        "lineHeight": { "$type": "dimension", "$value": "25px" },
+        "ratio": "1.56x",
+        "fontWeight": 400
+      },
+      "body-small": {
+        "fontSize": { "$type": "dimension", "$value": "14px" },
+        "lineHeight": { "$type": "dimension", "$value": "21px" },
+        "ratio": "1.50x",
+        "fontWeight": 400
+      },
+      "button-navigation": {
+        "fontSize": { "$type": "dimension", "$value": "14px" },
+        "lineHeight": { "$type": "dimension", "$value": "20px" },
+        "ratio": "1.42x",
+        "fontWeight": 600
+      },
+      "label": {
+        "fontSize": { "$type": "dimension", "$value": "12px" },
+        "lineHeight": { "$type": "dimension", "$value": "17px" },
+        "ratio": "1.41x",
+        "fontWeight": 600
+      },
+      "metadata": {
+        "fontSize": { "$type": "dimension", "$value": "12px" },
+        "lineHeight": { "$type": "dimension", "$value": "18px" },
+        "ratio": "1.50x",
+        "fontWeight": 500
+      }
+    }
+  }
+}
