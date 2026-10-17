@@ -98,7 +98,9 @@ function EcosystemGraph({ dark = false }: { dark?: boolean }) {
                 className={`flex flex-col justify-center px-2.5 py-1.5 rounded-md cursor-default transition-transform hover:-translate-y-0.5 hover:shadow-elevation1`}
                 style={{
                   background: cardBg,
-                  border: `1px solid ${isCenter ? "var(--primary-light)" : cardBorder}`,
+                  borderLeft: `1px solid ${isCenter ? "var(--primary-light)" : cardBorder}`,
+                  borderRight: `1px solid ${isCenter ? "var(--primary-light)" : cardBorder}`,
+                  borderBottom: `1px solid ${isCenter ? "var(--primary-light)" : cardBorder}`,
                   borderTop: `2px solid ${node.color}`,
                   boxShadow: isCenter
                     ? `0 0 0 1px ${node.color}22, 0 4px 16px rgba(0,0,0,0.06)`

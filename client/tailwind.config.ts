@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: ["class"],
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -139,6 +140,9 @@ const config: Config = {
         limestone: "#E4DCCB",
         "sage-mist": "#DCE6D7",
         "living-algae": "#66866A",
+        "living-algae-accessible": "#365F42",
+        "text-accent": "#3E6248",
+        "text-accent-hover": "#293E30",
         canopy: "#3E6248",
         "deep-moss": "#293E30",
         rootwood: "#805B43",
@@ -151,6 +155,8 @@ const config: Config = {
         sans: ["var(--font-sans)", "Instrument Sans", "Plus Jakarta Sans", "system-ui", "sans-serif"],
         serif: ["var(--font-serif)", "Newsreader", "Georgia", "serif"],
         mono: ["var(--font-mono)", "IBM Plex Mono", "monospace"],
+        brand: ["var(--font-brand)", "Manrope", "sans-serif"],
+        manrope: ["var(--font-brand)", "Manrope", "sans-serif"],
         editorial: ["Newsreader", "Georgia", "serif"],
         interface: ["Instrument Sans", "Plus Jakarta Sans", "system-ui", "sans-serif"],
         data: ["IBM Plex Mono", "monospace"],

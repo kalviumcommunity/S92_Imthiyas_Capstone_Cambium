@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
+import path from "path";
+
 const nextConfig: NextConfig = {
+  output: "standalone",
   reactStrictMode: true,
+  outputFileTracingRoot: path.join(__dirname, ".."),
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -13,6 +17,11 @@ const nextConfig: NextConfig = {
       {
         source: "/app/:path*",
         destination: "/:path*",
+        permanent: false,
+      },
+      {
+        source: "/500",
+        destination: "/error-500",
         permanent: false,
       },
     ];
