@@ -3,57 +3,67 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import CambiumLogo from '@/components/CambiumLogo'
-import { ArrowUpRight, User, AlertCircle, Sparkles } from 'lucide-react'
+import { ArrowUpRight, User, AlertCircle, Sparkles, Check, Flame, Bookmark, FileText, Compass, Search, ExternalLink, ShieldCheck, Bell, Calendar as CalendarIcon, Plus, LayoutGrid, Shield, Database, Building2, Key, BookOpen, MessageSquare, HelpCircle, Settings, Share2, Heart } from 'lucide-react'
 import { CambiumIntroPreloader } from '@/components/landing/CambiumIntroPreloader'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { useTheme } from '@/lib/theme-provider'
+import { getNaturalScholarContributionLevel, getScholarContributionDetails, SCHOLAR_ACTIVITY_BADGES } from '@/lib/scholarHeatmap'
 
 // ─── Design System Tokens (Cambium Master Living Materials System) ────────────
+// ─── Design System Tokens (Cambium Master Living Materials System — 10/10 Production) ───
 const C = {
   // Master Four Living Materials
-  mineralSand: '#F2EBDD',  // The warm paper foundation
-  livingAlgae: '#66866A',  // Life, discovery, verified activity
-  rootwood: '#805B43',     // Research heritage, provenance, depth
-  forestInk: '#202920',    // Authoritative ink for headings & navigation
+  mineralSand: 'var(--color-mineral-sand, #F2EBDD)',
+  livingAlgae: 'var(--color-living-algae, #66866A)',
+  rootwood: 'var(--color-rootwood, #805B43)',
+  forestInk: 'var(--color-forest-ink, #202920)',
 
   // Extended Color System
-  parchment: '#FAF7F0',    // Primary canvas
-  limestone: '#E4DCCB',    // Subtle surface & dividers
-  sageMist: '#DCE6D7',     // Selected states & quiet highlights
-  canopy: '#3E6248',       // Primary action & strong accent
-  deepMoss: '#293E30',     // Dark botanical surface
-  loam: '#B89A78',         // Charts & supporting detail
-  barkGrey: '#62685E',     // Secondary text
-  quietStone: '#85877B',   // Tertiary metadata
+  parchment: 'var(--color-parchment, #FAF7F0)',
+  limestone: 'var(--color-limestone, #E4DCCB)',
+  sageMist: 'var(--color-sage-mist, #DCE6D7)',
+  canopy: 'var(--color-canopy, #3E6248)',
+  deepMoss: 'var(--color-deep-moss, #293E30)',
+  loam: 'var(--color-loam, #B89A78)',
+  barkGrey: 'var(--color-bark-grey, #62685E)',
+  quietStone: 'var(--color-quiet-stone, #85877B)',
 
-  // Semantic Status Tokens
-  statusSuccess: '#326B49',
-  statusWarning: '#8A5A12',
-  statusError: '#B33D35',
-  statusInfo: '#365F8D',
-  statusNeutral: '#62685E',
+  // Accessibility-Hardened Living Algae & Accent Tokens
+  livingAlgaeAccessible: 'var(--color-living-algae-accessible, #365F42)',
+  textAccent: 'var(--color-text-accent, #3E6248)',
+  textAccentHover: 'var(--color-text-accent-hover, #293E30)',
+
+  // Semantic Status Tokens (All WCAG 2.2 AA Verified)
+  statusSuccess: 'var(--color-status-success, #326B49)',
+  statusWarning: 'var(--color-status-warning, #8A5A12)',
+  statusError: 'var(--color-status-error, #B33D35)',
+  statusInfo: 'var(--color-status-info, #365F8D)',
+  statusNeutral: 'var(--color-status-neutral, #62685E)',
 
   // System Role Aliases
-  bg: '#FAF7F0',           // Parchment primary canvas
-  surfaceRaised: '#FFFFFF',
-  surfaceSunken: '#F2EBDD', // Mineral Sand warm section background
-  surface2: '#E4DCCB',     // Limestone subtle surface
-  charcoal: '#202920',     // Forest Ink primary text
-  secondary: '#62685E',    // Bark Grey secondary text
-  tertiary: '#85877B',     // Quiet Stone metadata
-  rule: '#E4DCCB',         // Limestone dividers & hairline
-  borderStrong: '#66866A', // Living Algae brand accent
-  moss: '#3E6248',         // Canopy primary action
-  moss500: '#66866A',      // Living Algae
-  mossLight: '#DCE6D7',    // Sage Mist highlight
-  moss050: '#F2EBDD',      // Mineral Sand tint
-  mossMid: '#3E6248',      // Canopy
-  mossHover: '#293E30',    // Deep Moss
-  darkBg: '#293E30',       // Deep Moss dark botanical surface
-  darkSurface: '#202920',  // Forest Ink dark surface
-  darkBorder: '#3E6248',   // Canopy dark border
-  crimson: '#B33D35',      // Status Error
+  bg: 'var(--color-parchment, #FAF7F0)',
+  surfaceRaised: 'var(--card, #FFFFFF)',
+  surfaceSunken: 'var(--color-mineral-sand, #F2EBDD)',
+  surface2: 'var(--color-limestone, #E4DCCB)',
+  charcoal: 'var(--color-forest-ink, #202920)',
+  secondary: 'var(--color-bark-grey, #62685E)',
+  secondarySubtle: 'var(--color-bark-grey, #62685E)',
+  tertiary: 'var(--color-quiet-stone, #85877B)',
+  rule: 'var(--color-limestone, #E4DCCB)',
+  borderStrong: 'var(--color-living-algae, #66866A)',
+  moss: 'var(--color-canopy, #3E6248)',
+  moss500: 'var(--color-living-algae, #66866A)',
+  mossLight: 'var(--color-sage-mist, #DCE6D7)',
+  moss050: 'var(--color-mineral-sand, #F2EBDD)',
+  mossMid: 'var(--color-canopy, #3E6248)',
+  mossHover: 'var(--color-text-accent-hover, #293E30)',
+  darkBg: 'var(--color-deep-moss, #18231B)',
+  darkSurface: 'var(--card, #18231B)',
+  darkBorder: 'var(--color-limestone, #233327)',
+  crimson: 'var(--color-status-error, #B33D35)',
 }
 
-// ─── Navigation (Mathematically Aligned Optical Grid) ─────────────────────────
+// ─── Navigation (Mathematically Aligned Optical Grid & WCAG 2.2 Touch Targets) ───
 function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -65,12 +75,12 @@ function Nav() {
   }, [])
 
   return (
-    <header className="w-full border-b border-[#E4DCCB] bg-[#FAF7F0]/90 backdrop-blur-md sticky top-0 z-50 transition-all duration-300">
+    <header className="w-full border-b border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0]/90 dark:bg-[#0E140F]/90 backdrop-blur-md sticky top-0 z-50 transition-all duration-300">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         {/* Brand Architecture */}
         <CambiumLogo size="md" href="/" />
 
-        {/* Core Navigation - Balanced Optical Centering */}
+        {/* Core Navigation - Balanced Optical Centering with WCAG 2.2 Touch Targets */}
         <nav className="hidden md:flex items-center gap-8">
           {[
             { label: 'Discover', href: '#discover' },
@@ -81,57 +91,65 @@ function Nav() {
             <a
               key={label}
               href={href}
-              className="font-sans text-[14px] font-[450] text-[#62685E] hover:text-[#202920] tracking-[-0.01em] transition-colors duration-200 relative after:absolute after:bottom-[-29px] after:left-0 after:w-full after:h-[2px] after:bg-[#3E6248] after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 no-underline"
+              className="font-sans text-[14px] font-[450] text-[#4A5246] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] tracking-[-0.01em] transition-colors duration-200 relative py-2 px-1 inline-flex items-center min-h-[36px] min-w-[24px] after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-[2px] after:bg-[#3E6248] dark:after:bg-[#4ADE80] after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:duration-300 no-underline"
             >
               {label}
             </a>
           ))}
         </nav>
 
-        {/* Action Threshold */}
-        <div className="hidden md:flex items-center gap-5">
+        {/* Action Threshold with Cambium Aligned Theme Toggle */}
+        <div className="hidden md:flex items-center gap-4">
+          <ThemeToggle />
           <Link 
             href="/sign-in" 
-            className="font-sans text-[14px] font-medium text-[#62685E] hover:text-[#202920] transition-colors no-underline"
+            className="font-sans text-[14px] font-medium text-[#4A5246] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] transition-colors no-underline py-2 px-2 inline-flex items-center min-h-[36px] min-w-[24px]"
           >
             Sign in
           </Link>
           <Link
             href="/sign-up"
-            className="bg-[#3E6248] hover:bg-[#293E30] text-[#FAF7F0] px-5 py-2.5 rounded-full font-sans text-xs font-semibold tracking-wide uppercase shadow-sm shadow-[#3E6248]/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 inline-block text-center no-underline border border-[#66866A]/30"
+            className="bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] px-5 py-2.5 rounded-full font-sans text-xs font-semibold tracking-wide uppercase shadow-sm shadow-[#3E6248]/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center justify-center min-h-[36px] text-center no-underline border border-[#66866A]/30 dark:border-[#4ADE80]/30"
           >
             Create Identity
           </Link>
         </div>
 
-        {/* Mobile menu button */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden p-2 text-[#202920] bg-transparent border-0 cursor-pointer"
-          aria-label="Toggle menu"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="17" x2="21" y2="17" />
-          </svg>
-        </button>
+        {/* Mobile menu button with 44x44px touch target */}
+        <div className="md:hidden flex items-center gap-2">
+          <ThemeToggle variant="minimal" />
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-2 text-[#202920] dark:text-[#EDEAE2] bg-transparent border-0 cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label="Toggle menu"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="17" x2="21" y2="17" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Mobile Drawer */}
       {menuOpen && (
-        <div className="md:hidden border-t border-[#E4DCCB] bg-[#FAF7F0] px-6 py-6 space-y-4">
+        <div className="md:hidden border-t border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#0E140F] px-6 py-6 space-y-4">
           {['Discover', 'Community', 'Opportunity', 'Research'].map((item) => (
             <a
               key={item}
               href={`#${item.toLowerCase()}`}
               onClick={() => setMenuOpen(false)}
-              className="block text-[15px] font-medium text-[#62685E] hover:text-[#202920] no-underline"
+              className="block text-[15px] font-medium text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] no-underline"
             >
               {item}
             </a>
           ))}
-          <div className="pt-4 border-t border-[#E4DCCB] flex flex-col gap-3">
-            <Link href="/sign-in" className="text-sm font-medium text-[#202920] no-underline">Sign in</Link>
-            <Link href="/sign-up" className="bg-[#3E6248] text-[#FAF7F0] px-4 py-2.5 rounded-full text-xs font-semibold text-center uppercase no-underline">Create Identity</Link>
+          <div className="pt-4 border-t border-[#E4DCCB] dark:border-[#233327] flex flex-col gap-3">
+            <div className="flex items-center justify-between py-1">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">Appearance Mode</span>
+              <ThemeToggle />
+            </div>
+            <Link href="/sign-in" className="text-sm font-medium text-[#202920] dark:text-[#EDEAE2] no-underline">Sign in</Link>
+            <Link href="/sign-up" className="bg-[#3E6248] dark:bg-[#4ADE80] text-[#FAF7F0] dark:text-[#0E140F] px-4 py-2.5 rounded-full text-xs font-semibold text-center uppercase no-underline">Create Identity</Link>
           </div>
         </div>
       )}
@@ -140,8 +158,10 @@ function Nav() {
 }
 
 // ─── Hero Ecosystem Graph (Living Interactive Network) ─────────────────────────
-function EcosystemGraph({ dark = false, selectedCategory = 'all' }: { dark?: boolean; selectedCategory?: string }) {
+function EcosystemGraph({ dark, selectedCategory = 'all' }: { dark?: boolean; selectedCategory?: string }) {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
+  const { resolvedTheme } = useTheme()
+  const isDark = dark !== undefined ? dark : resolvedTheme === 'dark'
 
   const nodes = [
     { id: 'imthiyas', x: 380, y: 250, type: 'scholar', label: 'Imthiyas', sub: 'Cambium Architect · AI & Research Systems', color: '#3E6248', drift: 'animate-drift-1', isPrimary: true },
@@ -223,10 +243,10 @@ function EcosystemGraph({ dark = false, selectedCategory = 'all' }: { dark?: boo
 
   const activeHoveredNodeData = hoveredNode ? getNode(hoveredNode) : null
 
-  const textColor = dark ? 'rgba(250,249,246,0.95)' : C.charcoal
-  const subColor = dark ? 'rgba(250,249,246,0.55)' : C.secondary
-  const cardBg = dark ? C.darkSurface : '#FFFFFF'
-  const cardBorder = dark ? C.darkBorder : C.rule
+  const textColor = isDark ? '#EDEAE2' : '#202920'
+  const subColor = isDark ? '#A3B899' : '#62685E'
+  const cardBg = isDark ? '#18231B' : '#FFFFFF'
+  const cardBorder = isDark ? '#233327' : '#E4DCCB'
 
   return (
     <div className="relative w-full h-full select-none">
@@ -349,7 +369,10 @@ function EcosystemGraph({ dark = false, selectedCategory = 'all' }: { dark?: boo
                 <div
                   style={{
                     background: isHovered ? '#FFFFFF' : cardBg,
-                    border: `1px solid ${isHovered ? node.color : (isCenter ? node.color + '88' : cardBorder)}`,
+                    borderLeft: `1px solid ${isHovered ? node.color : (isCenter ? node.color + '88' : cardBorder)}`,
+                    borderRight: `1px solid ${isHovered ? node.color : (isCenter ? node.color + '88' : cardBorder)}`,
+                    borderBottom: `1px solid ${isHovered ? node.color : (isCenter ? node.color + '88' : cardBorder)}`,
+                    borderTop: `2.5px solid ${node.color}`,
                     borderRadius: 7,
                     padding: '6px 10px',
                     boxShadow: isHovered
@@ -361,7 +384,6 @@ function EcosystemGraph({ dark = false, selectedCategory = 'all' }: { dark?: boo
                     transform: `scale(${scale})`,
                     transformOrigin: 'center bottom',
                     transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                    borderTop: `2.5px solid ${node.color}`,
                   }}
                 >
                   <div style={{
@@ -415,37 +437,37 @@ function EcosystemGraph({ dark = false, selectedCategory = 'all' }: { dark?: boo
 // ─── Editorial Hero Section (Pure First Viewport Experience) ─────────────────
 function Hero() {
   return (
-    <section className="w-full bg-[#FAF7F0] min-h-[calc(100vh-80px)] flex flex-col justify-between pt-8 md:pt-14 pb-8 md:pb-10 px-6 relative overflow-hidden border-b border-[#E4DCCB]">
+    <section className="w-full bg-[#FAF7F0] dark:bg-[#0E140F] min-h-[calc(100vh-80px)] flex flex-col justify-between pt-8 md:pt-14 pb-8 md:pb-10 px-6 relative overflow-hidden border-b border-[#E4DCCB] dark:border-[#233327] transition-colors duration-200">
       {/* Subtle organic radial glow */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_75%_35%,rgba(62,98,72,0.06)_0%,transparent_65%)]" />
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_75%_35%,rgba(62,98,72,0.06)_0%,transparent_65%)] dark:bg-[radial-gradient(circle_at_75%_35%,rgba(74,222,128,0.08)_0%,transparent_65%)]" />
 
       <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col justify-center">
         {/* Asymmetric 7/5 Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start my-auto">
           {/* Left Column: Semantic Typographic Statement (7 Cols) */}
           <div className="lg:col-span-7 flex flex-col items-start">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#E4DCCB] bg-[#F2EBDD] mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] animate-pulse" />
-              <span className="font-sans text-[11px] font-semibold tracking-wider text-[#3E6248] uppercase">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-[#F2EBDD] dark:bg-[#131C15] mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+              <span className="font-sans text-[11px] font-semibold tracking-wider text-[#3E6248] dark:text-[#4ADE80] uppercase">
                 The Research Operating System
               </span>
             </div>
 
-            <h1 className="font-serif text-[clamp(2.75rem,5.6vw,4.75rem)] text-[#202920] font-normal leading-[1.08] tracking-tight mb-8">
+            <h1 className="font-serif text-[clamp(2.75rem,5.6vw,4.75rem)] text-[#202920] dark:text-[#EDEAE2] font-normal leading-[1.08] tracking-tight mb-8">
               Your research <br />
-              <span className="italic text-[#3E6248]">world, connected.</span>
+              <span className="italic text-[#3E6248] dark:text-[#4ADE80]">world, connected.</span>
             </h1>
 
             {/* Three Pillar Metadata Anchors */}
-            <div className="flex items-center gap-8 pt-4 border-t border-[#E4DCCB] w-full max-w-lg">
+            <div className="flex items-center gap-8 pt-4 border-t border-[#E4DCCB] dark:border-[#233327] w-full max-w-lg">
               {[
                 ['Academic', 'Identity'],
                 ['Research', 'Workspace'],
                 ['Intelligent', 'Discovery'],
               ].map(([sub, label]) => (
                 <div key={label}>
-                  <div className="font-sans text-xs uppercase tracking-wider text-[#62685E] font-medium">{sub}</div>
-                  <div className="font-serif text-base font-semibold text-[#202920] mt-0.5">{label}</div>
+                  <div className="font-sans text-xs uppercase tracking-wider text-[#62685E] dark:text-[#A3B899] font-medium">{sub}</div>
+                  <div className="font-serif text-base font-semibold text-[#202920] dark:text-[#EDEAE2] mt-0.5">{label}</div>
                 </div>
               ))}
             </div>
@@ -453,21 +475,21 @@ function Hero() {
 
           {/* Right Column: Narrative Context & Actions (5 Cols) */}
           <div className="lg:col-span-5 lg:pt-8 flex flex-col items-start gap-8">
-            <p className="font-sans text-[17px] md:text-[19px] font-normal text-[#62685E] leading-[1.62] tracking-normal">
+            <p className="font-sans text-[17px] md:text-[19px] font-normal text-[#202920]/90 dark:text-[#EDEAE2]/90 leading-[1.62] tracking-normal">
               Discover ideas, build your academic identity, collaborate with researchers, explore opportunities, and organize the knowledge behind your work — all in one living research environment.
             </p>
 
             <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
               <Link
                 href="/sign-up"
-                className="w-full sm:w-auto bg-[#3E6248] hover:bg-[#293E30] text-[#FAF7F0] px-8 py-4 rounded-xl font-sans text-sm font-semibold tracking-tight transition-all shadow-md shadow-[#3E6248]/25 hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2 group no-underline border border-[#66866A]/40"
+                className="w-full sm:w-auto bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] px-8 py-4 rounded-xl font-sans text-sm font-semibold tracking-tight transition-all shadow-md shadow-[#3E6248]/25 hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2 group no-underline border border-[#66866A]/40 dark:border-[#4ADE80]/40"
               >
                 <span>Get started — it's free</span>
-                <ArrowUpRight className="w-4 h-4 text-[#FAF7F0]/80 group-hover:text-[#FAF7F0] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                <ArrowUpRight className="w-4 h-4 text-[#FAF7F0]/80 dark:text-[#0E140F]/80 group-hover:text-[#FAF7F0] dark:group-hover:text-[#0E140F] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Link>
               <a
                 href="#knowledge-network"
-                className="w-full sm:w-auto border border-[#E4DCCB] hover:border-[#3E6248] text-[#202920] hover:bg-[#F2EBDD] px-8 py-4 rounded-xl font-sans text-sm font-medium transition-colors bg-[#FAF7F0] flex items-center justify-center no-underline"
+                className="w-full sm:w-auto border border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80] text-[#202920] dark:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#131C15] px-8 py-4 rounded-xl font-sans text-sm font-medium transition-colors bg-[#FAF7F0] dark:bg-[#0E140F] flex items-center justify-center no-underline"
               >
                 Explore Cambium
               </a>
@@ -476,52 +498,67 @@ function Hero() {
         </div>
 
         {/* Scholarly Verification Ledger Strip (Stripe Press / Nature grade evidence metrics) */}
-        <div className="mt-10 lg:mt-12 pt-6 border-t border-[#E4DCCB] grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
+        <div className="mt-10 lg:mt-12 pt-6 border-t border-[#E4DCCB] dark:border-[#233327] grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920]">120M+</div>
-            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] font-semibold mt-1">Indexed Publications</div>
-            <div className="font-mono text-[11px] text-[#85877B] mt-0.5">Crossref · PubMed · arXiv</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">120M+</div>
+            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Indexed Publications</div>
+            <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
+              <span>Crossref · PubMed · arXiv</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Verified Pipeline" />
+            </div>
           </div>
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920]">85,000+</div>
-            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] font-semibold mt-1">Active Opportunities</div>
-            <div className="font-mono text-[11px] text-[#85877B] mt-0.5">NSF · NIH · ERC Grants</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">85,000+</div>
+            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Active Opportunities</div>
+            <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
+              <span>NSF · NIH · ERC Grants</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Daily Sync" />
+            </div>
           </div>
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920]">4.8M</div>
-            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] font-semibold mt-1">Verified Researchers</div>
-            <div className="font-mono text-[11px] text-[#85877B] mt-0.5">ORCID Anchor · Cryptographic</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">4.8M</div>
+            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Verified Researchers</div>
+            <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
+              <span>ORCID Anchor · Cryptographic</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Cryptographically Anchored" />
+            </div>
           </div>
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920]">100%</div>
-            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] font-semibold mt-1">Evidence-Linked</div>
-            <div className="font-mono text-[11px] text-[#85877B] mt-0.5">Inspectable Citations & DOIs</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">100%</div>
+            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Evidence-Linked</div>
+            <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
+              <span>Inspectable Citations & DOIs</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Claim-Level Traceability" />
+            </div>
           </div>
         </div>
 
-        {/* Scroll invitation to living knowledge network */}
-        <div className="mt-6 pt-4 flex items-center justify-between border-t border-[#E4DCCB]/60">
+        {/* Scroll invitation to living knowledge network with live pipeline status */}
+        <div className="mt-6 pt-4 flex items-center justify-between border-t border-[#E4DCCB]/60 dark:border-[#233327]/60 flex-wrap gap-3">
           <a
             href="#knowledge-network"
-            className="inline-flex items-center gap-2 font-mono text-xs text-[#62685E] hover:text-[#3E6248] transition-colors no-underline group cursor-pointer"
+            className="inline-flex items-center gap-2 font-mono text-xs text-[#4A5246] dark:text-[#A3B899] hover:text-[#3E6248] dark:hover:text-[#4ADE80] transition-colors no-underline group cursor-pointer py-1"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#66866A] group-hover:scale-125 transition-transform" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#66866A] dark:bg-[#4ADE80] group-hover:scale-125 transition-transform" />
             <span>Explore Relational Knowledge Network</span>
             <span className="group-hover:translate-y-0.5 transition-transform">↓</span>
           </a>
-
+          <div className="flex items-center gap-2 font-mono text-[10.5px] text-[#85877B] dark:text-[#7E8B7B] uppercase tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] animate-pulse" />
+            <span>SCHOLARLY LEDGER: LIVE PIPELINE SYNCHRONIZED</span>
+          </div>
         </div>
       </div>
     </section>
   )
 }
 
-// ─── Living Knowledge Network Section (Dedicated Full Showcase) ──────────────
+// ─── Living Knowledge Network Section (Photo 2 Dedicated Showcase) ───────────
 function KnowledgeGraphSection() {
   const [graphCategory, setGraphCategory] = useState('all')
 
   return (
-    <section id="knowledge-network" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '100px 24px', position: 'relative' }}>
+    <section id="knowledge-network" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '96px 24px', position: 'relative' }}>
       {/* Subtle organic ambient glow */}
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
 
@@ -536,13 +573,26 @@ function KnowledgeGraphSection() {
               Make the connections visible.
             </h2>
           </div>
-          <p className="font-sans text-base text-[rgba(245,244,240,0.72)] max-w-xl leading-relaxed">
-            Research grows at the intersections. Explore how papers, collaborators, funding streams, and foundational models connect organically across scientific disciplines.
-          </p>
+          <div className="flex flex-col md:items-end gap-3 max-w-xl">
+            <p className="font-sans text-base text-[rgba(245,244,240,0.72)] leading-relaxed m-0">
+              Research grows at the intersections. Explore how papers, collaborators, funding streams, and foundational models connect organically across scientific disciplines.
+            </p>
+            <div className="flex items-center gap-4 flex-wrap">
+              <span className="font-mono text-xs text-[rgba(245,244,240,0.55)]">
+                Integrated across platform at /graph & /intelligence
+              </span>
+              <Link
+                href="/graph"
+                className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-[#4ADE80] hover:text-white transition-colors underline underline-offset-4"
+              >
+                Launch Constellation Explorer ↗
+              </Link>
+            </div>
+          </div>
         </div>
 
-        {/* Integrated Relational Node Graph Exhibition Canvas (Sandal/Sand Box matching Photo 1) */}
-        <div className="w-full rounded-2xl border border-[#E4DCCB] bg-[#FAF7F0] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.35),0_4px_16px_rgba(0,0,0,0.12)] p-4 md:p-8 relative overflow-hidden">
+        {/* Integrated Relational Node Graph Exhibition Canvas (Sandal/Sand Box) */}
+        <div className="w-full rounded-2xl border border-[#E4DCCB] bg-[#FAF7F0] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.45),0_4px_16px_rgba(0,0,0,0.2)] p-4 md:p-8 relative overflow-hidden transition-colors">
           <div className="flex flex-wrap items-center justify-between pb-4 mb-4 border-b border-[#E4DCCB] gap-3 px-2">
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-[#3E6248] animate-pulse" />
@@ -562,9 +612,9 @@ function KnowledgeGraphSection() {
                 <button
                   key={id}
                   onClick={() => setGraphCategory(id)}
-                  className={`text-[11px] font-sans px-3 py-1 rounded-full border transition-all cursor-pointer ${
+                  className={`text-[11px] font-sans px-3.5 py-1.5 min-h-[28px] rounded-full border transition-all cursor-pointer inline-flex items-center justify-center ${
                     graphCategory === id
-                      ? 'bg-[#254A34] text-[#FAF7F0] border-[#254A34] font-semibold shadow-sm'
+                      ? 'bg-[#254A34] text-[#FAF7F0] border-[#254A34] font-semibold shadow-xs'
                       : 'bg-[#FAF7F0] text-[#62685E] border-[#E4DCCB] hover:border-[#3E6248] hover:text-[#202920]'
                   }`}
                 >
@@ -579,7 +629,7 @@ function KnowledgeGraphSection() {
           </div>
 
           <div className="h-[460px] md:h-[540px] w-full">
-            <EcosystemGraph dark={false} selectedCategory={graphCategory} />
+            <EcosystemGraph selectedCategory={graphCategory} />
           </div>
         </div>
       </div>
@@ -600,36 +650,22 @@ function TrustSection() {
   ]
 
   return (
-    <section style={{ background: C.bg, borderTop: `1px solid ${C.rule}`, borderBottom: `1px solid ${C.rule}`, padding: '64px 88px' }}>
+    <section className="bg-[#F2EBDD] dark:bg-[#131C15] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-16 px-6 md:px-16 transition-colors duration-200">
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <p style={{ fontSize: 13, fontWeight: 500, letterSpacing: '0.08em', color: C.tertiary, textTransform: 'uppercase', marginBottom: 16 }}>Built for</p>
-          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(28px, 3vw, 40px)', fontWeight: 400, color: C.charcoal, letterSpacing: '-0.02em' }}>
+        <div className="text-center mb-12">
+          <p className="text-xs font-semibold tracking-wider text-[#85877B] dark:text-[#7E8B7B] uppercase mb-4">Built for</p>
+          <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-4xl font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight">
             The people moving research forward.
           </h2>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
+        <div className="flex flex-wrap gap-3 justify-center">
           {categories.map(({ icon, label }) => (
             <div
               key={label}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '12px 20px',
-                border: `1px solid ${C.rule}`,
-                borderRadius: 40,
-                fontSize: 14,
-                fontWeight: 500,
-                color: C.secondary,
-                transition: 'border-color 0.15s, color 0.15s',
-                cursor: 'default',
-              }}
-              onMouseEnter={(e) => { const el = e.currentTarget as HTMLDivElement; el.style.borderColor = C.moss; el.style.color = C.charcoal }}
-              onMouseLeave={(e) => { const el = e.currentTarget as HTMLDivElement; el.style.borderColor = C.rule; el.style.color = C.secondary }}
+              className="flex items-center gap-2.5 px-5 py-3 border border-[#E4DCCB] dark:border-[#233327] rounded-full text-sm font-medium text-[#62685E] dark:text-[#A3B899] bg-white dark:bg-[#18231B] transition-colors cursor-default hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2]"
             >
-              <span style={{ color: C.moss, fontSize: 10 }}>{icon}</span>
-              {label}
+              <span className="text-[#3E6248] dark:text-[#4ADE80] text-xs">{icon}</span>
+              <span>{label}</span>
             </div>
           ))}
         </div>
@@ -638,42 +674,40 @@ function TrustSection() {
   )
 }
 
-// ─── Problem Section ──────────────────────────────────────────────────────────
+// ─── Problem Section (Fragmented vs Connected — Photo 4 Aligned) ─────────
 function ProblemSection() {
-  const sources = ['Papers', 'Grants', 'Conferences', 'Journals', 'Researchers', 'Datasets', 'Labs']
+  const fragmentedSources = [
+    'Papers', 'Grants', 'Conferences',
+    'Journals', 'Researchers', 'Datasets',
+    'Labs'
+  ]
 
   return (
-    <section style={{ background: C.bg, padding: '120px 88px' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{ maxWidth: 640, marginBottom: 80 }}>
-          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(36px, 4vw, 56px)', fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.03em', color: C.charcoal, marginBottom: 24 }}>
-            Research shouldn't begin with twenty browser tabs.
+    <section className="bg-[#FAF7F0] dark:bg-[#0E140F] py-24 px-6 md:px-16 border-t border-[#E4DCCB] dark:border-[#233327] transition-colors duration-200">
+      <div className="max-w-[1240px] mx-auto">
+        <div className="max-w-2xl mb-16">
+          <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight leading-tight mb-5">
+            Research shouldn&apos;t begin with twenty browser tabs.
           </h2>
-          <p style={{ fontSize: 18, lineHeight: 1.65, color: C.secondary }}>
+          <p className="text-base md:text-lg text-[#62685E] dark:text-[#A3B899] leading-relaxed">
             Research information is scattered across publications, funding portals, conference websites, academic profiles, spreadsheets, documents, and communities.
           </p>
         </div>
 
-        {/* Fragmented → Connected visualization */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 48, flexWrap: 'wrap' }}>
-          {/* Scattered sources */}
-          <div style={{ flex: 1, minWidth: 280 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.tertiary, textTransform: 'uppercase', marginBottom: 24 }}>Fragmented</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-              {sources.map((s, i) => (
+        {/* Fragmented → Connected Comparison */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1.1fr] items-center gap-8 md:gap-12">
+          {/* Left Column: Fragmented */}
+          <div>
+            <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-[#62685E] dark:text-[#A3B899] mb-5">
+              FRAGMENTED
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {fragmentedSources.map((s, idx) => (
                 <div
                   key={s}
-                  style={{
-                    padding: '12px 14px',
-                    background: C.bg,
-                    border: `1px solid ${C.rule}`,
-                    borderRadius: 6,
-                    fontSize: 12,
-                    fontWeight: 500,
-                    color: C.tertiary,
-                    transform: `rotate(${(i % 3 - 1) * 1.5}deg) translateY(${(i % 2) * 4}px)`,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                  }}
+                  className={`bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-xl px-4 py-3.5 text-center text-xs font-semibold text-[#62685E] dark:text-[#A3B899] shadow-xs hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD]/50 dark:hover:bg-[#131C15]/50 transition-all cursor-default select-none ${
+                    idx === 6 ? 'col-span-1' : ''
+                  }`}
                 >
                   {s}
                 </div>
@@ -681,41 +715,50 @@ function ProblemSection() {
             </div>
           </div>
 
-          {/* Arrow */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 80, height: 1, background: `linear-gradient(to right, ${C.rule}, ${C.moss})` }} />
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M4 10h12M12 6l4 4-4 4" stroke={C.moss} strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
+          {/* Center Transition Indicator: Arrow */}
+          <div className="hidden lg:flex flex-col items-center justify-center px-4">
+            <div className="flex items-center gap-3">
+              <div className="w-16 h-[1.5px] bg-[#E4DCCB] dark:bg-[#233327]" />
+              <div className="w-8 h-8 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80] text-sm font-bold shadow-xs">
+                →
+              </div>
+              <div className="w-16 h-[1.5px] bg-[#3E6248]/40 dark:bg-[#4ADE80]/40" />
+            </div>
           </div>
 
-          {/* Connected: Cambium */}
-          <div style={{ flex: 1, minWidth: 280 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.moss, textTransform: 'uppercase', marginBottom: 24 }}>Connected</p>
-            <div
-              style={{
-                padding: '32px',
-                background: C.bg,
-                border: `1px solid ${C.moss}55`,
-                borderTop: `2px solid ${C.moss}`,
-                borderRadius: 8,
-                boxShadow: '0 4px 24px rgba(92,122,94,0.08)',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#FAF7F0', border: '1px solid #E4DCCB', padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  <img src="/logo.svg" alt="CAMBIUM Research Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          {/* Right Column: Connected */}
+          <div>
+            <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-[#3E6248] dark:text-[#4ADE80] mb-5 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
+              CONNECTED
+            </div>
+            <div className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] border-t-2 border-t-[#3E6248] dark:border-t-[#4ADE80] rounded-2xl p-7 md:p-9 shadow-sm hover:shadow-md transition-all">
+              {/* Product Logo / Brand Lockup */}
+              <div className="flex items-center gap-2.5 mb-5">
+                <div className="w-7 h-7 rounded-full bg-[#DCE6D7] dark:bg-[#1A281E] border border-[#3E6248]/30 dark:border-[#4ADE80]/30 flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80] text-sm font-bold">
+                  ◎
                 </div>
-                <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.03em', color: C.charcoal, textTransform: 'uppercase' }}>
-                  CAMBIUM <span style={{ fontWeight: 300, color: C.moss }}>RESEARCH</span>
-                </span>
+                <div className="font-sans font-bold text-base tracking-tight text-[#202920] dark:text-[#EDEAE2] uppercase flex items-center gap-1.5">
+                  CAMBIUM <span className="font-light text-[#3E6248] dark:text-[#4ADE80]">RESEARCH</span>
+                </div>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {sources.map((s) => (
-                  <span key={s} style={{ fontSize: 11, fontWeight: 500, padding: '4px 10px', background: C.mossLight, color: C.mossMid, borderRadius: 4 }}>{s}</span>
+
+              {/* Unified Connected Pills */}
+              <div className="flex flex-wrap gap-2.5">
+                {fragmentedSources.map((s) => (
+                  <span
+                    key={s}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-[#DCE6D7] dark:bg-[#1A281E] text-[#3E6248] dark:text-[#4ADE80] rounded-lg border border-[#3E6248]/20 dark:border-[#4ADE80]/30 transition-transform hover:scale-105 cursor-default"
+                  >
+                    <span className="w-1 h-1 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
+                    {s}
+                  </span>
                 ))}
               </div>
-              <p style={{ fontSize: 13, color: C.secondary, marginTop: 16, lineHeight: 1.5 }}>Everything your research touches, in one living environment.</p>
+
+              <p className="text-sm text-[#3A4138] dark:text-[#A3B899] mt-6 leading-relaxed font-sans">
+                Everything your research touches, in one living environment.
+              </p>
             </div>
           </div>
         </div>
@@ -724,7 +767,8 @@ function ProblemSection() {
   )
 }
 
-// ─── Lifecycle Section (Fully Interactive 7-Stage Stepper) ───────────────────
+
+// ─── Lifecycle Section (Fully Interactive 7-Stage Stepper & Live Module Links) ───
 function LifecycleSection() {
   const [activeStage, setActiveStage] = useState(0)
 
@@ -732,57 +776,71 @@ function LifecycleSection() {
     {
       name: 'Discover',
       tagline: 'Formulate questions & surface hidden connections',
-      desc: 'Explore literature with semantic neural synthesis, identify emerging frontier topics, and track citation cascades before they trend.',
-      metrics: ['120M+ Papers Indexed', 'Semantic Citation Graphs', 'Daily Frontier Alerts'],
+      desc: 'Explore literature with semantic neural synthesis, identify emerging frontier topics, and track citation cascades across 120M+ indexed research papers.',
+      metrics: ['120M+ Papers Indexed', 'Semantic Citation Synthesis', 'Daily Frontier Alerts'],
       action: 'Query cross-disciplinary literature across Bio & AI',
+      targetRoute: '/discover',
+      targetLabel: 'Discover Console',
       accent: '#1A4D38',
     },
     {
       name: 'Explore',
       tagline: 'Trace citation networks & comparative methodologies',
-      desc: 'Deconstruct methodologies, compare experimental benchmarks across disciplines, and map methodological lineages across centuries of scholarship.',
-      metrics: ['Method Lineage Trees', 'Dataset Cross-Referencing', 'Co-citation Proximity'],
+      desc: 'Deconstruct methodologies, compare experimental benchmarks across disciplines, and map citation cascades across decades of scholarship using the interactive knowledge graph and AI agent reader.',
+      metrics: ['Method Lineage Trees', 'Agent Reader Deep Dives', 'Co-citation Proximity'],
       action: 'Compare transformer architectures for scientific data',
+      targetRoute: '/graph',
+      targetLabel: 'Constellation Graph & Reader',
       accent: '#256346',
     },
     {
       name: 'Connect',
       tagline: 'Find synergistic co-authors, labs & grants',
-      desc: 'Match with researchers working on complementary problems, discover high-synergy laboratories, and track relevant funding opportunities.',
-      metrics: ['Institutional Graph', 'Collaborator Matching', 'Grant Fit Scoring'],
+      desc: 'Match with researchers working on complementary problems, discover high-synergy laboratory groups, and track competitive funding calls across institutional boundaries.',
+      metrics: ['Institutional Graph', 'Collaborator Matching', 'Peer Review Registry'],
       action: 'Find active labs working on multimodal biomedical vision',
+      targetRoute: '/lab',
+      targetLabel: 'Lab Workspace & Peer Review',
       accent: '#1E5638',
     },
     {
       name: 'Work',
       tagline: 'Organize notes, code, datasets & experimental logs',
-      desc: 'A structured, bi-directional research workspace that brings literature notes, experimental hypotheses, and collaborative drafts into one living canvas.',
-      metrics: ['Bi-directional Linking', 'LaTeX & Markdown Native', 'Zotero & BibTeX Sync'],
+      desc: 'A structured, bi-directional research workspace that brings literature notes, experimental hypotheses, and collaborative drafts into one living canvas with conflict-free multi-user editing.',
+      metrics: ['Bi-directional Linking', 'Conflict-Free Sync', 'Zotero & BibTeX Sync'],
       action: 'Open structured literature matrix with live citations',
+      targetRoute: '/workspace',
+      targetLabel: 'Research Workspace',
       accent: '#1A4D38',
     },
     {
       name: 'Publish',
       tagline: 'Author camera-ready papers & preprints seamlessly',
-      desc: 'Prepare manuscripts with automated citation verification, institutional formatting templates, and peer-review ready exports for top venues.',
-      metrics: ['Automated Reference Formatting', 'Preprint Server Dispatch', 'Reproducibility Check'],
+      desc: 'Prepare manuscripts with automated citation verification, institutional formatting templates, double-blind peer review desks, and camera-ready exports for top venues.',
+      metrics: ['Automated Reference Formatting', 'Double-Blind Peer Review', 'IRB & Compliance Checks'],
       action: 'Compile camera-ready submission for NeurIPS or Nature',
+      targetRoute: '/publications',
+      targetLabel: 'Publications & Peer Review',
       accent: '#285C42',
     },
     {
       name: 'Share',
       tagline: 'Distribute datasets, models & findings to the community',
-      desc: 'Disseminate your preprints, interactive benchmarks, and supplementary data with verified digital object identifiers (DOIs) and citation anchors.',
-      metrics: ['Permanent DOI Minting', 'Open Access Repository', 'Community Peer Notes'],
+      desc: 'Disseminate your preprints, interactive benchmarks, and supplementary data with verified digital object identifiers (DOIs) and FAIR-compliant data management plans.',
+      metrics: ['Permanent DOI Minting', 'FAIR Data Repositories', 'Open Access Distribution'],
       action: 'Publish benchmark dataset with interactive visualization',
+      targetRoute: '/data-management',
+      targetLabel: 'FAIR Data Bridge',
       accent: '#1A4D38',
     },
     {
       name: 'Grow',
       tagline: 'Compound intellectual capital & academic reputation',
-      desc: 'Track real-time citation velocity, downstream patents and clinical impacts, funding renewals, and long-term research portfolio expansion.',
-      metrics: ['Citation Velocity Metrics', 'Downstream Impact Tracing', 'Tenure Dossier Export'],
+      desc: 'Track real-time citation velocity, downstream patents and clinical impacts, active funding renewals, and maintain an ORCID-verified academic portfolio with GitHub-style research cadence.',
+      metrics: ['Citation Velocity Metrics', 'ORCID Verified Profile', '52-Week Cadence Heatmap'],
       action: 'Generate holistic academic impact report',
+      targetRoute: '/portfolio',
+      targetLabel: 'Scholar Portfolio & Grants',
       accent: '#123927',
     },
   ]
@@ -790,7 +848,7 @@ function LifecycleSection() {
   const current = stages[activeStage]
 
   return (
-    <section id="discover" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '120px 88px', position: 'relative' }}>
+    <section id="discover" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '112px 24px', position: 'relative' }}>
       {/* Subtle organic ambient glow */}
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
 
@@ -798,10 +856,10 @@ function LifecycleSection() {
         <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#4ADE80', textTransform: 'uppercase', marginBottom: 16 }}>
           Scholarly Workflow Engine
         </p>
-        <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em', color: '#F5F4F0', marginBottom: 16 }}>
+        <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal text-[#F5F4F0] tracking-tight mb-4">
           One system for the entire research lifecycle.
         </h2>
-        <p style={{ fontSize: 16, color: 'rgba(245,244,240,0.72)', marginBottom: 56 }}>
+        <p className="text-base text-[rgba(245,244,240,0.72)] mb-14 max-w-xl mx-auto leading-relaxed">
           From first question to published work and beyond. Click any stage to inspect the scholarly pipeline.
         </p>
 
@@ -817,68 +875,35 @@ function LifecycleSection() {
                   type="button"
                   onClick={() => setActiveStage(i)}
                   aria-label={`Step ${i + 1}: ${stage.name}`}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 12,
-                    padding: '0 12px',
-                    cursor: 'pointer',
-                    background: 'none',
-                    border: 'none',
-                    outline: 'none',
-                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                  }}
+                  className="flex flex-col items-center gap-3 px-3 cursor-pointer bg-transparent border-0 outline-none transition-all"
                 >
                   <div
-                    style={{
-                      width: 52,
-                      height: 52,
-                      borderRadius: '50%',
-                      border: isSelected
-                        ? '2.5px solid #4ADE80'
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-xs ${
+                      isSelected
+                        ? "border-2 border-[#4ADE80] bg-[#3E6248] text-white scale-110 shadow-md ring-4 ring-[#4ADE80]/25"
                         : isPast
-                          ? '2px solid #66866A'
-                          : '1.5px solid rgba(255,255,255,0.18)',
-                      background: isSelected
-                        ? '#3E6248'
-                        : isPast
-                          ? '#202920'
-                          : 'rgba(255,255,255,0.05)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: isSelected ? '#FFFFFF' : (isPast ? '#86EFAC' : 'rgba(245,244,240,0.45)'),
-                      transform: isSelected ? 'scale(1.15)' : 'scale(1)',
-                      boxShadow: isSelected
-                        ? '0 0 0 4px rgba(74,222,128,0.25), 0 6px 16px rgba(46,125,79,0.35)'
-                        : '0 2px 6px rgba(0,0,0,0.2)',
-                      transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                    }}
+                        ? "border-2 border-[#66866A] bg-[#202920] text-[#86EFAC]"
+                        : "border border-white/20 bg-white/5 text-[rgba(245,244,240,0.45)]"
+                    }`}
                   >
                     {isPast ? '✓' : i + 1}
                   </div>
-                  <span style={{
-                    fontSize: 13.5,
-                    fontWeight: isSelected ? 700 : 500,
-                    color: isSelected ? '#FFFFFF' : 'rgba(245,244,240,0.65)',
-                    transition: 'color 0.2s',
-                  }}>
+                  <span
+                    className={`text-xs transition-colors ${
+                      isSelected
+                        ? "font-bold text-white"
+                        : "font-medium text-[rgba(245,244,240,0.65)]"
+                    }`}
+                  >
                     {stage.name}
                   </span>
                 </button>
 
                 {i < stages.length - 1 && (
                   <div
-                    style={{
-                      width: 36,
-                      height: i < activeStage ? 2.5 : 1.5,
-                      background: i < activeStage ? '#66866A' : 'rgba(255,255,255,0.15)',
-                      marginBottom: 24,
-                      transition: 'background 0.3s, height 0.3s',
-                    }}
+                    className={`w-8 h-[2px] mb-6 transition-all ${
+                      i < activeStage ? "bg-[#66866A]" : "bg-white/15"
+                    }`}
                   />
                 )}
               </div>
@@ -886,43 +911,41 @@ function LifecycleSection() {
           })}
         </div>
 
-        {/* Dynamic Stage Details Preview Panel (White Card with Green Border matching Photo 2) */}
-        <div style={{
-          maxWidth: 820,
-          margin: '0 auto',
-          background: '#FFFFFF',
-          border: '1.5px solid #2A5A3B',
-          borderRadius: 14,
-          padding: '36px 44px',
-          boxShadow: '0 16px 48px rgba(0,0,0,0.25)',
-          textAlign: 'left',
-          transition: 'all 0.3s ease',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: '#264A35', textTransform: 'uppercase', background: '#D9E5D6', padding: '4px 12px', borderRadius: 4 }}>
+        {/* Dynamic Stage Details Preview Panel (Luminous High-contrast Card) */}
+        <div className="max-w-3xl mx-auto bg-white border border-[#2A5A3B] border-t-4 border-t-[#4ADE80] rounded-2xl p-8 sm:p-10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.45),0_4px_16px_rgba(0,0,0,0.2)] text-left transition-all">
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+            <span className="text-[11px] font-mono font-bold tracking-wider text-[#264A35] uppercase bg-[#D9E5D6] px-3 py-1 rounded-md border border-[#264A35]/20">
               STAGE 0{activeStage + 1} OF 07 · {current.name.toUpperCase()}
             </span>
-            <span style={{ fontSize: 13.5, color: '#71786E', fontStyle: 'italic' }}>
+            <span className="text-xs text-[#71786E] italic">
               {current.tagline}
             </span>
           </div>
 
-          <p style={{ fontSize: 16.5, lineHeight: 1.65, color: '#202920', marginBottom: 24 }}>
+          <p className="text-base leading-relaxed text-[#202920] mb-6 font-sans">
             {current.desc}
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, borderTop: '1px solid #EBE4D5', paddingTop: 20 }}>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div className="flex items-center justify-between flex-wrap gap-4 pt-5 border-t border-[#EBE4D5]">
+            <div className="flex gap-2 flex-wrap">
               {current.metrics.map((m) => (
-                <span key={m} style={{ fontSize: 12.5, fontWeight: 550, padding: '6px 14px', background: '#F1EAD9', border: '1px solid #E2D7C3', color: '#3A433D', borderRadius: 6 }}>
+                <span key={m} className="text-xs font-medium px-3.5 py-1.5 rounded-lg bg-[#F1EAD9] border border-[#E2D7C3] text-[#3A433D]">
                   {m}
                 </span>
               ))}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: '#264A35' }}>
-              <span>Sample action:</span>
-              <span style={{ color: '#202920', fontWeight: 500 }}>"{current.action}"</span>
+            <div className="flex items-center gap-3.5 flex-wrap">
+              <div className="flex items-center gap-2 text-xs font-semibold text-[#264A35]">
+                <span>Sample action:</span>
+                <span className="text-[#202920] font-normal">"{current.action}"</span>
+              </div>
+              <Link
+                href={current.targetRoute}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#3E6248] hover:bg-[#293E30] text-white text-xs font-semibold uppercase tracking-wider no-underline transition-all shadow-xs"
+              >
+                Inspect Live Module: {current.targetLabel} ↗
+              </Link>
             </div>
           </div>
         </div>
@@ -931,122 +954,290 @@ function LifecycleSection() {
   )
 }
 
-// ─── Academic Identity Section ────────────────────────────────────────────────
+// ─── Academic Identity Section (Photo 3 Verified Scholar Portfolio Preview) ───
 function IdentitySection() {
-  const [activeTab, setActiveTab] = useState('Overview')
-  const tabs = ['Overview', 'Research', 'Projects', 'Publications', 'Activity', 'Notes']
-  const interests = ['Computer Vision', 'Multimodal AI', 'Scientific ML', 'Medical Imaging']
-  const metrics = [{ v: '27', l: 'Publications' }, { v: '1.8k', l: 'Citations' }, { v: '8', l: 'Projects' }, { v: '34', l: 'Collaborators' }]
+  const [activeTab, setActiveTab] = useState<'Heatmap' | 'Pinned' | 'Publications'>('Heatmap')
+  const interests = ['Medical AI', 'Computer Vision', 'Foundation Models', 'Federated Learning']
+  const metrics = [
+    { v: '27', l: 'Publications' },
+    { v: '1,842', l: 'Citations' },
+    { v: '14', l: 'h-index' },
+    { v: '34', l: 'Collaborators' },
+  ]
+
+  // Organic, scattered scholarly contribution heatmap modeling real research momentum
+  const weeks = 36
+  const days = 7
+  const levelColors = ['#FAF7F0', '#DCE6D7', '#A3C4A8', '#66866A', '#3E6248']
 
   return (
-    <section style={{ background: C.bg, padding: '120px 88px' }}>
+    <section id="identity" className="bg-[#FAF7F0] dark:bg-[#0E140F] py-28 px-6 md:px-16 transition-colors duration-200">
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 80, alignItems: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.25fr', gap: 72, alignItems: 'start' }}>
           {/* Left: copy */}
           <div style={{ paddingTop: 24 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.moss, textTransform: 'uppercase', marginBottom: 20 }}>Academic Identity</p>
-            <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.03em', color: C.charcoal, marginBottom: 24 }}>
+            <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#3E6248] dark:text-[#4ADE80] mb-4">
+              <span className="w-2 h-2 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+              02 / Academic Identity & Scholar Ledger
+            </div>
+            <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight leading-tight mb-6">
               More than a profile.<br />Your research identity.
             </h2>
-            <p style={{ fontSize: 17, lineHeight: 1.65, color: C.secondary, marginBottom: 40 }}>
-              Your academic presence, publication record, research activity, collaborations, and portfolio — unified in a living identity that grows with your work.
+            <p className="text-base text-[#62685E] dark:text-[#A3B899] mb-8 leading-relaxed max-w-xl">
+              Your academic presence, verified publication record, live 52-week research cadence, peer review impact, and pinned artifacts — unified in an immutable scholarly portfolio that commands respect.
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {['Academic profile & publication record', 'Research portfolio & projects', 'Collaboration network', 'Research activity timeline', 'Public research notes'].map((item) => (
-                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 14, color: C.secondary }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: C.moss, flexShrink: 0 }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 36 }}>
+              {[
+                'ORCID-verified provenance & digital identifier sync',
+                'GitHub-style 52-week research cadence & contribution ledger',
+                'Interactive pinned artifacts with code, preprints & licenses',
+                'Real-time citation velocity & institutional co-author graph',
+                'Tenure dossier export & cryptographic portfolio anchors',
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-3 text-sm text-[#62685E] dark:text-[#A3B899]">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
                   {item}
                 </div>
               ))}
             </div>
+            <Link
+              href="/portfolio"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] font-sans text-xs font-semibold uppercase tracking-wider transition-all shadow-xs no-underline"
+            >
+              Explore Live Scholar Portfolio Page ↗
+            </Link>
           </div>
 
-          {/* Right: Profile mockup */}
-          <div style={{
-            background: C.bg,
-            border: `1px solid ${C.rule}`,
-            borderRadius: 10,
-            overflow: 'hidden',
-            boxShadow: '0 8px 40px rgba(0,0,0,0.06)',
-          }}>
-            {/* Profile header */}
-            <div style={{ background: '#F0EEE8', padding: '28px 28px 0', borderBottom: `1px solid ${C.rule}` }}>
-              <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', marginBottom: 20 }}>
-                <div style={{ width: 64, height: 64, borderRadius: '50%', background: C.moss, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 20, flexShrink: 0 }}>IM</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 17, color: C.charcoal, letterSpacing: '-0.02em' }}>Imthiyas</div>
-                  <div style={{ fontSize: 13, color: C.secondary, marginTop: 3 }}>PhD Researcher · Computer Vision</div>
-                  <div style={{ fontSize: 12, color: C.tertiary, marginTop: 2 }}>MIT Computer Science</div>
-                  <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
-                    {interests.map((t) => (
-                      <span key={t} style={{ fontSize: 11, fontWeight: 500, padding: '3px 8px', background: C.mossLight, color: C.mossMid, borderRadius: 4 }}>{t}</span>
-                    ))}
-                  </div>
+          {/* Right: Authentic Scholar Portfolio Component (Matching /portfolio) */}
+          <div className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl overflow-hidden shadow-lg transition-all">
+            {/* Rich Geometric Cover Banner with Lattice Line Art */}
+            <div style={{
+              height: 120,
+              background: 'linear-gradient(135deg, #202920 0%, #2F4534 60%, #1E3827 100%)',
+              position: 'relative',
+              padding: '16px 24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+            }}>
+              <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 800 200" fill="none">
+                <path d="M0,100 C200,30 400,170 800,80 L800,200 L0,200 Z" fill="#DCE6D7" />
+                <path d="M0,50 C200,150 500,20 800,120" stroke="#FAF7F0" strokeWidth="1.5" strokeDasharray="4 4" />
+              </svg>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '4px 10px',
+                borderRadius: 999,
+                background: 'rgba(255,255,255,0.12)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                fontSize: 11,
+                fontFamily: 'monospace',
+                color: '#FAF7F0',
+                position: 'relative',
+                zIndex: 2,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ADE80' }} />
+                ORCID: 0000-0002-1825-0097
+              </div>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontFamily: 'monospace', position: 'relative', zIndex: 2 }}>
+                Verified Scholar Node
+              </span>
+            </div>
+
+            {/* Overlapping Profile Header */}
+            <div className="px-6 pb-4 relative bg-white dark:bg-[#18231B] border-b border-[#E4DCCB] dark:border-[#233327]">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: -36, marginBottom: 16 }}>
+                <div className="w-[72px] h-[72px] rounded-full bg-[#DCE6D7] dark:bg-[#1A281E] border-[3.5px] border-white dark:border-[#18231B] overflow-hidden flex items-center justify-center shadow-md shrink-0">
+                  <img
+                    src="/Profile.png"
+                    alt="Imthiyas"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.parentElement!.innerText = 'IM';
+                    }}
+                  />
                 </div>
-                <button style={{ fontSize: 12, fontWeight: 600, color: '#fff', background: C.moss, border: 'none', padding: '7px 14px', borderRadius: 5, cursor: 'pointer', flexShrink: 0 }}>Follow</button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button className="text-xs font-semibold text-white dark:text-[#0E140F] bg-[#3E6248] dark:bg-[#4ADE80] border-0 px-3.5 py-1.5 rounded-lg cursor-pointer">
+                    Connect
+                  </button>
+                  <Link
+                    href="/portfolio"
+                    className="text-xs font-semibold text-[#202920] dark:text-[#EDEAE2] bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] px-3 py-1.5 rounded-lg no-underline inline-flex items-center gap-1"
+                  >
+                    Full Profile ↗
+                  </Link>
+                </div>
               </div>
 
-              {/* Bio */}
-              <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6, marginBottom: 16 }}>
-                Researching multimodal learning, scientific imaging, and AI for discovery.
-              </p>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <h3 className="text-lg font-bold text-[#202920] dark:text-[#EDEAE2] tracking-tight m-0">
+                    Imthiyas
+                  </h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 bg-[#DCE6D7] dark:bg-[#131C15] text-[#3E6248] dark:text-[#4ADE80] rounded uppercase">
+                    Verified Fellow
+                  </span>
+                </div>
+                <div className="text-xs text-[#3E463C] dark:text-[#A3B899] mt-1 font-medium">
+                  PhD Researcher · Computer Vision & Medical AI
+                </div>
+                <div className="text-xs text-[#62685E] dark:text-[#7E8B7B] mt-0.5">
+                  MIT Computer Science & CSAIL Affiliate · Stanford Bio-X Collaborator
+                </div>
 
-              {/* Metrics */}
-              <div style={{ display: 'flex', gap: 0, borderTop: `1px solid ${C.rule}` }}>
+                <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+                  {interests.map((t) => (
+                    <span key={t} className="text-[11px] font-medium px-2 py-0.5 bg-[#F2EBDD] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] text-[#3E6248] dark:text-[#4ADE80] rounded">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4 Impact Metrics Grid */}
+              <div className="grid grid-cols-4 border-t border-[#E4DCCB] dark:border-[#233327] mt-4 pt-3">
                 {metrics.map(({ v, l }, i) => (
-                  <div key={l} style={{ flex: 1, padding: '14px 0', textAlign: 'center', borderRight: i < metrics.length - 1 ? `1px solid ${C.rule}` : 'none' }}>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: C.charcoal, letterSpacing: '-0.03em' }}>{v}</div>
-                    <div style={{ fontSize: 11, color: C.tertiary, marginTop: 2 }}>{l}</div>
+                  <div key={l} className={`text-center py-1 ${i < metrics.length - 1 ? 'border-r border-[#E4DCCB] dark:border-[#233327]' : ''}`}>
+                    <div className="text-base font-bold text-[#202920] dark:text-[#EDEAE2] tracking-tight">{v}</div>
+                    <div className="text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5">{l}</div>
                   </div>
                 ))}
               </div>
 
               {/* Tabs */}
-              <div style={{ display: 'flex', gap: 0, marginTop: 0 }}>
-                {tabs.map((tab) => (
+              <div style={{ display: 'flex', gap: 4, marginTop: 14 }}>
+                {[
+                  { id: 'Heatmap', label: '52-Wk Cadence' },
+                  { id: 'Pinned', label: 'Pinned Artifacts' },
+                  { id: 'Publications', label: 'Recent Publications' },
+                ].map(({ id, label }) => (
                   <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    style={{
-                      padding: '10px 14px',
-                      fontSize: 12,
-                      fontWeight: 500,
-                      background: 'none',
-                      border: 'none',
-                      borderBottom: activeTab === tab ? `2px solid ${C.moss}` : '2px solid transparent',
-                      color: activeTab === tab ? C.moss : C.secondary,
-                      cursor: 'pointer',
-                      transition: 'color 0.15s',
-                    }}
+                    key={id}
+                    onClick={() => setActiveTab(id as any)}
+                    className={`px-3 py-1.5 text-xs rounded-md border-0 cursor-pointer transition-all ${
+                      activeTab === id
+                        ? "bg-[#3E6248] dark:bg-[#4ADE80] text-white dark:text-[#0E140F] font-semibold"
+                        : "bg-transparent text-[#62685E] dark:text-[#A3B899] font-normal hover:bg-[#FAF7F0] dark:hover:bg-[#131C15]"
+                    }`}
                   >
-                    {tab}
+                    {label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Tab content */}
-            <div style={{ padding: 24 }}>
-              {activeTab === 'Overview' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <p style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.06em', color: C.tertiary, textTransform: 'uppercase', marginBottom: 4 }}>Recent Publications</p>
+            {/* Interactive Dynamic Tab Body */}
+            <div className="p-5 bg-[#FAF7F0] dark:bg-[#131C15]">
+              {activeTab === 'Heatmap' && (
+                <div style={{ background: '#FFFFFF', border: '1px solid #E4DCCB', borderRadius: 12, padding: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 6 }}>
+                    <div>
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: '#202920' }}>
+                        Scholarly Contribution & Momentum Ledger
+                      </div>
+                      <div style={{ fontSize: 11, color: '#62685E' }}>
+                        1,482 verified commits, checkpoints & peer reviews in 52 weeks
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: '#202920', background: '#DCE6D7', padding: '3px 8px', borderRadius: 999 }}>
+                      🔥 18-Day Streak
+                    </span>
+                  </div>
+
+                  {/* 36 Weeks Heatmap Visualization */}
+                  <div style={{ overflowX: 'auto', paddingBottom: 2 }}>
+                    <div style={{ display: 'flex', gap: 3.5, minWidth: 460 }}>
+                      {Array.from({ length: weeks }).map((_, w) => (
+                        <div key={w} style={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
+                          {Array.from({ length: days }).map((_, d) => {
+                            const details = getScholarContributionDetails(w, d)
+                            return (
+                              <div
+                                key={d}
+                                title={`Week ${w + 1}, Day ${d + 1}: ${details.label}`}
+                                style={{
+                                  width: 9.5,
+                                  height: 9.5,
+                                  borderRadius: 2,
+                                  backgroundColor: levelColors[details.level],
+                                  border: `1px solid ${details.level === 0 ? '#E4DCCB' : levelColors[details.level]}`,
+                                }}
+                              />
+                            )
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 10.5, color: '#85877B', marginTop: 10, paddingTop: 8, borderTop: '1px solid #E4DCCB' }}>
+                    <span>Cryptographic proof of continuous scientific inquiry</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 3.5 }}>
+                      <span>Less</span>
+                      {levelColors.map((c, i) => (
+                        <div key={i} style={{ width: 8, height: 8, borderRadius: 1.5, background: c, border: '1px solid #E4DCCB' }} />
+                      ))}
+                      <span>More</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'Pinned' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {[
-                    { title: 'Vision-Language Models for Scientific Discovery', venue: 'NeurIPS 2025', citations: 312 },
-                    { title: 'Multimodal Representations for Medical Imaging', venue: 'CVPR 2024', citations: 180 },
-                  ].map((p) => (
-                    <div key={p.title} style={{ padding: 14, border: `1px solid ${C.rule}`, borderRadius: 6 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: C.charcoal, lineHeight: 1.4, marginBottom: 6 }}>{p.title}</div>
-                      <div style={{ display: 'flex', gap: 12, fontSize: 11, color: C.tertiary }}>
-                        <span>{p.venue}</span>
-                        <span style={{ color: C.moss }}>↑ {p.citations} citations</span>
+                    {
+                      title: 'foundation-medical-vision',
+                      badge: 'Public Preprint · PyTorch',
+                      desc: 'Lightweight Vision Transformer foundation model for zero-shot clinical tomography and multi-center MRI segmentation.',
+                      citations: 148,
+                      replications: 32,
+                      license: 'Apache-2.0',
+                    },
+                    {
+                      title: 'clinical-segmentation-fl',
+                      badge: 'Published in MICCAI · MONAI',
+                      desc: 'Federated learning pipeline preserving patient confidentiality across heterogeneous hospital imaging clusters.',
+                      citations: 86,
+                      replications: 24,
+                      license: 'MIT',
+                    },
+                  ].map((art) => (
+                    <div key={art.title} style={{ padding: 14, background: '#FFFFFF', border: '1px solid #E4DCCB', borderRadius: 10 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: '#202920', fontFamily: 'monospace' }}>{art.title}</span>
+                        <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 6px', background: '#DCE6D7', color: '#202920', borderRadius: 4 }}>{art.badge}</span>
+                      </div>
+                      <p style={{ fontSize: 12, color: '#62685E', lineHeight: 1.5, margin: '4px 0 8px' }}>{art.desc}</p>
+                      <div style={{ display: 'flex', gap: 12, fontSize: 11, color: '#85877B' }}>
+                        <span style={{ color: '#3E6248', fontWeight: 600 }}>↑ {art.citations} citations</span>
+                        <span>{art.replications} replications</span>
+                        <span style={{ fontFamily: 'monospace' }}>{art.license}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-              {activeTab !== 'Overview' && (
-                <div style={{ padding: 24, textAlign: 'center', color: C.tertiary, fontSize: 13 }}>
-                  {activeTab} view — full content on your Cambium profile.
+
+              {activeTab === 'Publications' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[
+                    { title: 'Foundation Models for Medical Image Understanding', venue: 'Journal of Medical AI · 2026', citations: 148, doi: '10.1038/s41586-026-0042' },
+                    { title: 'Federated Learning for Privacy-Preserving Clinical Segmentation', venue: 'MICCAI 2025 · Oral', citations: 86, doi: '10.1007/978-3-031-7234' },
+                  ].map((p) => (
+                    <div key={p.title} style={{ padding: 14, background: '#FFFFFF', border: '1px solid #E4DCCB', borderRadius: 10 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#202920', lineHeight: 1.4, marginBottom: 4 }}>{p.title}</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#85877B' }}>
+                        <span>{p.venue}</span>
+                        <span style={{ color: '#3E6248', fontWeight: 600 }}>↑ {p.citations} citations</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -1057,135 +1248,472 @@ function IdentitySection() {
   )
 }
 
-// ─── Research Workspace Section (Dark Green Archive Environment) ────────────
+// ─── Research Discover & Literature Console (Photo 2 Live Research Desk) ─────
 function WorkspaceSection() {
-  const sidebarItems = [
-    { icon: '📁', label: 'Research Workspace', active: false, indent: 0 },
-    { icon: '📄', label: 'Literature Review', active: true, indent: 1 },
-    { icon: '📝', label: 'Research Notes', active: false, indent: 1 },
-    { icon: '🧪', label: 'Experiments', active: false, indent: 1 },
-    { icon: '💡', label: 'Ideas', active: false, indent: 1 },
-    { icon: '📚', label: 'Reading List', active: false, indent: 1 },
-    { icon: '📋', label: 'Thesis', active: false, indent: 1 },
-    { icon: '✏️', label: 'Draft Papers', active: false, indent: 1 },
-    { icon: '🔗', label: 'References', active: false, indent: 1 },
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeAction, setActiveAction] = useState<string | null>(null)
+  const [savedCards, setSavedCards] = useState<Record<string, boolean>>({})
+  const [connectedScholars, setConnectedScholars] = useState<Record<string, boolean>>({
+    'Dr. Aisha Rahman': false,
+    'Prof. Jonas Keller': false,
+    'Sophia Chen': false,
+  })
+  const [showQuickNote, setShowQuickNote] = useState(false)
+
+  const toggleSave = (id: string) => {
+    setSavedCards(prev => ({ ...prev, [id]: !prev[id] }))
+  }
+
+  const toggleConnect = (name: string) => {
+    setConnectedScholars(prev => ({ ...prev, [name]: !prev[name] }))
+  }
+
+  const actionPills = [
+    { id: 'hypothesis', label: '+ New Hypothesis', note: 'Synthesizing novel hypothesis from Chapter 3 literature...' },
+    { id: 'import', label: '↓ Import Literature', note: 'Importing literature batches from arXiv, bioRxiv & CrossRef...' },
+    { id: 'refine', label: 'Refine Topics', note: 'Topic vectors recalibrated to Multimodal AI & Proteomics.' },
+    { id: 'ai', label: '✦ Ask Cambium AI', note: 'Cambium Neural Assistant initialized and ready for research query.' },
+  ]
+
+  const cards = [
+    {
+      id: 'nsf',
+      type: 'OPPORTUNITY',
+      typeBg: 'bg-[#F4EFEA]',
+      typeText: 'text-[#62685E]',
+      match: '94% match',
+      title: 'NSF Graduate Research Fellowship — Climate AI Track',
+      desc: 'Applications open for the 2027 cohort. Strong alignment with your work on predictive ecological modeling and ML-driven climate data pipelines.',
+      footer: 'Deadline: Oct 18, 2026 · $37,000/yr',
+      href: '/opportunities',
+    },
+    {
+      id: 'paper',
+      type: 'PAPER',
+      typeBg: 'bg-[#F4EFEA]',
+      typeText: 'text-[#62685E]',
+      match: '88% match',
+      title: 'Emergent Representations in Sparse Transformer Architectures',
+      desc: 'A preprint from DeepMind explores how sparse attention heads develop structured internal representations without explicit supervision — directly relevant to your Chapter 3.',
+      footerLine1: 'Park et al. · DeepMind',
+      footerLine2: 'arXiv · Sep 9, 2026',
+      href: '/agent-reader',
+    },
+    {
+      id: 'collab',
+      type: 'COLLABORATION',
+      typeBg: 'bg-[#F4EFEA]',
+      typeText: 'text-[#62685E]',
+      match: '91% match',
+      title: 'Cross-disciplinary group: Language Models for Climate Risk',
+      desc: 'A new working group at the intersection of NLP and climate science is forming ahead of NeurIPS 2026. 11 researchers already enrolled.',
+      footer: 'Virtual · Kickoff Oct 2, 2026',
+      href: '/community',
+    },
+    {
+      id: 'dataset',
+      type: 'DATASET',
+      typeBg: 'bg-[#F4EFEA]',
+      typeText: 'text-[#62685E]',
+      match: '85% match',
+      title: 'ERA5-ML: High-Resolution Reanalysis Embeddings (2000–2025)',
+      desc: 'ECMWF releases a new embedding-first version of ERA5, pre-processed for direct ingestion into ML pipelines — covers the time range of your dissertation study.',
+      footerLine1: 'ECMWF Copernicus Team',
+      footerLine2: '6.4 TB · CC BY 4.0 · ecmwf.int',
+      href: '/discover',
+    },
   ]
 
   return (
-    <section style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '120px 88px', position: 'relative' }}>
+    <section id="workspace" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '112px 24px', position: 'relative' }}>
       {/* Subtle organic ambient glow */}
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative' }}>
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#4ADE80', textTransform: 'uppercase', marginBottom: 16 }}>
-            Research Workspace
-          </p>
-          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em', color: '#F5F4F0', marginBottom: 16 }}>
-            Your research has a home.
+      <div style={{ maxWidth: 1320, margin: '0 auto', position: 'relative', zIndex: 10 }}>
+        <div style={{ textAlign: 'center', marginBottom: 40 }}>
+          <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-3">
+            <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
+            01 / Literature Synthesis & Live Research Horizon
+          </div>
+          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em' }} className="text-[#F5F4F0] mb-4">
+            Your research has a home. Discover, synthesize, and organize.
           </h2>
-          <p style={{ fontSize: 17, color: 'rgba(245,244,240,0.72)', maxWidth: 520, margin: '0 auto' }}>
-            Organize your notes, literature, experiments, and drafts in a structured research environment built for scholarly work.
+          <p className="text-[16.5px] text-[rgba(245,244,240,0.72)] max-w-[660px] mx-auto leading-relaxed">
+            An authentic glimpse into your live scholar console: synthesis pipelines, active grant deadlines, emerging preprints, and collaborative vectors unified in one cohesive space.
           </p>
         </div>
 
-        {/* Luminous High-Contrast Workspace Mockup */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '230px 1fr',
-          border: '1px solid rgba(255,255,255,0.12)',
-          borderRadius: 12,
-          overflow: 'hidden',
-          boxShadow: '0 24px 72px -12px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08)',
-          background: '#FFFFFF',
-          minHeight: 500,
-        }}>
-          {/* Sidebar */}
-          <div style={{ background: '#F6F5F1', borderRight: '1px solid #E2DDD3', padding: '20px 0' }}>
-            <div style={{ padding: '0 16px 16px', borderBottom: '1px solid #E2DDD3', marginBottom: 8 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: '#526E5D', textTransform: 'uppercase' }}>Workspace</div>
-            </div>
-            {sidebarItems.map(({ icon, label, active, indent }) => (
-              <div
-                key={label}
-                style={{
-                  padding: `8px ${16 + indent * 12}px`,
-                  fontSize: 12.5,
-                  fontWeight: active ? 600 : 400,
-                  color: active ? '#0C1E15' : '#364D3F',
-                  background: active ? '#DBEDE2' : 'transparent',
-                  borderLeft: active ? '3px solid #1A4D38' : '3px solid transparent',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  transition: 'background 0.15s',
-                }}
-              >
-                <span style={{ fontSize: 11 }}>{icon}</span>
-                {label}
+        {/* Authentic Live Research Desk with Uniform Outline and Subtle Shadow */}
+        <div className="w-full overflow-x-auto pb-4">
+          <div className="min-w-[1060px] max-w-[1320px] mx-auto rounded-2xl border border-[rgba(255,255,255,0.14)] bg-[#FAF7F0] overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.16),0_0_24px_rgba(0,0,0,0.22),0_4px_16px_rgba(0,0,0,0.18)] relative">
+            {/* Top Header Bar */}
+            <div className="px-5 py-3.5 bg-[#FAF7F0] dark:bg-[#131C15] border-b border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between gap-4">
+              {/* Left Brand / Desk Identifier */}
+              <div className="flex items-center gap-2.5 shrink-0">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#3E6248] animate-pulse" />
+                <span className="font-mono text-xs font-bold tracking-wider text-[#202920] uppercase">
+                  LIVE RESEARCH DESK
+                </span>
               </div>
-            ))}
-          </div>
 
-          {/* Document Content */}
-          <div style={{ padding: 36, overflow: 'auto', background: '#FFFFFF' }}>
-            <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 11, color: '#668070' }}>Literature Review</span>
-              <span style={{ fontSize: 11, color: '#AEC2B4' }}>/</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#0C1E15' }}>Multimodal Learning</span>
-            </div>
+              {/* Center Search Input */}
+              <div className="flex-1 max-w-xl mx-auto flex items-center bg-white border border-[#E4DCCB] rounded-full px-4 py-2 shadow-xs gap-2.5">
+                <Search size={15} className="text-[#85877B] shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Search 240M+ papers, researchers, topics, grants..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent border-none outline-none text-xs text-[#202920] placeholder-[#85877B] font-sans"
+                />
+                <kbd className="font-mono text-[10px] text-[#85877B] bg-[#FAF7F0] border border-[#E4DCCB] px-1.5 py-0.5 rounded shrink-0">
+                  ⌘K
+                </kbd>
+              </div>
 
-            <h3 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 26, fontWeight: 600, color: '#0C1E15', letterSpacing: '-0.02em', marginBottom: 12 }}>
-              Multimodal Learning — Literature Review
-            </h3>
-
-            <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-              {['Computer Vision', 'Multimodal AI', 'Foundation Models'].map((t) => (
-                <span key={t} style={{ fontSize: 11, fontWeight: 600, padding: '3px 9px', background: '#DBEDE2', color: '#1A4D38', borderRadius: 4 }}>{t}</span>
-              ))}
-            </div>
-
-            <div style={{ marginBottom: 24, padding: '18px 22px', background: '#EEF7F2', borderLeft: '3px solid #1A4D38', borderRadius: '0 8px 8px 0' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#1A4D38', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Research Question</div>
-              <p style={{ fontSize: 14.5, color: '#0C1E15', lineHeight: 1.6, fontWeight: 450 }}>How can multimodal models improve scientific literature discovery?</p>
-            </div>
-
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#0C1E15', marginBottom: 12 }}>Key Findings</div>
-              {[
-                'Cross-modal retrieval improves discovery quality significantly over single-modality approaches.',
-                'Domain-specific embeddings outperform generic representations in scientific contexts.',
-                'Citation context provides useful relevance signals for downstream ranking tasks.',
-              ].map((finding, i) => (
-                <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 10, fontSize: 13.5, color: '#364D3F', lineHeight: 1.6 }}>
-                  <span style={{ color: '#1A4D38', fontWeight: 700, flexShrink: 0 }}>{i + 1}.</span>
-                  {finding}
-                </div>
-              ))}
-            </div>
-
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#0C1E15', marginBottom: 10 }}>Referenced Papers</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {[
-                  { title: 'CLIP: Connecting Text and Images', venue: 'OpenAI · 2021', cited: true },
-                  { title: 'Flamingo: a Visual Language Model', venue: 'DeepMind · 2022', cited: false },
-                ].map((p) => (
-                  <div key={p.title} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', border: '1px solid #D1DDD4', borderRadius: 6, background: '#FAFAF8' }}>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <rect x="1" y="1" width="12" height="12" rx="2" stroke="#668070" strokeWidth="1" />
-                      <line x1="3" y1="4.5" x2="11" y2="4.5" stroke="#668070" strokeWidth="1" />
-                      <line x1="3" y1="7" x2="9" y2="7" stroke="#668070" strokeWidth="1" />
-                    </svg>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 600, color: '#0C1E15' }}>{p.title}</div>
-                      <div style={{ fontSize: 11, color: '#668070' }}>{p.venue}</div>
-                    </div>
-                    {p.cited && <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', background: '#DBEDE2', color: '#1A4D38', borderRadius: 4 }}>Cited</span>}
+              {/* Right Icons & User Profile Badge */}
+              <div className="flex items-center gap-4 shrink-0">
+                <button
+                  className="p-1.5 text-[#62685E] hover:text-[#202920] transition-colors relative cursor-pointer"
+                  title="Notifications"
+                  onClick={() => setActiveAction('Viewing notifications: 3 unread items')}
+                >
+                  <Bell size={16} />
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#3E6248]" />
+                </button>
+                <button
+                  className="p-1.5 text-[#62685E] hover:text-[#202920] transition-colors cursor-pointer"
+                  title="AI Copilot"
+                  onClick={() => setActiveAction('Cambium Neural AI Copilot active')}
+                >
+                  <Sparkles size={16} />
+                </button>
+                <div className="flex items-center gap-2.5 pl-2 border-l border-[#E4DCCB]">
+                  <div className="w-8 h-8 rounded-full bg-[#DCE6D7] border border-[#3E6248]/30 flex items-center justify-center font-bold text-xs text-[#202920]">
+                    IM
                   </div>
-                ))}
+                  <div className="text-left">
+                    <div className="text-xs font-bold text-[#202920] leading-tight">Imthiyas</div>
+                    <div className="text-[10px] text-[#85877B] font-mono leading-tight">MIT CSAIL · Postdoc</div>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            {/* Action Feedback Banner (Interactive Micro-State) */}
+            {activeAction && (
+              <div className="bg-[#DCE6D7] px-6 py-2 border-b border-[#3E6248]/20 flex items-center justify-between text-xs text-[#202920]">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={13} className="text-[#3E6248]" />
+                  <span className="font-medium">{activeAction}</span>
+                </div>
+                <button
+                  onClick={() => setActiveAction(null)}
+                  className="text-[#62685E] hover:text-[#202920] font-bold text-xs ml-4 cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Main 3-Column Desktop Grid (Photo 2 Match: Left Rail + Center Desk + Right Aside) */}
+            <div className="grid grid-cols-[54px_1fr_285px] divide-x divide-[#E4DCCB] dark:divide-[#233327] min-h-[640px] bg-[#FAF7F0] dark:bg-[#131C15]">
+              {/* Col 1: Slim Left Sidebar Rail */}
+              <aside className="w-[54px] bg-[#FAF7F0] dark:bg-[#131C15] py-4 flex flex-col items-center justify-between">
+                <div className="flex flex-col items-center gap-3.5">
+                  {/* Spiral brand icon */}
+                  <div className="w-8 h-8 rounded-full bg-[#DCE6D7] flex items-center justify-center text-[#3E6248] mb-1">
+                    <span className="font-bold text-sm">◎</span>
+                  </div>
+                  <div className="w-8 h-8 rounded-lg text-[#62685E] hover:text-[#202920] hover:bg-[#EAE5D9] transition-colors flex items-center justify-center cursor-pointer" title="Search">
+                    <Search size={15} />
+                  </div>
+                  {/* Active Home/Dashboard Icon */}
+                  <div className="w-8 h-8 rounded-lg bg-[#DCE6D7] text-[#3E6248] flex items-center justify-center cursor-pointer shadow-2xs" title="Live Research Desk">
+                    <LayoutGrid size={15} />
+                  </div>
+                  <div className="w-8 h-8 rounded-lg text-[#62685E] hover:text-[#202920] hover:bg-[#EAE5D9] transition-colors flex items-center justify-center cursor-pointer" title="Explore">
+                    <Compass size={15} />
+                  </div>
+                  <div className="w-8 h-8 rounded-lg text-[#62685E] hover:text-[#202920] hover:bg-[#EAE5D9] transition-colors flex items-center justify-center cursor-pointer" title="Constellation Graph">
+                    <span className="text-sm">☊</span>
+                  </div>
+                  <div className="w-8 h-8 rounded-lg text-[#62685E] hover:text-[#202920] hover:bg-[#EAE5D9] transition-colors flex items-center justify-center cursor-pointer" title="AI Agents">
+                    <Sparkles size={15} />
+                  </div>
+                  <div className="w-8 h-8 rounded-lg text-[#62685E] hover:text-[#202920] hover:bg-[#EAE5D9] transition-colors flex items-center justify-center cursor-pointer" title="Layers">
+                    <span className="text-xs">☰</span>
+                  </div>
+                  <div className="w-8 h-8 rounded-lg text-[#62685E] hover:text-[#202920] hover:bg-[#EAE5D9] transition-colors flex items-center justify-center cursor-pointer" title="Community">
+                    <User size={15} />
+                  </div>
+                  <div className="w-8 h-8 rounded-lg text-[#62685E] hover:text-[#202920] hover:bg-[#EAE5D9] transition-colors flex items-center justify-center cursor-pointer" title="Topics">
+                    <span className="text-xs">🧠</span>
+                  </div>
+                  <div className="w-8 h-8 rounded-lg text-[#62685E] hover:text-[#202920] hover:bg-[#EAE5D9] transition-colors flex items-center justify-center cursor-pointer" title="Grid Apps">
+                    <span className="text-xs">⊞</span>
+                  </div>
+                  <div className="w-8 h-8 rounded-lg text-[#62685E] hover:text-[#202920] hover:bg-[#EAE5D9] transition-colors flex items-center justify-center cursor-pointer" title="Grants">
+                    <span className="text-xs font-bold">$</span>
+                  </div>
+                  <div className="w-8 h-8 rounded-lg text-[#62685E] hover:text-[#202920] hover:bg-[#EAE5D9] transition-colors flex items-center justify-center cursor-pointer" title="Literature">
+                    <FileText size={15} />
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-center gap-3 pt-3 border-t border-[#E4DCCB] w-full">
+                  <div className="w-8 h-8 rounded-lg text-[#62685E] hover:text-[#202920] hover:bg-[#EAE5D9] transition-colors flex items-center justify-center cursor-pointer" title="Help">
+                    <HelpCircle size={15} />
+                  </div>
+                  <div className="w-8 h-8 rounded-lg text-[#62685E] hover:text-[#202920] hover:bg-[#EAE5D9] transition-colors flex items-center justify-center cursor-pointer" title="Settings">
+                    <Settings size={15} />
+                  </div>
+                  <div className="w-7 h-7 rounded-full bg-[#202920] text-[#FAF7F0] flex items-center justify-center text-[10px] font-bold mt-1">
+                    IM
+                  </div>
+                </div>
+              </aside>
+
+              {/* Col 2: Center Content Workspace */}
+              <main className="p-7 overflow-hidden bg-[#FAF7F0] dark:bg-[#131C15] flex flex-col justify-between">
+                <div>
+                  {/* Greeting (Wednesday, October 7 — Photo 2 Match) */}
+                  <div className="mb-6">
+                    <h3 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-[38px] font-normal text-[#202920] tracking-tight leading-tight m-0">
+                      Good evening, <span className="italic font-serif text-[#3E6248]">Imthiyas.</span>
+                    </h3>
+                    <p className="font-sans text-xs md:text-sm text-[#62685E] mt-1.5 mb-0">
+                      Here is your live research synthesis and active scholarly horizon for Wednesday, October 7.
+                    </p>
+                  </div>
+
+                  {/* 4 Interactive Action Buttons (Photo 2 Match) */}
+                  <div className="flex items-center gap-2 flex-wrap mb-7">
+                    {actionPills.map((action) => (
+                      <button
+                        key={action.id}
+                        onClick={() => setActiveAction(action.note)}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#E4DCCB] bg-white text-xs font-semibold text-[#202920] hover:border-[#3E6248] hover:bg-[#F2EBDD] transition-all cursor-pointer shadow-2xs"
+                      >
+                        {action.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Needs Your Attention Section Header */}
+                  <div className="flex items-center justify-between mb-3.5">
+                    <div>
+                      <h4 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-xl font-normal text-[#202920] m-0">
+                        Needs your attention
+                      </h4>
+                      <p className="text-xs text-[#85877B] m-0 mt-0.5">
+                        High-confidence matches for your active research vectors
+                      </p>
+                    </div>
+                    <Link
+                      href="/opportunities"
+                      className="text-xs font-semibold text-[#3E6248] hover:text-[#202920] flex items-center gap-1 no-underline transition-colors"
+                    >
+                      View all 8 matches →
+                    </Link>
+                  </div>
+
+                  {/* 2x2 Grid of Attention Cards (Photo 2 Match) */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {cards.map((card) => {
+                      const isSaved = savedCards[card.id]
+                      return (
+                        <div
+                          key={card.id}
+                          className="bg-white border border-[#E4DCCB] rounded-xl p-5 hover:border-[#3E6248] transition-all flex flex-col justify-between shadow-xs group"
+                        >
+                          <div>
+                            {/* Type & Match Pills */}
+                            <div className="flex items-center justify-between gap-2 mb-3">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${card.typeBg} ${card.typeText} tracking-wider`}>
+                                {card.type}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-[#DCE6D7] text-[#3E6248] flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248]" />
+                                  {card.match}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    toggleSave(card.id)
+                                  }}
+                                  className="text-[#85877B] hover:text-[#202920] p-1 cursor-pointer"
+                                  title={isSaved ? 'Saved' : 'Save'}
+                                >
+                                  <Bookmark size={13} className={isSaved ? 'fill-[#3E6248] text-[#3E6248]' : ''} />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Card Title */}
+                            <h5 className="font-sans text-[14.5px] font-bold text-[#202920] tracking-tight leading-snug mb-2 group-hover:text-[#3E6248] transition-colors">
+                              {card.title}
+                            </h5>
+
+                            {/* Card Description */}
+                            <p className="text-xs text-[#62685E] leading-relaxed mb-4">
+                              {card.desc}
+                            </p>
+                          </div>
+
+                          {/* Card Footer */}
+                          <div className="pt-3 border-t border-[#FAF7F0] flex items-center justify-between text-[11px] font-sans text-[#85877B]">
+                            {card.footer ? (
+                              <span>{card.footer}</span>
+                            ) : (
+                              <div>
+                                <div className="text-[11px] text-[#85877B]">{card.footerLine1}</div>
+                                <div className="text-[10px] text-[#85877B]">{card.footerLine2}</div>
+                              </div>
+                            )}
+                            <Link
+                              href={card.href}
+                              className="text-[#3E6248] hover:text-[#202920] font-sans font-semibold underline underline-offset-2 no-underline shrink-0 ml-2"
+                            >
+                              Explore ↗
+                            </Link>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Sub-bar synchronization ledger */}
+                <div className="pt-4 mt-4 border-t border-[#E4DCCB]/60 flex items-center justify-between text-[11px] text-[#85877B]">
+                  <span>Scholarly Ledger synchronized with MIT CSAIL, NSF, and arXiv registries</span>
+                  <Link href="/dashboard" className="text-[#3E6248] hover:text-[#202920] font-semibold no-underline">
+                    Open Full Live Research Desk (/dashboard) ↗
+                  </Link>
+                </div>
+              </main>
+
+              {/* Col 3: Right Aside Rail (Photo 2 Match) */}
+              <aside className="w-[285px] bg-[#FAF7F0] dark:bg-[#131C15] p-5 flex flex-col justify-between gap-5 relative">
+                <div className="space-y-6">
+                  {/* Upcoming Deadlines */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E]">
+                        UPCOMING DEADLINES
+                      </span>
+                      <Link href="/calendar" className="text-[11px] text-[#85877B] hover:text-[#202920] no-underline font-medium">
+                        Calendar
+                      </Link>
+                    </div>
+
+                    <div className="flex flex-col gap-2.5">
+                      {[
+                        { month: 'SEP', day: '14', title: 'NeurIPS Paper Deadline', time: '11:59 PM AoE', badge: 'DEADLINE', badgeBg: 'bg-[#FDF1EE]', badgeColor: 'text-[#B33D35]' },
+                        { month: 'SEP', day: '18', title: 'Lab Meeting — Climate Models', time: '2:00 PM · Zoom', badge: 'MEETING', badgeBg: 'bg-[#DCE6D7]', badgeColor: 'text-[#3E6248]' },
+                        { month: 'SEP', day: '22', title: 'EMNLP Early Submission', time: '5:00 PM PST', badge: 'DEADLINE', badgeBg: 'bg-[#FDF1EE]', badgeColor: 'text-[#B33D35]' },
+                      ].map((d) => (
+                        <div key={d.title} className="bg-white border border-[#E4DCCB] rounded-lg p-2.5 flex items-center gap-3 shadow-2xs hover:border-[#3E6248] transition-colors">
+                          <div className="w-9 h-11 bg-[#FAF7F0] border border-[#E4DCCB] rounded flex flex-col items-center justify-center shrink-0">
+                            <span className="text-[9px] font-mono font-bold text-[#85877B] leading-none">{d.month}</span>
+                            <span className="text-sm font-bold text-[#202920] leading-none mt-0.5">{d.day}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-semibold text-[#202920] truncate">{d.title}</div>
+                            <div className="text-[10.5px] text-[#85877B]">{d.time}</div>
+                          </div>
+                          <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0 ${d.badgeBg} ${d.badgeColor}`}>
+                            {d.badge}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Scholars You May Know */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E]">
+                        SCHOLARS YOU MAY KNOW
+                      </span>
+                      <Link href="/network" className="text-[11px] text-[#85877B] hover:text-[#202920] no-underline font-medium">
+                        Explore →
+                      </Link>
+                    </div>
+
+                    <div className="flex flex-col gap-2.5">
+                      {[
+                        { initials: 'AR', name: 'Dr. Aisha Rahman', role: 'Computational Ling...', bg: 'bg-[#4A6B8A]' },
+                        { initials: 'JK', name: 'Prof. Jonas Keller', role: 'Climate Informatics...', bg: 'bg-[#5A7A6B]' },
+                        { initials: 'SC', name: 'Sophia Chen', role: 'AI for Science · Stanf...', bg: 'bg-[#6B5A7A]' },
+                      ].map((s) => {
+                        const isConnected = connectedScholars[s.name]
+                        return (
+                          <div key={s.name} className="flex items-center justify-between gap-2 bg-white border border-[#E4DCCB] rounded-lg p-2 shadow-2xs">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className={`w-7 h-7 rounded-full ${s.bg} text-white font-bold text-[10px] flex items-center justify-center shrink-0`}>
+                                {s.initials}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-xs font-bold text-[#202920] truncate">{s.name}</div>
+                                <div className="text-[10px] text-[#85877B] truncate">{s.role}</div>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => toggleConnect(s.name)}
+                              className={`text-[11px] font-semibold px-2 py-1 rounded transition-colors cursor-pointer shrink-0 ${
+                                isConnected
+                                  ? 'bg-[#DCE6D7] text-[#3E6248]'
+                                  : 'bg-[#FAF7F0] hover:bg-[#EAE5D9] text-[#202920] border border-[#E4DCCB]'
+                              }`}
+                            >
+                              {isConnected ? 'Requested ✓' : '+ Connect'}
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Curated Vectors */}
+                  <div>
+                    <div className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E] mb-2.5">
+                      CURATED VECTORS
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      {[
+                        { label: 'Large Language Models in Biology', href: '/discover' },
+                        { label: 'Carbon Capture via ML Optimization', href: '/discover' },
+                        { label: 'Preprints: September 2026', href: '/discover' },
+                      ].map((v) => (
+                        <Link
+                          key={v.label}
+                          href={v.href}
+                          className="text-xs text-[#202920] hover:text-[#3E6248] py-1 px-2 rounded hover:bg-white flex items-center justify-between transition-colors no-underline group"
+                        >
+                          <span className="truncate">{v.label}</span>
+                          <ExternalLink size={12} className="text-[#85877B] group-hover:text-[#3E6248] shrink-0" />
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Floating Note Button 'N' in Bottom Right Corner (Photo 2 Match) */}
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={() => {
+                      setShowQuickNote(!showQuickNote)
+                      setActiveAction('Opened Quick Scholar Scratchpad')
+                    }}
+                    className="w-8 h-8 rounded-full bg-[#202920] text-[#FAF7F0] hover:bg-[#3E6248] flex items-center justify-center font-bold text-xs shadow-md transition-all cursor-pointer"
+                    title="Quick Scholar Notebook"
+                  >
+                    N
+                  </button>
+                </div>
+              </aside>
             </div>
           </div>
         </div>
@@ -1196,72 +1724,126 @@ function WorkspaceSection() {
 
 // ─── Community Section ─────────────────────────────────────────────────────────
 function CommunitySection() {
+  const [isSaved, setIsSaved] = useState(false)
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [commentsCount, setCommentsCount] = useState(24)
+  const [hasCommented, setHasCommented] = useState(false)
+  const [shareFeedback, setShareFeedback] = useState(false)
+  const [interestExpressed, setInterestExpressed] = useState(false)
+
+  const handleShare = () => {
+    setShareFeedback(true)
+    setTimeout(() => setShareFeedback(false), 2200)
+  }
+
+  const handleComment = () => {
+    if (!hasCommented) {
+      setCommentsCount(prev => prev + 1)
+      setHasCommented(true)
+    }
+  }
+
   return (
-    <section id="community" style={{ background: C.bg, padding: '120px 88px', borderTop: `1px solid ${C.rule}` }}>
+    <section id="community" className="bg-[#FAF7F0] dark:bg-[#0E140F] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-28 px-6 md:px-16 transition-colors duration-200">
       <div style={{ maxWidth: 1280, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: 80, alignItems: 'center' }}>
         <div>
-          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.moss, textTransform: 'uppercase', marginBottom: 20 }}>Research Community</p>
-          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.03em', color: C.charcoal, marginBottom: 24 }}>
+          <p className="text-[11px] font-bold tracking-[0.1em] text-[#3E6248] dark:text-[#4ADE80] uppercase mb-5">Research Community</p>
+          <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal leading-[1.1] tracking-[-0.03em] text-[#202920] dark:text-[#EDEAE2] mb-6">
             Research is better together.
           </h2>
-          <p style={{ fontSize: 17, lineHeight: 1.65, color: C.secondary, marginBottom: 40 }}>
+          <p className="text-[17px] leading-[1.65] text-[#62685E] dark:text-[#A3B899] mb-8">
             Share findings, seek collaborators, announce publications, and engage with the scholarly community in a space designed for academic discourse.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="flex flex-col gap-3 mb-9">
             {['Scholarly discussion threads', 'Collaboration requests', 'Publication announcements', 'Research questions & answers'].map((item) => (
-              <div key={item} style={{ display: 'flex', gap: 12, alignItems: 'center', fontSize: 14, color: C.secondary }}>
-                <div style={{ width: 5, height: 5, borderRadius: '50%', background: C.moss, flexShrink: 0 }} />
+              <div key={item} className="flex gap-3 items-center text-sm text-[#62685E] dark:text-[#A3B899]">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
                 {item}
               </div>
             ))}
           </div>
+
+          <Link
+            href="/community"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#3E6248] dark:bg-[#4ADE80] hover:bg-[#293E30] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] text-xs font-semibold uppercase tracking-wider no-underline transition-all shadow-sm"
+          >
+            Launch Scholarly Community Feed (/community) ↗
+          </Link>
         </div>
 
-        {/* Community feed mockup */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* Post 1 */}
-          <div style={{ background: C.bg, border: `1px solid ${C.rule}`, borderRadius: 8, padding: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 12, alignItems: 'flex-start' }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#4A6B8A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>AR</div>
+        {/* Community feed mockup matching Photo 3 */}
+        <div className="flex flex-col gap-4">
+          {/* Post 1: Dr. Arjun Rao */}
+          <div className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-xl p-6 shadow-sm">
+            <div className="flex gap-3 mb-3 items-start">
+              <div className="w-9 h-9 rounded-full bg-[#4A6B8A] flex items-center justify-center text-white text-xs font-bold shrink-0">AR</div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: C.charcoal }}>Dr. Arjun Rao</div>
-                <div style={{ fontSize: 11, color: C.tertiary }}>Machine Learning Researcher · IISc · 2h ago</div>
+                <div className="text-sm font-semibold text-[#202920] dark:text-[#EDEAE2]">Dr. Arjun Rao</div>
+                <div className="text-xs text-[#85877B] dark:text-[#7E8B7B] mt-0.5">Machine Learning Researcher · IISc · 2h ago</div>
               </div>
             </div>
-            <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.65, marginBottom: 14 }}>
-              "We just released our benchmark for low-resource scientific language models. The gap between domain-general and domain-specific models is larger than we expected at small scales."
+            <p className="text-[14.5px] text-[#62685E] dark:text-[#A3B899] leading-relaxed mb-3.5">
+              &ldquo;We just released our benchmark for low-resource scientific language models. The gap between domain-general and domain-specific models is larger than we expected at small scales.&rdquo;
             </p>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+            <div className="flex gap-2 mb-4 flex-wrap">
               {['Scientific NLP', 'Low-Resource', 'Benchmarks'].map((t) => (
-                <span key={t} style={{ fontSize: 11, padding: '3px 8px', border: `1px solid ${C.rule}`, borderRadius: 4, color: C.secondary }}>{t}</span>
+                <span key={t} className="text-xs px-2.5 py-1 border border-[#E4DCCB] dark:border-[#233327] rounded-md text-[#62685E] dark:text-[#A3B899] bg-[#FAF7F0] dark:bg-[#131C15]">{t}</span>
               ))}
             </div>
-            <div style={{ display: 'flex', gap: 20, borderTop: `1px solid ${C.rule}`, paddingTop: 12 }}>
-              {[['💬', '24 Comments'], ['↗', 'Share'], ['🔖', 'Save'], ['＋', 'Follow']].map(([icon, label]) => (
-                <button key={label} style={{ fontSize: 12, color: C.tertiary, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', gap: 5, alignItems: 'center', transition: 'color 0.1s' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = C.charcoal }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = C.tertiary }}>
-                  <span>{icon}</span>{label}
-                </button>
-              ))}
+            <div className="flex gap-5 border-t border-[#E4DCCB] dark:border-[#233327] pt-3.5 flex-wrap">
+              <button
+                onClick={handleComment}
+                className={`text-xs bg-transparent border-0 cursor-pointer flex gap-1.5 items-center ${hasCommented ? 'text-[#3E6248] dark:text-[#4ADE80]' : 'text-[#62685E] dark:text-[#A3B899]'}`}
+              >
+                <span>💬</span>
+                <span className="font-medium">{commentsCount} Comments</span>
+              </button>
+              <button
+                onClick={handleShare}
+                className={`text-xs bg-transparent border-0 cursor-pointer flex gap-1.5 items-center ${shareFeedback ? 'text-[#3E6248] dark:text-[#4ADE80]' : 'text-[#62685E] dark:text-[#A3B899]'}`}
+              >
+                <span>↗</span>
+                <span className="font-medium">{shareFeedback ? 'Link Copied ✓' : 'Share'}</span>
+              </button>
+              <button
+                onClick={() => setIsSaved(!isSaved)}
+                className={`text-xs bg-transparent border-0 cursor-pointer flex gap-1.5 items-center ${isSaved ? 'text-[#3E6248] dark:text-[#4ADE80]' : 'text-[#62685E] dark:text-[#A3B899]'}`}
+              >
+                <span>🔖</span>
+                <span className="font-medium">{isSaved ? 'Saved ✓' : 'Save'}</span>
+              </button>
+              <button
+                onClick={() => setIsFollowing(!isFollowing)}
+                className={`text-xs bg-transparent border-0 cursor-pointer flex gap-1.5 items-center ${isFollowing ? 'text-[#3E6248] dark:text-[#4ADE80]' : 'text-[#62685E] dark:text-[#A3B899]'}`}
+              >
+                <span>{isFollowing ? '✓' : '＋'}</span>
+                <span className="font-medium">{isFollowing ? 'Following' : 'Follow'}</span>
+              </button>
             </div>
           </div>
 
           {/* Post 2: Collaboration request */}
-          <div style={{ background: C.bg, border: `1px solid ${C.moss}44`, borderTop: `2px solid ${C.moss}`, borderRadius: 8, padding: 20, boxShadow: '0 2px 8px rgba(92,122,94,0.06)' }}>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
-              <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', background: C.mossLight, color: C.mossMid, borderRadius: 4 }}>Looking for collaborators</span>
+          <div className="bg-white dark:bg-[#18231B] border-l border-r border-b border-[#E4DCCB] dark:border-[#233327] border-t-[3px] border-t-[#3E6248] dark:border-t-[#4ADE80] rounded-xl p-6 shadow-sm">
+            <div className="flex gap-2 mb-3 items-center">
+              <span className="text-xs font-semibold px-2.5 py-1 bg-[#DCE6D7] dark:bg-[#1A281E] text-[#3E6248] dark:text-[#4ADE80] rounded-md">Looking for collaborators</span>
             </div>
-            <p style={{ fontSize: 14, color: C.secondary, lineHeight: 1.65, marginBottom: 14 }}>
+            <p className="text-[14.5px] text-[#62685E] dark:text-[#A3B899] leading-relaxed mb-3.5">
               Working on multimodal medical imaging and looking for researchers with expertise in clinical validation. Experience with radiology datasets preferred.
             </p>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+            <div className="flex gap-2 mb-4 flex-wrap">
               {['Medical Imaging', 'Computer Vision', 'Collaboration', 'Clinical AI'].map((t) => (
-                <span key={t} style={{ fontSize: 11, padding: '3px 8px', border: `1px solid ${C.rule}`, borderRadius: 4, color: C.secondary }}>{t}</span>
+                <span key={t} className="text-xs px-2.5 py-1 border border-[#E4DCCB] dark:border-[#233327] rounded-md text-[#62685E] dark:text-[#A3B899] bg-[#FAF7F0] dark:bg-[#131C15]">{t}</span>
               ))}
             </div>
-            <button style={{ fontSize: 12, fontWeight: 600, color: C.moss, background: C.mossLight, border: 'none', padding: '8px 16px', borderRadius: 5, cursor: 'pointer' }}>
-              Express interest
+            <button
+              onClick={() => setInterestExpressed(!interestExpressed)}
+              className={`text-xs font-semibold px-4 py-2 rounded-lg cursor-pointer transition-all border-0 ${
+                interestExpressed
+                  ? 'bg-[#3E6248] dark:bg-[#4ADE80] text-white dark:text-[#0E140F]'
+                  : 'bg-[#DCE6D7] dark:bg-[#1A281E] text-[#3E6248] dark:text-[#4ADE80] hover:bg-[#3E6248] hover:text-white dark:hover:bg-[#4ADE80] dark:hover:text-[#0E140F]'
+              }`}
+            >
+              {interestExpressed ? 'Interest Expressed ✓ · Notification Sent' : 'Express interest'}
             </button>
           </div>
         </div>
@@ -1274,56 +1856,48 @@ function CommunitySection() {
 function ActivitySection() {
   const weeks = 52
   const days = 7
-  const activities = ['Published Paper', 'Updated Dataset', 'Experiment', 'Conference', 'Literature Review', 'Collaboration', 'Grant', 'Code', 'Research Note']
+  const activities = SCHOLAR_ACTIVITY_BADGES
 
+  // Deterministic organic academic cadence grid with sprint clusters & quiet gaps
   const grid = Array.from({ length: weeks }, (_, w) =>
-    Array.from({ length: days }, (_, d) => {
-      const r = Math.random()
-      if (r > 0.85) return 4
-      if (r > 0.7) return 3
-      if (r > 0.55) return 2
-      if (r > 0.35) return 1
-      return 0
-    })
-  )
-
-  const intensities = ['#F0EEE8', C.mossLight, '#C5D9C6', '#8CB48E', C.moss]
+    Array.from({ length: days }, (_, d) => getScholarContributionDetails(w, d))
+  );
 
   return (
-    <section style={{ background: '#F5F4F0', borderTop: `1px solid ${C.rule}`, padding: '120px 88px' }}>
+    <section className="bg-[#F2EBDD] dark:bg-[#131C15] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-28 px-6 md:px-16 transition-colors duration-200">
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
-          {/* Graph */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: C.charcoal }}>2026 Research Activity</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ fontSize: 11, color: C.tertiary }}>Less</span>
-                {intensities.map((c, i) => (
-                  <div key={i} style={{ width: 10, height: 10, borderRadius: 2, background: c, border: `1px solid ${C.rule}` }} />
+          {/* Graph Card */}
+          <div className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl p-7 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+            <div className="flex justify-between items-center mb-5">
+              <div className="text-sm font-semibold text-[#202920] dark:text-[#EDEAE2]">2026 Research Activity Cadence</div>
+              <div className="flex items-center gap-1.5 text-xs text-[#85877B] dark:text-[#7E8B7B]">
+                <span>Less</span>
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className={`w-2.5 h-2.5 rounded-xs border border-[#E4DCCB] dark:border-[#233327] ${
+                      i === 0 ? 'bg-[#EAE5D9] dark:bg-[#202D23]' :
+                      i === 1 ? 'bg-[#DCE6D7] dark:bg-[#1A281E]' :
+                      i === 2 ? 'bg-[#A3C4A8] dark:bg-[#233F2B]' :
+                      i === 3 ? 'bg-[#66866A] dark:bg-[#365F42]' :
+                      'bg-[#3E6248] dark:bg-[#4ADE80]'
+                    }`}
+                  />
                 ))}
-                <span style={{ fontSize: 11, color: C.tertiary }}>More</span>
+                <span>More</span>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 3, overflowX: 'auto', paddingBottom: 8 }}>
+            <div className="flex gap-1 overflow-x-auto pb-2">
               {grid.map((week, w) => (
-                <div key={w} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  {week.map((level, d) => (
+                <div key={w} className="flex flex-col gap-1">
+                  {week.map((item, d) => (
                     <div
                       key={d}
-                      title={level > 0 ? `${activities[Math.floor(Math.random() * activities.length)]}` : 'No activity'}
-                      style={{
-                        width: 11,
-                        height: 11,
-                        borderRadius: 2,
-                        background: intensities[level],
-                        border: `1px solid rgba(0,0,0,0.04)`,
-                        cursor: 'default',
-                        transition: 'transform 0.1s',
-                      }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.3)' }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.transform = '' }}
+                      title={`Week ${w + 1}, Day ${d + 1}: ${item.label}`}
+                      className="w-2.5 h-2.5 rounded-xs transition-transform duration-100 hover:scale-125 cursor-default bg-[#EAE5D9] dark:bg-[#202D23] data-[lvl='1']:bg-[#DCE6D7] dark:data-[lvl='1']:bg-[#1A281E] data-[lvl='2']:bg-[#A3C4A8] dark:data-[lvl='2']:bg-[#233F2B] data-[lvl='3']:bg-[#66866A] dark:data-[lvl='3']:bg-[#365F42] data-[lvl='4']:bg-[#3E6248] dark:data-[lvl='4']:bg-[#4ADE80]"
+                      data-lvl={item.level}
                     />
                   ))}
                 </div>
@@ -1331,20 +1905,20 @@ function ActivitySection() {
             </div>
 
             {/* Activity types */}
-            <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div className="mt-6 flex flex-wrap gap-2">
               {activities.map((a) => (
-                <span key={a} style={{ fontSize: 11, padding: '4px 10px', border: `1px solid ${C.rule}`, borderRadius: 4, color: C.secondary, background: C.bg }}>{a}</span>
+                <span key={a} className="text-xs px-2.5 py-1 border border-[#E4DCCB] dark:border-[#233327] rounded-md text-[#62685E] dark:text-[#A3B899] bg-[#FAF7F0] dark:bg-[#131C15]">{a}</span>
               ))}
             </div>
           </div>
 
           {/* Copy */}
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.moss, textTransform: 'uppercase', marginBottom: 20 }}>Research Activity</p>
-            <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(28px, 3vw, 44px)', fontWeight: 400, lineHeight: 1.15, letterSpacing: '-0.03em', color: C.charcoal, marginBottom: 24 }}>
+            <p className="text-[11px] font-bold tracking-[0.1em] text-[#3E6248] dark:text-[#4ADE80] uppercase mb-5">Research Cadence & Ledger</p>
+            <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal leading-[1.15] tracking-[-0.03em] text-[#202920] dark:text-[#EDEAE2] mb-6">
               Every contribution becomes part of your research story.
             </h2>
-            <p style={{ fontSize: 17, lineHeight: 1.65, color: C.secondary }}>
+            <p className="text-[17px] leading-[1.65] text-[#62685E] dark:text-[#A3B899]">
               Track publications, experiments, collaborations, and milestones in a continuous timeline that documents your intellectual journey from start to impact.
             </p>
           </div>
@@ -1357,198 +1931,301 @@ function ActivitySection() {
 // ─── Opportunities Section ────────────────────────────────────────────────────
 function OpportunitiesSection() {
   const [activeTab, setActiveTab] = useState('Grants')
-  const tabs = ['Grants', 'Conferences', 'Journals', 'Fellowships', 'Scholarships', 'CFPs']
+  const [savedOpps, setSavedOpps] = useState<Record<string, boolean>>({})
 
-  const opportunities = {
-    Grants: [
-      { title: 'AI for Climate Research', org: 'National Science Foundation', type: 'Grant', deadline: '18 days', funding: '$250,000', tags: ['AI', 'Climate', 'Research'], hot: true },
-      { title: 'Biomedical Data Science Initiative', org: 'NIH National Library of Medicine', type: 'Grant', deadline: '42 days', funding: '$180,000', tags: ['Biomedical', 'Data Science'], hot: false },
-    ],
-    Conferences: [
-      { title: 'NeurIPS 2026', org: 'Neural Information Processing Systems', type: 'Conference', deadline: 'Sep 18', funding: null, tags: ['Machine Learning', 'AI', 'Representation Learning'], hot: true },
-      { title: 'CVPR 2026', org: 'Computer Vision and Pattern Recognition', type: 'Conference', deadline: 'Nov 1', funding: null, tags: ['Computer Vision', 'Robotics'], hot: false },
-    ],
-    Fellowships: [
-      { title: 'Research Fellowship Program', org: 'Global Research Foundation', type: 'Fellowship', deadline: 'Oct 4', funding: '$60,000/yr', tags: ['Open', 'International'], hot: false },
-    ],
-    Journals: [{ title: 'Nature Machine Intelligence', org: 'Springer Nature', type: 'Journal', deadline: 'Rolling', funding: null, tags: ['AI', 'ML', 'High Impact'], hot: true }],
-    Scholarships: [{ title: 'Doctoral Excellence Award', org: 'IEEE Foundation', type: 'Scholarship', deadline: 'Dec 15', funding: '$25,000', tags: ['PhD', 'Engineering'], hot: false }],
-    CFPs: [{ title: 'ICML Workshop on Scientific ML', org: 'ICML 2026', type: 'CFP', deadline: 'Mar 20', funding: null, tags: ['Scientific ML', 'Workshop'], hot: false }],
+  const toggleSave = (title: string) => {
+    setSavedOpps(prev => ({ ...prev, [title]: !prev[title] }))
   }
 
-  const items = opportunities[activeTab as keyof typeof opportunities] || []
+  const tabs = ['Grants', 'Conferences', 'Journals', 'Fellowships', 'Scholarships', 'CFPs']
+
+  const opportunities: Record<string, Array<{
+    title: string
+    org: string
+    type: string
+    deadline: string
+    funding: string | null
+    tags: string[]
+    match: string
+    hot: boolean
+  }>> = {
+    Grants: [
+      { title: 'AI for Climate Research', org: 'National Science Foundation', type: 'Grant', deadline: '18 days', funding: '$250,000', tags: ['AI', 'Climate', 'Research'], match: '94% match', hot: true },
+      { title: 'Biomedical Data Science Initiative', org: 'NIH National Library of Medicine', type: 'Grant', deadline: '42 days', funding: '$180,000', tags: ['Biomedical', 'Data Science'], match: '88% match', hot: false },
+    ],
+    Conferences: [
+      { title: 'NeurIPS 2026', org: 'Neural Information Processing Systems', type: 'Conference', deadline: 'Sep 18', funding: null, tags: ['Machine Learning', 'AI', 'Representation Learning'], match: '96% match', hot: true },
+      { title: 'CVPR 2026', org: 'Computer Vision and Pattern Recognition', type: 'Conference', deadline: 'Nov 1', funding: null, tags: ['Computer Vision', 'Robotics'], match: '86% match', hot: false },
+    ],
+    Fellowships: [
+      { title: 'Research Fellowship Program', org: 'Global Research Foundation', type: 'Fellowship', deadline: 'Oct 4', funding: '$60,000/yr', tags: ['Open', 'International'], match: '91% match', hot: false },
+    ],
+    Journals: [
+      { title: 'Nature Machine Intelligence', org: 'Springer Nature', type: 'Journal', deadline: 'Rolling', funding: null, tags: ['AI', 'ML', 'High Impact'], match: '95% match', hot: true },
+    ],
+    Scholarships: [
+      { title: 'Doctoral Excellence Award', org: 'IEEE Foundation', type: 'Scholarship', deadline: 'Dec 15', funding: '$25,000', tags: ['PhD', 'Engineering'], match: '84% match', hot: false },
+    ],
+    CFPs: [
+      { title: 'ICML Workshop on Scientific ML', org: 'ICML 2026', type: 'CFP', deadline: 'Mar 20', funding: null, tags: ['Scientific ML', 'Workshop'], match: '92% match', hot: false },
+    ],
+  }
+
+  const items = opportunities[activeTab] || []
 
   return (
-    <section id="opportunities" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '120px 88px', position: 'relative' }}>
+    <section id="opportunities" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '112px 24px', position: 'relative' }}>
       {/* Subtle organic ambient glow */}
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
 
       <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative', zIndex: 10 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48, flexWrap: 'wrap', gap: 24 }}>
+        <div className="flex justify-between items-end mb-12 flex-wrap gap-6">
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#4ADE80', textTransform: 'uppercase', marginBottom: 16 }}>Opportunity Discovery</p>
-            <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em', color: '#F5F4F0' }}>
+            <p className="text-[11px] font-bold tracking-[0.12em] text-[#4ADE80] uppercase mb-4">Opportunity Discovery</p>
+            <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal tracking-tight text-[#F5F4F0]">
               Find the opportunities that fit your research.
             </h2>
           </div>
+          <Link
+            href="/opportunities"
+            className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-[#4ADE80] hover:text-white transition-colors underline underline-offset-4"
+          >
+            Explore 420+ Live Grants & CFPs (/opportunities) ↗
+          </Link>
         </div>
 
-        {/* Tabs Bar matching Photo 3 */}
-        <div style={{ display: 'flex', gap: 28, borderBottom: '1px solid rgba(255,255,255,0.12)', marginBottom: 36, overflowX: 'auto' }}>
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: '12px 4px',
-                fontSize: 14,
-                fontWeight: activeTab === tab ? 600 : 450,
-                background: 'none',
-                border: 'none',
-                borderBottom: activeTab === tab ? '2.5px solid #4ADE80' : '2.5px solid transparent',
-                color: activeTab === tab ? '#FFFFFF' : 'rgba(245,244,240,0.65)',
-                cursor: 'pointer',
-                marginBottom: -1,
-                transition: 'all 0.18s ease',
-              }}
-            >
-              {tab}
-            </button>
-          ))}
+        {/* Tabs Bar on Dark Forest Background */}
+        <div className="flex items-center justify-between border-b border-white/15 mb-9 overflow-x-auto gap-6">
+          <div className="flex gap-7">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`py-3 px-1 text-[14.5px] bg-transparent border-0 border-b-2 cursor-pointer mb-[-1px] transition-all ${
+                  activeTab === tab
+                    ? 'border-[#4ADE80] font-semibold text-white'
+                    : 'border-transparent font-normal text-[rgba(245,244,240,0.65)] hover:text-white'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          {/* Vertical accent bar */}
+          <div className="w-[3px] h-6 bg-[#4ADE80]/30 hidden md:block rounded-full" />
         </div>
 
-        {/* Cards Grid matching Photo 3 */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 }}>
-          {items.map((opp) => (
-            <div
-              key={opp.title}
-              style={{
-                background: '#FAF7F0',
-                border: '1px solid #E2D9C8',
-                borderRadius: 14,
-                padding: 24,
-                cursor: 'pointer',
-                transition: 'transform 0.18s ease, box-shadow 0.18s ease',
-                boxShadow: '0 16px 40px -10px rgba(0,0,0,0.32), 0 4px 12px rgba(0,0,0,0.12)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-              }}
-              onMouseEnter={(e) => { const el = e.currentTarget as HTMLDivElement; el.style.transform = 'translateY(-3px)'; el.style.boxShadow = '0 24px 52px -10px rgba(0,0,0,0.44), 0 8px 18px rgba(0,0,0,0.18)' }}
-              onMouseLeave={(e) => { const el = e.currentTarget as HTMLDivElement; el.style.transform = ''; el.style.boxShadow = '0 16px 40px -10px rgba(0,0,0,0.32), 0 4px 12px rgba(0,0,0,0.12)' }}
-            >
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <span style={{ fontSize: 12, fontWeight: 500, padding: '3px 10px', background: '#EFEBE1', color: '#62685E', borderRadius: 6 }}>
-                    {opp.type}
-                  </span>
-                  <span style={{ fontSize: 12, fontWeight: 500, color: '#B33D35', background: '#FDF1EE', padding: '3px 10px', borderRadius: 6 }}>
-                    {opp.deadline} {opp.deadline.includes('days') ? 'left' : ''}
-                  </span>
-                </div>
-                <h3 style={{ fontSize: 18, fontWeight: 650, color: '#1C251F', letterSpacing: '-0.02em', margin: '0 0 6px', lineHeight: 1.35 }}>
-                  {opp.title}
-                </h3>
-                <div style={{ fontSize: 13.5, color: '#62685E', marginBottom: 16 }}>
-                  {opp.org}
-                </div>
-                {opp.funding && (
-                  <div style={{ fontSize: 16, fontWeight: 600, color: '#1C251F', marginBottom: 18 }}>
-                    {opp.funding}
+        {/* Cards Grid matching Photo 4 with Sand Cards on Forest Green */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
+          {items.map((opp) => {
+            const isSaved = savedOpps[opp.title]
+            return (
+              <div
+                key={opp.title}
+                className="bg-[#FAF7F0] border border-[#E2D9C8] rounded-2xl p-6 transition-all duration-200 hover:border-[#4ADE80] flex flex-col justify-between shadow-[0_16px_40px_-10px_rgba(0,0,0,0.35),0_4px_12px_rgba(0,0,0,0.12)] hover:shadow-[0_24px_52px_-10px_rgba(0,0,0,0.48),0_8px_18px_rgba(0,0,0,0.2)] group"
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span className="text-xs font-medium px-2.5 py-0.5 bg-[#EFEBE1] dark:bg-[#131C15] text-[#62685E] dark:text-[#A3B899] rounded-md">
+                        {opp.type}
+                      </span>
+                      <span className="text-[11px] font-semibold px-2 py-0.5 bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] rounded-md">
+                        {opp.match}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span className="text-xs font-medium text-[#B33D35] bg-[#FDF1EE] dark:bg-[#2A1715] px-2.5 py-0.5 rounded-md">
+                        {opp.deadline} {opp.deadline.includes('days') ? 'left' : ''}
+                      </span>
+                      <button
+                        onClick={() => toggleSave(opp.title)}
+                        className="text-[#85877B] dark:text-[#7E8B7B] hover:text-[#202920] dark:hover:text-[#EDEAE2] p-1 cursor-pointer transition-colors"
+                        title={isSaved ? 'Saved' : 'Save'}
+                      >
+                        <Bookmark size={15} className={isSaved ? 'fill-[#3E6248] text-[#3E6248] dark:fill-[#4ADE80] dark:text-[#4ADE80]' : ''} />
+                      </button>
+                    </div>
                   </div>
-                )}
+
+                  <h3 className="text-[18.5px] font-bold text-[#202920] dark:text-[#EDEAE2] tracking-[-0.02em] mb-1.5 leading-snug group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors">
+                    {opp.title}
+                  </h3>
+                  <div className="text-[13.5px] text-[#62685E] dark:text-[#A3B899] mb-4">
+                    {opp.org}
+                  </div>
+                  {opp.funding && (
+                    <div className="text-[17px] font-bold text-[#202920] dark:text-[#EDEAE2] mb-4">
+                      {opp.funding}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: opp.funding ? 0 : 16, marginBottom: 16 }}>
+                    {opp.tags.map((t) => (
+                      <span key={t} className="text-[11.5px] px-2.5 py-1 bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] rounded-md text-[#62685E] dark:text-[#A3B899]">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="pt-3 border-t border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between text-xs">
+                    <Link
+                      href="/opportunities"
+                      className="font-semibold text-[#3E6248] dark:text-[#4ADE80] hover:text-[#202920] dark:hover:text-white no-underline inline-flex items-center gap-1"
+                    >
+                      View opportunity details ↗
+                    </Link>
+                    <button
+                      onClick={() => toggleSave(opp.title)}
+                      className="text-[#85877B] dark:text-[#7E8B7B] hover:text-[#202920] dark:hover:text-[#EDEAE2] cursor-pointer font-medium"
+                    >
+                      {isSaved ? 'Saved ✓' : 'Save'}
+                    </button>
+                  </div>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: opp.funding ? 0 : 16 }}>
-                {opp.tags.map((t) => (
-                  <span key={t} style={{ fontSize: 11.5, padding: '4px 10px', background: '#FAF7F0', border: '1px solid #DDD4C2', borderRadius: 6, color: '#62685E' }}>
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>
   )
 }
 
-// ─── Paper Discovery Section ──────────────────────────────────────────────────
+// ─── Paper Discovery Section (Photo 5 Matching Design System) ──────────────────
 function PaperSection() {
+  const [isSaved, setIsSaved] = useState(false)
+  const [activeMetric, setActiveMetric] = useState<string | null>(null)
+
+  const metrics = [
+    { id: 'references', label: 'References', count: 84, color: '#3E6248', desc: '84 foundational citations indexed across CrossRef & PubMed' },
+    { id: 'related', label: 'Related Papers', count: 32, color: '#365F8D', desc: '32 high-similarity papers synthesized via SPECTER2 embeddings' },
+    { id: 'citations', label: 'Citations', count: 2418, color: '#3E6248', desc: '2,418 global citations · Top 1% percentile velocity in AI' },
+    { id: 'topics', label: 'Research Topics', count: 12, color: '#805B43', desc: '12 active ontology tags spanning Foundation Models & Scientific ML' },
+  ]
+
   return (
-    <section id="research" style={{ background: '#F5F4F0', borderTop: `1px solid ${C.rule}`, padding: '120px 88px' }}>
+    <section id="research" className="bg-[#FAF7F0] dark:bg-[#0E140F] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-28 px-6 md:px-16 transition-colors duration-200">
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 80, alignItems: 'center' }}>
           {/* Paper card mockup */}
           <div>
-            <div style={{ background: C.bg, border: `1px solid ${C.rule}`, borderRadius: 10, padding: 28, boxShadow: '0 2px 8px rgba(32,41,32,0.03)' }}>
+            <div className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl p-7 shadow-xl transition-colors duration-200">
+              {/* Header and Title */}
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: C.tertiary, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10 }}>Research Paper</div>
-                <h3 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 20, fontWeight: 400, color: C.charcoal, lineHeight: 1.35, letterSpacing: '-0.02em', marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <span className="text-[11px] font-bold text-[#62685E] dark:text-[#88998A] tracking-[0.1em] uppercase">
+                    RESEARCH PAPER
+                  </span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={() => setIsSaved(!isSaved)}
+                      className="text-xs font-semibold px-2.5 py-1 rounded bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] hover:border-[#3E6248] dark:hover:border-[#4ADE80] cursor-pointer inline-flex items-center gap-1.5 transition-colors"
+                      title={isSaved ? 'Saved to Library' : 'Save to Library'}
+                    >
+                      <Bookmark size={13} className={isSaved ? 'fill-[#3E6248] dark:fill-[#4ADE80] text-[#3E6248] dark:text-[#4ADE80]' : 'text-[#85877B] dark:text-[#88998A]'} />
+                      <span>{isSaved ? 'Saved ✓' : 'Save'}</span>
+                    </button>
+                    <Link
+                      href="/agent-reader"
+                      className="text-xs font-semibold px-3 py-1 rounded bg-[#202920] dark:bg-[#3E6248] text-[#FAF7F0] hover:bg-[#3E6248] dark:hover:bg-[#4E7A5A] no-underline transition-colors"
+                    >
+                      Read ↗
+                    </Link>
+                  </div>
+                </div>
+
+                <h3 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-2xl font-medium text-[#202920] dark:text-[#EDEAE2] leading-snug tracking-tight mb-2">
                   Foundation Models for Scientific Discovery
                 </h3>
-                <div style={{ fontSize: 13, color: C.secondary, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {['Imthiyas', 'Arjun Rao', 'Elena Park'].map((a, i) => (
-                    <span key={a}>{a}{i < 2 ? ',' : ''}</span>
-                  ))}
-                  <span style={{ color: C.tertiary }}>· 2026</span>
+                <div className="text-[13.5px] text-[#62685E] dark:text-[#9BA39B] flex gap-2 flex-wrap mt-2">
+                  <span>Imthiyas, Arjun Rao, Elena Park · 2026</span>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: 24, padding: '16px 0', borderTop: `1px solid ${C.rule}`, borderBottom: `1px solid ${C.rule}`, marginBottom: 20 }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: C.charcoal, letterSpacing: '-0.02em' }}>2,418</div>
-                  <div style={{ fontSize: 11, color: C.tertiary, marginTop: 2 }}>Citations</div>
+              {/* Citations & Venue Stats Bar */}
+              <div className="flex gap-9 py-4 border-t border-b border-[#E4DCCB] dark:border-[#233327] mb-5">
+                <div>
+                  <div className="text-[22px] font-bold text-[#202920] dark:text-[#EDEAE2] tracking-tight">2,418</div>
+                  <div className="text-[11.5px] text-[#62685E] dark:text-[#88998A] mt-0.5">Citations</div>
                 </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: C.charcoal, letterSpacing: '-0.02em' }}>NeurIPS</div>
-                  <div style={{ fontSize: 11, color: C.tertiary, marginTop: 2 }}>Venue · 2026</div>
+                <div>
+                  <div className="text-[22px] font-bold text-[#202920] dark:text-[#EDEAE2] tracking-tight">NeurIPS</div>
+                  <div className="text-[11.5px] text-[#62685E] dark:text-[#88998A] mt-0.5">Venue · 2026</div>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
+              {/* Tags */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 22, flexWrap: 'wrap' }}>
                 {['Scientific ML', 'Foundation Models', 'Knowledge Discovery'].map((t) => (
-                  <span key={t} style={{ fontSize: 11, fontWeight: 500, padding: '4px 10px', background: C.mossLight, color: C.mossMid, borderRadius: 4 }}>{t}</span>
+                  <span key={t} className="text-xs font-medium px-3 py-1 rounded-md bg-[#DCE6D7] dark:bg-[#233327] text-[#3E6248] dark:text-[#4ADE80] transition-colors">
+                    {t}
+                  </span>
                 ))}
               </div>
 
-              {/* Relationship visualization */}
-              <div style={{ borderTop: `1px solid ${C.rule}`, paddingTop: 16 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: C.charcoal, marginBottom: 12 }}>Research Connections</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  {[
-                    { label: 'References', count: 84, color: '#6B7A5A' },
-                    { label: 'Related Papers', count: 32, color: '#5A6B7A' },
-                    { label: 'Citations', count: 2418, color: C.moss },
-                    { label: 'Research Topics', count: 12, color: '#7A6B5A' },
-                  ].map(({ label, count, color }) => (
-                    <div key={label} style={{ padding: '10px 12px', background: '#F5F4F0', borderRadius: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 12, color: C.secondary }}>{label}</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color }}>{count.toLocaleString()}</span>
+              {/* Research Connections Section */}
+              <div className="border-t border-[#E4DCCB] dark:border-[#233327] pt-4.5">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <div className="text-[13px] font-semibold text-[#202920] dark:text-[#EDEAE2]">Research Connections</div>
+                  <span className="text-[11px] text-[#85877B] dark:text-[#88998A]">Click to inspect lineage</span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {metrics.map(({ id, label, count, color }) => (
+                    <div
+                      key={id}
+                      onClick={() => setActiveMetric(activeMetric === id ? null : id)}
+                      className={`p-3 rounded-lg flex justify-between items-center cursor-pointer transition-all border ${
+                        activeMetric === id
+                          ? 'bg-[#EAE5D9] dark:bg-[#233327] border-[#3E6248] dark:border-[#4ADE80]'
+                          : 'bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248]/50'
+                      }`}
+                    >
+                      <span className="text-[12.5px] text-[#62685E] dark:text-[#9BA39B] font-medium">{label}</span>
+                      <span className="text-sm font-bold text-[#3E6248] dark:text-[#4ADE80]">{count.toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
+
+                {/* Interactive Metric Detail Drawer */}
+                {activeMetric && (
+                  <div className="mt-3 p-3 bg-[#FAF7F0] dark:bg-[#131C15] border border-[#3E6248]/30 dark:border-[#4ADE80]/30 rounded-lg text-xs text-[#202920] dark:text-[#EDEAE2] flex items-center justify-between animate-fadeIn">
+                    <span>{metrics.find(m => m.id === activeMetric)?.desc}</span>
+                    <Link href="/graph" className="text-[#3E6248] dark:text-[#4ADE80] font-bold hover:underline shrink-0 ml-2">
+                      Open Graph ↗
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
           {/* Copy */}
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.moss, textTransform: 'uppercase', marginBottom: 20 }}>Paper Discovery</p>
-            <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.03em', color: C.charcoal, marginBottom: 24 }}>
+            <p className="text-[11px] font-semibold tracking-[0.1em] text-[#3E6248] dark:text-[#4ADE80] uppercase mb-5">Paper Discovery</p>
+            <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal leading-[1.1] tracking-[-0.03em] text-[#202920] dark:text-[#EDEAE2] mb-6">
               Follow ideas, not just citations.
             </h2>
-            <p style={{ fontSize: 17, lineHeight: 1.65, color: C.secondary, marginBottom: 40 }}>
+            <p className="text-[17px] leading-[1.65] text-[#62685E] dark:text-[#9BA39B] mb-8">
               Navigate the research landscape through semantic relationships — not just who cited whom. Discover papers through shared concepts, emerging themes, and the ideas that connect across fields.
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
               {['Semantic paper discovery', 'Citation network navigation', 'Related paper recommendations', 'Research topic clustering'].map((item) => (
-                <div key={item} style={{ display: 'flex', gap: 12, alignItems: 'center', fontSize: 14, color: C.secondary }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: C.moss, flexShrink: 0 }} />
+                <div key={item} className="flex gap-3 items-center text-sm text-[#62685E] dark:text-[#9BA39B]">
+                  <div className="w-[5px] h-[5px] rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
                   {item}
                 </div>
               ))}
             </div>
+            <Link
+              href="/agent-reader"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#202920] dark:bg-[#3E6248] hover:bg-[#3E6248] dark:hover:bg-[#4E7A5A] text-[#FAF7F0] text-xs font-semibold no-underline transition-colors shadow-xs"
+            >
+              Explore AI Agent Reader (/agent-reader) ↗
+            </Link>
           </div>
         </div>
       </div>
@@ -1558,74 +2235,100 @@ function PaperSection() {
 
 // ─── Collaboration Section ────────────────────────────────────────────────────
 function CollaborationSection() {
+  const [connections, setConnections] = useState<Record<string, boolean>>({
+    'Dr. Elena Park': false,
+    'Dr. Arjun Rao': false,
+    'Dr. Lena Kovacs': false,
+  })
+
+  const toggleConnect = (name: string) => {
+    setConnections(prev => ({ ...prev, [name]: !prev[name] }))
+  }
+
   const researchers = [
-    { initials: 'EP', color: '#6B5A7A', name: 'Dr. Elena Park', role: 'Computational Biology', org: 'Stanford University', topics: ['Protein Design', 'Generative AI', 'Bioinformatics'], shared: 3, mutual: 5 },
-    { initials: 'AR', color: '#4A6B8A', name: 'Dr. Arjun Rao', role: 'Machine Learning', org: 'IISc', topics: ['Scientific NLP', 'Low-Resource ML', 'Benchmarks'], shared: 2, mutual: 7 },
-    { initials: 'LK', color: '#7A6B4A', name: 'Dr. Lena Kovacs', role: 'Neuroscience AI', org: 'ETH Zurich', topics: ['Neural Decoding', 'Brain-Computer Interface'], shared: 4, mutual: 3 },
+    { initials: 'EP', color: '#6B5A7A', name: 'Dr. Elena Park', role: 'Computational Biology', org: 'Stanford University', match: '96% match', topics: ['Protein Design', 'Generative AI', 'Bioinformatics'], shared: 3, mutual: 5 },
+    { initials: 'AR', color: '#4A6B8A', name: 'Dr. Arjun Rao', role: 'Machine Learning', org: 'IISc', match: '93% match', topics: ['Scientific NLP', 'Low-Resource ML', 'Benchmarks'], shared: 2, mutual: 7 },
+    { initials: 'LK', color: '#7A6B4A', name: 'Dr. Lena Kovacs', role: 'Neuroscience AI', org: 'ETH Zurich', match: '89% match', topics: ['Neural Decoding', 'Brain-Computer Interface'], shared: 4, mutual: 3 },
   ]
 
   return (
-    <section style={{ background: C.bg, borderTop: `1px solid ${C.rule}`, padding: '120px 88px' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+    <section id="collaboration" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '112px 24px', position: 'relative' }}>
+      {/* Subtle organic ambient glow */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
+
+      <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative', zIndex: 10 }}>
         <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.moss, textTransform: 'uppercase', marginBottom: 16 }}>Collaboration</p>
-          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em', color: C.charcoal, marginBottom: 16 }}>
+          <p className="text-[11px] font-bold tracking-[0.12em] text-[#4ADE80] uppercase mb-4">Collaboration</p>
+          <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal tracking-[-0.03em] text-[#F5F4F0] mb-4">
             Meet the researchers your work is already pointing toward.
           </h2>
-          <p style={{ fontSize: 17, color: C.secondary, maxWidth: 480, margin: '0 auto' }}>
+          <p className="text-[17px] text-[rgba(245,244,240,0.72)] max-w-[480px] mx-auto">
             Cambium surfaces researchers who share your intellectual territory — before you know to search for them.
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-          {researchers.map((r) => (
-            <div
-              key={r.name}
-              style={{
-                background: C.bg,
-                border: `1px solid ${C.rule}`,
-                borderRadius: 8,
-                padding: 24,
-                cursor: 'pointer',
-                transition: 'transform 0.15s, box-shadow 0.15s, border-color 0.15s',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-              }}
-              onMouseEnter={(e) => { const el = e.currentTarget as HTMLDivElement; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 8px 24px rgba(0,0,0,0.07)'; el.style.borderColor = C.rule }}
-              onMouseLeave={(e) => { const el = e.currentTarget as HTMLDivElement; el.style.transform = ''; el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.03)'; el.style.borderColor = C.rule }}
-            >
-              <div style={{ display: 'flex', gap: 14, marginBottom: 16, alignItems: 'center' }}>
-                <div style={{ width: 48, height: 48, borderRadius: '50%', background: r.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{r.initials}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
+          {researchers.map((r) => {
+            const isConnected = connections[r.name]
+            return (
+              <div
+                key={r.name}
+                className="bg-[#FAF7F0] border border-[#E2D9C8] rounded-xl p-6 transition-all duration-200 shadow-[0_16px_40px_-10px_rgba(0,0,0,0.35),0_4px_12px_rgba(0,0,0,0.12)] hover:border-[#4ADE80] hover:shadow-[0_24px_52px_-10px_rgba(0,0,0,0.48)] flex flex-col justify-between group"
+              >
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: C.charcoal, letterSpacing: '-0.01em' }}>{r.name}</div>
-                  <div style={{ fontSize: 12, color: C.secondary, marginTop: 2 }}>{r.role}</div>
-                  <div style={{ fontSize: 11, color: C.tertiary }}>{r.org}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                    <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                      <div style={{ width: 48, height: 48, borderRadius: '50%', background: r.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>{r.initials}</div>
+                      <div>
+                        <div className="text-[15px] font-bold text-[#202920] tracking-tight">{r.name}</div>
+                        <div className="text-xs text-[#62685E] mt-0.5">{r.role}</div>
+                        <div className="text-[11px] text-[#85877B]">{r.org}</div>
+                      </div>
+                    </div>
+                    <span className="text-[10.5px] font-bold px-2 py-0.5 bg-[#DCE6D7] text-[#3E6248] rounded">
+                      {r.match}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 6, marginBottom: 18, flexWrap: 'wrap' }}>
+                    {r.topics.map((t) => (
+                      <span key={t} className="text-[11px] px-2.5 py-1 border border-[#E4DCCB] rounded-md text-[#62685E] bg-white">{t}</span>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-5 py-3 border-t border-b border-[#E4DCCB] mb-4.5">
+                    <div>
+                      <div className="text-base font-bold text-[#202920]">{r.shared}</div>
+                      <div className="text-[11px] text-[#85877B]">Shared interests</div>
+                    </div>
+                    <div>
+                      <div className="text-base font-bold text-[#202920]">{r.mutual}</div>
+                      <div className="text-[11px] text-[#85877B]">Mutual topics</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => toggleConnect(r.name)}
+                    className={`text-xs font-semibold px-4 py-2.5 rounded-md cursor-pointer flex-1 transition-all duration-150 ${
+                      isConnected
+                        ? 'bg-[#3E6248] text-[#FAF7F0]'
+                        : 'bg-[#254A34] text-white hover:bg-[#1A3826]'
+                    }`}
+                  >
+                    {isConnected ? 'Connection Sent ✓' : '+ Connect'}
+                  </button>
+                  <Link
+                    href="/network"
+                    className="text-xs font-medium px-3 py-2 rounded border border-[#E4DCCB] text-[#202920] bg-white hover:bg-[#EAE5D9] no-underline transition-colors"
+                  >
+                    Profile ↗
+                  </Link>
                 </div>
               </div>
-
-              <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-                {r.topics.map((t) => (
-                  <span key={t} style={{ fontSize: 11, padding: '3px 8px', border: `1px solid ${C.rule}`, borderRadius: 4, color: C.secondary }}>{t}</span>
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', gap: 20, padding: '12px 0', borderTop: `1px solid ${C.rule}`, borderBottom: `1px solid ${C.rule}`, marginBottom: 16 }}>
-                <div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: C.charcoal }}>{r.shared}</div>
-                  <div style={{ fontSize: 11, color: C.tertiary }}>Shared interests</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: C.charcoal }}>{r.mutual}</div>
-                  <div style={{ fontSize: 11, color: C.tertiary }}>Mutual topics</div>
-                </div>
-              </div>
-
-              <button style={{ fontSize: 12, fontWeight: 500, color: C.moss, background: C.mossLight, border: 'none', padding: '8px 16px', borderRadius: 5, cursor: 'pointer', width: '100%', transition: 'background 0.1s' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#D5E4D6' }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.mossLight }}>
-                Explore profile
-              </button>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>
@@ -1634,81 +2337,78 @@ function CollaborationSection() {
 
 // ─── Intelligence Section (Dark) ──────────────────────────────────────────────
 function IntelligenceSection() {
+  const [selectedInsight, setSelectedInsight] = useState<string | null>(null)
+
+  const insightPreviews: Record<string, string> = {
+    'Related papers to explore': 'Surfacing 12 related papers connected to Foundation Models via citation velocity lineage.',
+    'Researchers active in this area': 'Identified 4 faculty members at Stanford Bio-X and Cambridge Graph ML matching your co-authorship horizon.',
+    'Relevant grants open now': '3 NSF and Wellcome Trust initiatives have open deadlines matching multimodal modeling.',
+    'Publication venues to compare': '6 target venues analyzed: NeurIPS, ICML, ICLR, Nature MI, Cell Systems, Bioinformatics.',
+  }
+
   return (
-    <section style={{ background: C.darkBg, padding: '120px 88px' }}>
+    <section className="bg-[#FAF7F0] dark:bg-[#0E140F] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-28 px-6 md:px-16 relative transition-colors duration-200">
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 80, alignItems: 'center' }}>
           {/* Copy */}
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.moss, textTransform: 'uppercase', marginBottom: 20 }}>Research Intelligence</p>
-            <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.03em', color: '#F5F4F0', marginBottom: 24 }}>
+            <p className="text-[11px] font-bold tracking-[0.1em] text-[#3E6248] dark:text-[#4ADE80] uppercase mb-5">Research Intelligence</p>
+            <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal leading-[1.1] tracking-[-0.03em] text-[#202920] dark:text-[#EDEAE2] mb-6">
               Intelligence that works around your research.
             </h2>
-            <p style={{ fontSize: 17, lineHeight: 1.65, color: 'rgba(250,249,246,0.55)', marginBottom: 40 }}>
+            <p className="text-[17px] leading-[1.65] text-[#62685E] dark:text-[#A3B899] mb-9">
               Cambium understands your work — not just your search queries. It surfaces connections, opportunities, and collaborators as you research, not when you ask.
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div className="flex flex-col gap-3.5 mb-9">
               {['Contextual paper recommendations', 'Opportunity matching by research fit', 'Emerging topic signals in your field', 'Collaboration opportunities at intersections'].map((item) => (
-                <div key={item} style={{ display: 'flex', gap: 12, alignItems: 'center', fontSize: 14, color: 'rgba(250,249,246,0.55)' }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: C.moss, flexShrink: 0 }} />
+                <div key={item} className="flex gap-3 items-center text-sm text-[#62685E] dark:text-[#A3B899]">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
                   {item}
                 </div>
               ))}
             </div>
+            <Link
+              href="/intelligence"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#3E6248] dark:bg-[#4ADE80] hover:bg-[#293E30] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] text-xs font-semibold uppercase tracking-wider no-underline transition-all shadow-sm"
+            >
+              Launch Living Intelligence Suite (/intelligence) ↗
+            </Link>
           </div>
 
-          {/* Insight panel mockup in Sandal/Sand matching Photo 1 & Opportunities cards */}
+          {/* Insight panel mockup */}
           <div>
             {/* Paper context box */}
-            <div
-              style={{
-                background: '#FAF7F0',
-                border: '1px solid #E2D9C8',
-                borderRadius: 12,
-                padding: '20px 24px',
-                marginBottom: 14,
-                boxShadow: '0 12px 32px -8px rgba(0,0,0,0.28), 0 4px 12px rgba(0,0,0,0.12)',
-              }}
-            >
-              <div style={{ fontSize: 11, fontWeight: 600, color: '#62685E', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+            <div className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl p-6 mb-4 shadow-sm">
+              <div className="text-[11px] font-bold text-[#62685E] dark:text-[#A3B899] tracking-wider uppercase mb-1.5">
                 Currently reading
               </div>
-              <div style={{ fontSize: 16, fontWeight: 650, color: '#1C251F', lineHeight: 1.35, letterSpacing: '-0.01em' }}>
+              <div className="text-[17px] font-bold text-[#202920] dark:text-[#EDEAE2] leading-snug tracking-[-0.01em]">
                 Foundation Models for Scientific Discovery
               </div>
-              <div style={{ fontSize: 13, color: '#62685E', marginTop: 4 }}>
+              <div className="text-[13px] text-[#62685E] dark:text-[#A3B899] mt-1">
                 Imthiyas, Rao, Park · NeurIPS 2026
               </div>
             </div>
 
             {/* Insight card */}
-            <div
-              style={{
-                background: '#FAF7F0',
-                border: '1px solid #E2D9C8',
-                borderTop: '3px solid #3E6248',
-                borderRadius: 14,
-                padding: '24px 26px',
-                boxShadow: '0 20px 48px -12px rgba(0,0,0,0.32), 0 6px 18px rgba(0,0,0,0.15)',
-              }}
-            >
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 16 }}>
-                <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#E2EDE5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="bg-white dark:bg-[#18231B] border-l border-r border-b border-[#E4DCCB] dark:border-[#233327] border-t-[3px] border-t-[#3E6248] dark:border-t-[#4ADE80] rounded-2xl p-6 shadow-md">
+              <div className="flex gap-2.5 items-center mb-4">
+                <div className="w-8 h-8 rounded-full bg-[#DCE6D7] dark:bg-[#1A281E] flex items-center justify-center">
                   <svg width="15" height="15" viewBox="0 0 14 14" fill="none">
-                    <circle cx="7" cy="7" r="5" stroke="#3E6248" strokeWidth="1.5" />
-                    <path d="M7 4.5v3M7 9v.5" stroke="#3E6248" strokeWidth="1.5" strokeLinecap="round" />
+                    <circle cx="7" cy="7" r="5" className="stroke-[#3E6248] dark:stroke-[#4ADE80]" strokeWidth="1.5" />
+                    <path d="M7 4.5v3M7 9v.5" className="stroke-[#3E6248] dark:stroke-[#4ADE80]" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
                 </div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#264A35', letterSpacing: '-0.01em' }}>
+                <div className="text-sm font-bold text-[#3E6248] dark:text-[#4ADE80] tracking-tight">
                   Cambium Research Insight
                 </div>
               </div>
 
-              <p style={{ fontSize: 14.5, color: '#202920', lineHeight: 1.65, marginBottom: 20 }}>
+              <p className="text-[14.5px] text-[#202920] dark:text-[#EDEAE2] leading-relaxed mb-5">
                 This paper connects strongly with your work on multimodal scientific discovery. Several co-authors are active in areas you&apos;re exploring.
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="flex flex-col gap-2.5">
                 {[
                   { label: 'Related papers to explore', count: '12 papers', icon: '→' },
                   { label: 'Researchers active in this area', count: '4 researchers', icon: '→' },
@@ -1717,35 +2417,28 @@ function IntelligenceSection() {
                 ].map(({ label, count, icon }) => (
                   <div
                     key={label}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '12px 16px',
-                      background: '#F1EAD9',
-                      borderRadius: 8,
-                      cursor: 'pointer',
-                      border: '1px solid #E4DCCB',
-                      transition: 'background 0.15s, border-color 0.15s, transform 0.15s',
-                    }}
-                    onMouseEnter={(e) => {
-                      const el = e.currentTarget as HTMLDivElement
-                      el.style.background = '#EAE2D0'
-                      el.style.borderColor = '#D8CEBB'
-                      el.style.transform = 'translateX(2px)'
-                    }}
-                    onMouseLeave={(e) => {
-                      const el = e.currentTarget as HTMLDivElement
-                      el.style.background = '#F1EAD9'
-                      el.style.borderColor = '#E4DCCB'
-                      el.style.transform = 'none'
-                    }}
+                    onClick={() => setSelectedInsight(selectedInsight === label ? null : label)}
+                    className={`flex justify-between items-center px-4 py-3 rounded-lg cursor-pointer border transition-all ${
+                      selectedInsight === label
+                        ? 'bg-[#DCE6D7] dark:bg-[#1F2E23] border-[#3E6248] dark:border-[#4ADE80]'
+                        : 'bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248]/40 dark:hover:border-[#4ADE80]/40'
+                    }`}
                   >
-                    <span style={{ fontSize: 13.5, color: '#202920', fontWeight: 500 }}>{label}</span>
-                    <span style={{ fontSize: 13, color: '#3E6248', fontWeight: 650 }}>{count} {icon}</span>
+                    <span className="text-[13.5px] text-[#202920] dark:text-[#EDEAE2] font-medium">{label}</span>
+                    <span className="text-[13px] text-[#3E6248] dark:text-[#4ADE80] font-semibold">{count} {icon}</span>
                   </div>
                 ))}
               </div>
+
+              {/* Dynamic Insight Feedback Banner */}
+              {selectedInsight && (
+                <div className="mt-3 p-3 bg-[#FAF7F0] dark:bg-[#131C15] border border-[#3E6248]/30 dark:border-[#4ADE80]/30 rounded-lg text-xs text-[#202920] dark:text-[#EDEAE2] flex items-center justify-between">
+                  <span>{insightPreviews[selectedInsight]}</span>
+                  <Link href="/intelligence" className="text-[#3E6248] dark:text-[#4ADE80] font-bold hover:underline shrink-0 ml-2">
+                    Inspect ↗
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1756,347 +2449,761 @@ function IntelligenceSection() {
 
 // ─── Portfolio Section ────────────────────────────────────────────────────────
 function PortfolioSection() {
+  const [selectedProject, setSelectedProject] = useState<string | null>(null)
+
   const projects = [
-    { name: 'Multimodal Scientific Discovery', status: 'Active', statusColor: C.moss, collaborators: ['MC', 'AR', 'EP'], pubs: 4, datasets: 2, experiments: 18 },
-    { name: 'Medical Imaging Foundation Models', status: 'Published', statusColor: '#4A6B8A', collaborators: ['MC', 'LK'], pubs: 7, citations: '1.2k', experiments: 31 },
-    { name: 'Cross-lingual Scientific NLP', status: 'In Progress', statusColor: '#7A6B4A', collaborators: ['AR', 'MC'], pubs: 2, datasets: 5, experiments: 11 },
+    { name: 'Multimodal Scientific Discovery', status: 'Active', statusColor: C.moss, collaborators: ['MC', 'AR', 'EP'], pubs: 4, datasets: 2, experiments: 18, href: '/portfolio' },
+    { name: 'Medical Imaging Foundation Models', status: 'Published', statusColor: '#4A6B8A', collaborators: ['MC', 'LK'], pubs: 7, citations: '1.2k', experiments: 31, href: '/portfolio' },
+    { name: 'Cross-lingual Scientific NLP', status: 'In Progress', statusColor: '#7A6B4A', collaborators: ['AR', 'MC'], pubs: 2, datasets: 5, experiments: 11, href: '/portfolio' },
   ]
 
   return (
-    <section style={{ background: '#F5F4F0', borderTop: `1px solid ${C.rule}`, padding: '120px 88px' }}>
+    <section className="bg-[#F2EBDD] dark:bg-[#131C15] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-28 px-6 md:px-16 transition-colors duration-200">
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48, flexWrap: 'wrap', gap: 24 }}>
           <div>
-            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: C.moss, textTransform: 'uppercase', marginBottom: 16 }}>Research Portfolio</p>
-            <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em', color: C.charcoal }}>
+            <p className="text-[11px] font-semibold tracking-[0.1em] text-[#3E6248] dark:text-[#4ADE80] uppercase mb-4">Research Portfolio</p>
+            <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal tracking-[-0.03em] text-[#202920] dark:text-[#EDEAE2]">
               Your research, from first question<br />to published work.
             </h2>
           </div>
+          <Link
+            href="/portfolio"
+            className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-[#3E6248] dark:text-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2] transition-colors underline underline-offset-4"
+          >
+            Launch Research Portfolio (/portfolio) ↗
+          </Link>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {projects.map((p) => (
-            <div
-              key={p.name}
-              style={{
-                background: C.bg,
-                border: `1px solid ${C.rule}`,
-                borderLeft: `3px solid ${p.statusColor}`,
-                borderRadius: 8,
-                padding: '20px 24px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 32,
-                cursor: 'pointer',
-                transition: 'transform 0.15s, box-shadow 0.15s',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
-              }}
-              onMouseEnter={(e) => { const el = e.currentTarget as HTMLDivElement; el.style.transform = 'translateY(-1px)'; el.style.boxShadow = '0 6px 20px rgba(0,0,0,0.06)' }}
-              onMouseLeave={(e) => { const el = e.currentTarget as HTMLDivElement; el.style.transform = ''; el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.03)' }}
-            >
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                  <span style={{ fontSize: 15, fontWeight: 600, color: C.charcoal, letterSpacing: '-0.02em' }}>{p.name}</span>
-                  <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', background: `${p.statusColor}15`, color: p.statusColor, borderRadius: 4 }}>{p.status}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {projects.map((p) => {
+            const isSelected = selectedProject === p.name
+            return (
+              <div
+                key={p.name}
+                onClick={() => setSelectedProject(isSelected ? null : p.name)}
+                className={`bg-white dark:bg-[#18231B] border rounded-xl p-6 flex items-center gap-8 cursor-pointer transition-all duration-150 shadow-xs hover:border-[#3E6248] dark:hover:border-[#4ADE80] group ${
+                  isSelected ? 'border-[#3E6248] dark:border-[#4ADE80]' : 'border-[#E4DCCB] dark:border-[#233327]'
+                }`}
+                style={{
+                  borderLeft: `4px solid ${p.statusColor}`,
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                    <span className="text-base font-semibold text-[#202920] dark:text-[#EDEAE2] tracking-tight group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors">
+                      {p.name}
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', background: `${p.statusColor}18`, color: p.statusColor, borderRadius: 4 }}>
+                      {p.status}
+                    </span>
+                  </div>
+                  <div className="flex gap-6 text-[12.5px] text-[#62685E] dark:text-[#9BA39B] flex-wrap">
+                    <span>{p.pubs} Publications</span>
+                    {p.datasets && <span>{p.datasets} Datasets</span>}
+                    {p.citations && <span className="text-[#3E6248] dark:text-[#4ADE80] font-semibold">↑ {p.citations} Citations</span>}
+                    <span>{p.experiments} Experiments</span>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: 24, fontSize: 12, color: C.secondary }}>
-                  <span>{p.pubs} Publications</span>
-                  {p.datasets && <span>{p.datasets} Datasets</span>}
-                  {p.citations && <span style={{ color: C.moss }}>↑ {p.citations} Citations</span>}
-                  <span>{p.experiments} Experiments</span>
+
+                {/* Collaborators */}
+                <div style={{ display: 'flex', gap: -8, flexShrink: 0 }}>
+                  {p.collaborators.map((c, i) => (
+                    <div key={c} style={{ width: 32, height: 32, borderRadius: '50%', background: [C.moss, '#4A6B8A', '#7A6B4A'][i % 3], display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 700, border: `2px solid #FFFFFF`, marginLeft: i > 0 ? -8 : 0 }}>
+                      {c}
+                    </div>
+                  ))}
                 </div>
-              </div>
 
-              {/* Collaborators */}
-              <div style={{ display: 'flex', gap: -8, flexShrink: 0 }}>
-                {p.collaborators.map((c, i) => (
-                  <div key={c} style={{ width: 30, height: 30, borderRadius: '50%', background: [C.moss, '#4A6B8A', '#7A6B4A'][i % 3], display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 700, border: `2px solid ${C.bg}`, marginLeft: i > 0 ? -8 : 0 }}>{c}</div>
-                ))}
+                <Link
+                  href={p.href}
+                  className="text-xs font-semibold text-[#3E6248] dark:text-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2] px-3 py-1.5 rounded bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] no-underline shrink-0 hidden sm:inline-flex items-center gap-1 transition-colors"
+                >
+                  Ledger ↗
+                </Link>
               </div>
-
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke={C.tertiary} strokeWidth="1.5">
-                <path d="M4 8h8M9 5l3 3-3 3" strokeLinecap="round" />
-              </svg>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>
   )
 }
 
-// ─── Ecosystem Map Section (Dark) ─────────────────────────────────────────────
+// ─── Ecosystem Map Section (Botanical Wood Cross-Section & Living Cambium Meristem) ───
 function EcosystemMapSection() {
+  const [activeEntity, setActiveEntity] = useState<string | null>(null)
+
+  // 10 Research Entities positioned organically across 4 concentric annual wood growth rings
+  const entities = [
+    // Ring 1 / Inner Heartwood (Foundational seed thinking & core domains)
+    { id: 'notes', label: 'Notes', botanical: 'Germinal Seeds', ring: 'Heartwood Pith', radius: 112, x: 489, y: 231, delay: '0s' },
+    { id: 'topics', label: 'Topics', botanical: 'Discipline Trunks', ring: 'Heartwood Pith', radius: 118, x: 326, y: 393, delay: '-0.5s' },
+
+    // Ring 2 / Secondary Wood (Empirical data, labs, researchers)
+    { id: 'datasets', label: 'Datasets', botanical: 'Empirical Substrate', ring: 'Secondary Xylem', radius: 170, x: 312, y: 171, delay: '-0.8s' },
+    { id: 'people', label: 'People', botanical: 'Symbiotic Network', ring: 'Secondary Xylem', radius: 176, x: 580, y: 356, delay: '-1s' },
+    { id: 'labs', label: 'Labs', botanical: 'Root Environments', ring: 'Secondary Xylem', radius: 172, x: 485, y: 464, delay: '-3s' },
+
+    // Ring 3 / Living Vascular Cambium Zone (Active shoots & formal dissemination records)
+    { id: 'projects', label: 'Projects', botanical: 'Vascular Shoots', ring: 'Living Cambium Zone', radius: 222, x: 624, y: 253, delay: '-2s' },
+    { id: 'journals', label: 'Journals', botanical: 'Codified Rings', ring: 'Living Cambium Zone', radius: 220, x: 198, y: 367, delay: '-1.5s' },
+
+    // Ring 4 / Outer Sapwood & Canopy Horizon (Outward scholarship, funding, global venues)
+    { id: 'papers', label: 'Papers', botanical: 'Annual Foliage', ring: 'Canopy Horizon', radius: 258, x: 410, y: 52, delay: '0s' },
+    { id: 'conferences', label: 'Conferences', botanical: 'Cross-Pollination', ring: 'Canopy Horizon', radius: 256, x: 163, y: 244, delay: '-2.5s' },
+    { id: 'funding', label: 'Funding', botanical: 'Metabolic Sap', ring: 'Canopy Horizon', radius: 252, x: 204, y: 165, delay: '-3.5s' },
+  ]
+
+  // Intermediate passive medullary wood rays (realistic wood cross-section grain)
+  const passiveRays = [
+    [410, 310, 410, 35],
+    [410, 310, 600, 120],
+    [410, 310, 680, 310],
+    [410, 310, 580, 500],
+    [410, 310, 410, 585],
+    [410, 310, 240, 500],
+    [410, 310, 135, 310],
+    [410, 310, 240, 120],
+  ]
+
   return (
-    <section style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', padding: '120px 88px' }}>
+    <section id="ecosystem" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '112px 24px', position: 'relative' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center' }}>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#4ADE80', textTransform: 'uppercase', marginBottom: 20 }}>Research Ecosystem</p>
-        <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(36px, 4vw, 60px)', fontWeight: 400, lineHeight: 1.08, letterSpacing: '-0.03em', color: '#F5F4F0', marginBottom: 16 }}>
+        <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-5">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] animate-pulse" />
+          RESEARCH ECOSYSTEM · LIVING VASCULAR MERISTEM
+        </div>
+        <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-4xl md:text-6xl font-normal leading-[1.08] tracking-[-0.03em] text-[#F5F4F0] mb-4">
           Everything connects.
         </h2>
-        <p style={{ fontSize: 17, color: 'rgba(250,249,246,0.72)', marginBottom: 64, maxWidth: 480, margin: '0 auto 64px' }}>
-          Your research doesn't exist in isolation. Cambium maps the living network around your work.
+        <p className="text-[17px] text-[rgba(250,249,246,0.72)] mb-14 max-w-[620px] mx-auto leading-relaxed">
+          In botanical nature, the cambium layer is the living meristem of the tree — dividing cells to form annual growth rings and pumping nutrient-rich sap outward to nourish the entire canopy. Cambium Research works identically: nourishing your ideas, linking your artifacts, and expanding your scholarly horizon year after year.
         </p>
 
-        {/* Large ecosystem SVG */}
-        <div style={{ maxWidth: 700, margin: '0 auto', height: 500 }}>
-          <svg viewBox="0 0 700 500" style={{ width: '100%', height: '100%', overflow: 'visible' }} aria-label="Research ecosystem map">
+        {/* Botanical Cut-Tree Stem Wood Cross-Section Graphic */}
+        <div style={{ maxWidth: 840, margin: '0 auto', minHeight: 620, position: 'relative' }}>
+          <svg
+            viewBox="0 0 820 620"
+            style={{ width: '100%', height: '100%', overflow: 'visible' }}
+            aria-label="Botanical cut tree stem wood cross-section showing annual growth rings and living cambium meristem layer"
+          >
             <defs>
-              <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#FAF7F0" stopOpacity="0.25">
-                  <animate attributeName="stop-opacity" values="0.15;0.35;0.15" dur="4s" repeatCount="indefinite" />
-                </stop>
-                <stop offset="100%" stopColor={C.moss} stopOpacity="0" />
+              {/* Radial gradient for the warm heartwood glow */}
+              <radialGradient id="treePithGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#FAF7F0" stopOpacity="0.22" />
+                <stop offset="60%" stopColor="#2E7D4F" stopOpacity="0.08" />
+                <stop offset="100%" stopColor="#18231B" stopOpacity="0" />
               </radialGradient>
-              <clipPath id="centerCircleClip">
-                <circle cx="350" cy="250" r="66" />
-              </clipPath>
+
+              {/* Radial wood cross-section timber shading */}
+              <radialGradient id="woodTrunkShading" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#1B281E" stopOpacity="0.95" />
+                <stop offset="35%" stopColor="#18241A" stopOpacity="0.95" />
+                <stop offset="70%" stopColor="#141E16" stopOpacity="0.98" />
+                <stop offset="100%" stopColor="#0F1710" stopOpacity="1" />
+              </radialGradient>
+
+              {/* Glow filter for sap particles */}
+              <filter id="sapGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
             </defs>
 
-            {/* Glow behind center */}
-            <ellipse cx="350" cy="250" rx="140" ry="140" fill="url(#centerGlow)">
-               <animate attributeName="rx" values="120;160;120" dur="5s" repeatCount="indefinite" />
-               <animate attributeName="ry" values="120;160;120" dur="5s" repeatCount="indefinite" />
-            </ellipse>
+            {/* 1. Outer Bark Rim & Trunk Silhouette (Top view of cut tree trunk) */}
+            <circle cx="410" cy="310" r="280" fill="url(#woodTrunkShading)" />
 
-            {/* Connection lines */}
-            {[
-              [350, 250, 350, 80],   // Papers
-              [350, 250, 560, 140],  // People
-              [350, 250, 620, 280],  // Projects
-              [350, 250, 530, 420],  // Labs
-              [350, 250, 350, 430],  // Topics
-              [350, 250, 170, 420],  // Journals
-              [350, 250, 80, 280],   // Conferences
-              [350, 250, 140, 140],  // Funding
-              [350, 250, 220, 60],   // Datasets
-              [350, 250, 480, 60],   // Notes
-            ].map(([x1, y1, x2, y2], i) => (
-              <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(184, 178, 167, 0.4)" strokeWidth="1.5" strokeDasharray="6 6">
-                <animate attributeName="stroke-dashoffset" values="12;0" dur={`${1.5 + (i * 0.1)}s`} repeatCount="indefinite" />
-              </line>
+            {/* Rugged Outer Bark Surface */}
+            <circle
+              cx="410" cy="310" r="282"
+              fill="none"
+              stroke="#2D4231"
+              strokeWidth="4.5"
+              strokeDasharray="14 3 8 4 22 2"
+              opacity="0.85"
+            />
+            <circle
+              cx="410" cy="310" r="278"
+              fill="none"
+              stroke="#1D2A1F"
+              strokeWidth="2.5"
+            />
+
+            {/* 2. Secondary Phloem (Inner Bark nutrient corridor) */}
+            <circle
+              cx="410" cy="310" r="264"
+              fill="none"
+              stroke="rgba(74, 222, 128, 0.18)"
+              strokeWidth="1.5"
+              strokeDasharray="6 6"
+            />
+
+            {/* 3. Subtle Organic Wood Grain Micro-Rings */}
+            {[65, 95, 142, 192, 238].map((grainRadius, idx) => (
+              <circle
+                key={`grain-${idx}`}
+                cx="410" cy="310" r={grainRadius}
+                fill="none"
+                stroke="rgba(216, 205, 184, 0.08)"
+                strokeWidth="0.85"
+                strokeDasharray="3 5"
+              />
             ))}
 
-            {/* Center node: CAMBIUM with Logo */}
-            <g 
-              style={{ cursor: 'pointer', transition: 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', transformOrigin: '350px 250px' }} 
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} 
+            {/* 4. Concentric Annual Growth Rings (Dendrochronology Layers) */}
+            {/* Ring 1: Heartwood Pith Boundary */}
+            <circle
+              cx="410" cy="310" r="115"
+              fill="none"
+              stroke={activeEntity === 'notes' || activeEntity === 'topics' ? '#4ADE80' : 'rgba(184, 178, 167, 0.26)'}
+              strokeWidth={activeEntity === 'notes' || activeEntity === 'topics' ? '2.5' : '1.5'}
+              strokeDasharray="8 4"
+              style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }}
+            />
+
+            {/* Ring 2: Secondary Xylem / Deep Sapwood */}
+            <circle
+              cx="410" cy="310" r="172"
+              fill="none"
+              stroke={activeEntity === 'datasets' || activeEntity === 'people' || activeEntity === 'labs' ? '#4ADE80' : 'rgba(184, 178, 167, 0.28)'}
+              strokeWidth={activeEntity === 'datasets' || activeEntity === 'people' || activeEntity === 'labs' ? '2.5' : '1.5'}
+              strokeDasharray="10 5"
+              style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }}
+            />
+
+            {/* Ring 3: THE LIVING VASCULAR CAMBIUM LAYER (Active Cell Mitosis & Outward Growth) */}
+            {/* Ambient aura behind cambium meristem */}
+            <circle
+              cx="410" cy="310" r="221"
+              fill="none"
+              stroke="#4ADE80"
+              strokeWidth="5"
+              opacity="0.18"
+            >
+              <animate attributeName="opacity" values="0.12;0.32;0.12" dur="4s" repeatCount="indefinite" />
+            </circle>
+            {/* Active Cambium ring line with animated mitosis dashes */}
+            <circle
+              cx="410" cy="310" r="221"
+              fill="none"
+              stroke="#4ADE80"
+              strokeWidth="2.2"
+              strokeDasharray="9 6"
+              style={{ filter: 'drop-shadow(0 0 6px rgba(74,222,128,0.45))' }}
+            >
+              <animate attributeName="stroke-dashoffset" values="30;0" dur="12s" repeatCount="indefinite" />
+            </circle>
+
+            {/* Ring 4: Outer Sapwood Horizon */}
+            <circle
+              cx="410" cy="310" r="256"
+              fill="none"
+              stroke={activeEntity === 'papers' || activeEntity === 'conferences' || activeEntity === 'funding' ? '#4ADE80' : 'rgba(184, 178, 167, 0.3)'}
+              strokeWidth={activeEntity === 'papers' || activeEntity === 'conferences' || activeEntity === 'funding' ? '2.5' : '1.5'}
+              strokeDasharray="12 6"
+              style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }}
+            />
+
+            {/* 5. Natural Medullary Wood Rays (Passive radial timber grain) */}
+            {passiveRays.map(([x1, y1, x2, y2], idx) => (
+              <line
+                key={`passive-ray-${idx}`}
+                x1={x1} y1={y1} x2={x2} y2={y2}
+                stroke="rgba(184, 178, 167, 0.08)"
+                strokeWidth="1"
+                strokeDasharray="2 4"
+              />
+            ))}
+
+            {/* 6. Continuous Growth Waves (Simulating how Cambium expands the tree trunk year after year) */}
+            {/* Growth Wave Ripple 1 */}
+            <circle cx="410" cy="310" r="54" fill="none" stroke="#4ADE80" strokeWidth="1.75">
+              <animate attributeName="r" values="54;275" dur="6.5s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.45;0.22;0" dur="6.5s" repeatCount="indefinite" />
+            </circle>
+            {/* Growth Wave Ripple 2 (Staggered offset) */}
+            <circle cx="410" cy="310" r="54" fill="none" stroke="#66866A" strokeWidth="1.5">
+              <animate attributeName="r" values="54;275" dur="6.5s" begin="3.25s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.4;0.18;0" dur="6.5s" begin="3.25s" repeatCount="indefinite" />
+            </circle>
+
+            {/* 7. Active Medullary Rays & Nutrient Sap Flow to each Research Entity */}
+            {entities.map((node, i) => {
+              const isActive = activeEntity === node.id
+              return (
+                <g key={`ray-group-${node.id}`}>
+                  {/* Radial Medullary Conduit */}
+                  <line
+                    x1="410" y1="310" x2={node.x} y2={node.y}
+                    stroke={isActive ? '#4ADE80' : 'rgba(74, 222, 128, 0.24)'}
+                    strokeWidth={isActive ? '2' : '1.25'}
+                    strokeDasharray="4 4"
+                    style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }}
+                  >
+                    <animate attributeName="stroke-dashoffset" values="16;0" dur={`${2 + (i * 0.15)}s`} repeatCount="indefinite" />
+                  </line>
+
+                  {/* Flowing Sap Nutrient Particles (Cambium feeding outward to help research grow) */}
+                  <circle r={isActive ? '3.5' : '2.5'} fill="#4ADE80" filter="url(#sapGlowFilter)">
+                    <animate attributeName="cx" values={`410;${node.x}`} dur={`${2.2 + (i * 0.18)}s`} repeatCount="indefinite" />
+                    <animate attributeName="cy" values={`310;${node.y}`} dur={`${2.2 + (i * 0.18)}s`} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.95;0.95;0" keyTimes="0;0.15;0.85;1" dur={`${2.2 + (i * 0.18)}s`} repeatCount="indefinite" />
+                  </circle>
+                </g>
+              )
+            })}
+
+            {/* 8. Center Core: Heartwood Pith & Living Cambium Meristem Hub */}
+            <ellipse cx="410" cy="310" rx="110" ry="110" fill="url(#treePithGlow)">
+              <animate attributeName="rx" values="95;125;95" dur="5s" repeatCount="indefinite" />
+              <animate attributeName="ry" values="95;125;95" dur="5s" repeatCount="indefinite" />
+            </ellipse>
+
+            <g
+              style={{ cursor: 'pointer', transition: 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', transformOrigin: '410px 310px' }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              <circle 
-                cx="350" 
-                cy="250" 
-                r="58" 
-                fill="#FAF7F0" 
-                stroke="#3E6248" 
-                strokeWidth="2.5" 
-                style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.35))' }}
+              {/* Outer pulsing ring */}
+              <circle
+                cx="410" cy="310" r="58"
+                fill="none"
+                stroke="#4ADE80"
+                strokeWidth="1.75"
+                strokeDasharray="6 4"
+                opacity="0.8"
               >
-                <animate attributeName="stroke-width" values="2;4;2" dur="3s" repeatCount="indefinite" />
+                <animate attributeName="stroke-dashoffset" values="20;0" dur="8s" repeatCount="indefinite" />
               </circle>
-              {/* Cambium Fibonacci Spiral Logo */}
-              <image href="/logo.svg" x="328" y="206" width="44" height="44" />
-              <text 
-                x="350" 
-                y="272" 
-                textAnchor="middle" 
-                fontFamily="'Instrument Sans', sans-serif" 
-                fontSize="10" 
-                fontWeight="700" 
-                fill="#202920" 
+
+              {/* Heartwood circle in Warm Sand */}
+              <circle
+                cx="410" cy="310" r="52"
+                fill="#FAF7F0"
+                stroke="#3E6248"
+                strokeWidth="2.5"
+                style={{ filter: 'drop-shadow(0 10px 28px rgba(0,0,0,0.5))' }}
+              />
+
+              {/* Official Cambium Golden Spiral Logo */}
+              <image href="/public_logo/cambium-logo-light.svg" x="389" y="270" width="42" height="42" />
+
+              {/* Core Typography */}
+              <text
+                x="410" y="327"
+                textAnchor="middle"
+                fontFamily="'Instrument Sans', sans-serif"
+                fontSize="10"
+                fontWeight="700"
+                fill="#202920"
                 letterSpacing="0.16em"
               >
                 CAMBIUM
               </text>
+              <text
+                x="410" y="338"
+                textAnchor="middle"
+                fontFamily="'Instrument Sans', sans-serif"
+                fontSize="7"
+                fontWeight="700"
+                fill="#3E6248"
+                letterSpacing="0.12em"
+              >
+                LIVING MERISTEM
+              </text>
             </g>
 
-            {/* Satellite nodes in Sand colour with Uniform Grey Border */}
-            {[
-              { label: 'Papers', x: 350, y: 64, delay: '0s' },
-              { label: 'People', x: 568, y: 128, delay: '-1s' },
-              { label: 'Projects', x: 624, y: 272, delay: '-2s' },
-              { label: 'Labs', x: 536, y: 416, delay: '-3s' },
-              { label: 'Topics', x: 350, y: 440, delay: '-0.5s' },
-              { label: 'Journals', x: 164, y: 416, delay: '-1.5s' },
-              { label: 'Conferences', x: 76, y: 272, delay: '-2.5s' },
-              { label: 'Funding', x: 132, y: 128, delay: '-3.5s' },
-              { label: 'Datasets', x: 216, y: 52, delay: '-0.8s' },
-              { label: 'Notes', x: 484, y: 52, delay: '-1.8s' },
-            ].map(({ label, x, y, delay }) => (
-              <g 
-                key={label}
-                style={{ 
-                  cursor: 'pointer', 
-                  transition: 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)', 
-                  transformOrigin: `${x}px ${y}px`
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-              >
-                <g>
-                  <animateTransform 
-                    attributeName="transform" 
-                    type="translate" 
-                    values="0,0; 0,-10; 0,0" 
-                    dur="6s" 
-                    begin={delay} 
-                    repeatCount="indefinite" 
-                  />
-                  {/* Sand Background Circle with Uniform Grey Border */}
-                  <circle 
-                    cx={x} cy={y} r="34" 
-                    fill="#FAF7F0" 
-                    stroke="#B8B2A7" 
-                    strokeWidth="1.75" 
-                    style={{ transition: 'stroke 0.25s, fill 0.25s', filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.28))' }} 
-                    onMouseEnter={(e) => {
-                      const el = e.currentTarget as SVGCircleElement
-                      el.style.fill = '#F2EAD8'
-                      el.style.stroke = '#8C8578'
-                    }}
-                    onMouseLeave={(e) => {
-                      const el = e.currentTarget as SVGCircleElement
-                      el.style.fill = '#FAF7F0'
-                      el.style.stroke = '#B8B2A7'
-                    }}
-                  />
-                  {/* Word inside with dark readable color */}
-                  <text 
-                    x={x} 
-                    y={y + 4.5} 
-                    textAnchor="middle" 
-                    fontFamily="'Instrument Sans', sans-serif" 
-                    fontSize="11.5" 
-                    fontWeight="600" 
-                    fill="#202920" 
-                    letterSpacing="-0.01em" 
-                    style={{ pointerEvents: 'none' }}
-                  >
-                    {label}
-                  </text>
+            {/* 9. The 10 Research Entities (Positioned at their respective wood growth rings) */}
+            {entities.map(({ id, label, botanical, x, y, delay }) => {
+              const isActive = activeEntity === id
+              return (
+                <g
+                  key={id}
+                  style={{
+                    cursor: 'pointer',
+                    transition: 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                    transformOrigin: `${x}px ${y}px`,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.12)'
+                    setActiveEntity(id)
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)'
+                    setActiveEntity(null)
+                  }}
+                >
+                  <g>
+                    {/* Gentle floating organic drift */}
+                    <animateTransform
+                      attributeName="transform"
+                      type="translate"
+                      values="0,0; 0,-6; 0,0"
+                      dur="6s"
+                      begin={delay}
+                      repeatCount="indefinite"
+                    />
+
+                    {/* Sand Background Pill Badge with Wood Bark Border */}
+                    <rect
+                      x={x - 48}
+                      y={y - 18}
+                      width="96"
+                      height="36"
+                      rx="18"
+                      ry="18"
+                      fill="#FAF7F0"
+                      stroke={isActive ? '#3E6248' : '#B8B2A7'}
+                      strokeWidth={isActive ? '2' : '1.5'}
+                      style={{
+                        transition: 'stroke 0.25s, fill 0.25s',
+                        filter: isActive ? 'drop-shadow(0 8px 24px rgba(74,222,128,0.35))' : 'drop-shadow(0 6px 18px rgba(0,0,0,0.4))',
+                      }}
+                    />
+
+                    {/* Chlorophyll green active indicator node */}
+                    <circle
+                      cx={x - 32}
+                      cy={y}
+                      r="3"
+                      fill={isActive ? '#4ADE80' : '#3E6248'}
+                      style={{ transition: 'fill 0.25s' }}
+                    />
+
+                    {/* Primary Entity Name */}
+                    <text
+                      x={x + 4}
+                      y={y - 2}
+                      textAnchor="middle"
+                      fontFamily="'Instrument Sans', sans-serif"
+                      fontSize="11"
+                      fontWeight="700"
+                      fill="#202920"
+                      letterSpacing="0.02em"
+                    >
+                      {label}
+                    </text>
+
+                    {/* Botanical Growth Role (Reflects what Cambium in nature does to grow the tree) */}
+                    <text
+                      x={x + 4}
+                      y={y + 9}
+                      textAnchor="middle"
+                      fontFamily="'Instrument Sans', sans-serif"
+                      fontSize="7.5"
+                      fontWeight="600"
+                      fill={isActive ? '#3E6248' : '#62685E'}
+                      letterSpacing="0.04em"
+                    >
+                      {botanical}
+                    </text>
+                  </g>
                 </g>
-              </g>
-            ))}
+              )
+            })}
           </svg>
+        </div>
+
+        {/* Botanical Dendrochronology Legend (Connecting nature's tree growth to Cambium research) */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 max-w-[840px] mx-auto text-xs">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[rgba(24,35,27,0.85)] border border-[rgba(74,222,128,0.2)] text-[rgba(237,234,226,0.8)]">
+            <span className="w-2 h-2 rounded-full bg-[#FAF7F0] border border-[#3E6248]" />
+            <strong className="text-[#FAF7F0]">Heartwood Pith:</strong> Core Research Identity
+          </div>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[rgba(24,35,27,0.85)] border border-[rgba(74,222,128,0.2)] text-[rgba(237,234,226,0.8)]">
+            <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
+            <strong className="text-[#4ADE80]">Living Cambium:</strong> Mitosis & Synthesis Engine
+          </div>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[rgba(24,35,27,0.85)] border border-[rgba(74,222,128,0.2)] text-[rgba(237,234,226,0.8)]">
+            <span className="w-2.5 h-[1.5px] bg-[#4ADE80]" />
+            <strong className="text-[rgba(237,234,226,0.9)]">Medullary Rays:</strong> Continuous Sap & Nutrient Flow
+          </div>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[rgba(24,35,27,0.85)] border border-[rgba(74,222,128,0.2)] text-[rgba(237,234,226,0.8)]">
+            <span className="w-2 h-2 rounded-full border border-dashed border-[#B8B2A7]" />
+            <strong className="text-[rgba(237,234,226,0.9)]">Annual Growth Rings:</strong> Cumulative Scholarly Horizon
+          </div>
         </div>
       </div>
     </section>
   )
 }
 
-// ─── Testimonials ─────────────────────────────────────────────────────────────
+// ─── Testimonials (Photo 5 Aligned with Living Materials Tokens) ────────
 function TestimonialsSection() {
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+  const [likedCard, setLikedCard] = useState<Record<number, boolean>>({})
+
   const testimonials = [
-    { quote: "Cambium gives my research a place to live — not just a list of papers.", name: "Imthiyas", role: "Computer Vision Researcher", org: "MIT" },
-    { quote: "The difference is that everything is connected to the work I'm actually doing.", name: "Arjun Rao", role: "PhD Researcher", org: "IISc" },
-    { quote: "Finally, a research environment that understands how scholars actually work.", name: "Dr. Elena Park", role: "Computational Biology", org: "Stanford University" },
+    {
+      initials: 'I',
+      quote: 'Cambium gives my research a place to live — not just a list of papers.',
+      name: 'Imthiyas',
+      role: 'Computer Vision Researcher · MIT',
+    },
+    {
+      initials: 'AR',
+      quote: "The difference is that everything is connected to the work I'm actually doing.",
+      name: 'Arjun Rao',
+      role: 'PhD Researcher · IISc',
+    },
+    {
+      initials: 'DE',
+      quote: 'Finally, a research environment that understands how scholars actually work.',
+      name: 'Dr. Elena Park',
+      role: 'Computational Biology · Stanford University',
+    },
   ]
 
+  const handleCopy = (quote: string, idx: number) => {
+    navigator.clipboard?.writeText(quote)
+    setCopiedIndex(idx)
+    setTimeout(() => setCopiedIndex(null), 2000)
+  }
+
+  const toggleLike = (idx: number) => {
+    setLikedCard(prev => ({ ...prev, [idx]: !prev[idx] }))
+  }
+
   return (
-    <section style={{ background: C.bg, borderTop: `1px solid ${C.rule}`, padding: '120px 88px' }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(28px, 3vw, 44px)', fontWeight: 400, letterSpacing: '-0.03em', color: C.charcoal }}>
+    <section className="bg-[#FAF7F0] dark:bg-[#0E140F] border-t border-[#E4DCCB] dark:border-[#233327] py-24 px-6 md:px-12 transition-colors duration-200">
+      <div className="max-w-[1240px] mx-auto">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#3E6248] dark:text-[#4ADE80] mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
+            VOICES OF THE SCHOLARLY NETWORK
+          </div>
+          <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight leading-tight">
             Built around the way research actually happens.
           </h2>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
-          {testimonials.map(({ quote, name, role, org }) => (
-            <div key={name} style={{ padding: '32px 28px', border: `1px solid ${C.rule}`, borderRadius: 8, background: C.bg }}>
-              <div style={{ fontSize: 36, fontFamily: "'Source Serif 4', serif", color: C.moss, lineHeight: 1, marginBottom: 12, opacity: 0.4 }}>"</div>
-              <p style={{ fontFamily: "'Source Serif 4', serif", fontSize: 17, lineHeight: 1.6, color: C.charcoal, marginBottom: 24, fontStyle: 'italic', letterSpacing: '-0.01em' }}>
-                {quote}
-              </p>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.mossLight, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: C.mossMid }}>
-                  {name.split(' ').map(w => w[0]).filter((_, i) => i < 2).join('')}
+        {/* 3-Column Testimonial Cards Grid (Photo 5 Match) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {testimonials.map(({ initials, quote, name, role }, idx) => (
+            <div
+              key={name}
+              className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl p-8 shadow-xs hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group relative"
+            >
+              {/* Card Header: Quotation Symbol & Micro-Actions */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div
+                    style={{ fontFamily: "'Source Serif 4', serif" }}
+                    className="text-4xl text-[#3E6248] dark:text-[#4ADE80] leading-none select-none opacity-50 group-hover:opacity-100 transition-opacity"
+                  >
+                    “
+                  </div>
+                  <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleCopy(quote, idx)}
+                      className="p-1 rounded-md text-[#85877B] dark:text-[#7E8B7B] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#FAF7F0] dark:hover:bg-[#131C15] text-[11px] font-mono transition-colors cursor-pointer"
+                      title="Copy Quote"
+                    >
+                      {copiedIndex === idx ? 'Copied ✓' : 'Copy'}
+                    </button>
+                    <button
+                      onClick={() => toggleLike(idx)}
+                      className="p-1 rounded-md text-[#85877B] dark:text-[#7E8B7B] hover:text-[#3E6248] dark:hover:text-[#4ADE80] hover:bg-[#FAF7F0] dark:hover:bg-[#131C15] text-[12px] transition-colors cursor-pointer"
+                      title={likedCard[idx] ? 'Liked' : 'Like'}
+                    >
+                      {likedCard[idx] ? '♥' : '♡'}
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: C.charcoal }}>{name}</div>
-                  <div style={{ fontSize: 12, color: C.tertiary }}>{role} · {org}</div>
+
+                {/* Quote Typography */}
+                <p
+                  style={{ fontFamily: "'Source Serif 4', serif" }}
+                  className="text-[17px] font-normal italic text-[#202920] dark:text-[#EDEAE2] leading-relaxed tracking-tight mb-8"
+                >
+                  {quote}
+                </p>
+              </div>
+
+              {/* Author Attribution */}
+              <div className="flex items-center gap-3 pt-4 border-t border-[#FAF7F0] dark:border-[#233327]">
+                <div className="w-9 h-9 rounded-full bg-[#DCE6D7] dark:bg-[#1A281E] border border-[#3E6248]/20 dark:border-[#4ADE80]/30 flex items-center justify-center font-bold text-xs text-[#3E6248] dark:text-[#4ADE80] shrink-0 group-hover:scale-105 transition-transform">
+                  {initials}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-bold text-[#202920] dark:text-[#EDEAE2] group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors">
+                    {name}
+                  </div>
+                  <div className="text-xs text-[#85877B] dark:text-[#7E8B7B] truncate">
+                    {role}
+                  </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
-        <p style={{ textAlign: 'center', fontSize: 12, color: C.tertiary, marginTop: 24 }}>Personas shown are illustrative and not claims of real customers.</p>
+
+        <p className="text-center font-sans text-xs text-[#85877B] mt-8">
+          Personas shown are illustrative and not claims of real customers.
+        </p>
       </div>
     </section>
+  )
+}
+
+// ─── CTA Background Perimeter Constellation (Ultra-Faint Full-Bleed Network) ───
+function CtaBackgroundConstellation() {
+  const perimeterNodes = [
+    { label: 'NSF CAREER Award', sub: '$550k · 14d left', x: 120, y: 75, drift: 'animate-drift-1' },
+    { label: 'Multimodal AI', sub: 'Core Discipline', x: 325, y: 65, drift: 'animate-drift-3' },
+    { label: 'Cellular Topology GNN', sub: 'Bioinformatics · 2025', x: 1115, y: 65, drift: 'animate-drift-2' },
+    { label: 'ICLR 2026', sub: 'Vienna · Oral', x: 1320, y: 75, drift: 'animate-drift-4' },
+    { label: 'Zero-Shot Proteomics', sub: 'ICLR Spotlight', x: 95, y: 300, drift: 'animate-drift-2' },
+    { label: 'Prof. Aris Thorne', sub: 'Stanford Bio-X · Bio-AI', x: 1345, y: 300, drift: 'animate-drift-1' },
+    { label: 'MIT CSAIL Lab', sub: 'Institutional Node', x: 130, y: 520, drift: 'animate-drift-4' },
+    { label: 'Graph Transformers', sub: 'Methodological Core', x: 345, y: 535, drift: 'animate-drift-1' },
+    { label: 'Wellcome Discovery', sub: '£780k · Stage 2', x: 1095, y: 535, drift: 'animate-drift-3' },
+    { label: 'BioSynthetica-40k', sub: 'Open Benchmark', x: 1310, y: 520, drift: 'animate-drift-2' },
+  ]
+
+  const links = [
+    [0, 1], [0, 4], [4, 6], [6, 7],
+    [3, 2], [3, 5], [5, 9], [9, 8],
+    [1, 2], [7, 8]
+  ]
+
+  return (
+    <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden select-none z-0">
+      <svg
+        viewBox="0 0 1440 600"
+        preserveAspectRatio="xMidYMid slice"
+        className="w-full h-full"
+        style={{ opacity: 0.32 }}
+        aria-hidden="true"
+      >
+        <defs>
+          <radialGradient id="ctaConstellationGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#4ADE80" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#18231B" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        {/* Ambient background wash */}
+        <rect x="0" y="0" width="1440" height="600" fill="url(#ctaConstellationGlow)" />
+
+        {/* Delicate Connecting Lines */}
+        {links.map(([i, j], idx) => {
+          const a = perimeterNodes[i]
+          const b = perimeterNodes[j]
+          return (
+            <line
+              key={idx}
+              x1={a.x}
+              y1={a.y}
+              x2={b.x}
+              y2={b.y}
+              stroke="rgba(74, 222, 128, 0.06)"
+              strokeWidth="1"
+              strokeDasharray="4 8"
+            >
+              <animate
+                attributeName="stroke-dashoffset"
+                values="24;0"
+                dur={`${9 + (idx % 3) * 2}s`}
+                repeatCount="indefinite"
+              />
+            </line>
+          )
+        })}
+
+        {/* Perimeter Badges */}
+        {perimeterNodes.map((node, i) => (
+          <g key={i} className={node.drift} style={{ transformBox: 'fill-box', transformOrigin: `${node.x}px ${node.y}px` }}>
+            {/* Center dot connector */}
+            <circle cx={node.x} cy={node.y} r="2" fill="rgba(74, 222, 128, 0.3)" />
+            <circle cx={node.x} cy={node.y} r="4" fill="none" stroke="rgba(74, 222, 128, 0.12)" strokeWidth="0.75" />
+
+            {/* Pill Container */}
+            <rect
+              x={node.x - 72}
+              y={node.y - 20}
+              width="144"
+              height="40"
+              rx="8"
+              ry="8"
+              fill="rgba(16, 26, 18, 0.45)"
+              stroke="rgba(74, 222, 128, 0.08)"
+              strokeWidth="1"
+            />
+
+            {/* Label */}
+            <text
+              x={node.x}
+              y={node.y - 4}
+              textAnchor="middle"
+              fontFamily="'Instrument Sans', sans-serif"
+              fontSize="10"
+              fontWeight="600"
+              fill="rgba(237, 234, 226, 0.28)"
+              letterSpacing="0.01em"
+            >
+              {node.label}
+            </text>
+
+            {/* Subtext */}
+            <text
+              x={node.x}
+              y={node.y + 11}
+              textAnchor="middle"
+              fontFamily="'Instrument Sans', sans-serif"
+              fontSize="8.5"
+              fontWeight="400"
+              fill="rgba(163, 184, 153, 0.18)"
+              letterSpacing="0.02em"
+            >
+              {node.sub}
+            </text>
+          </g>
+        ))}
+      </svg>
+    </div>
   )
 }
 
 // ─── Final CTA ────────────────────────────────────────────────────────────────
 function CTASection() {
   return (
-    <section style={{ background: '#F0EEE8', borderTop: `1px solid ${C.rule}`, padding: '120px 88px', position: 'relative', overflow: 'hidden' }}>
-      {/* Background ecosystem hint */}
-      <div style={{ position: 'absolute', right: -100, top: '50%', transform: 'translateY(-50%)', width: 500, height: 400, opacity: 0.12, pointerEvents: 'none' }}>
-        <EcosystemGraph />
-      </div>
+    <section id="cta" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '112px 24px', position: 'relative', overflow: 'hidden' }}>
+      {/* Subtle organic ambient glow */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center', position: 'relative' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', color: C.moss, marginBottom: 28, textTransform: 'uppercase' }}>
-          <span style={{ width: 20, height: 1, background: C.moss, display: 'inline-block' }} />
-          CAMBIUM
-          <span style={{ width: 20, height: 1, background: C.moss, display: 'inline-block' }} />
+      {/* Full-bleed subtle perimeter network animation across the entire section */}
+      <CtaBackgroundConstellation />
+
+      <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 10 }}>
+        <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-7">
+          <span className="w-5 h-[1px] bg-[#4ADE80] inline-block" />
+          CAMBIUM RESEARCH
+          <span className="w-5 h-[1px] bg-[#4ADE80] inline-block" />
         </div>
 
-        <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(40px, 5vw, 72px)', fontWeight: 400, lineHeight: 1.08, letterSpacing: '-0.03em', color: C.charcoal, marginBottom: 24 }}>
+        <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-4xl md:text-6xl font-normal leading-[1.08] tracking-[-0.03em] text-[#F5F4F0] mb-6">
           Your research deserves a home.
         </h2>
 
-        <p style={{ fontSize: 18, lineHeight: 1.65, color: C.secondary, maxWidth: 520, margin: '0 auto 48px' }}>
+        <p className="text-lg leading-relaxed text-[rgba(245,244,240,0.72)] max-w-[520px] mx-auto mb-12">
           Build your academic identity. Discover what's next. Connect your ideas, people, and opportunities.
         </p>
 
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div className="flex gap-3.5 justify-center flex-wrap items-center">
           <Link
             href="/sign-up"
-            style={{
-              fontSize: 15,
-              fontWeight: 600,
-              color: '#F9F6F0',
-              background: C.moss,
-              border: `1px solid ${C.moss500}`,
-              padding: '16px 32px',
-              borderRadius: 8,
-              cursor: 'pointer',
-              letterSpacing: '-0.01em',
-              transition: 'background 0.15s, transform 0.15s, box-shadow 0.15s',
-              textDecoration: 'none',
-              display: 'inline-block',
-              boxShadow: '0 4px 16px rgba(26,77,56,0.25)',
-            }}
-            onMouseEnter={(e) => { const b = e.currentTarget; b.style.background = C.mossHover; b.style.transform = 'translateY(-1px)' }}
-            onMouseLeave={(e) => { const b = e.currentTarget; b.style.background = C.moss; b.style.transform = '' }}
+            className="text-[15px] font-semibold text-white bg-[#3E6248] hover:bg-[#293E30] px-8 py-4 rounded-xl shadow-md hover:shadow-lg transition-all no-underline inline-block border border-[#66866A]/40"
           >
             Create your research identity
           </Link>
           <Link
             href="/discover"
-            style={{
-              fontSize: 15,
-              fontWeight: 500,
-              color: C.moss,
-              background: C.moss050,
-              border: `1.5px solid ${C.borderStrong}`,
-              padding: '16px 32px',
-              borderRadius: 8,
-              cursor: 'pointer',
-              letterSpacing: '-0.01em',
-              transition: 'all 0.15s',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              textDecoration: 'none',
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = C.moss; (e.currentTarget as HTMLAnchorElement).style.background = C.mossLight }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = C.borderStrong; (e.currentTarget as HTMLAnchorElement).style.background = C.moss050 }}
+            className="text-[15px] font-medium text-white bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/40 px-8 py-4 rounded-xl transition-all inline-flex items-center gap-2 no-underline"
           >
             Explore Cambium
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 7h8M8 4l3 3-3 3" /></svg>
@@ -2137,34 +3244,33 @@ function Footer() {
   ]
 
   return (
-    <footer style={{ background: C.bg, borderTop: `1px solid ${C.rule}`, padding: '64px 88px 40px' }}>
+    <footer className="bg-[#FAF7F0] dark:bg-[#0E140F] border-t border-[#E4DCCB] dark:border-[#233327] px-6 md:px-16 pt-16 pb-10 transition-colors duration-200">
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr repeat(4, 1fr)', gap: 48, marginBottom: 56 }}>
           {/* Brand */}
           <div>
-            <div style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: 16, letterSpacing: '-0.03em', color: C.charcoal, display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#FAF7F0', border: '1px solid #E4DCCB', padding: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                <img src="/logo.svg" alt="CAMBIUM Research Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <div className="font-brand font-bold text-base tracking-[-0.03em] text-[#202920] dark:text-[#EDEAE2] flex items-center gap-2.5 mb-3">
+              <div className="w-7 h-7 rounded-full bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] p-0.5 flex items-center justify-center overflow-hidden">
+                <img src="/public_logo/cambium-logo-light.svg" alt="CAMBIUM Research Logo" className="w-full h-full object-contain block dark:hidden scale-[1.3] transition-transform" />
+                <img src="/public_logo/cambium-logo-dark.svg" alt="CAMBIUM Research Logo" className="w-full h-full object-contain hidden dark:block scale-[1.3] transition-transform" />
               </div>
-              <span style={{ textTransform: 'uppercase' }}>
-                CAMBIUM <span style={{ fontWeight: 300, color: C.moss }}>RESEARCH</span>
+              <span className="uppercase">
+                CAMBIUM <span className="font-light text-[#3E6248] dark:text-[#4ADE80]">RESEARCH</span>
               </span>
             </div>
-            <p style={{ fontSize: 13, color: C.secondary, lineHeight: 1.6, maxWidth: 200 }}>The Research Operating System.</p>
+            <p className="text-xs text-[#62685E] dark:text-[#A3B899] leading-relaxed max-w-[200px]">The Research Operating System.</p>
           </div>
 
           {/* Link columns */}
           {cols.map(({ heading, links }) => (
             <div key={heading}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: C.moss, textTransform: 'uppercase', marginBottom: 16 }}>{heading}</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="text-[11px] font-bold tracking-wider text-[#3E6248] dark:text-[#4ADE80] uppercase mb-4">{heading}</div>
+              <div className="flex flex-col gap-2.5">
                 {links.map((link) => (
                   <a
                     key={link.label}
                     href={link.href}
-                    style={{ fontSize: 13, color: C.secondary, textDecoration: 'none', transition: 'color 0.1s' }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = C.moss }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = C.secondary }}
+                    className="text-xs text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] no-underline transition-colors"
                   >
                     {link.label}
                   </a>
@@ -2174,18 +3280,20 @@ function Footer() {
           ))}
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 24, borderTop: `1px solid ${C.rule}`, flexWrap: 'wrap', gap: 16 }}>
-          <span style={{ fontSize: 12, color: C.tertiary }}>© 2026 Cambium Research. All rights reserved.</span>
-          <div style={{ display: 'flex', gap: 24 }}>
+        <div className="flex justify-between items-center pt-6 border-t border-[#E4DCCB] dark:border-[#233327] flex-wrap gap-4 text-xs text-[#85877B] dark:text-[#7E8B7B]">
+          <span>© 2026 Cambium Research. All rights reserved.</span>
+          <div className="flex gap-6">
             {[
               { label: 'Terms of Service', href: '/terms' },
               { label: 'Privacy Policy', href: '/privacy' },
               { label: 'AI Disclaimer', href: '/disclaimer' },
               { label: 'Security & Help', href: '/help' },
             ].map(({ label, href }) => (
-              <a key={label} href={href} style={{ fontSize: 12, color: C.secondary, textDecoration: 'none', transition: 'color 0.1s' }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = C.moss }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = C.secondary }}>
+              <a
+                key={label}
+                href={href}
+                className="text-xs text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] no-underline transition-colors"
+              >
                 {label}
               </a>
             ))}
@@ -2214,30 +3322,30 @@ function StructuralSystem() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 max-w-sm">
-      <div className="bg-[#293E30]/95 text-[#FAF7F0] rounded-xl p-4 shadow-2xl border border-[#66866A]/60 flex items-center justify-between gap-4 w-full backdrop-blur-md transform transition-all duration-300 hover:scale-[1.01] shadow-[0_16px_40px_-8px_rgba(0,0,0,0.38)]">
+    <div className="fixed bottom-20 right-6 z-40 flex flex-col items-end gap-3 max-w-sm">
+      <div className="bg-white/95 dark:bg-[#18231B]/95 text-[#202920] dark:text-[#EDEAE2] rounded-xl p-4 shadow-xl border border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between gap-4 w-full backdrop-blur-md transform transition-all duration-300 hover:scale-[1.01]">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-[#3E6248] rounded-lg text-[#FAF7F0] border border-[#66866A]/40 shadow-xs">
+          <div className="p-2.5 bg-[#DCE6D7] dark:bg-[#1A281E] rounded-lg text-[#3E6248] dark:text-[#4ADE80] border border-[#66866A]/30 dark:border-[#4ADE80]/30 shadow-xs">
             <User className="w-4 h-4" />
           </div>
           <div className="flex flex-col">
-            <span className="font-sans text-xs font-semibold tracking-wide uppercase text-[#FAF7F0]">
+            <span className="font-sans text-xs font-semibold tracking-wide uppercase text-[#202920] dark:text-[#EDEAE2]">
               Identity System Active
             </span>
-            <span className="font-sans text-[11px] text-[#C7D4C9] mt-0.5">
+            <span className="font-sans text-[11px] text-[#62685E] dark:text-[#A3B899] mt-0.5">
               Verified cryptographic ledger anchor
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="inline-flex items-center gap-1.5 bg-[#FAF7F0] border border-[#E4DCCB] px-2.5 py-0.5 rounded-full text-[#293E30] shadow-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] animate-pulse" />
-            <span className="font-sans text-[10px] font-bold tracking-tight text-[#293E30]">Active</span>
+          <div className="inline-flex items-center gap-1.5 bg-[#DCE6D7] dark:bg-[#1A281E] border border-[#66866A]/20 dark:border-[#4ADE80]/30 px-2.5 py-0.5 rounded-full text-[#3E6248] dark:text-[#4ADE80] shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+            <span className="font-sans text-[10px] font-bold tracking-tight text-[#3E6248] dark:text-[#4ADE80]">Active</span>
           </div>
           <button
             onClick={() => setOpen(false)}
-            className="text-[#C7D4C9] hover:text-[#FAF7F0] text-xs p-1 bg-transparent border-0 cursor-pointer ml-1 transition-colors"
+            className="text-[#85877B] hover:text-[#202920] dark:text-[#7E8B7B] dark:hover:text-[#EDEAE2] text-xs p-1 bg-transparent border-0 cursor-pointer ml-1 transition-colors"
             title="Dismiss"
           >
             ✕
@@ -2253,6 +3361,7 @@ export default function App() {
   const [replayIntro, setReplayIntro] = useState(false);
 
   useEffect(() => {
+    document.title = "CAMBIUM RESEARCH — The Enterprise Research Operating System";
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("intro") === "1" || params.get("splash") === "1") {
@@ -2262,8 +3371,8 @@ export default function App() {
   }, []);
 
   return (
-    <div style={{ fontFamily: "var(--font-sans), 'Instrument Sans', system-ui, sans-serif", background: C.bg }}>
-      <CambiumIntroPreloader forceShow={replayIntro} onComplete={() => setReplayIntro(false)} />
+    <div className="min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] text-[#202920] dark:text-[#EDEAE2] transition-colors duration-200" style={{ fontFamily: "var(--font-sans), 'Instrument Sans', system-ui, sans-serif" }}>
+      <CambiumIntroPreloader key={replayIntro ? "intro-replay" : "intro-initial"} forceShow={replayIntro} onComplete={() => setReplayIntro(false)} />
       <Nav />
       <Hero />
       <KnowledgeGraphSection />
