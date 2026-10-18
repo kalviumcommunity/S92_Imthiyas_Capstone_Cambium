@@ -80,8 +80,8 @@ export default function Navbar({ onOpenCreate }: NavbarProps) {
                 href="/profile"
                 className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md border border-border bg-card hover:bg-accent/40 text-xs text-foreground transition-colors"
               >
-                <Avatar className="w-6 h-6 border border-border overflow-hidden">
-                  <img src="/Profile.png" alt="User Profile" className="w-full h-full object-cover" />
+                <Avatar className="w-6 h-6 border border-border overflow-hidden" style={{ width: 24, height: 24, minWidth: 24, minHeight: 24 }}>
+                  <img src="/Profile.png" alt="User Profile" style={{ width: 24, height: 24, objectFit: "cover" }} className="w-full h-full object-cover" />
                   <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
                     {user?.fullName ? user.fullName[0].toUpperCase() : "R"}
                   </AvatarFallback>
