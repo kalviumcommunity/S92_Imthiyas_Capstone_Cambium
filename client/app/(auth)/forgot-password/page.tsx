@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
 
   if (screen === "check") {
     return (
-      <div className="w-full space-y-8 animate-fade-in">
+      <div className="w-full min-h-[440px] flex flex-col justify-center space-y-8 animate-in fade-in duration-200">
         {/* Icon */}
         <div className="w-14 h-14 rounded-full bg-[#DCE6D7] flex items-center justify-center">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="w-full space-y-7 animate-fade-in font-sans">
+    <div className="w-full min-h-[440px] flex flex-col justify-center space-y-7 animate-in fade-in duration-200 font-sans">
       <div className="space-y-2">
 
         <h2 className="font-serif text-[30px] font-normal text-[#202920] leading-tight">

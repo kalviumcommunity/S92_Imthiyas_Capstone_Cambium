@@ -374,9 +374,11 @@ function ExitConfirmModal({
 function SetupWelcome({
   onStart,
   onSkip,
+  onLoadSample,
 }: {
   onStart: () => void;
   onSkip: () => void;
+  onLoadSample?: () => void;
 }) {
   const steps = [
     {
@@ -453,17 +455,28 @@ function SetupWelcome({
             <button
               type="button"
               onClick={onStart}
-              className="flex items-center justify-center gap-2 px-8 py-3 rounded-lg bg-moss-600 hover:bg-moss-700 text-white font-semibold text-sm transition-all shadow-xs"
+              className="flex items-center justify-center gap-2 px-7 py-3 rounded-lg bg-moss-600 hover:bg-moss-700 text-white font-semibold text-sm transition-all shadow-xs cursor-pointer"
             >
               Start setup
               <ArrowRight size={15} />
             </button>
+            {onLoadSample && (
+              <button
+                type="button"
+                onClick={onLoadSample}
+                className="flex items-center justify-center gap-1.5 px-4 py-3 rounded-lg border border-edge-default bg-surface-raised hover:bg-surface-sunken text-ink-primary font-medium text-xs sm:text-sm transition-all shadow-2xs cursor-pointer"
+                title="Quickly fill sample lab publications and topics"
+              >
+                <Sparkles size={14} className="text-moss-700" />
+                <span>Sample Lab Profile</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={onSkip}
-              className="px-4 py-2.5 text-xs sm:text-sm text-ink-tertiary hover:text-ink-primary underline underline-offset-2 transition-colors text-center"
+              className="px-3 py-2.5 text-xs sm:text-sm text-ink-tertiary hover:text-ink-primary underline underline-offset-2 transition-colors text-center cursor-pointer"
             >
-              Skip for now
+              Skip
             </button>
           </div>
 
@@ -1480,6 +1493,18 @@ export default function WelcomeOnboardingPage() {
   const updateSetup = (patch: Partial<SetupData>) =>
     setSetupData((prev) => ({ ...prev, ...patch }));
 
+  const loadSampleProfile = () => {
+    setSetupData({
+      orcidConnected: true,
+      orcidName: "Imthiyas",
+      orcidId: "0000-0002-1825-0097",
+      interests: ["Scientific ML", "Computational Biology", "Medical Imaging"],
+      topics: ["Federated Learning", "Foundation Models", "Graph Neural Networks"],
+      publications: DEFAULT_ORCID_PUBLICATIONS,
+    });
+    goTo("review");
+  };
+
   return (
     <div className="min-h-screen bg-surface-base font-sans select-none text-ink-primary">
       {screen !== "welcome" && screen !== "complete" && (
@@ -1502,6 +1527,7 @@ export default function WelcomeOnboardingPage() {
             <SetupWelcome
               onStart={() => goTo("orcid")}
               onSkip={() => setShowExitConfirm(true)}
+              onLoadSample={loadSampleProfile}
             />
           )}
 

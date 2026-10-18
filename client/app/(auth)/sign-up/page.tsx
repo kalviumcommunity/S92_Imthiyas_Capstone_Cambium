@@ -294,6 +294,9 @@ export default function SignUpPage() {
               <EyeIcon open={showPassword} />
             </button>
           </div>
+          <p className="text-[11.5px] font-sans text-[#3E463C] mt-1 mb-0">
+            Must be at least 8 characters. Institutional email recommended.
+          </p>
         </div>
 
         {/* Submit */}
