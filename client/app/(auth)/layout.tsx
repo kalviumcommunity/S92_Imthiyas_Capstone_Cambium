@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ReactNode } from "react";
 import CambiumLogo from "@/components/CambiumLogo";
+import { ArrowLeft } from "lucide-react";
 
 const NODES = [
   { label: "Scientific ML", x: "15%", y: "16%", dot: "#66866A" },
@@ -98,8 +99,17 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
       {/* Right Column (Auth Forms) — Parchment canvas */}
       <div className="flex flex-col justify-center min-h-screen px-6 sm:px-10 lg:px-14 py-12 overflow-y-auto bg-[#FAF7F0]">
-        <div className="md:hidden mb-8 w-full max-w-[420px] mx-auto">
+        <div className="md:hidden mb-6 w-full max-w-[420px] mx-auto">
           <CambiumLogo size="md" href="/" />
+        </div>
+        <div className="w-full max-w-[420px] mx-auto md:mx-0 md:mr-auto md:ml-4 lg:md:ml-8 xl:md:ml-12 mb-4">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#62685E] hover:text-[#202920] uppercase tracking-wider transition-colors no-underline group"
+          >
+            <ArrowLeft size={13} className="text-[#3E6248] transition-transform group-hover:-translate-x-0.5" />
+            <span>Back to CAMBIUM RESEARCH</span>
+          </Link>
         </div>
         <div className="w-full max-w-[420px] mx-auto md:mx-0 md:mr-auto md:ml-4 lg:md:ml-8 xl:md:ml-12 animate-fade-up">
           {children}

@@ -5,8 +5,10 @@ export interface UserProfile {
   username: string;
   email: string;
   fullName: string;
+  name?: string;
   institution?: string;
-  researchInterests?: Array<{ id: string; name: string; slug: string }>;
+  researchInterests?: Array<{ id: string; name: string; slug: string }> | string[];
+  interests?: string[];
 }
 
 interface AuthState {
@@ -14,6 +16,8 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   setAuth: (user: UserProfile, token: string) => void;
+  setUser: (user: UserProfile) => void;
+  updateUser: (patch: Partial<UserProfile>) => void;
   logout: () => void;
 }
 
@@ -63,6 +67,29 @@ export const useAuthStore = create<AuthState>((set) => {
         localStorage.setItem("cambium_user", JSON.stringify(sanitizedUser));
       }
       set({ user: sanitizedUser, token, isAuthenticated: true });
+    },
+    setUser: (user) => {
+      const sanitizedUser = user
+        ? {
+            ...user,
+            fullName: user.fullName || user.name || "Imthiyas",
+            name: user.name || user.fullName || "Imthiyas",
+          }
+        : user;
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cambium_user", JSON.stringify(sanitizedUser));
+      }
+      set({ user: sanitizedUser, isAuthenticated: !!sanitizedUser });
+    },
+    updateUser: (patch) => {
+      set((state) => {
+        if (!state.user) return state;
+        const updated = { ...state.user, ...patch };
+        if (typeof window !== "undefined") {
+          localStorage.setItem("cambium_user", JSON.stringify(updated));
+        }
+        return { user: updated };
+      });
     },
     logout: () => {
       if (typeof window !== "undefined") {
