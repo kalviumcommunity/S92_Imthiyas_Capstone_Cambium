@@ -53,11 +53,11 @@ export function CambiumSpatialTransition() {
 
       {/* Floating Spatial Orientation Indicator Pill */}
       <div className="relative z-10 px-5 py-2.5 rounded-full bg-[#1B231D]/90 border border-[#3E6248] text-[#FAF7F0] shadow-2xl flex items-center gap-3 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
-        <div className="w-5 h-5 rounded-full bg-[#FAF7F0] p-0.5 flex items-center justify-center shrink-0">
-          <img src="/logo.svg" alt="Cambium Mark" className="w-full h-full object-contain" />
+        <div className="w-5 h-5 rounded-full bg-[#FAF7F0] p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
+          <img src="/public_logo/cambium-logo-light.svg" alt="Cambium Mark" className="w-full h-full object-contain scale-[1.3] transition-transform" />
         </div>
         <div className="flex flex-col">
-          <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#66866A] font-semibold">
+          <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#A3C9A8] font-semibold">
             Spatial Context Shift
           </span>
           <span className="font-serif text-xs font-medium text-[#FAF7F0]">

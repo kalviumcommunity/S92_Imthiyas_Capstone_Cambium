@@ -124,12 +124,12 @@ export function ReactiveNullState({
         <div style={{ transform: "translateZ(30px)" }} className="space-y-2 z-10">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#DCE6D7] border border-[#66866A]/30 text-[#3E6248] font-mono text-[10px] font-bold uppercase tracking-wider mb-1">
             <Sparkles size={11} />
-            <span>Reactive 3D Spatial Null</span>
+            <span>Research Ledger · Empty State</span>
           </div>
           <h3 className="font-serif text-[22px] font-medium text-[#202920] tracking-tight m-0">
             {title}
           </h3>
-          <p className="text-[13.5px] text-[#62685E] leading-relaxed max-w-sm m-0">
+          <p className="text-[13.5px] text-[#4A5246] leading-relaxed max-w-sm m-0">
             {description}
           </p>
         </div>
@@ -140,7 +140,7 @@ export function ReactiveNullState({
             <button
               type="button"
               onClick={onAction}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#3E6248] hover:bg-[#293E30] text-white text-[13px] font-semibold tracking-wide uppercase font-mono shadow-md hover:shadow-lg transition-all duration-150 cursor-pointer border-0"
+              className="inline-flex items-center justify-center gap-2 px-6 py-2.5 min-h-[38px] rounded-full bg-[#3E6248] hover:bg-[#293E30] text-white text-[13px] font-semibold tracking-wide uppercase font-mono shadow-md hover:shadow-lg transition-all duration-150 cursor-pointer border-0"
             >
               <Plus className="w-4 h-4" />
               <span>{actionLabel}</span>
@@ -158,7 +158,7 @@ export function ReactiveNullState({
             <Compass size={12} className={isHovered ? "animate-spin" : ""} />
             {isHovered
               ? `X: ${rotate.x.toFixed(1)}° | Y: ${rotate.y.toFixed(1)}°`
-              : "HOVER CURSOR TO ENGAGE 3D TILT"}
+              : "RESEARCH LEDGER · INTERACTION READY"}
           </span>
         </div>
       </div>
