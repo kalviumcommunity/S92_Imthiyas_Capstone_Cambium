@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { Quote } from "lucide-react";
+import CitationExportModal, { CitationItem } from "@/components/CitationExportModal";
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
 
@@ -601,12 +604,13 @@ function CompactRow({
 // ─── Opportunity Detail Panel ─────────────────────────────────────────────────
 
 function DetailPanel({
-  opp, saved, tracked, onSave, onTrack, onToast, onClose, onSelectRelated,
+  opp, saved, tracked, onSave, onTrack, onToast, onClose, onSelectRelated, onCite,
 }: {
   opp: Opportunity; saved: boolean; tracked: TrackStatus | null;
   onSave: (id: string) => void; onTrack: (id: string, status: TrackStatus) => void;
   onToast: (msg: string) => void; onClose: () => void;
   onSelectRelated: (id: string) => void;
+  onCite?: (opp: Opportunity) => void;
 }) {
   const [showTrackMenu, setShowTrackMenu] = useState(false);
 
@@ -892,6 +896,16 @@ function DetailPanel({
               <IconShare /> Share
             </button>
 
+            {onCite && (
+              <button
+                onClick={() => onCite(opp)}
+                className="flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent2 px-3 py-2.5 rounded hover:bg-accent-light transition-colors cursor-pointer"
+                title="Export BibTeX / APA citation"
+              >
+                <Quote size={13} /> Cite
+              </button>
+            )}
+
             {opp.officialSource && (
               <a
                 href={`https://${opp.officialSource.replace(/^https?:\/\//, "")}`}
@@ -1163,7 +1177,39 @@ export default function OpportunityHub() {
   const [activeFilters, setActiveFilters] = useState<Record<string, Set<string>>>({});
   const [activeOppId, setActiveOppId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ msg: string; key: number } | null>(null);
+  const [citationItem, setCitationItem] = useState<CitationItem | null>(null);
+  const [showCitationModal, setShowCitationModal] = useState(false);
   const toastKey = useRef(0);
+
+  // ─── Live TanStack Query Hydration with Graceful Fallback ───────────────────
+  const { data: serverOpps, isLoading: isServerLoading } = useQuery({
+    queryKey: ["opportunities", activeTab, searchQuery],
+    queryFn: async () => {
+      try {
+        const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/opportunities?category=${activeTab}&search=${encodeURIComponent(searchQuery)}`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(2500) });
+        if (!res.ok) return null;
+        const json = await res.json();
+        return Array.isArray(json?.data) ? json.data : Array.isArray(json) ? json : null;
+      } catch {
+        return null;
+      }
+    },
+    staleTime: 60000,
+    retry: false,
+  });
+
+  const handleCite = useCallback((opp: Opportunity) => {
+    setCitationItem({
+      id: opp.id,
+      title: opp.title,
+      organization: opp.org,
+      year: 2026,
+      type: opp.kind,
+      url: opp.officialSource ? `https://${opp.officialSource}` : undefined,
+    });
+    setShowCitationModal(true);
+  }, []);
 
   const activeOpp = activeOppId ? ALL_OPPS.find((o) => o.id === activeOppId) ?? null : null;
   const totalFilters = Object.values(activeFilters).reduce((sum, s) => sum + s.size, 0);
@@ -1269,7 +1315,7 @@ export default function OpportunityHub() {
   return (
     <div className="flex h-screen overflow-hidden bg-bg font-sans text-ink">
       <style>{`
-        /* Cambium Living Materials Design token utilities */
+        /* Cambium Living Materials Design token utilities (Light & Dark) */
         .bg-bg { background-color: #FAF7F0; }
         .bg-surface { background-color: #FFFFFF; }
         .bg-sidebar { background-color: #F2EBDD; }
@@ -1298,6 +1344,35 @@ export default function OpportunityHub() {
         .border-accent { border-color: #3E6248; }
         .border-accent-light { border-color: #DCE6D7; }
 
+        /* Bioluminescent Botanical Dark Mode Token Overrides */
+        .dark .bg-bg { background-color: #0E140F; }
+        .dark .bg-surface { background-color: #18231B; }
+        .dark .bg-sidebar { background-color: #131C15; }
+        .dark .bg-sidebar-active { background-color: #1F2E23; }
+        .dark .bg-soft { background-color: #1F2E23; }
+        .dark .bg-accent { background-color: #4ADE80; }
+        .dark .bg-accent2 { background-color: #2B4A34; }
+        .dark .bg-accent-light { background-color: #1A281E; }
+        .dark .bg-ink { background-color: #EDEAE2; }
+        .dark .bg-ink2 { background-color: #233327; }
+        .dark .bg-urgent-bg { background-color: #2D1817; }
+        .dark .bg-amber-bg { background-color: #2D2415; }
+
+        .dark .text-ink { color: #EDEAE2; }
+        .dark .text-ink2 { color: #A3B899; }
+        .dark .text-muted { color: #A3B899; }
+        .dark .text-faint { color: #7E8B7B; }
+        .dark .text-accent { color: #4ADE80; }
+        .dark .text-accent2 { color: #86EFAC; }
+        .dark .text-urgent { color: #F87171; }
+        .dark .text-amber { color: #FBBF24; }
+        .dark .text-surface { color: #FFFFFF; }
+
+        .dark .border-border { border-color: #233327; }
+        .dark .border-soft { border-color: #233327; }
+        .dark .border-accent { border-color: #4ADE80; }
+        .dark .border-accent-light { border-color: #233327; }
+
         .scrollbar-hide {
           scrollbar-width: none;
           -ms-overflow-style: none;
@@ -1320,15 +1395,15 @@ export default function OpportunityHub() {
       `}</style>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#FAF7F0]" role="main">
+      <main className="flex-1 overflow-y-auto scrollbar-hide bg-[#FAF7F0] dark:bg-[#0E140F]" role="main">
         <div className="max-w-[960px] mx-auto px-6 sm:px-8 py-4">
 
           {/* Header */}
           <div className="pt-6 pb-6">
             <div className="flex items-start justify-between gap-6">
               <div>
-                <h1 className="font-serif text-[36px] sm:text-[44px] font-normal tracking-[-0.02em] text-[#202920] leading-none mb-2">
-                  Opportunity <span className="italic text-[#3E6248]">Hub</span>
+                <h1 className="font-serif text-[36px] sm:text-[44px] font-normal tracking-[-0.02em] text-[#202920] dark:text-[#EDEAE2] leading-none mb-2">
+                  Opportunity <span className="italic text-[#3E6248] dark:text-[#4ADE80]">Hub</span>
                 </h1>
                 <p className="text-sm text-muted">Find verified funding, conferences, fellowships, and calls for papers.</p>
               </div>
@@ -1613,8 +1688,16 @@ export default function OpportunityHub() {
           onToast={handleToast}
           onClose={() => setActiveOppId(null)}
           onSelectRelated={setActiveOppId}
+          onCite={handleCite}
         />
       )}
+
+      {/* Citation export modal */}
+      <CitationExportModal
+        isOpen={showCitationModal}
+        onClose={() => setShowCitationModal(false)}
+        item={citationItem}
+      />
 
       {/* Toast notifications */}
       {toast && (
