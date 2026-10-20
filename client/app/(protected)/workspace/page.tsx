@@ -232,11 +232,12 @@ function Sidebar({
               alignItems: "center",
               justifyContent: "center",
               overflow: "hidden",
-              padding: 2,
+              padding: 1,
               flexShrink: 0,
             }}
           >
-            <img src="/logo.svg" alt="CAMBIUM Research" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+            <img src="/public_logo/cambium-logo-light.svg" alt="CAMBIUM Research" style={{ width: "100%", height: "100%", objectFit: "contain" }} className="block dark:hidden scale-[1.3] transition-transform" />
+            <img src="/public_logo/cambium-logo-dark.svg" alt="CAMBIUM Research" style={{ width: "100%", height: "100%", objectFit: "contain" }} className="hidden dark:block scale-[1.3] transition-transform" />
           </Link>
         ) : (
           <CambiumLogo size="sm" href="/dashboard" />
