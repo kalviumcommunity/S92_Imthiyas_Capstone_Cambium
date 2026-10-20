@@ -542,7 +542,12 @@ function FilterBar({
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       {/* Pills row */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+      <div
+        role="region"
+        aria-label="Content type filters"
+        aria-live="polite"
+        className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1"
+      >
         {CONTENT_TYPES.map((t) => (
           <button
             key={t}

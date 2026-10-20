@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { ResearchOpportunity, toggleBookmark } from "@/lib/api";
+import { ResearchOpportunity } from "@/lib/api";
 import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useOptimisticBookmarks } from "@/lib/hooks/useOptimisticQueries";
 import {
   Calendar,
   Building2,
@@ -26,26 +27,18 @@ export default function OpportunityCard({
   onBookmarkChanged,
   onDelete,
 }: OpportunityCardProps) {
-  const [bookmarked, setBookmarked] = useState(initialBookmarked);
-  const [loading, setLoading] = useState(false);
   const { isAuthenticated, user } = useAuthStore();
+  const { isOpportunityBookmarked, toggleBookmark: optimisticToggle } = useOptimisticBookmarks();
+  const isBookmarked = isOpportunityBookmarked(opportunity.id) || initialBookmarked;
 
-  const handleBookmarkToggle = async () => {
+  const handleBookmarkToggle = () => {
     if (!isAuthenticated) {
       alert("Please sign in to bookmark research opportunities.");
       return;
     }
 
-    try {
-      setLoading(true);
-      await toggleBookmark(opportunity.id);
-      setBookmarked(!bookmarked);
-      onBookmarkChanged?.();
-    } catch (err: any) {
-      alert(err.message || "Failed to update bookmark");
-    } finally {
-      setLoading(false);
-    }
+    optimisticToggle(opportunity.id);
+    onBookmarkChanged?.();
   };
 
   // Format type colors
@@ -98,15 +91,14 @@ export default function OpportunityCard({
           <div className="flex items-center gap-1.5">
             <button
               onClick={handleBookmarkToggle}
-              disabled={loading}
-              title={bookmarked ? "Bookmarked" : "Save Bookmark"}
-              className={`p-1.5 rounded-lg border transition-colors ${
-                bookmarked
+              title={isBookmarked ? "Bookmarked" : "Save Bookmark"}
+              className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                isBookmarked
                   ? "bg-blue-600/20 border-blue-500 text-blue-400"
                   : "bg-slate-800/80 border-slate-700/80 text-slate-400 hover:text-white hover:border-slate-600"
               }`}
             >
-              <Bookmark className={`w-4 h-4 ${bookmarked ? "fill-current" : ""}`} />
+              <Bookmark className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`} />
             </button>
 
             {isCreator && onDelete && (
