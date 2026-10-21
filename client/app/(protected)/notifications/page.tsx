@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ReactiveNullState } from "@/components/ui/reactive-null-state";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/toast";
 
 type Tab = "All" | "Unread" | "Mentions" | "System";
 
@@ -240,9 +241,15 @@ export default function NotificationsPage() {
   const [previewNullState, setPreviewNullState] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
   const [selectedNotif, setSelectedNotif] = useState<NotificationItem | null>(null);
+  const { toast } = useToast();
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    toast({
+      title: "All notifications marked as read",
+      description: "Your inbox ledger has been synchronized.",
+      variant: "info",
+    });
   };
 
   const toggleMarkRead = (e: React.MouseEvent, id: number) => {

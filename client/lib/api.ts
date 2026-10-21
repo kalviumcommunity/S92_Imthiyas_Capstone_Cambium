@@ -60,6 +60,36 @@ export async function getOpportunities(params?: {
   return json.data || [];
 }
 
+export async function hybridSearchOpportunities(params: {
+  q: string;
+  limit?: number;
+  type?: string;
+  funder?: string;
+}): Promise<any> {
+  const query = new URLSearchParams();
+  if (params.q) query.append("q", params.q);
+  if (params.limit) query.append("limit", String(params.limit));
+  if (params.type && params.type !== "All") query.append("type", params.type);
+  if (params.funder) query.append("funder", params.funder);
+
+  const res = await fetch(`${API_BASE}/research-opportunities/hybrid?${query.toString()}`);
+  if (!res.ok) throw new Error("Hybrid search failed");
+  return res.json();
+}
+
+export async function chatWithAssistant(payload: {
+  messages: Array<{ role: string; content: string }>;
+  context?: any;
+}): Promise<any> {
+  const res = await fetch(`${API_BASE}/v1/assistant/chat`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("Assistant chat failed");
+  return res.json();
+}
+
 export async function getOpportunityStats(): Promise<OpportunityStats> {
   const res = await fetch(`${API_BASE}/research-opportunities/stats`);
   if (!res.ok) throw new Error("Failed to fetch stats");

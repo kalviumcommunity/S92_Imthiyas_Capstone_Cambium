@@ -50,7 +50,7 @@ export default function AboutPage() {
             </div>
 
             {/* Headline */}
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-[58px] font-normal leading-[1.12] tracking-tight text-[#202920] mb-6">
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-[58px] font-normal leading-[1.2] sm:leading-[1.12] tracking-tight text-[#202920] mb-6">
               Research moves forward when the{" "}
               <span className="italic text-[#3E6248]">right connections</span> take root.
             </h1>

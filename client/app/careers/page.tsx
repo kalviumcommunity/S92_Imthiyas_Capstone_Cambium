@@ -36,7 +36,7 @@ export default function CareersPage() {
               </span>
             </div>
 
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-[58px] font-normal leading-[1.12] tracking-tight text-[#202920] mb-4">
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-[58px] font-normal leading-[1.2] sm:leading-[1.12] tracking-tight text-[#202920] mb-4">
               Help research <span className="italic text-[#3E6248]">grow</span>.
             </h1>
 
@@ -44,11 +44,11 @@ export default function CareersPage() {
               Build technology that helps people discover what comes next.
             </h2>
 
-            <p className="font-serif text-lg leading-relaxed text-[#62685E] mb-6">
+            <p className="font-serif text-lg leading-relaxed text-[#3E463C] mb-6 max-w-2xl">
               Research creates possibilities, but discovering the right opportunity and connecting the right information can still be unnecessarily difficult.
             </p>
 
-            <p className="font-serif text-base leading-relaxed text-[#62685E] mb-8">
+            <p className="font-serif text-base leading-relaxed text-[#3E463C] mb-8 max-w-2xl">
               Cambium is being built to improve that experience through thoughtful product design, reliable research data, and AI-assisted intelligence grounded in evidence. We&apos;re interested in people who care about the problem, think critically about the solution, and want to build software that serves a meaningful purpose.
             </p>
 

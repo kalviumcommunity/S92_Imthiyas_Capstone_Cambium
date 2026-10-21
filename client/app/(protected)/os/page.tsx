@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useTheme } from "@/lib/theme-provider";
 import {
   LayoutGrid,
   Search,
@@ -429,7 +430,7 @@ function MonthCalendar() {
 
 function PreferencesPanel() {
   const [tab, setTab] = useState<PrefTab>("appearance");
-  const [theme, setTheme] = useState<"light" | "dark" | "system">("light");
+  const { theme, setTheme } = useTheme();
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
   const [notifToggles, setNotifToggles] = useState<Record<string, boolean>>(
     Object.fromEntries(NOTIF_PREFS.map((p) => [p.id, p.id !== "product"]))
