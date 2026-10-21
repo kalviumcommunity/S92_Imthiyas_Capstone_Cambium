@@ -42,6 +42,11 @@ function NetworkBackground() {
     }));
 
     const draw = () => {
+      if (typeof document !== "undefined" && document.hidden) {
+        animRef.current = requestAnimationFrame(draw);
+        return;
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const nodes = nodesRef.current;
 

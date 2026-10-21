@@ -205,7 +205,7 @@ export default function ChangelogPage() {
         {/* Filter and Search Bar */}
         <div className="mb-12 p-4 rounded-2xl bg-white border border-[#E4DCCB] shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-            {["All", "Major", "Minor"].map((cat) => (
+            {["All", "Major", "Minor", "Patch"].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}

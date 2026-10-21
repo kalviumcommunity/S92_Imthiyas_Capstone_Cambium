@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import Link from "next/link";
+import CambiumLogo from "@/components/CambiumLogo";
 
 interface Node {
   x: number;
@@ -42,6 +43,11 @@ function NetworkBackground() {
     }));
 
     const draw = () => {
+      if (typeof document !== "undefined" && document.hidden) {
+        animRef.current = requestAnimationFrame(draw);
+        return;
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const nodes = nodesRef.current;
 
@@ -107,8 +113,13 @@ export default function NotFound() {
     <div className="relative h-screen max-h-screen w-full overflow-hidden flex flex-col justify-between items-center py-4 px-4 bg-[#FAF7F0] text-[#202920] selection:bg-[#3E6248]/20 selection:text-[#173F35]">
       <NetworkBackground />
 
-      {/* Top buffer space */}
-      <div className="w-full h-2" />
+      {/* Top Header */}
+      <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between px-2 pt-2">
+        <CambiumLogo size="sm" badge="Registry" href="/" />
+        <Link href="/dashboard" className="text-xs font-mono text-[#62685E] hover:text-[#202920] transition-colors">
+          Dashboard ↗
+        </Link>
+      </div>
 
       {/* Main Center Content Block */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center my-auto max-w-3xl w-full px-4">

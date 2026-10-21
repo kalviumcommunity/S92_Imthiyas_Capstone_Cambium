@@ -1111,14 +1111,14 @@ function PaperExplorer({
 
       {/* Tab Navigation */}
       <div
-        className="flex items-center px-8"
+        className="flex items-center px-4 sm:px-8 overflow-x-auto no-scrollbar flex-nowrap"
         style={{ borderBottom: `1px solid ${P.hairline}`, backgroundColor: P.surface }}
       >
         {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="py-3 mr-7 text-sm transition-colors"
+            className="py-3 mr-5 sm:mr-7 text-sm transition-colors whitespace-nowrap"
             style={{
               fontSize: "13px",
               color: activeTab === tab ? P.ink : P.ink3,
@@ -1139,7 +1139,7 @@ function PaperExplorer({
 
       {/* Filter Bar */}
       <div
-        className="flex items-center gap-2 px-8 py-2.5 overflow-x-auto flex-shrink-0"
+        className="flex items-center gap-2 px-4 sm:px-8 py-2.5 overflow-x-auto no-scrollbar flex-shrink-0 flex-nowrap"
         style={{ borderBottom: `1px solid ${P.hairline}`, backgroundColor: P.surface }}
       >
         {FILTERS.map((f) => (

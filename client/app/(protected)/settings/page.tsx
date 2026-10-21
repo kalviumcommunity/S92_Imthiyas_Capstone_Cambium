@@ -29,11 +29,16 @@ import {
   Filter,
   CheckCircle2,
   AlertCircle,
+  Moon,
+  Laptop,
+  Palette,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { ArtifactDropzone } from "@/components/ui/artifact-dropzone";
+import { useTheme } from "@/lib/theme-provider";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type NavItem = {
@@ -56,12 +61,12 @@ function Toggle({
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E6248] ${
-        checked ? "bg-[#3E6248]" : "bg-[#E4DCCB]"
+      className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E6248] dark:focus-visible:ring-[#4ADE80] ${
+        checked ? "bg-[#3E6248] dark:bg-[#4ADE80]" : "bg-[#E4DCCB] dark:bg-[#233327]"
       }`}
     >
       <span
-        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white dark:bg-[#0E140F] shadow-sm ring-0 transition duration-200 ease-in-out ${
           checked ? "translate-x-4" : "translate-x-0"
         }`}
       />
@@ -88,13 +93,13 @@ function Toast({
 
   return (
     <div
-      className={`fixed bottom-8 right-8 z-50 flex items-center gap-2.5 rounded-full bg-[#202920] border border-[#3E6248]/40 px-5 py-3 text-xs font-mono tracking-wider text-white shadow-2xl transition-all duration-200 ${
+      className={`fixed bottom-8 right-8 z-50 flex items-center gap-2.5 rounded-full bg-[#202920] dark:bg-[#18231B] border border-[#3E6248]/40 dark:border-[#4ADE80]/40 px-5 py-3 text-xs font-mono tracking-wider text-white dark:text-[#EDEAE2] shadow-2xl transition-all duration-200 ${
         visible
           ? "translate-y-0 opacity-100 pointer-events-auto"
           : "translate-y-4 opacity-0 pointer-events-none"
       }`}
     >
-      <Check size={14} className="text-[#66866A]" />
+      <Check size={14} className="text-[#66866A] dark:text-[#4ADE80]" />
       {message}
     </div>
   );
@@ -104,11 +109,11 @@ function Toast({
 function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div className="mb-8">
-      <h2 className="font-serif text-[26px] sm:text-[30px] font-normal tracking-[-0.01em] text-[#202920] m-0">
+      <h2 className="font-serif text-[26px] sm:text-[30px] font-normal tracking-[-0.01em] text-[#202920] dark:text-[#EDEAE2] m-0">
         {title}
       </h2>
       {subtitle && (
-        <p className="font-sans text-xs text-[#62685E] mt-1.5 leading-relaxed">
+        <p className="font-sans text-xs text-[#62685E] dark:text-[#A3B899] mt-1.5 leading-relaxed">
           {subtitle}
         </p>
       )}
@@ -128,18 +133,18 @@ function FieldRow({
 }) {
   return (
     <div className="flex flex-col gap-1.5 mb-5">
-      <label className="font-mono text-[10px] font-semibold tracking-[0.14em] uppercase text-[#62685E]">
+      <label className="font-mono text-[10px] font-semibold tracking-[0.14em] uppercase text-[#62685E] dark:text-[#A3B899]">
         {label}
       </label>
       {children}
-      {hint && <p className="text-xs text-[#85877B] m-0 leading-relaxed">{hint}</p>}
+      {hint && <p className="text-xs text-[#85877B] dark:text-[#7E8B7B] m-0 leading-relaxed">{hint}</p>}
     </div>
   );
 }
 
 // ─── Divider ─────────────────────────────────────────────────────────────────
 function Divider() {
-  return <div className="h-px bg-[#E4DCCB] my-7" />;
+  return <div className="h-px bg-[#E4DCCB] dark:bg-[#233327] my-7" />;
 }
 
 // ─── Toggle row ───────────────────────────────────────────────────────────────
@@ -157,11 +162,11 @@ function ToggleRow({
   return (
     <div className="flex items-start justify-between gap-4 pb-5">
       <div>
-        <div className="font-sans text-sm font-medium text-ink-primary">
+        <div className="font-sans text-sm font-medium text-[#202920] dark:text-[#EDEAE2]">
           {label}
         </div>
         {description && (
-          <div className="text-xs text-ink-secondary mt-1 leading-relaxed">
+          <div className="text-xs text-[#62685E] dark:text-[#A3B899] mt-1 leading-relaxed">
             {description}
           </div>
         )}
@@ -230,6 +235,14 @@ function ApiKeyInput({
 }) {
   const [value, setValue] = useState("");
   const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    if (show) {
+      const timer = setTimeout(() => setShow(false), 30000);
+      return () => clearTimeout(timer);
+    }
+  }, [show]);
+
   return (
     <FieldRow label={label}>
       <div className="relative">
@@ -243,8 +256,8 @@ function ApiKeyInput({
         <button
           type="button"
           onClick={() => setShow((s) => !s)}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-ink-secondary hover:text-ink-primary bg-transparent border-none cursor-pointer"
-          title={show ? "Hide key" : "Reveal key"}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-[#85877B] hover:text-[#202920] bg-transparent border-none cursor-pointer transition-colors"
+          title={show ? "Hide key (auto-masks in 30s)" : "Reveal key"}
         >
           {show ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
@@ -299,9 +312,46 @@ const NotionLogo = () => (
 
 // ─── Section: Account ─────────────────────────────────────────────────────────
 function AccountSection({ showToast }: { showToast: (m: string) => void }) {
-  const [name, setName] = useState("Dr. Miriam Osei");
-  const [email, setEmail] = useState("m.osei@princeton.edu");
-  const [institution, setInstitution] = useState("Princeton University");
+  const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const [name, setName] = useState(user?.name || "Shaik Mohamed Imthiyas T");
+  const [email, setEmail] = useState(user?.email || "scholar@cambium.edu");
+  const [institution, setInstitution] = useState(user?.institution || "MIT CSAIL & Broad Institute");
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      if (user.name) setName(user.name);
+      if (user.email) setEmail(user.email);
+      if (user.institution) setInstitution(user.institution);
+    }
+  }, [user]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      if (user?.id) {
+        const token = typeof window !== "undefined" ? localStorage.getItem("cambium_token") : null;
+        await fetch(`http://localhost:5000/api/users/${user.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ fullName: name, email, institution }),
+        });
+      }
+      if (user) {
+        setUser({ ...user, name, email, institution });
+      }
+      showToast("Account details synchronized to PostgreSQL.");
+    } catch {
+      showToast("Account details saved in local session.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <SectionTitle
@@ -326,10 +376,11 @@ function AccountSection({ showToast }: { showToast: (m: string) => void }) {
       </FieldRow>
       <div className="flex justify-end mt-2">
         <Button
-          onClick={() => showToast("Account details saved.")}
+          onClick={handleSave}
+          disabled={isSaving}
           className="bg-[#3E6248] hover:bg-[#293E30] text-white text-xs font-mono uppercase tracking-wider rounded-full px-5 h-9 border-none shadow-sm"
         >
-          Save changes →
+          {isSaving ? "Saving..." : "Save changes →"}
         </Button>
       </div>
 
@@ -851,61 +902,116 @@ function SecuritySection({ showToast }: { showToast: (m: string) => void }) {
 
 // ─── Section: Appearance ──────────────────────────────────────────────────────
 function AppearanceSection({ showToast }: { showToast: (m: string) => void }) {
-  const [theme, setTheme] = useState<"system" | "light" | "dark">("light");
+  const { theme, setTheme } = useTheme();
+
   const opts: {
     id: "system" | "light" | "dark";
     label: string;
     desc: string;
+    icon: React.ReactNode;
   }[] = [
     {
       id: "system",
-      label: "System",
-      desc: "Adapts automatically to your operating system appearance.",
+      label: "System Default",
+      desc: "Adapts automatically to your operating system appearance preference.",
+      icon: <Laptop size={16} />,
     },
-    { id: "light", label: "Parchment & Minerals (Light)", desc: "Default Cambium living materials editorial theme." },
-    { id: "dark", label: "Deep Forest (Dark)", desc: "Low-light research environment with muted contrast." },
+    {
+      id: "light",
+      label: "Living Materials (Light)",
+      desc: "Default Cambium living materials editorial theme with warm paper foundation (#FAF7F0), deep forest ink, and living canopy accents.",
+      icon: <Sun size={16} />,
+    },
+    {
+      id: "dark",
+      label: "Bioluminescent Botanical (Dark)",
+      desc: "Low-light research environment with abyssal pine canvas (#0E140F), luminescent bone prose, and radiant emerald accents.",
+      icon: <Moon size={16} />,
+    },
   ];
+
+  const handleSelect = (id: "system" | "light" | "dark", label: string) => {
+    setTheme(id);
+    showToast(`Appearance preference set to ${label}.`);
+  };
+
+  const handleSave = () => {
+    setTheme(theme);
+    showToast("Appearance preference successfully applied & saved.");
+  };
+
   return (
     <div className="animate-fade-in">
       <SectionTitle
         title="Appearance & Canvas"
         subtitle="Choose your preferred research reading environment."
       />
-      <div className="flex flex-col gap-2.5 mb-7">
-        {opts.map((o) => (
-          <label
-            key={o.id}
-            onClick={() => setTheme(o.id)}
-            className={`flex cursor-pointer items-center justify-between rounded-xl border p-[14px_16px] transition-colors ${
-              theme === o.id
-                ? "border-[#3E6248] bg-white shadow-sm ring-1 ring-[#3E6248]/30"
-                : "border-[#E4DCCB] bg-white hover:border-[#3E6248]/40"
-            }`}
-          >
-            <div>
-              <div className="text-sm font-semibold text-[#202920]">
-                {o.label}
-              </div>
-              <div className="mt-0.5 text-xs text-[#62685E]">{o.desc}</div>
-            </div>
-            <div
-              className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${
-                theme === o.id
-                  ? "border-[#3E6248] bg-[#3E6248]"
-                  : "border-[#E4DCCB] bg-transparent"
+      <div className="flex flex-col gap-3 mb-7" role="radiogroup" aria-label="Appearance environment">
+        {opts.map((o) => {
+          const isSelected = theme === o.id;
+          return (
+            <label
+              key={o.id}
+              onClick={() => handleSelect(o.id, o.label)}
+              className={`flex cursor-pointer items-center justify-between rounded-xl border p-[16px_18px] transition-all ${
+                isSelected
+                  ? "bg-[#FAF7F0] dark:bg-[#1A281E] border-[#3E6248] dark:border-[#4ADE80] shadow-sm ring-1 ring-[#3E6248]/30 dark:ring-[#4ADE80]/30"
+                  : "bg-white dark:bg-[#18231B] border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248]/40 dark:hover:border-[#4ADE80]/40 hover:bg-[#FAF7F0]/60 dark:hover:bg-[#131C15]/60"
               }`}
             >
-              {theme === o.id && (
-                <div className="h-1.5 w-1.5 rounded-full bg-white" />
-              )}
-            </div>
-          </label>
-        ))}
+              <input
+                type="radio"
+                name="cambium-theme-radio"
+                value={o.id}
+                checked={isSelected}
+                onChange={() => handleSelect(o.id, o.label)}
+                className="sr-only"
+              />
+              <div className="flex items-center gap-3.5">
+                <div
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${
+                    isSelected
+                      ? "border-[#3E6248]/40 dark:border-[#4ADE80]/40 bg-[#DCE6D7] dark:bg-[#131C15] text-[#3E6248] dark:text-[#4ADE80]"
+                      : "border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#131C15] text-[#62685E] dark:text-[#A3B899]"
+                  }`}
+                >
+                  {o.icon}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-[#202920] dark:text-[#EDEAE2]">
+                      {o.label}
+                    </span>
+                    {isSelected && (
+                      <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] bg-[#DCE6D7] dark:bg-[#131C15] border border-[#66866A]/20 dark:border-[#4ADE80]/30 px-2 py-0.5 rounded-full">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-1 text-xs text-[#62685E] dark:text-[#A3B899] leading-relaxed max-w-xl">
+                    {o.desc}
+                  </div>
+                </div>
+              </div>
+              <div
+                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors ml-4 ${
+                  isSelected
+                    ? "border-[#3E6248] dark:border-[#4ADE80] bg-[#3E6248] dark:bg-[#4ADE80]"
+                    : "border-[#E4DCCB] dark:border-[#233327] bg-transparent"
+                }`}
+              >
+                {isSelected && (
+                  <div className="h-1.5 w-1.5 rounded-full bg-white dark:bg-[#0E140F]" />
+                )}
+              </div>
+            </label>
+          );
+        })}
       </div>
       <div className="flex justify-end">
         <Button
-          onClick={() => showToast("Appearance preference saved.")}
-          className="bg-[#3E6248] hover:bg-[#293E30] text-white text-xs font-mono uppercase tracking-wider rounded-full px-5 h-9 border-none shadow-sm"
+          onClick={handleSave}
+          className="bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] text-xs font-mono uppercase tracking-wider rounded-full px-5 h-9 border-none shadow-sm cursor-pointer"
         >
           Save changes →
         </Button>
@@ -1515,27 +1621,27 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FAF7F0] font-sans overflow-hidden">
+    <div className="flex flex-col min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] text-[#202920] dark:text-[#EDEAE2] font-sans overflow-hidden transition-colors duration-200">
       {/* Header */}
-      <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-[#E4DCCB] bg-[#FAF7F0]/90 backdrop-blur-md px-6 shadow-sm">
+      <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0]/90 dark:bg-[#0E140F]/90 backdrop-blur-md px-6 shadow-sm">
         <div className="flex items-center gap-2.5">
           {isMobile && (
             <button
               onClick={() => setMobileNavOpen((o) => !o)}
-              className="flex p-1 text-[#62685E] hover:text-[#202920] bg-transparent border-none cursor-pointer"
+              className="flex p-1 text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] bg-transparent border-none cursor-pointer"
             >
               <Menu size={18} />
             </button>
           )}
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#66866A] animate-pulse" />
-            <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#3E6248]">
+            <span className="w-2 h-2 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+            <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80]">
               Account & Research Configuration
             </span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full overflow-hidden border border-[#E4DCCB] shadow-2xs">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full overflow-hidden border border-[#E4DCCB] dark:border-[#233327] shadow-2xs">
             <img src="/Profile.png" alt="Profile" className="w-full h-full object-cover" />
           </div>
         </div>
@@ -1545,9 +1651,9 @@ export default function SettingsPage() {
         {/* Sidebar (stretched by ~20%) */}
         {(!isMobile || mobileNavOpen) && (
           <aside
-            className={`flex-shrink-0 flex flex-col border-r border-[#E4DCCB] overflow-y-auto ${
+            className={`flex-shrink-0 flex flex-col border-r border-[#E4DCCB] dark:border-[#233327] overflow-y-auto ${
               isMobile
-                ? "fixed top-14 left-0 right-0 bottom-0 z-30 bg-[#FAF7F0] w-full p-4"
+                ? "fixed top-14 left-0 right-0 bottom-0 z-30 bg-[#FAF7F0] dark:bg-[#0E140F] w-full p-4"
                 : "w-[275px] bg-transparent py-8"
             }`}
           >
@@ -1561,14 +1667,14 @@ export default function SettingsPage() {
                   }}
                   className={`flex w-full items-center justify-between gap-3 rounded-lg border-none px-4 py-2.5 text-left font-sans text-xs transition-colors cursor-pointer ${
                     active === item.id
-                      ? "bg-white font-semibold text-[#202920] border border-[#E4DCCB] shadow-sm"
-                      : "bg-transparent font-normal text-[#62685E] hover:bg-white/60 hover:text-[#202920]"
+                      ? "bg-white dark:bg-[#18231B] font-semibold text-[#202920] dark:text-[#EDEAE2] border border-[#E4DCCB] dark:border-[#233327] shadow-sm"
+                      : "bg-transparent font-normal text-[#62685E] dark:text-[#A3B899] hover:bg-white/60 dark:hover:bg-[#18231B]/60 hover:text-[#202920] dark:hover:text-[#EDEAE2]"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <span
                       className={`${
-                        active === item.id ? "text-[#3E6248]" : "text-[#85877B]"
+                        active === item.id ? "text-[#3E6248] dark:text-[#4ADE80]" : "text-[#85877B] dark:text-[#7E8B7B]"
                       }`}
                     >
                       {item.icon}
@@ -1576,7 +1682,7 @@ export default function SettingsPage() {
                     <span>{item.label}</span>
                   </div>
                   {item.id === "export" && (
-                    <span className="text-[9.5px] font-mono uppercase tracking-wider text-[#3E6248] bg-[#DCE6D7] border border-[#66866A]/20 px-1.5 py-0.5 rounded-full font-bold">
+                    <span className="text-[9.5px] font-mono uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] bg-[#DCE6D7] dark:bg-[#1A281E] border border-[#66866A]/20 dark:border-[#4ADE80]/30 px-1.5 py-0.5 rounded-full font-bold">
                       Dropzone
                     </span>
                   )}

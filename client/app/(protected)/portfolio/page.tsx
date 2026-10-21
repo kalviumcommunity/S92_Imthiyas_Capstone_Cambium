@@ -26,6 +26,7 @@ import {
   Clock,
   Compass,
 } from "lucide-react";
+import { getScholarContributionDetails } from "@/lib/scholarHeatmap";
 
 // ─── Static Data (Preserved & Extended) ────────────────────────────────────────
 
@@ -403,14 +404,6 @@ function ShareModal({ onClose }: { onClose: () => void }) {
 function ContributionHeatmap() {
   const weeks = 52;
   const days = 7;
-  const getLevel = (w: number, d: number) => {
-    const val = (Math.sin(w * 0.38) + Math.cos(d * 0.72) + Math.sin(w * 0.14 + d * 0.9)) / 3;
-    if (val > 0.42) return 4;
-    if (val > 0.18) return 3;
-    if (val > -0.06) return 2;
-    if (val > -0.32) return 1;
-    return 0;
-  };
 
   const levelColors = [
     "bg-[#FAF7F0] border-[#E4DCCB]",
@@ -471,12 +464,12 @@ function ContributionHeatmap() {
               {Array.from({ length: weeks }).map((_, w) => (
                 <div key={w} className="flex flex-col gap-[3.5px]">
                   {Array.from({ length: days }).map((_, d) => {
-                    const level = getLevel(w, d);
+                    const details = getScholarContributionDetails(w, d);
                     return (
                       <div
                         key={d}
-                        title={`Week ${w + 1}, Day ${d + 1}: ${level * 3 + (level > 0 ? 1 : 0)} research contributions`}
-                        className={`w-[13px] h-[13px] rounded-[2.5px] border transition-transform hover:scale-125 hover:z-10 cursor-pointer ${levelColors[level]}`}
+                        title={`Week ${w + 1}, Day ${d + 1}: ${details.label}`}
+                        className={`w-[13px] h-[13px] rounded-[2.5px] border transition-transform hover:scale-125 hover:z-10 cursor-pointer ${levelColors[details.level]}`}
                       />
                     );
                   })}
@@ -652,6 +645,8 @@ export default function ResearchPortfolioPage() {
                     <a
                       key={link.label}
                       href={link.href}
+                      target={link.href !== "#" ? "_blank" : undefined}
+                      rel={link.href !== "#" ? "noopener noreferrer" : undefined}
                       onClick={(e) => {
                         if (link.href === "#") e.preventDefault();
                       }}
@@ -659,6 +654,7 @@ export default function ResearchPortfolioPage() {
                     >
                       <span>{link.label}</span>
                       <ExternalLink size={10} className="text-[#3E6248]/70" />
+                      {link.href !== "#" && <span className="sr-only">(opens in new tab)</span>}
                     </a>
                   ))}
                 </div>

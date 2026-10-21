@@ -10,7 +10,7 @@ export const metadata = {
 export default function PrivacyPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-[#FAF7F0]" />}>
-      <LegalViewer initialTab="terms" />
+      <LegalViewer initialTab="privacy" />
     </Suspense>
   );
 }

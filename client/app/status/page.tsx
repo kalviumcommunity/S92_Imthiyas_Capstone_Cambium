@@ -84,8 +84,8 @@ const STATUS_ITEMS: Record<StatusCode, StatusItem> = {
     badge: "Server Error · Interruption Caught",
     badgeColor: "bg-[#FDE8E8] text-[#9B1C1C] border-[#F8B4B4]",
     description: "Catch-all error boundary with interactive animated particle physics, allowing one-click retry without data loss.",
-    exampleUrl: "GET /500",
-    previewRoute: "/500",
+    exampleUrl: "GET /error-500",
+    previewRoute: "/error-500",
     samplePayload: {
       statusCode: 500,
       error: "Internal Server Interruption",
@@ -229,8 +229,8 @@ export default function StatusHubPage() {
               <span>Live Response Payload (JSON)</span>
               {lastExecuted && <span className="text-[#3E6248] font-normal">{lastExecuted}</span>}
             </h3>
-            <div className="rounded-2xl bg-[#202920] p-5 text-[#FAF7F0] font-mono text-xs overflow-x-auto shadow-inner border border-[#3E6248]/30">
-              <pre className="m-0 leading-relaxed">
+            <div className="rounded-2xl bg-[#202920] p-5 text-[#FAF7F0] font-mono text-xs overflow-x-auto max-h-[380px] overflow-y-auto shadow-inner border border-[#3E6248]/30">
+              <pre className="m-0 leading-relaxed font-mono">
                 {JSON.stringify(current.samplePayload, null, 2)}
               </pre>
             </div>
@@ -255,14 +255,14 @@ export default function StatusHubPage() {
           </Link>
 
           <Link
-            href="/500"
+            href="/error-500"
             className="p-5 rounded-2xl bg-white border border-[#E4DCCB] hover:border-[#66866A] transition-all no-underline group"
           >
             <div className="flex items-center justify-between mb-2">
               <span className="font-mono text-sm font-bold text-[#202920] group-hover:text-[#3E6248]">
                 View 500 Error Page Directly →
               </span>
-              <span className="text-xs font-mono text-[#85877B]">/500</span>
+              <span className="text-xs font-mono text-[#85877B]">/error-500</span>
             </div>
             <p className="text-xs text-[#62685E] m-0">
               Displays interactive particle physics canvas with "500 — System disruption" & reset.

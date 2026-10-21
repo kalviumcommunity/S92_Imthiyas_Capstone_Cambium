@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { PublicHeader } from "@/components/PublicHeader";
 import Footer from "@/components/Footer";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 import {
   Mail,
   Send,
@@ -32,6 +33,7 @@ const INQUIRY_TYPES = [
 function ContactContent() {
   const searchParams = useSearchParams();
   const preselectedType = searchParams.get("type");
+  const user = useAuthStore((s) => s.user);
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -45,6 +47,14 @@ function ContactContent() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [organization, setOrganization] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      if (user.fullName && !fullName) setFullName(user.fullName);
+      if (user.email && !email) setEmail(user.email);
+      if (user.institution && !organization) setOrganization(user.institution);
+    }
+  }, [user]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -493,7 +503,7 @@ function ContactContent() {
               href="/opportunities"
               className="bg-[#FAF7F0] hover:bg-[#DCE6D7] text-[#202920] px-7 py-3 rounded-full font-sans text-xs font-semibold uppercase tracking-wider border border-[#E4DCCB] transition-colors inline-flex items-center gap-2 no-underline"
             >
-              <span>Explore Cambium</span>
+              <span>Explore CAMBIUM RESEARCH</span>
               <ArrowRight size={14} />
             </Link>
           </div>
