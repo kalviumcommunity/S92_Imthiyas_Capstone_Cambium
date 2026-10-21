@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/logo.svg" width="56" height="56" alt="Cambium Client Logo" />
+<img src="public_logo/cambium-logo-light.svg" width="56" height="56" alt="Cambium Client Logo" />
 
 # @cambium/client
 ### Frontend Product Application · Next.js 15 App Router & React 19
