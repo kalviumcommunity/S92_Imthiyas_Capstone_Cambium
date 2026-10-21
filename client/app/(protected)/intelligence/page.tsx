@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, KeyboardEvent } from "react";
+import Link from "next/link";
 import {
   Brain,
   Search,
@@ -992,8 +993,14 @@ export default function ResearchIntelligencePage() {
 
             {rightTab === "Graph" && (
               <div>
-                <div className="text-xs text-ink-tertiary mb-2">
-                  Knowledge connections for your query.
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-ink-tertiary">Knowledge connections</span>
+                  <Link
+                    href="/graph"
+                    className="text-[11px] font-mono font-medium text-moss-700 hover:text-moss-900 flex items-center gap-1"
+                  >
+                    Full Explorer ↗
+                  </Link>
                 </div>
                 {submitted ? (
                   <ResearchGraph />
@@ -1005,6 +1012,12 @@ export default function ResearchIntelligencePage() {
                     </p>
                   </div>
                 )}
+                <Link
+                  href="/graph"
+                  className="mt-3 w-full py-2 px-3 rounded-lg bg-[#202920] hover:bg-[#3E6248] text-white text-[11px] font-mono font-medium flex items-center justify-center gap-1.5 transition-colors no-underline"
+                >
+                  Explore Relational Knowledge Network ↗
+                </Link>
               </div>
             )}
           </div>
