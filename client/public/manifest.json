@@ -1,0 +1,62 @@
+{
+  "name": "Cambium — Enterprise Research Operating System",
+  "short_name": "Cambium",
+  "description": "AI-Powered Research Opportunity Discovery and Intelligence Platform for Global Scholarship",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#FAF7F0",
+  "theme_color": "#202920",
+  "orientation": "portrait-primary",
+  "categories": ["education", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/public_logo/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/public_logo/favicon-dark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/public_logo/favicon-light.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/public_logo/cambium-logo-dark.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/public_logo/cambium-logo-light.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Opportunities",
+      "short_name": "Grants",
+      "description": "Discover active research grants and CFPs",
+      "url": "/opportunities",
+      "icons": [{ "src": "/public_logo/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Knowledge Graph",
+      "short_name": "Graph",
+      "description": "2D relational knowledge constellation",
+      "url": "/graph",
+      "icons": [{ "src": "/public_logo/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "IRB Compliance",
+      "short_name": "Compliance",
+      "description": "Institutional Review Board protocol workspace",
+      "url": "/compliance",
+      "icons": [{ "src": "/public_logo/favicon.svg", "sizes": "any" }]
+    }
+  ]
+}
