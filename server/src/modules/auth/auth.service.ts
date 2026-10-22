@@ -8,14 +8,35 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 import { User } from '../users/entities/user.entity';
 import { ResearchInterest } from '../users/entities/research-interest.entity';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { RedisService } from '../../common/redis/redis.service';
+
+export interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+  accessJti: string;
+  refreshJti: string;
+}
+
+export interface JwtTokenPayload {
+  id: string;
+  email?: string;
+  username?: string;
+  jti: string;
+  type: 'access' | 'refresh';
+  iat?: number;
+  exp?: number;
+}
 
 @Injectable()
 export class AuthService {
   private readonly jwtSecret = process.env.JWT_SECRET || 'cambium_jwt_secret_key_2026';
+  private readonly jwtRefreshSecret =
+    process.env.JWT_REFRESH_SECRET || 'cambium_jwt_refresh_secret_key_2026_super_secure';
   private readonly googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy-client-id');
 
   constructor(
@@ -23,6 +44,7 @@ export class AuthService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(ResearchInterest)
     private readonly interestRepo: Repository<ResearchInterest>,
+    private readonly redisService: RedisService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -54,12 +76,13 @@ export class AuthService {
     });
 
     const saved = await this.userRepo.save(user);
-    const token = this.generateToken(saved.id);
+    const tokens = this.generateTokenPair(saved.id, saved.email, saved.username);
 
     return {
       success: true,
       message: 'User registered successfully!',
-      token,
+      token: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       user: {
         id: saved.id,
         username: saved.username,
@@ -95,12 +118,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials: Password incorrect');
     }
 
-    const token = this.generateToken(user.id);
+    const tokens = this.generateTokenPair(user.id, user.email, user.username);
 
     return {
       success: true,
       message: 'Login successful!',
-      token,
+      token: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       user: {
         id: user.id,
         username: user.username,
@@ -121,12 +145,11 @@ export class AuthService {
       });
     } catch (error) {
       if (!process.env.GOOGLE_CLIENT_ID || process.env.NODE_ENV !== 'production') {
-         // Fallback for development/testing when a dummy client ID is used
-         const decoded = jwt.decode(token) as any;
-         if (!decoded || !decoded.email) throw new UnauthorizedException('Invalid Google token');
-         ticket = { getPayload: () => decoded };
+        const decoded = jwt.decode(token) as any;
+        if (!decoded || !decoded.email) throw new UnauthorizedException('Invalid Google token');
+        ticket = { getPayload: () => decoded };
       } else {
-         throw new UnauthorizedException('Invalid Google token');
+        throw new UnauthorizedException('Invalid Google token');
       }
     }
 
@@ -136,7 +159,7 @@ export class AuthService {
     }
 
     const email = payload.email.toLowerCase();
-    
+
     let user = await this.userRepo
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.researchInterests', 'interest')
@@ -146,13 +169,13 @@ export class AuthService {
     if (!user) {
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(Math.random().toString(36).slice(-10) + 'A1!', salt);
-      
-      let username = (payload.name ? payload.name.replace(/\s+/g, '').toLowerCase() : email.split('@')[0]);
+
+      let username = payload.name ? payload.name.replace(/\s+/g, '').toLowerCase() : email.split('@')[0];
       let uniqueUsername = username;
       let count = 1;
       while (await this.userRepo.findOne({ where: { username: uniqueUsername } })) {
-         uniqueUsername = `${username}${count}`;
-         count++;
+        uniqueUsername = `${username}${count}`;
+        count++;
       }
 
       const newUser = this.userRepo.create({
@@ -167,12 +190,13 @@ export class AuthService {
       user = await this.userRepo.save(newUser);
     }
 
-    const jwtToken = this.generateToken(user.id);
+    const tokens = this.generateTokenPair(user.id, user.email, user.username);
 
     return {
       success: true,
       message: 'Google login successful!',
-      token: jwtToken,
+      token: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
       user: {
         id: user.id,
         username: user.username,
@@ -181,6 +205,102 @@ export class AuthService {
         institution: user.institution,
         researchInterests: user.researchInterests ? user.researchInterests.map((i) => i.name) : [],
       },
+    };
+  }
+
+  /**
+   * Refreshes access and refresh token pair using rotating token protocol
+   * Invalidates previously used refresh token jti in Redis to prevent replay attacks
+   */
+  async refreshSession(refreshToken: string) {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is required');
+    }
+
+    let decoded: JwtTokenPayload;
+    try {
+      decoded = jwt.verify(refreshToken, this.jwtRefreshSecret) as JwtTokenPayload;
+    } catch (err: any) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    if (decoded.type !== 'refresh' || !decoded.jti) {
+      throw new UnauthorizedException('Invalid token type for refresh session');
+    }
+
+    // Check Redis revocation blacklist
+    const isRevoked = await this.redisService.isBlacklisted(decoded.jti);
+    if (isRevoked) {
+      throw new UnauthorizedException('Refresh token has been revoked or invalidated');
+    }
+
+    // Invalidate old refresh token jti immediately (Zero-Trust Rotation)
+    const nowSec = Math.floor(Date.now() / 1000);
+    const remainingTtl = decoded.exp ? Math.max(decoded.exp - nowSec, 60) : 7 * 24 * 3600;
+    await this.redisService.blacklistJti(decoded.jti, remainingTtl);
+
+    // Fetch user to confirm account active
+    const user = await this.userRepo.findOne({
+      where: { id: decoded.id },
+      relations: { researchInterests: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User associated with session not found');
+    }
+
+    // Issue brand new token pair
+    const newTokens = this.generateTokenPair(user.id, user.email, user.username);
+
+    return {
+      success: true,
+      message: 'Session refreshed successfully with rotating token pair',
+      token: newTokens.accessToken,
+      refreshToken: newTokens.refreshToken,
+      user: {
+        id: user.id,
+        username: user.username,
+        fullName: user.fullName,
+        email: user.email,
+        institution: user.institution,
+        researchInterests: user.researchInterests ? user.researchInterests.map((i) => i.name) : [],
+      },
+    };
+  }
+
+  /**
+   * Logs out user by revoking tokens in Redis blacklist
+   */
+  async logout(refreshToken?: string, accessToken?: string) {
+    if (refreshToken) {
+      try {
+        const decoded = jwt.decode(refreshToken) as JwtTokenPayload;
+        if (decoded?.jti && decoded.exp) {
+          const nowSec = Math.floor(Date.now() / 1000);
+          const remainingTtl = Math.max(decoded.exp - nowSec, 60);
+          await this.redisService.blacklistJti(decoded.jti, remainingTtl);
+        }
+      } catch (err) {
+        // Silently continue
+      }
+    }
+
+    if (accessToken) {
+      try {
+        const decoded = jwt.decode(accessToken) as JwtTokenPayload;
+        if (decoded?.jti && decoded.exp) {
+          const nowSec = Math.floor(Date.now() / 1000);
+          const remainingTtl = Math.max(decoded.exp - nowSec, 60);
+          await this.redisService.blacklistJti(decoded.jti, remainingTtl);
+        }
+      } catch (err) {
+        // Silently continue
+      }
+    }
+
+    return {
+      success: true,
+      message: 'Logged out successfully, security credentials invalidated',
     };
   }
 
@@ -201,8 +321,50 @@ export class AuthService {
     };
   }
 
+  /**
+   * Generates a single legacy token (15m expiry)
+   */
   generateToken(userId: string): string {
-    return jwt.sign({ id: userId }, this.jwtSecret, { expiresIn: '30d' });
+    return this.generateTokenPair(userId).accessToken;
+  }
+
+  /**
+   * Generates short-lived access token (15m) and long-lived refresh token (7d)
+   */
+  generateTokenPair(userId: string, email?: string, username?: string): TokenPair {
+    const accessJti = randomUUID();
+    const refreshJti = randomUUID();
+
+    const accessToken = jwt.sign(
+      {
+        id: userId,
+        email,
+        username,
+        jti: accessJti,
+        type: 'access',
+      },
+      this.jwtSecret,
+      { expiresIn: '15m' },
+    );
+
+    const refreshToken = jwt.sign(
+      {
+        id: userId,
+        email,
+        username,
+        jti: refreshJti,
+        type: 'refresh',
+      },
+      this.jwtRefreshSecret,
+      { expiresIn: '7d' },
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+      accessJti,
+      refreshJti,
+    };
   }
 
   private async resolveInterests(rawList?: string[]): Promise<ResearchInterest[]> {
