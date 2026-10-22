@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # Primary PostgreSQL 16 (Write Master)
+  postgres_primary:
+    image: pgvector/pgvector:pg16
+    container_name: cambium_postgres_primary
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword2026
+      POSTGRES_DB: cambium
+    volumes:
+      - pg_primary_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    networks:
+      - cambium_net
+
+  # Read Replica PostgreSQL 16 (Read-Only Secondary)
+  postgres_replica:
+    image: pgvector/pgvector:pg16
+    container_name: cambium_postgres_replica
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword2026
+      POSTGRES_DB: cambium
+    ports:
+      - '5433:5432'
+    depends_on:
+      - postgres_primary
+    networks:
+      - cambium_net
+
+  # PgBouncer Connection Pooler (Transaction Mode, 5,000+ Concurrency)
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: cambium_pgbouncer
+    ports:
+      - '6432:6432'
+    volumes:
+      - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+      - ./userlist.txt:/etc/pgbouncer/userlist.txt:ro
+    depends_on:
+      - postgres_primary
+    networks:
+      - cambium_net
+
+networks:
+  cambium_net:
+    driver: bridge
+
+volumes:
+  pg_primary_data:

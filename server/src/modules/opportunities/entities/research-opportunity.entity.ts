@@ -73,8 +73,8 @@ export class ResearchOpportunity {
   tags: Tag[];
 
   /**
-   * pgvector column for AI semantic embeddings (1536 dimensions for OpenAI / AI service).
-   * Supports cosine distance (<=>) and L2 distance (<->) queries in PostgreSQL.
+   * pgvector column for AI semantic embeddings (768 dimensions for Google Gemini text-embedding-004).
+   * Supports cosine distance (<=>) and L2 distance (<->) queries in PostgreSQL with HNSW indexing.
    */
   @Column({
     type: 'text',

@@ -19,26 +19,88 @@ import { ResearchOpportunity } from '../modules/opportunities/entities/research-
 import { Tag } from '../modules/opportunities/entities/tag.entity';
 import { Bookmark } from '../modules/bookmarks/entities/bookmark.entity';
 import { Notification } from '../modules/notifications/entities/notification.entity';
+import { OutboxEvent } from '../database/entities/outbox-event.entity';
+import { AuditLog } from '../database/entities/audit-log.entity';
 
 export const getDatabaseConfig = (): TypeOrmModuleOptions => {
   const isProd = process.env.NODE_ENV === 'production';
 
-  const host = process.env.POSTGRES_HOST || 'localhost';
-  const port = parseInt(process.env.POSTGRES_PORT || '5432', 10);
+  const masterHost = process.env.POSTGRES_HOST || 'localhost';
+  const defaultPort = parseInt(process.env.POSTGRES_PORT || '5432', 10);
+  const pgbouncerPort = process.env.POSTGRES_PGBOUNCER_PORT
+    ? parseInt(process.env.POSTGRES_PGBOUNCER_PORT, 10)
+    : undefined;
+  const port = pgbouncerPort || defaultPort;
+
   const username = process.env.POSTGRES_USER || 'postgres';
   const password = process.env.POSTGRES_PASSWORD || 'postgres';
   const database = process.env.POSTGRES_DB || 'cambium';
 
+  // Read Replicas Configuration (High-Throughput Analytics & Query Routing)
+  const replicaHost = process.env.POSTGRES_REPLICA_HOST;
+  const replicaPort = parseInt(process.env.POSTGRES_REPLICA_PORT || String(port), 10);
+
+  const entities = [
+    User,
+    ResearchInterest,
+    ResearchOpportunity,
+    Tag,
+    Bookmark,
+    Notification,
+    OutboxEvent,
+    AuditLog,
+  ];
+
+  // PgBouncer pool sizing (50 clients per pod, sustaining 5,000+ cluster connections)
+  const poolExtra = {
+    max: parseInt(process.env.DB_POOL_MAX || '50', 10),
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  };
+
+  // Master-Replica splitting when replica host is configured
+  if (replicaHost && replicaHost !== masterHost) {
+    return {
+      type: 'postgres',
+      replication: {
+        master: {
+          host: masterHost,
+          port,
+          username,
+          password,
+          database,
+        },
+        slaves: [
+          {
+            host: replicaHost,
+            port: replicaPort,
+            username: process.env.POSTGRES_REPLICA_USER || username,
+            password: process.env.POSTGRES_REPLICA_PASSWORD || password,
+            database,
+          },
+        ],
+      },
+      entities,
+      synchronize: false,
+      logging: !isProd,
+      extra: poolExtra,
+      retryAttempts: 3,
+      retryDelay: 1000,
+    };
+  }
+
+  // Single-node Master default with PgBouncer connection pooling
   return {
     type: 'postgres',
-    host,
+    host: masterHost,
     port,
     username,
     password,
     database,
-    entities: [User, ResearchInterest, ResearchOpportunity, Tag, Bookmark, Notification],
-    synchronize: true, // Auto-sync entities into normalized schema
+    entities,
+    synchronize: true, // Auto-sync in single-node dev
     logging: !isProd,
+    extra: poolExtra,
     retryAttempts: 2,
     retryDelay: 1000,
   };
