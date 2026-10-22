@@ -11,7 +11,8 @@
     "client:build": "npm --prefix client run build",
     "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
     "build": "npm run server:build && npm run client:build",
-    "test": "npm --prefix server run test"
+    "test": "npm --prefix server run test",
+    "test:e2e": "playwright test"
   },
   "keywords": [
     "cambium",
@@ -25,6 +26,7 @@
   "author": "Shaik Mohamed Imthiyas T",
   "license": "ISC",
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "concurrently": "^10.0.5"
   }
 }

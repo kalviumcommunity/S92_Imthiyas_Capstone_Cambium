@@ -102,8 +102,8 @@ graph TD
 - [x] **TASK-M3-01**: Build opportunity discovery engine with multi-faceted filtering (Grants, CFPs, Journals).
   - *Files*: `client/app/(protected)/opportunities/page.tsx`, `server/src/modules/opportunities/*`
   - *PRD*: `FR-OPP-01`, `FR-OPP-03`
-- [x] **TASK-M3-02**: Configure HNSW vector indexing for 1536-dimensional embeddings with cosine similarity distance.
-  - *Files*: `server/src/modules/opportunities/opportunity.entity.ts`
+- [x] **TASK-M3-02**: Configure HNSW vector indexing for 768-dimensional embeddings with cosine similarity distance (Google Gemini text-embedding-004).
+  - *Files*: `server/src/modules/opportunities/entities/research-opportunity.entity.ts`, `server/src/database/schema.sql`
   - *PRD*: `FR-OPP-02`, `NFR-PERF-02`
 - [x] **TASK-M3-03**: Implement interactive 2D Constellation Graph with physics simulation and structural hole detection.
   - *Files*: `client/app/(protected)/graph/page.tsx`, `client/components/intelligence/RelationalKnowledgeNetwork.tsx`
@@ -138,7 +138,7 @@ graph TD
   - *PRD*: `FR-GOV-03`
 
 ### Milestone 6: Verification, Production Build & Hardening
-- [ ] **TASK-M6-01**: Execute full TypeScript build verification across both client and server packages (`tsc` 0 errors).
+- [x] **TASK-M6-01**: Execute full TypeScript build verification across both client and server packages (`tsc` 0 errors, 49/49 routes statically compiled).
 - [ ] **TASK-M6-02**: Run automated accessibility audit with zero WCAG 2.2 Level AA violations.
 - [ ] **TASK-M6-03**: Verify zero orphaned or unreferenced legacy directories (e.g., safe cleanup of `_vite_raw_code`).
 - [ ] **TASK-M6-04**: Complete final end-to-end browser walkthrough on `http://localhost:3000`.

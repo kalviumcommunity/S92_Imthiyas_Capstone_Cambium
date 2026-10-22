@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS research_opportunities (
     description TEXT,
     link VARCHAR(1000),
     created_by_id UUID REFERENCES users(id) ON DELETE SET NULL,
-    embedding vector, -- pgvector for AI semantic search (OpenAI 1536-dim / HuggingFace)
+    embedding vector(768), -- pgvector for AI semantic search (Google Gemini text-embedding-004 768-dim)
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -135,3 +135,20 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 CREATE INDEX IF NOT EXISTS idx_notif_user_unread ON notifications(user_id, is_read);
 CREATE INDEX IF NOT EXISTS idx_notif_created_at ON notifications(created_at DESC);
+
+-- 11. Immutable Cryptographic Audit Logs (SHA-256 Chained Hash Ledger)
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    entity_name VARCHAR(100) NOT NULL,
+    entity_id VARCHAR(100) NOT NULL,
+    action VARCHAR(20) NOT NULL, -- 'CREATE', 'UPDATE', 'DELETE'
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    previous_hash VARCHAR(64) NOT NULL,
+    current_hash VARCHAR(64) NOT NULL, -- H_n = SHA256(H_n-1 || payload || timestamp)
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_logs(entity_name, entity_id);
+CREATE INDEX IF NOT EXISTS idx_audit_created_at ON audit_logs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_hash ON audit_logs(current_hash);
