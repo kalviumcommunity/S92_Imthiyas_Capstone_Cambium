@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="client/public/logo.svg" width="64" height="64" alt="Cambium Research Logo" />
+<img src="client/public_logo/cambium-logo-light.svg" width="64" height="64" alt="Cambium Research Logo" />
 
 # CAMBIUM RESEARCH
 ### The Enterprise Research Operating System
