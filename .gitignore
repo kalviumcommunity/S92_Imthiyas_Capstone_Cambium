@@ -34,3 +34,7 @@ Thumbs.db
 # Test artifacts
 test-results/
 playwright-report/
+
+# Uploaded research artifacts
+server/uploads/artifacts/*
+!server/uploads/artifacts/.gitkeep

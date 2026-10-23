@@ -17,8 +17,11 @@ import { AssistantModule } from './modules/assistant/assistant.module';
 import { EmailModule } from './modules/email/email.module';
 import { QueuesModule } from './common/queues/queues.module';
 import { IngestionModule } from './modules/ingestion/ingestion.module';
+import { UploadModule } from './modules/upload/upload.module';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
+
+import { DatabaseDiagnosticService } from './database/database-diagnostic.service';
 
 @Module({
   imports: [
@@ -39,9 +42,11 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
     AssistantModule,
     EmailModule,
     IngestionModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [
+    DatabaseDiagnosticService,
     {
       provide: APP_INTERCEPTOR,
       useClass: IdempotencyInterceptor,
@@ -51,5 +56,6 @@ import { AuditInterceptor } from './common/interceptors/audit.interceptor';
       useClass: AuditInterceptor,
     },
   ],
+  exports: [DatabaseDiagnosticService],
 })
 export class AppModule {}

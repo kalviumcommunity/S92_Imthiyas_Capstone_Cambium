@@ -1,9 +1,20 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { DatabaseDiagnosticService } from './database/database-diagnostic.service';
+
 @ApiTags('System')
 @Controller()
 export class AppController {
+  constructor(private readonly diagnosticService: DatabaseDiagnosticService) {}
+
+  @Get('api/database/diagnostics')
+  @ApiOperation({ summary: 'Inspect PostgreSQL 16 pgvector HNSW health, PgBouncer pool stats, and table metrics' })
+  @ApiResponse({ status: 200, description: 'Structured database diagnostic telemetry' })
+  async getDatabaseDiagnostics() {
+    return this.diagnosticService.getDiagnosticReport();
+  }
+
   @Get()
   @ApiOperation({ summary: 'Cambium API Health and System Info' })
   @ApiResponse({ status: 200, description: 'API health check and directory of endpoints' })
