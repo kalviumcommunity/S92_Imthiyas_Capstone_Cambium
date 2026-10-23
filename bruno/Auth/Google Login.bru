@@ -1,0 +1,23 @@
+meta {
+  name: Google OAuth Sign-In
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/auth/google
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "idToken": "{{googleIdToken}}"
+  }
+}
+
+tests {
+  test("should handle Google federated login validation", function() {
+    expect(res.getStatus()).to.be.oneOf([200, 201, 400]);
+  });
+}

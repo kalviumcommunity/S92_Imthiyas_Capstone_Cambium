@@ -6,10 +6,12 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
+import { SamlModule } from './saml/saml.module';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([User, ResearchInterest])],
+  imports: [TypeOrmModule.forFeature([User, ResearchInterest]), SamlModule],
   controllers: [AuthController],
   providers: [AuthService, JwtAuthGuard],
-  exports: [AuthService, JwtAuthGuard],
+  exports: [AuthService, JwtAuthGuard, SamlModule],
 })
 export class AuthModule {}
