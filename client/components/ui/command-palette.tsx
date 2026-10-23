@@ -363,6 +363,33 @@ const ITEMS: PaletteItem[] = [
     badge: "ACTION",
     keywords: ["uptime", "health", "telemetry", "status"],
   },
+  {
+    id: "act-4",
+    category: "actions",
+    title: "Institutional SAML 2.0 Single Sign-On",
+    subtitle: "Authenticate via university identity provider (InCommon / eduGAIN)",
+    href: "/institution-sso",
+    badge: "SSO",
+    keywords: ["saml", "sso", "shibboleth", "incommon", "edugain", "university"],
+  },
+  {
+    id: "act-5",
+    category: "actions",
+    title: "Cryptographic SHA-256 Audit Ledger",
+    subtitle: "Inspect immutable chained grant governance receipts",
+    href: "/audit",
+    badge: "LEDGER",
+    keywords: ["audit", "sha256", "cryptographic", "governance", "ledger"],
+  },
+  {
+    id: "act-6",
+    category: "actions",
+    title: "Upload Research Proposal Artifact",
+    subtitle: "Upload PDF or BibTeX proposal files to secure workspace",
+    href: "/workspace/upload",
+    badge: "UPLOAD",
+    keywords: ["upload", "pdf", "file", "artifact", "proposal"],
+  },
 ];
 
 export function CommandPalette() {
@@ -370,6 +397,7 @@ export function CommandPalette() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<PaletteCategory>("all");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [liveAnnouncement, setLiveAnnouncement] = useState<string>("");
   const [recentSearches, setRecentSearches] = useState<string[]>([
     "Attention Is All You Need",
     "Horizon Europe Quantum",
@@ -421,6 +449,7 @@ export function CommandPalette() {
         inputRef.current?.focus();
       }, 50);
       setSelectedIndex(0);
+      setLiveAnnouncement("Command Palette opened. Type to search or press escape to close.");
     } else {
       setQuery("");
       setActiveCategory("all");
@@ -441,6 +470,23 @@ export function CommandPalette() {
 
     return matchesCategory && (inTitle || inSubtitle || inKeywords);
   });
+
+  // Announce search result count to screen readers
+  useEffect(() => {
+    if (isOpen) {
+      setLiveAnnouncement(
+        `Found ${filteredItems.length} items. Use up and down arrow keys to navigate.`
+      );
+    }
+  }, [filteredItems.length, isOpen]);
+
+  // Announce currently selected item when navigating with arrow keys
+  useEffect(() => {
+    if (isOpen && filteredItems[selectedIndex]) {
+      const cur = filteredItems[selectedIndex];
+      setLiveAnnouncement(`${cur.title}, ${cur.subtitle}. Category ${cur.category}. Press enter to select.`);
+    }
+  }, [selectedIndex, isOpen]);
 
   // Keep selected index in bounds
   useEffect(() => {
@@ -538,16 +584,28 @@ export function CommandPalette() {
       onClick={() => setIsOpen(false)}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Command Palette"
         className="w-full max-w-2xl bg-[#FAF7F0] border border-[#E4DCCB] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[82vh] animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
+        {/* ARIA Live Region for Blind Scholars & Screen Readers */}
+        <div aria-live="polite" aria-atomic="true" role="status" className="sr-only">
+          {liveAnnouncement}
+        </div>
+
         {/* Top Input Bar */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-[#E4DCCB] bg-white">
           <Search size={18} className="text-[#3E6248] shrink-0" />
           <input
             ref={inputRef}
             type="text"
+            role="combobox"
+            aria-expanded={isOpen}
+            aria-autocomplete="list"
+            aria-controls="command-palette-results"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);

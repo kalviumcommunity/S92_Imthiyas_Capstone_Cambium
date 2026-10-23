@@ -178,6 +178,53 @@ export default function SemanticGraphPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isPhysicsRunning, setIsPhysicsRunning] = useState<boolean>(true);
+  const [canvasAnnouncement, setCanvasAnnouncement] = useState<string>("");
+
+  // Accessible Keyboard Navigation & Canvas Traversal Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if user is typing in a search bar or text input
+      if (
+        document.activeElement?.tagName === "INPUT" ||
+        document.activeElement?.tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+
+      if (e.key === "+" || e.key === "=" || e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        setZoomLevel((z) => {
+          const next = Math.min(2.5, +(z + 0.2).toFixed(2));
+          setCanvasAnnouncement(`Canvas zoom increased to ${Math.round(next * 100)} percent`);
+          return next;
+        });
+      } else if (e.key === "-" || e.key === "_" || e.key.toLowerCase() === "x") {
+        e.preventDefault();
+        setZoomLevel((z) => {
+          const next = Math.max(0.5, +(z - 0.2).toFixed(2));
+          setCanvasAnnouncement(`Canvas zoom decreased to ${Math.round(next * 100)} percent`);
+          return next;
+        });
+      } else if (e.key.toLowerCase() === "r") {
+        e.preventDefault();
+        setZoomLevel(1);
+        setIsPhysicsRunning(true);
+        setCanvasAnnouncement("Canvas zoom and force physics simulation reset to 100 percent.");
+      } else if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        const currentIndex = nodes.findIndex((n) => n.id === selectedNode?.id);
+        const nextIndex = (currentIndex + 1) % nodes.length;
+        const nextNode = nodes[nextIndex];
+        setSelectedNode(nextNode);
+        setCanvasAnnouncement(
+          `Selected node ${nextIndex + 1} of ${nodes.length}: ${nextNode.title}, Category ${nextNode.category}, ${nextNode.citations} citations.`
+        );
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [nodes, selectedNode]);
 
   // Category palette
   const getCategoryColor = (cat: GraphNode["category"]) => {
@@ -519,6 +566,21 @@ export default function SemanticGraphPage() {
             <Sparkles size={13} />
             Synthesize Graph
           </Link>
+
+          {/* Accessible Keyboard Traversal Badge */}
+          <div className="hidden xl:flex items-center gap-1.5 text-[11px] font-mono text-[#62685E] bg-[#FAF7F0] px-2.5 py-1.5 rounded-lg border border-[#E4DCCB]">
+            <span className="font-semibold text-[#202920]">Keys:</span>
+            <span>[+][-] Zoom</span>
+            <span>·</span>
+            <span>[R] Reset</span>
+            <span>·</span>
+            <span>[Space] Cycle Node</span>
+          </div>
+        </div>
+
+        {/* ARIA Live Region for Screen Readers */}
+        <div aria-live="polite" role="status" className="sr-only">
+          {canvasAnnouncement}
         </div>
       </div>
 
