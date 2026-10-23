@@ -1,0 +1,20 @@
+meta {
+  name: Enterprise Health Probe
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/health
+  body: none
+  auth: none
+}
+
+tests {
+  test("should return 200 and operational status", function() {
+    expect(res.getStatus()).to.equal(200);
+    const body = res.getBody();
+    expect(body.status).to.equal('ok');
+    expect(body.timestamp).to.be.a('string');
+  });
+}

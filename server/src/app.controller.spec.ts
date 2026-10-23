@@ -2,7 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { AppController } from './app.controller';
 
 describe('AppController', () => {
-  const controller = new AppController();
+  const mockDiagnosticService: any = {
+    getDiagnosticReport: async () => ({
+      engine: 'PostgreSQL 16 Enterprise Relational + pgvector HNSW Engine',
+      postgresVersion: 'PostgreSQL 16.2',
+      vectorEngine: { hnswDimensions: 768, status: 'OPTIMAL' },
+    }),
+  };
+
+  const controller = new AppController(mockDiagnosticService);
 
   it('should return active platform status with PostgreSQL metadata', () => {
     const result = controller.getHealth();
@@ -14,5 +22,11 @@ describe('AppController', () => {
     expect(result.documentation).toBe('/api/docs');
     expect(result.endpoints).toBeDefined();
     expect(result.endpoints.opportunities.base).toBe('GET /api/research-opportunities');
+  });
+
+  it('should return database diagnostic report', async () => {
+    const report = await controller.getDatabaseDiagnostics();
+    expect(report).toBeDefined();
+    expect(report.engine).toContain('PostgreSQL 16');
   });
 });
