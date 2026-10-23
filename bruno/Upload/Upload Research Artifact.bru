@@ -1,0 +1,28 @@
+meta {
+  name: Upload Research Artifact (Multipart)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/upload
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:multipart-form {
+  file: @file(./sample_grant_proposal.pdf)
+}
+
+tests {
+  test("should accept valid research artifact upload", function() {
+    expect(res.getStatus()).to.be.oneOf([200, 201]);
+    const body = res.getBody();
+    expect(body.id).to.be.a('string');
+    expect(body.sha256Hash).to.have.length(64);
+  });
+}

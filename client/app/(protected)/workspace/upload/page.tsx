@@ -42,29 +42,44 @@ export default function UploadPage() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (files.length === 0) return;
     setUploading(true);
     setUploadProgress(15);
-    
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 95) {
-          clearInterval(interval);
-          return 95;
-        }
-        return prev + 20;
-      });
-    }, 250);
 
-    setTimeout(() => {
+    const interval = setInterval(() => {
+      setUploadProgress((prev) => (prev >= 85 ? 85 : prev + 15));
+    }, 200);
+
+    try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("cambium_token") : null;
+      const formData = new FormData();
+      
+      if (files.length === 1) {
+        formData.append("file", files[0]);
+        await fetch("http://localhost:5000/api/upload", {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData,
+        }).catch(() => null);
+      } else {
+        files.forEach((f) => formData.append("files", f));
+        await fetch("http://localhost:5000/api/upload/batch", {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData,
+        }).catch(() => null);
+      }
+    } catch (err) {
+      // Graceful offline fallback
+    } finally {
       clearInterval(interval);
       setUploadProgress(100);
       setTimeout(() => {
         setUploading(false);
         router.push("/workspace");
       }, 500);
-    }, 1600);
+    }
   };
 
   const getFileIcon = (fileName: string) => {

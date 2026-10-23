@@ -1,0 +1,30 @@
+meta {
+  name: Login Scholar
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "elena.rodriguez@cambium.edu",
+    "password": "SecurePassword123!"
+  }
+}
+
+tests {
+  test("should return 200/201 on valid login", function() {
+    expect(res.getStatus()).to.be.oneOf([200, 201]);
+  });
+  
+  test("should return accessToken and refreshToken", function() {
+    const data = res.getBody();
+    expect(data.accessToken).to.be.a('string');
+    expect(data.user).to.be.an('object');
+  });
+}

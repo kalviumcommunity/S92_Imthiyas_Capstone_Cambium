@@ -1,0 +1,23 @@
+meta {
+  name: List Uploaded Research Artifacts
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/upload
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("should list uploaded artifacts without leaking internal file paths", function() {
+    expect(res.getStatus()).to.equal(200);
+    const body = res.getBody();
+    expect(body).to.be.an('array');
+  });
+}

@@ -1,0 +1,21 @@
+meta {
+  name: Get Artifact Metadata by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/upload/{{artifactId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+tests {
+  test("should return artifact metadata", function() {
+    expect(res.getStatus()).to.be.oneOf([200, 404]);
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Refresh Access Token
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/auth/refresh
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "refreshToken": "{{refreshToken}}"
+  }
+}
+
+tests {
+  test("should rotate and return refreshed tokens", function() {
+    expect(res.getStatus()).to.be.oneOf([200, 201]);
+    const data = res.getBody();
+    expect(data.accessToken).to.be.a('string');
+  });
+}
