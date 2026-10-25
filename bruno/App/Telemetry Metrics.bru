@@ -1,0 +1,17 @@
+meta {
+  name: Telemetry Metrics
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/telemetry/metrics
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.uptimeSeconds: isNumber
+  res.body.p95LatencyMs: isNumber
+}

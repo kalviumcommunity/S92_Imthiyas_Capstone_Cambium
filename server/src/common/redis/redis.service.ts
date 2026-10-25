@@ -275,4 +275,39 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     const status = await this.get(key);
     return status === 'revoked';
   }
+
+  /**
+   * Health & Diagnostic Telemetry for Redis Cluster / In-Memory Store
+   */
+  async getHealthInfo(): Promise<{
+    status: 'CONNECTED' | 'IN_MEMORY_FALLBACK';
+    mode: 'DISTRIBUTED_REDIS' | 'RESILIENT_MEMORY';
+    pingMs: number;
+    memoryCacheEntries: number;
+    rateLimitEntries: number;
+  }> {
+    if (this.isConnected && this.client) {
+      const start = Date.now();
+      try {
+        await this.client.ping();
+        return {
+          status: 'CONNECTED',
+          mode: 'DISTRIBUTED_REDIS',
+          pingMs: Date.now() - start,
+          memoryCacheEntries: this.memoryCache.size,
+          rateLimitEntries: this.rateLimitStore.size,
+        };
+      } catch (err) {
+        this.logger.warn(`Redis ping check failed: ${err}`);
+      }
+    }
+
+    return {
+      status: 'IN_MEMORY_FALLBACK',
+      mode: 'RESILIENT_MEMORY',
+      pingMs: 0,
+      memoryCacheEntries: this.memoryCache.size,
+      rateLimitEntries: this.rateLimitStore.size,
+    };
+  }
 }
