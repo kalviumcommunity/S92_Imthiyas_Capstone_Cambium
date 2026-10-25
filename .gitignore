@@ -1,44 +1,66 @@
+# ==============================================================================
+# CAMBIUM ENTERPRISE RESEARCH OS — MASTER GITIGNORE
+# ==============================================================================
+
 # Dependencies
 node_modules/
 */node_modules/
+**/node_modules/
 
-# Production Builds & Compilations
+# Production Builds & Compilation Caches
 dist/
 */dist/
+**/dist/
 .next/
-client/.next/
 */.next/
+**/.next/
 out/
 */out/
+**/out/
+*.tsbuildinfo
+**/*.tsbuildinfo
+.turbo/
+.swc/
 
-# Environment variables & secrets
+# Environment Variables & Secrets
 .env
 */.env
+**/.env
 .env*.local
+*/.env*.local
+**/.env*.local
 !.env.example
 !server/.env.example
+!client/.env.example
 
-# Logs
+# Logs & Diagnostics
 *.log
 logs/
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
-# OS & IDE
+# Operating System & IDE Configurations
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Test artifacts
+# Automated Test & Quality Gate Artifacts
 test-results/
 playwright-report/
+coverage/
+.nyc_output/
 
-# Uploaded research artifacts
+# Research Artifact File Storage & Backups
 server/uploads/artifacts/*
 !server/uploads/artifacts/.gitkeep
-
-# Database backups & snapshots
 backups/*
 !backups/.gitkeep
+
+# Legacy Design Sandboxes & Prototype Spikes
+_vite_raw_code/
+*.backup.*
+*.bak

@@ -1,18 +1,21 @@
 {
   "name": "cambium-monorepo",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Cambium — AI-Powered Research Opportunity Discovery & Intelligence Platform",
   "scripts": {
     "server:dev": "npm --prefix server run dev",
     "server:build": "npm --prefix server run build",
     "server:start": "npm --prefix server run start",
     "init:db": "npm --prefix server run init:db",
+    "seed": "npm --prefix server run seed",
     "client:dev": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
     "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
     "build": "npm run server:build && npm run client:build",
     "test": "npm --prefix server run test",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "docker:up": "docker-compose up -d --build",
+    "docker:down": "docker-compose down"
   },
   "keywords": [
     "cambium",
