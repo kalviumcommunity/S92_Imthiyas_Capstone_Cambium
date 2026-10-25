@@ -451,6 +451,8 @@ export default function AgenticReaderPage() {
               <button
                 type="submit"
                 disabled={!inputQuery.trim()}
+                aria-label="Send query to research auditor"
+                title="Send query"
                 className="absolute right-2.5 bottom-2.5 p-2 rounded-lg bg-[#3E6248] hover:bg-[#173F35] disabled:bg-[#E4DCCB] text-white disabled:text-[#62685E] transition-colors cursor-pointer"
               >
                 <Send size={14} />

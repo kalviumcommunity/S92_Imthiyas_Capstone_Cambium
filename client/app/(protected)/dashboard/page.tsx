@@ -318,6 +318,8 @@ function FeedItemCard({ initials, badgeLabel, author, role, date, title, body, l
         <div className="flex items-center gap-5 pt-1">
           <button
             onClick={() => setLiked(!liked)}
+            aria-label={liked ? "Unlike research update" : "Like research update"}
+            title={liked ? "Unlike" : "Like"}
             className={`flex items-center gap-1.5 text-xs transition-colors cursor-pointer border-0 bg-transparent ${
               liked ? "text-[#B33D35] font-medium" : "text-[#62685E] hover:text-[#202920]"
             }`}
@@ -325,16 +327,26 @@ function FeedItemCard({ initials, badgeLabel, author, role, date, title, body, l
             <Heart size={15} fill={liked ? "currentColor" : "none"} strokeWidth={1.5} />
             {likes + (liked ? 1 : 0)}
           </button>
-          <button className="flex items-center gap-1.5 text-xs text-[#62685E] hover:text-[#202920] transition-colors cursor-pointer border-0 bg-transparent">
+          <button
+            aria-label="View scholar comments"
+            title="Comments"
+            className="flex items-center gap-1.5 text-xs text-[#62685E] hover:text-[#202920] transition-colors cursor-pointer border-0 bg-transparent"
+          >
             <MessageCircle size={15} strokeWidth={1.5} />
             {comments}
           </button>
-          <button className="flex items-center gap-1.5 text-xs text-[#62685E] hover:text-[#202920] transition-colors cursor-pointer border-0 bg-transparent">
+          <button
+            aria-label="Repost research update"
+            title="Repost"
+            className="flex items-center gap-1.5 text-xs text-[#62685E] hover:text-[#202920] transition-colors cursor-pointer border-0 bg-transparent"
+          >
             <Repeat2 size={15} strokeWidth={1.5} />
             {reposts}
           </button>
           <button
             onClick={() => setSaved(!saved)}
+            aria-label={saved ? "Remove from saved updates" : "Save research update"}
+            title={saved ? "Saved" : "Save"}
             className={`flex items-center gap-1.5 text-xs ml-auto transition-colors cursor-pointer border-0 bg-transparent ${
               saved ? "text-[#3E6248] font-medium" : "text-[#62685E] hover:text-[#202920]"
             }`}
