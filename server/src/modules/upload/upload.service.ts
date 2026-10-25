@@ -76,8 +76,12 @@ export class UploadService {
     // Strip null bytes and control characters
     let clean = rawFilename.replace(/[\x00-\x1f\x80-\x9f]/g, '');
 
+    // Normalize all Windows backslashes to forward slashes for cross-platform POSIX compatibility
+    clean = clean.replace(/\\/g, '/');
+
     // Extract basename only, completely eliminating any directory traversal (../ or ..\)
-    clean = path.basename(clean);
+    clean = path.posix.basename(clean);
+    clean = path.win32.basename(clean);
 
     // Replace risky characters with underscores, keeping alphanumeric, periods, dashes, underscores
     clean = clean.replace(/[^a-zA-Z0-9._-]/g, '_');
