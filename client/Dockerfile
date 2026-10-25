@@ -13,7 +13,7 @@ COPY package*.json ./
 RUN npm ci
 
 # Copy client source code and assets
-COPY tsconfig.json next.config.ts tailwind.config.ts postcss.config.mjs ./
+COPY tsconfig.json next.config.ts tailwind.config.ts postcss.config.* ./
 COPY app ./app
 COPY components ./components
 COPY lib ./lib
