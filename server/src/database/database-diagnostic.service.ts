@@ -1,5 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import { RedisService } from '../common/redis/redis.service';
+import { TelemetryService, TelemetryMetrics } from '../common/telemetry/telemetry.service';
 
 export interface DatabaseDiagnosticReport {
   engine: string;
@@ -25,6 +27,14 @@ export interface DatabaseDiagnosticReport {
     languageConfig: 'english';
     status: 'ACTIVE';
   };
+  cacheEngine: {
+    status: 'CONNECTED' | 'IN_MEMORY_FALLBACK';
+    mode: 'DISTRIBUTED_REDIS' | 'RESILIENT_MEMORY';
+    pingMs: number;
+    memoryCacheEntries: number;
+    rateLimitEntries: number;
+  };
+  telemetry: TelemetryMetrics;
   tableCardinality: {
     users: number;
     opportunities: number;
@@ -39,11 +49,15 @@ export interface DatabaseDiagnosticReport {
 export class DatabaseDiagnosticService {
   private readonly logger = new Logger(DatabaseDiagnosticService.name);
 
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    @Optional() private readonly redisService?: RedisService,
+    @Optional() private readonly telemetryService?: TelemetryService,
+  ) {}
 
   /**
    * Safe, non-destructive diagnostic report on PostgreSQL 16 + pgvector health,
-   * connection pooling metrics, and table cardinalities.
+   * connection pooling metrics, Redis cluster state, and OpenTelemetry latency percentiles.
    */
   async getDiagnosticReport(): Promise<DatabaseDiagnosticReport> {
     const isConnected = this.dataSource.isInitialized;
@@ -79,6 +93,39 @@ export class DatabaseDiagnosticService {
       }
     }
 
+    // Query Redis health
+    let cacheEngine: DatabaseDiagnosticReport['cacheEngine'] = {
+      status: 'IN_MEMORY_FALLBACK',
+      mode: 'RESILIENT_MEMORY',
+      pingMs: 0,
+      memoryCacheEntries: 0,
+      rateLimitEntries: 0,
+    };
+
+    if (this.redisService) {
+      try {
+        cacheEngine = await this.redisService.getHealthInfo();
+      } catch (err: any) {
+        this.logger.warn(`Redis health telemetry error: ${err.message}`);
+      }
+    }
+
+    // Query OpenTelemetry metrics
+    const telemetry: TelemetryMetrics = this.telemetryService
+      ? this.telemetryService.getMetrics()
+      : {
+          totalRequests: 0,
+          totalErrors: 0,
+          errorRatePercent: 0,
+          p50LatencyMs: 0,
+          p90LatencyMs: 0,
+          p95LatencyMs: 0,
+          p99LatencyMs: 0,
+          activeSpansCount: 0,
+          recordedTracesCount: 0,
+          uptimeSeconds: Math.floor(process.uptime()),
+        };
+
     return {
       engine: 'PostgreSQL 16 Enterprise Relational + pgvector HNSW Engine',
       postgresVersion: pgVersion,
@@ -103,6 +150,8 @@ export class DatabaseDiagnosticService {
         languageConfig: 'english',
         status: 'ACTIVE',
       },
+      cacheEngine,
+      telemetry,
       tableCardinality: {
         users: 1420,
         opportunities: 580,
