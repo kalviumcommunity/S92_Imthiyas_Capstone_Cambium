@@ -38,3 +38,7 @@ playwright-report/
 # Uploaded research artifacts
 server/uploads/artifacts/*
 !server/uploads/artifacts/.gitkeep
+
+# Database backups & snapshots
+backups/*
+!backups/.gitkeep
