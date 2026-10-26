@@ -13,6 +13,7 @@
     "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
     "build": "npm run server:build && npm run client:build",
     "test": "npm --prefix server run test",
+    "test:jest": "jest --runInBand",
     "test:e2e": "playwright test",
     "docker:up": "docker-compose up -d --build",
     "docker:down": "docker-compose down"
@@ -31,6 +32,9 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.64.1",
-    "concurrently": "^10.0.5"
+    "@types/jest": "^30.0.0",
+    "concurrently": "^10.0.5",
+    "jest": "^30.5.2",
+    "ts-jest": "^29.4.15"
   }
 }
