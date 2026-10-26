@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { getDatabaseConfig } from '../../config/database.config';
-import { User } from '../../modules/users/entities/user.entity';
+import { User, UserRole } from '../../modules/users/entities/user.entity';
 import {
   ResearchOpportunity,
   OpportunityType,
@@ -13,29 +13,68 @@ import * as bcrypt from 'bcryptjs';
 const embeddingService = new GeminiEmbeddingService();
 
 const SCHOLAR_PROFILES = [
+  // 1. Author & Lead Architect
   {
     username: 'imthiyas',
     email: 'imthiyas@cambium.research',
     fullName: 'Shaik Mohamed Imthiyas T',
     institution: 'Cambium Advanced Research Institute',
+    role: UserRole.PI,
   },
+  // 2. Evaluator Persona 1: Principal Investigator (PI)
+  {
+    username: 'aris.thorne',
+    email: 'pi@cambium.research',
+    fullName: 'Prof. Aris Thorne',
+    institution: 'Institute for Advanced Computational Discovery',
+    role: UserRole.PI,
+  },
+  // 3. Evaluator Persona 2: Research Scholar (Researcher)
+  {
+    username: 'elena.rodriguez',
+    email: 'researcher@cambium.research',
+    fullName: 'Dr. Elena Rodriguez',
+    institution: 'Stanford Center for Biomedical Informatics',
+    role: UserRole.RESEARCHER,
+  },
+  // 4. Evaluator Persona 3: Postdoctoral Fellow (Fellow)
+  {
+    username: 'marcus.vance',
+    email: 'fellow@cambium.research',
+    fullName: 'Dr. Marcus Vance',
+    institution: 'Johns Hopkins School of Medicine',
+    role: UserRole.FELLOW,
+  },
+  // 5. Evaluator Persona 4: Compliance Officer (ComplianceOfficer)
+  {
+    username: 'sarah.jenkins',
+    email: 'compliance@cambium.research',
+    fullName: 'Sarah Jenkins, J.D.',
+    institution: 'Institutional Review Board & Ethics Directorate',
+    role: UserRole.COMPLIANCE_OFFICER,
+  },
+  // 6. Evaluator Persona 5: External Reviewer (ExternalReviewer)
+  {
+    username: 'torsten.lindqvist',
+    email: 'reviewer@cambium.research',
+    fullName: 'Dr. Torsten Lindqvist',
+    institution: 'Karolinska Institutet / European Review Panel',
+    role: UserRole.EXTERNAL_REVIEWER,
+  },
+  // 7. Additional Domain Scholars
   {
     username: 'elena.rostova',
     email: 'e.rostova@quantum.ox.ac.uk',
     fullName: 'Dr. Elena Rostova',
     institution: 'University of Oxford',
-  },
-  {
-    username: 'marcus.vance',
-    email: 'mvance@jhmi.edu',
-    fullName: 'Dr. Marcus Vance',
-    institution: 'Johns Hopkins School of Medicine',
+    role: UserRole.RESEARCHER,
   },
   {
     username: 'aisha.patel',
     email: 'a.patel@imperial.ac.uk',
     fullName: 'Dr. Aisha Patel',
     institution: 'Imperial College London',
+    role: UserRole.RESEARCHER,
   },
 ];
 
@@ -174,9 +213,17 @@ async function seedDatabase() {
         passwordHash,
         fullName: profile.fullName,
         institution: profile.institution,
+        role: profile.role,
       });
       user = await userRepo.save(user);
-      console.log(`👤 Created scholar profile: ${profile.fullName} (${profile.email})`);
+      console.log(`👤 Created scholar profile: ${profile.fullName} (${profile.email}) [Role: ${profile.role}]`);
+    } else {
+      user.role = profile.role;
+      user.passwordHash = passwordHash;
+      user.fullName = profile.fullName;
+      user.institution = profile.institution;
+      await userRepo.save(user);
+      console.log(`🔄 Synchronized scholar profile: ${profile.fullName} (${profile.email}) [Role: ${profile.role}]`);
     }
     seededUsers.push(user);
   }

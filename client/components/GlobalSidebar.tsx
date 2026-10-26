@@ -122,12 +122,13 @@ export default function GlobalSidebar() {
   } else {
     displayName = displayName.replace(/\s*\([^)]*\)/g, "").trim() || "Imthiyas";
   }
-  const displaySubtitle =
-    user?.institution && !/maya|chen/i.test(user.institution)
-      ? user.institution
-      : user?.email && !/maya|chen/i.test(user.email)
-      ? user.email
-      : "MIT CSAIL · Postdoc";
+  const displaySubtitle = user?.role
+    ? `${user.role} · ${user.institution || "Cambium Research"}`
+    : user?.institution && !/maya|chen/i.test(user.institution)
+    ? user.institution
+    : user?.email && !/maya|chen/i.test(user.email)
+    ? user.email
+    : "MIT CSAIL · Postdoc";
   const initials = displayName
     .split(" ")
     .map((n) => n[0])

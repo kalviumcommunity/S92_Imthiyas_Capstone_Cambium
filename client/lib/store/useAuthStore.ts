@@ -6,6 +6,7 @@ export interface UserProfile {
   email: string;
   fullName: string;
   name?: string;
+  role?: string;
   institution?: string;
   researchInterests?: Array<{ id: string; name: string; slug: string }> | string[];
   interests?: string[];
