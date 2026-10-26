@@ -14,6 +14,14 @@ import { ResearchOpportunity } from '../../opportunities/entities/research-oppor
 import { Bookmark } from '../../bookmarks/entities/bookmark.entity';
 import { Notification } from '../../notifications/entities/notification.entity';
 
+export enum UserRole {
+  PI = 'PI',
+  RESEARCHER = 'Researcher',
+  FELLOW = 'Fellow',
+  COMPLIANCE_OFFICER = 'ComplianceOfficer',
+  EXTERNAL_REVIEWER = 'ExternalReviewer',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -32,6 +40,13 @@ export class User {
 
   @Column({ name: 'full_name', type: 'varchar', length: 100 })
   fullName: string;
+
+  @Column({
+    type: 'varchar',
+    length: 50,
+    default: UserRole.RESEARCHER,
+  })
+  role: UserRole;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   institution?: string;

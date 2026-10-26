@@ -26,6 +26,7 @@ export interface JwtTokenPayload {
   id: string;
   email?: string;
   username?: string;
+  role?: string;
   jti: string;
   type: 'access' | 'refresh';
   iat?: number;
@@ -76,7 +77,7 @@ export class AuthService {
     });
 
     const saved = await this.userRepo.save(user);
-    const tokens = this.generateTokenPair(saved.id, saved.email, saved.username);
+    const tokens = this.generateTokenPair(saved.id, saved.email, saved.username, saved.role);
 
     return {
       success: true,
@@ -88,6 +89,7 @@ export class AuthService {
         username: saved.username,
         fullName: saved.fullName,
         email: saved.email,
+        role: saved.role,
         institution: saved.institution,
         researchInterests: saved.researchInterests.map((i) => i.name),
         createdAt: saved.createdAt,
@@ -118,7 +120,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials: Password incorrect');
     }
 
-    const tokens = this.generateTokenPair(user.id, user.email, user.username);
+    const tokens = this.generateTokenPair(user.id, user.email, user.username, user.role);
 
     return {
       success: true,
@@ -130,6 +132,7 @@ export class AuthService {
         username: user.username,
         fullName: user.fullName,
         email: user.email,
+        role: user.role,
         institution: user.institution,
         researchInterests: user.researchInterests ? user.researchInterests.map((i) => i.name) : [],
       },
@@ -190,7 +193,7 @@ export class AuthService {
       user = await this.userRepo.save(newUser);
     }
 
-    const tokens = this.generateTokenPair(user.id, user.email, user.username);
+    const tokens = this.generateTokenPair(user.id, user.email, user.username, user.role);
 
     return {
       success: true,
@@ -202,6 +205,7 @@ export class AuthService {
         username: user.username,
         fullName: user.fullName,
         email: user.email,
+        role: user.role,
         institution: user.institution,
         researchInterests: user.researchInterests ? user.researchInterests.map((i) => i.name) : [],
       },
@@ -250,7 +254,7 @@ export class AuthService {
     }
 
     // Issue brand new token pair
-    const newTokens = this.generateTokenPair(user.id, user.email, user.username);
+    const newTokens = this.generateTokenPair(user.id, user.email, user.username, user.role);
 
     return {
       success: true,
@@ -262,6 +266,7 @@ export class AuthService {
         username: user.username,
         fullName: user.fullName,
         email: user.email,
+        role: user.role,
         institution: user.institution,
         researchInterests: user.researchInterests ? user.researchInterests.map((i) => i.name) : [],
       },
@@ -331,7 +336,7 @@ export class AuthService {
   /**
    * Generates short-lived access token (15m) and long-lived refresh token (7d)
    */
-  generateTokenPair(userId: string, email?: string, username?: string): TokenPair {
+  generateTokenPair(userId: string, email?: string, username?: string, role?: string): TokenPair {
     const accessJti = randomUUID();
     const refreshJti = randomUUID();
 
@@ -340,6 +345,7 @@ export class AuthService {
         id: userId,
         email,
         username,
+        role,
         jti: accessJti,
         type: 'access',
       },
@@ -352,6 +358,7 @@ export class AuthService {
         id: userId,
         email,
         username,
+        role,
         jti: refreshJti,
         type: 'refresh',
       },
