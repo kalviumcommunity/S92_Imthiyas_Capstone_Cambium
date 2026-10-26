@@ -1,0 +1,55 @@
+# ==============================================================================
+# CAMBIUM MONOREPO — MASTER DOCKERIGNORE
+# ==============================================================================
+
+# Dependencies
+node_modules
+*/node_modules
+**/node_modules
+
+# Production Build Caches
+.next
+*/.next
+dist
+*/dist
+out
+*/out
+*.tsbuildinfo
+**/*.tsbuildinfo
+.turbo
+.swc
+
+# Version Control & IDE
+.git
+.github
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Secrets & Environment Files
+.env
+*/.env
+.env*.local
+*/.env*.local
+!.env.example
+!server/.env.example
+!client/.env.example
+
+# Test Artifacts & Logs
+*.log
+logs
+test-results
+playwright-report
+coverage
+
+# Database Dumps & Backups
+backups/*
+!backups/.gitkeep
+
+# Research Uploads
+server/uploads/artifacts/*
+!server/uploads/artifacts/.gitkeep
+
+# Legacy Prototyping Sandbox
+_vite_raw_code
