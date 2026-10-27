@@ -19,12 +19,30 @@ import {
   FileText,
   Sparkles,
   Zap,
+  UploadCloud,
 } from "lucide-react";
+import { uploadArtifact } from "@/lib/api";
 
 export default function ComplianceWorkspacePage() {
   const [activeTab, setActiveTab] = useState<"protocols" | "icf-diff" | "reliance">("protocols");
   const { protocols, updateProtocolStatus, isUpdating } = useOptimisticCompliance();
   const [selectedProtocol, setSelectedProtocol] = useState<ProtocolEntity>(protocols[0] || {} as any);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedProtocolNames, setUploadedProtocolNames] = useState<string[]>([]);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleProtocolUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const art = await uploadArtifact(file);
+      setUploadedProtocolNames((prev) => [art.originalName, ...prev]);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   return (
     <div className="flex-1 min-w-0 h-screen overflow-y-auto bg-[#FAF7F0] text-[#202920] font-sans p-6 sm:p-10 selection:bg-[#3E6248]/20 selection:text-[#173F35]">
@@ -47,6 +65,21 @@ export default function ComplianceWorkspacePage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx"
+              className="hidden"
+              onChange={handleProtocolUpload}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="px-4 py-2.5 rounded-full bg-[#FAF7F0] hover:bg-[#E4DCCB] border border-[#E4DCCB] text-[#3E6248] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <UploadCloud size={13} />
+              <span>{isUploading ? "Ingesting..." : "Upload Protocol PDF"}</span>
+            </button>
             <button className="px-4 py-2.5 rounded-full bg-[#FAF7F0] hover:bg-[#E4DCCB] border border-[#E4DCCB] text-[#202920] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center gap-1.5 cursor-pointer">
               <Download size={13} />
               <span>Export SMART IRB Pack</span>

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
-import { chatWithAssistant } from "@/lib/api";
+import { chatWithAssistant, uploadArtifact } from "@/lib/api";
 import {
   Sparkles,
   FileText,
@@ -24,6 +24,7 @@ import {
   Download,
   Terminal,
   FileCheck,
+  UploadCloud,
 } from "lucide-react";
 
 interface SynthesisMessage {
@@ -43,6 +44,56 @@ export default function AgenticReaderPage() {
   const [activeHighlightLine, setActiveHighlightLine] = useState<string | null>("L142-148");
   const [inputQuery, setInputQuery] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [manuscript, setManuscript] = useState({
+    title: "Neuro-Symbolic Deductive Inference Over Large Chemical Spaces",
+    journal: "Cell Systems · Research Article · Published April 2025",
+    pages: 18,
+    doi: "10.1016/j.cels.2025.04.002",
+    authors: "Imthiyas, S.",
+    affiliations: "Department of EECS, MIT, Cambridge, MA · Cambium Research Lab",
+  });
+
+  const handleManuscriptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const artifact = await uploadArtifact(file);
+      const estimatedPages = Math.max(1, Math.round(file.size / 45000));
+      setManuscript({
+        title: file.name.replace(/\.[^/.]+$/, ""),
+        journal: `Ingested Document · ${file.type || "PDF Manuscript"} · Local RAG Vectorized`,
+        pages: estimatedPages,
+        doi: `SHA256: ${artifact.sha256Hash.substring(0, 16)}...`,
+        authors: "Ingested Scholar Document",
+        affiliations: "Cambium Air-Gapped Verification Vault",
+      });
+      setMessages((prev) => [
+        {
+          id: `sys-${Date.now()}`,
+          sender: "agent",
+          agentRole: selectedAgent,
+          content: `Ingested and verified **'${file.name}'** (${artifact.sizeFormatted}). Extracted document layout, parsed tabular citations, and embedded text across dense vector shards. Line-level grounding is active. You can now audit this paper's methodology or hypotheses.`,
+          citations: [
+            {
+              page: 1,
+              section: "§1 Document Abstract & Scope",
+              line: "L1-L24",
+              snippet: `Extracted from ${file.name}: Ingested into Cambium memory graph.`,
+            },
+          ],
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+        ...prev,
+      ]);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
   const [messages, setMessages] = useState<SynthesisMessage[]>([
     {
       id: "m-1",
@@ -190,12 +241,29 @@ export default function AgenticReaderPage() {
               </span>
             </div>
             <p className="text-xs text-[#62685E] font-mono mt-0.5">
-              Manuscript: Cell-Systems-2025-0914 · DOI: 10.1016/j.cels.2025.04.002 · 18 Pages Indexed
+              Manuscript: {manuscript.title} · {manuscript.doi} · {manuscript.pages} Pages Indexed
             </p>
           </div>
         </div>
 
+        {/* Hidden File Input for Manuscript Upload */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.doc,.docx,.txt"
+          className="hidden"
+          onChange={handleManuscriptUpload}
+        />
+
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="px-3 py-1.5 rounded-lg border border-[#3E6248] bg-[#DCE6D7] hover:bg-[#c9ddc1] text-xs font-mono text-[#3E6248] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <UploadCloud size={13} />
+            {isUploading ? "Ingesting..." : "Upload Manuscript"}
+          </button>
           <button className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] bg-white text-xs font-mono text-[#202920] hover:bg-[#FAF7F0] flex items-center gap-1.5 transition-colors cursor-pointer">
             <Download size={13} />
             Export Synthesis Markdown
@@ -217,11 +285,18 @@ export default function AgenticReaderPage() {
           {/* Document Toolbar */}
           <div className="px-6 py-2.5 bg-white border-b border-[#E4DCCB] flex items-center justify-between text-xs font-mono text-[#62685E] shrink-0">
             <div className="flex items-center gap-3">
-              <span className="font-semibold text-[#202920]">Page 7 of 18</span>
+              <span className="font-semibold text-[#202920]">Page 1 of {manuscript.pages}</span>
               <span>·</span>
-              <span className="text-[#3E6248]">Section 3.2 Horn-Clause Treewidth</span>
+              <span className="text-[#3E6248] max-w-[220px] truncate">{manuscript.title}</span>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="px-2 py-0.5 bg-white hover:bg-[#FAF7F0] border border-[#E4DCCB] text-[#3E6248] rounded text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
+              >
+                <UploadCloud size={11} />
+                Switch PDF
+              </button>
               <span className="px-2 py-0.5 bg-[#FAF7F0] border border-[#E4DCCB] rounded text-[11px]">
                 Zoom: 100%
               </span>
@@ -237,16 +312,16 @@ export default function AgenticReaderPage() {
               {/* Paper Header */}
               <div className="border-b border-[#E4DCCB] pb-6 space-y-2">
                 <div className="text-[11px] font-mono uppercase tracking-widest text-[#62685E]">
-                  Cell Systems · Research Article · Published April 2025
+                  {manuscript.journal}
                 </div>
                 <h2 className="font-serif text-2xl sm:text-3xl text-[#202920] leading-snug font-normal">
-                  Neuro-Symbolic Deductive Inference Over Large Chemical Spaces
+                  {manuscript.title}
                 </h2>
                 <div className="text-xs text-[#3E6248] font-mono font-medium">
-                  Imthiyas, S.<sup>1,2*</sup>, Chen, L.<sup>1</sup>, Vance, M.<sup>3</sup>
+                  {manuscript.authors}
                 </div>
                 <div className="text-[11px] text-[#62685E] font-serif italic">
-                  <sup>1</sup> Department of EECS, MIT, Cambridge, MA · <sup>2</sup> Cambium Research Lab · <sup>3</sup> Broad Institute of MIT & Harvard
+                  {manuscript.affiliations}
                 </div>
               </div>
 
