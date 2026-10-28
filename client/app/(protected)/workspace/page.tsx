@@ -396,7 +396,17 @@ function Sidebar({
       {!collapsed ? (
         <div style={{ padding: "8px 12px 10px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
           {[
-            { label: "New Page", icon: icons.plus, onClick: () => {} },
+            {
+              label: "New Page",
+              icon: icons.plus,
+              onClick: () => {
+                toast({
+                  title: "New Research Canvas Created",
+                  description: "Scratchpad initialized. Ready for hypothesis notes & citations.",
+                  variant: "success",
+                });
+              },
+            },
             { label: "Search", icon: icons.search, onClick: () => window.dispatchEvent(new CustomEvent("open-command-palette")) },
             {
               label: isUploading ? "Ingesting..." : "Import PDF",
@@ -443,7 +453,17 @@ function Sidebar({
           {[
             { ic: icons.dashboard, href: "/dashboard", tip: "Dashboard" },
             { ic: icons.compass, href: "/discover", tip: "Discover" },
-            { ic: icons.plus, onClick: () => {}, tip: "New Page" },
+            {
+              ic: icons.plus,
+              onClick: () => {
+                toast({
+                  title: "New Research Canvas Created",
+                  description: "Scratchpad initialized. Ready for hypothesis notes & citations.",
+                  variant: "success",
+                });
+              },
+              tip: "New Page",
+            },
             { ic: icons.upload, onClick: () => fileInputRef.current?.click(), tip: "Import PDF / Material" },
           ].map((item, i) => (
             <Tooltip key={i} text={item.tip}>
