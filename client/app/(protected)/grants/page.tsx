@@ -17,7 +17,10 @@ import {
   ExternalLink,
   Sliders,
   Award,
+  UploadCloud,
+  FileCheck,
 } from "lucide-react";
+import { uploadArtifact, UploadedArtifact } from "@/lib/api";
 
 interface GrantAward {
   id: string;
@@ -81,6 +84,22 @@ const ACTIVE_GRANTS: GrantAward[] = [
 
 export default function GrantManagementPage() {
   const [activeTab, setActiveTab] = useState<"post-award" | "form-builder" | "proposals">("post-award");
+  const [uploadedIRB, setUploadedIRB] = useState<UploadedArtifact | null>(null);
+  const [isUploadingIRB, setIsUploadingIRB] = useState(false);
+  const irbInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleIRBUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingIRB(true);
+    try {
+      const art = await uploadArtifact(file);
+      setUploadedIRB(art);
+    } finally {
+      setIsUploadingIRB(false);
+      if (irbInputRef.current) irbInputRef.current.value = "";
+    }
+  };
 
   const totalAllocated = ACTIVE_GRANTS.reduce((a, b) => a + b.allocatedAmount, 0);
   const totalExpended = ACTIVE_GRANTS.reduce((a, b) => a + b.expendedAmount, 0);
@@ -316,7 +335,7 @@ export default function GrantManagementPage() {
                 ].map((item, idx) => (
                   <div
                     key={idx}
-                    className="p-4 rounded-xl border border-[#E4DCCB] bg-[#FAF7F0] flex items-center justify-between"
+                    className="p-4 rounded-xl border border-[#E4DCCB] bg-[#FAF7F0] flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
                     <div className="space-y-1">
                       <span className="font-serif text-sm font-medium text-[#202920] block">
@@ -325,8 +344,36 @@ export default function GrantManagementPage() {
                       <span className="font-mono text-[11px] text-[#62685E]">
                         Field Type: {item.type}
                       </span>
+                      {idx === 3 && uploadedIRB && (
+                        <div className="flex items-center gap-2 pt-1">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#DCE6D7] text-[#3E6248] text-xs font-mono font-medium border border-[#66866A]/30">
+                            <CheckCircle2 size={12} />
+                            {uploadedIRB.originalName} ({uploadedIRB.sizeFormatted}) — Verified SHA256: {uploadedIRB.sha256Hash.substring(0, 8)}...
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
+                      {idx === 3 && (
+                        <>
+                          <input
+                            ref={irbInputRef}
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            className="hidden"
+                            onChange={handleIRBUpload}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => irbInputRef.current?.click()}
+                            disabled={isUploadingIRB}
+                            className="px-3 py-1.5 rounded-lg border border-[#3E6248] bg-white hover:bg-[#FAF7F0] text-xs font-mono text-[#3E6248] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            <UploadCloud size={12} />
+                            {isUploadingIRB ? "Uploading..." : uploadedIRB ? "Replace PDF" : "Upload Protocol PDF"}
+                          </button>
+                        </>
+                      )}
                       <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#DCE6D7] text-[#3E6248]">
                         {item.required ? "Required" : "Optional"}
                       </span>

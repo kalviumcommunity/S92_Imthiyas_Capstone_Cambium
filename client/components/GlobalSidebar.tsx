@@ -28,6 +28,7 @@ import {
   Database,
   Building2,
   Users,
+  UploadCloud,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import CambiumLogo from "@/components/CambiumLogo";
@@ -49,6 +50,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Constellation Graph", href: "/graph", icon: Network, badge: "2D", i18nKey: "nav.graph" },
   { label: "Agentic Reader", href: "/agent-reader", icon: Bot, badge: "AI", i18nKey: "nav.agent_reader" },
   { label: "Workspace", href: "/workspace", icon: Layers },
+  { label: "Upload Materials", href: "/workspace/upload", icon: UploadCloud, badge: "INGEST" },
   { label: "Community Feed", href: "/community", icon: Users },
   { label: "Intelligence", href: "/intelligence", icon: Brain },
   { label: "Personal OS", href: "/os", icon: LayoutGrid, i18nKey: "nav.os" },

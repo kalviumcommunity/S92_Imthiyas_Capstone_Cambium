@@ -9,6 +9,7 @@ import { SessionLockModal } from "@/components/ui/session-lock-modal";
 import { SplitPaneReader } from "@/components/workspace/SplitPaneReader";
 import { useToast } from "@/components/ui/toast";
 import CambiumLogo from "@/components/CambiumLogo";
+import { uploadArtifact, getLocalArtifacts, UploadedArtifact } from "@/lib/api";
 
 // ─── Design Tokens (SSOT from 01_Design Systems) ───────────────────────────
 
@@ -191,6 +192,48 @@ function Sidebar({
   setActiveNav: (id: string) => void;
 }) {
   const [questionsOpen, setQuestionsOpen] = useState(true);
+  const [uploadedDocs, setUploadedDocs] = useState<UploadedArtifact[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    setUploadedDocs(getLocalArtifacts());
+    const handleArtifactUploaded = () => {
+      setUploadedDocs(getLocalArtifacts());
+    };
+    window.addEventListener("cambium-artifact-uploaded", handleArtifactUploaded);
+    return () => window.removeEventListener("cambium-artifact-uploaded", handleArtifactUploaded);
+  }, []);
+
+  const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    toast({
+      title: "Ingesting Research Material",
+      description: `Uploading ${file.name} to Cambium secure repository...`,
+    });
+    try {
+      const art = await uploadArtifact(file);
+      setUploadedDocs((prev) => [art, ...prev.filter((d) => d.id !== art.id)]);
+      toast({
+        title: "Ingestion Complete",
+        description: `${art.originalName} verified with SHA-256 air-gapped hash.`,
+        variant: "success",
+      });
+      window.dispatchEvent(new CustomEvent("cambium-artifact-uploaded", { detail: art }));
+    } catch {
+      toast({
+        title: "Ingestion Failed",
+        description: "Could not upload document.",
+        variant: "error",
+      });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   return (
     <aside
@@ -340,16 +383,31 @@ function Sidebar({
         </div>
       )}
 
+      {/* Hidden File Input for PDF / Artifact Upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.doc,.docx,.csv,.xlsx,.bib,.txt"
+        style={{ display: "none" }}
+        onChange={handleFileImport}
+      />
+
       {/* Quick Actions */}
       {!collapsed ? (
         <div style={{ padding: "8px 12px 10px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
           {[
-            { label: "New Page", icon: icons.plus },
-            { label: "Search", icon: icons.search },
-            { label: "Import PDF", icon: icons.upload },
+            { label: "New Page", icon: icons.plus, onClick: () => {} },
+            { label: "Search", icon: icons.search, onClick: () => window.dispatchEvent(new CustomEvent("open-command-palette")) },
+            {
+              label: isUploading ? "Ingesting..." : "Import PDF",
+              icon: icons.upload,
+              onClick: () => fileInputRef.current?.click(),
+            },
           ].map((action) => (
             <Tooltip key={action.label} text={action.label}>
               <button
+                onClick={action.onClick}
+                disabled={isUploading && action.label.includes("Ingest")}
                 style={{
                   width: "100%",
                   height: 38,
@@ -360,7 +418,7 @@ function Sidebar({
                   border: `1px solid ${W.border}`,
                   background: "#FFFFFF",
                   cursor: "pointer",
-                  color: W.text2,
+                  color: isUploading && action.label.includes("Ingest") ? W.green : W.text2,
                   boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
                   transition: "all 150ms ease",
                 }}
@@ -382,35 +440,74 @@ function Sidebar({
         </div>
       ) : (
         <div style={{ padding: "10px 8px", display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
-          {[icons.dashboard, icons.compass, icons.plus, icons.search].map((ic, i) => (
-            <button
-              key={i}
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 8,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: `1px solid ${W.borderSubtle}`,
-                background: "#FFFFFF",
-                cursor: "pointer",
-                color: W.text3,
-                transition: "all 150ms ease",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = W.surface2;
-                (e.currentTarget as HTMLButtonElement).style.borderColor = W.green;
-                (e.currentTarget as HTMLButtonElement).style.color = W.green;
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "#FFFFFF";
-                (e.currentTarget as HTMLButtonElement).style.borderColor = W.borderSubtle;
-                (e.currentTarget as HTMLButtonElement).style.color = W.text3;
-              }}
-            >
-              <Icon d={ic} size={15} strokeWidth={1.8} />
-            </button>
+          {[
+            { ic: icons.dashboard, href: "/dashboard", tip: "Dashboard" },
+            { ic: icons.compass, href: "/discover", tip: "Discover" },
+            { ic: icons.plus, onClick: () => {}, tip: "New Page" },
+            { ic: icons.upload, onClick: () => fileInputRef.current?.click(), tip: "Import PDF / Material" },
+          ].map((item, i) => (
+            <Tooltip key={i} text={item.tip}>
+              {item.href ? (
+                <Link
+                  href={item.href}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 8,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: `1px solid ${W.borderSubtle}`,
+                    background: "#FFFFFF",
+                    cursor: "pointer",
+                    color: W.text3,
+                    transition: "all 150ms ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = W.surface2;
+                    (e.currentTarget as HTMLElement).style.borderColor = W.green;
+                    (e.currentTarget as HTMLElement).style.color = W.green;
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "#FFFFFF";
+                    (e.currentTarget as HTMLElement).style.borderColor = W.borderSubtle;
+                    (e.currentTarget as HTMLElement).style.color = W.text3;
+                  }}
+                >
+                  <Icon d={item.ic} size={15} strokeWidth={1.8} />
+                </Link>
+              ) : (
+                <button
+                  key={i}
+                  onClick={item.onClick}
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 8,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: `1px solid ${W.borderSubtle}`,
+                    background: "#FFFFFF",
+                    cursor: "pointer",
+                    color: W.text3,
+                    transition: "all 150ms ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = W.surface2;
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = W.green;
+                    (e.currentTarget as HTMLButtonElement).style.color = W.green;
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = "#FFFFFF";
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = W.borderSubtle;
+                    (e.currentTarget as HTMLButtonElement).style.color = W.text3;
+                  }}
+                >
+                  <Icon d={item.ic} size={15} strokeWidth={1.8} />
+                </button>
+              )}
+            </Tooltip>
           ))}
         </div>
       )}
@@ -511,6 +608,98 @@ function Sidebar({
           </button>
         ))}
       </nav>
+
+      {/* Uploaded Materials & Manuscripts */}
+      {!collapsed && (
+        <div style={{ borderTop: `1px solid ${W.borderSubtle}`, padding: "8px 8px 6px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "4px 8px 6px",
+            }}
+          >
+            <span
+              style={{
+                fontSize: 10.5,
+                fontWeight: 600,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                color: W.text3,
+              }}
+            >
+              Uploaded Ingests ({uploadedDocs.length})
+            </span>
+            <Link
+              href="/workspace/upload"
+              style={{
+                fontSize: 10.5,
+                color: W.green,
+                textDecoration: "none",
+                fontWeight: 600,
+              }}
+            >
+              + Ingest
+            </Link>
+          </div>
+          {uploadedDocs.length === 0 ? (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                width: "100%",
+                padding: "8px",
+                borderRadius: 6,
+                border: `1px dashed ${W.border}`,
+                background: W.surface2,
+                cursor: "pointer",
+                textAlign: "center",
+                fontSize: 11,
+                color: W.text3,
+              }}
+            >
+              Click to import PDF / material
+            </button>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 1, maxHeight: 130, overflowY: "auto" }}>
+              {uploadedDocs.slice(0, 6).map((doc) => (
+                <Link
+                  key={doc.id}
+                  href="/workspace/upload"
+                  title={`${doc.originalName} (${doc.sizeFormatted})`}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                    padding: "5px 8px",
+                    borderRadius: 5,
+                    textDecoration: "none",
+                    color: W.text2,
+                    fontSize: 11.5,
+                    transition: "all 120ms ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = W.surface2;
+                    (e.currentTarget as HTMLElement).style.color = W.text1;
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                    (e.currentTarget as HTMLElement).style.color = W.text2;
+                  }}
+                >
+                  <Icon d={icons.file} size={12} stroke={W.green} strokeWidth={1.8} />
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {doc.originalName}
+                  </span>
+                  <span style={{ fontSize: 9.5, color: W.text3, fontFamily: "monospace" }}>
+                    {doc.sizeFormatted}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Favorites */}
       {!collapsed && (
@@ -760,6 +949,13 @@ function Toolbar({
         { icon: icons.search, label: "Search (⌘K)", onClick: () => window.dispatchEvent(new CustomEvent("open-command-palette")) },
         { icon: icons.help, label: "Shortcuts Map (?)", onClick: onOpenShortcuts },
         { icon: icons.lock, label: "Lock Session (⌘L)", onClick: onLockSession },
+        {
+          icon: icons.upload,
+          label: "Upload & Ingest Materials",
+          onClick: () => {
+            window.location.href = "/workspace/upload";
+          },
+        },
         { icon: icons.share, label: "Share", onClick: () => {} },
         { icon: icons.export, label: "Export", onClick: onOpenCitation },
       ].map((action, i) => (

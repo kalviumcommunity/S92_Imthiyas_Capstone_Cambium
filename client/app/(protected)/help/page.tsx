@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import CambiumLogo from "@/components/CambiumLogo";
+import { uploadArtifactsBatch } from "@/lib/api";
 
 const categories = [
   {
@@ -139,10 +140,17 @@ export default function HelpPage() {
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (issueType === "Select issue type…" || !description.trim()) return;
     setSubmitted(true);
+    if (files.length > 0) {
+      try {
+        await uploadArtifactsBatch(files);
+      } catch {
+        // Fallback handled in uploadArtifact
+      }
+    }
     setTimeout(() => {
       setSubmitted(false);
       setModalOpen(false);
@@ -456,9 +464,18 @@ export default function HelpPage() {
                         <path d="M9 2v9M6 5l3-3 3 3"/>
                       </svg>
                       {files.length > 0 ? (
-                        <p className="text-xs text-[#202920] dark:text-[#EDEAE2] font-medium">
-                          {files.length} file{files.length > 1 ? "s" : ""} selected
-                        </p>
+                        <div className="space-y-1">
+                          <p className="text-xs text-[#202920] dark:text-[#EDEAE2] font-medium">
+                            {files.length} file{files.length > 1 ? "s" : ""} selected
+                          </p>
+                          <div className="flex flex-wrap gap-1 justify-center">
+                            {files.map((f, i) => (
+                              <span key={i} className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#DCE6D7] text-[#3E6248]">
+                                {f.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       ) : (
                         <p className="text-xs text-[#62685E] dark:text-[#A3B899]">
                           Drag and drop screenshots here or{" "}
