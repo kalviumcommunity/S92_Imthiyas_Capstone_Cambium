@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Quote } from "lucide-react";
 import CitationExportModal, { CitationItem } from "@/components/CitationExportModal";
+import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
 
@@ -1180,6 +1181,7 @@ export default function OpportunityHub() {
   const [citationItem, setCitationItem] = useState<CitationItem | null>(null);
   const [showCitationModal, setShowCitationModal] = useState(false);
   const toastKey = useRef(0);
+  const { t } = useLanguage();
 
   // ─── Live TanStack Query Hydration with Graceful Fallback ───────────────────
   const { data: serverOpps, isLoading: isServerLoading } = useQuery({
@@ -1403,9 +1405,9 @@ export default function OpportunityHub() {
             <div className="flex items-start justify-between gap-6">
               <div>
                 <h1 className="font-serif text-[36px] sm:text-[44px] font-normal tracking-[-0.02em] text-[#202920] dark:text-[#EDEAE2] leading-none mb-2">
-                  Opportunity <span className="italic text-[#3E6248] dark:text-[#4ADE80]">Hub</span>
+                  {t("opp.title", "Global Scholarly Opportunities")}
                 </h1>
-                <p className="text-sm text-muted">Find verified funding, conferences, fellowships, and calls for papers.</p>
+                <p className="text-sm text-muted">{t("opp.subtitle", "Find verified funding, conferences, fellowships, and calls for papers.")}</p>
               </div>
               <div className="flex items-center gap-1.5 pt-1 shrink-0">
                 <button
@@ -1443,7 +1445,7 @@ export default function OpportunityHub() {
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search grants, fellowships, conferences, scholarships..."
+              placeholder={t("opp.search_placeholder", "Search grants, fellowships, conferences, scholarships...")}
               className="w-full pl-11 pr-4 py-3.5 bg-surface border border-border rounded-md text-sm text-ink placeholder:text-faint focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors shadow-sm"
               aria-label="Search opportunities"
             />

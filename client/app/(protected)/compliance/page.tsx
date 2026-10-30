@@ -44,6 +44,46 @@ export default function ComplianceWorkspacePage() {
     }
   };
 
+  const handleExportIrbPack = () => {
+    const pack = {
+      title: "SMART IRB Harmonized Protocol Dossier",
+      institution: "Massachusetts Institute of Technology & Cambium Research Consortia",
+      exportedAt: new Date().toISOString(),
+      activeProtocols: protocols.map((p) => ({
+        id: p.id,
+        protocolNumber: p.protocolNumber,
+        title: p.title,
+        status: p.status,
+        riskCategory: p.riskCategory,
+        pi: p.pi,
+        board: p.board,
+        expiration: p.expiration,
+        multiSite: p.multiSite,
+        participatingSitesCount: p.participatingSitesCount,
+      })),
+      relianceAgreement: {
+        network: "SMART IRB National Reliance Framework",
+        status: "Active Ceded Review",
+        signatories: ["MIT COUHES", "Harvard Medical School IRB", "Stanford HRPP"],
+      },
+    };
+    const blob = new Blob([JSON.stringify(pack, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `smart_irb_reliance_pack_${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleSubmitAmendment = () => {
+    setActiveTab("icf-diff");
+    const targetTitle = selectedProtocol?.title || "IRB-2026-0819";
+    alert(`Amendment workflow initiated for ${targetTitle}. Reviewing ICF v2.2 side-by-side diff.`);
+  };
+
   return (
     <div className="flex-1 min-w-0 h-screen overflow-y-auto bg-[#FAF7F0] text-[#202920] font-sans p-6 sm:p-10 selection:bg-[#3E6248]/20 selection:text-[#173F35]">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -80,11 +120,17 @@ export default function ComplianceWorkspacePage() {
               <UploadCloud size={13} />
               <span>{isUploading ? "Ingesting..." : "Upload Protocol PDF"}</span>
             </button>
-            <button className="px-4 py-2.5 rounded-full bg-[#FAF7F0] hover:bg-[#E4DCCB] border border-[#E4DCCB] text-[#202920] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center gap-1.5 cursor-pointer">
+            <button
+              onClick={handleExportIrbPack}
+              className="px-4 py-2.5 rounded-full bg-[#FAF7F0] hover:bg-[#E4DCCB] border border-[#E4DCCB] text-[#202920] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+            >
               <Download size={13} />
               <span>Export SMART IRB Pack</span>
             </button>
-            <button className="px-5 py-2.5 rounded-full bg-[#3E6248] hover:bg-[#293E30] text-[#FAF7F0] font-sans text-xs uppercase tracking-wider font-semibold transition-all border border-[#66866A]/30 shadow-xs flex items-center gap-1.5 cursor-pointer">
+            <button
+              onClick={handleSubmitAmendment}
+              className="px-5 py-2.5 rounded-full bg-[#3E6248] hover:bg-[#293E30] text-[#FAF7F0] font-sans text-xs uppercase tracking-wider font-semibold transition-all border border-[#66866A]/30 shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
               <span>Submit Amendment</span>
               <ArrowRight size={13} />
             </button>

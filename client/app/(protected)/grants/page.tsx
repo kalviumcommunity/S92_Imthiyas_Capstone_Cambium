@@ -105,6 +105,43 @@ export default function GrantManagementPage() {
   const totalExpended = ACTIVE_GRANTS.reduce((a, b) => a + b.expendedAmount, 0);
   const totalPubs = ACTIVE_GRANTS.reduce((a, b) => a + b.publicationsCount, 0);
 
+  const handleExportFFR = () => {
+    const ffrReport = {
+      form: "Standard Form 425 (SF-425) Federal Financial Report",
+      reportingPeriodEnd: "2026-09-30",
+      institution: "Massachusetts Institute of Technology & Cambium Sponsored Projects",
+      leadInvestigator: "Shaik Mohamed Imthiyas T",
+      awards: ACTIVE_GRANTS.map((g) => ({
+        grantNumber: g.grantNumber,
+        funder: g.funder,
+        federalFundsAuthorized: g.allocatedAmount,
+        federalShareOfExpenditures: g.expendedAmount,
+        unobligatedBalance: g.allocatedAmount - g.expendedAmount,
+        milestonesCompleted: `${g.milestonesMet}/${g.totalMilestones}`,
+        linkedPublications: g.publicationsCount,
+      })),
+      totals: {
+        authorizedTotal: totalAllocated,
+        expendedTotal: totalExpended,
+        remainingBalance: totalAllocated - totalExpended,
+      },
+      certification: "I certify to the best of my knowledge that this report is correct and complete under 2 CFR 200.",
+    };
+    const blob = new Blob([JSON.stringify(ffrReport, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `federal_financial_report_sf425_${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleRegisterAward = () => {
+    setActiveTab("form-builder");
+  };
+
   return (
     <div className="flex-1 min-w-0 h-screen overflow-y-auto bg-[#FAF7F0] text-[#202920] font-sans p-6 sm:p-10 selection:bg-[#3E6248]/20 selection:text-[#173F35]">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -126,11 +163,17 @@ export default function GrantManagementPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="px-4 py-2.5 rounded-full bg-[#FAF7F0] hover:bg-[#E4DCCB] border border-[#E4DCCB] text-[#202920] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center gap-1.5 cursor-pointer">
+            <button
+              onClick={handleExportFFR}
+              className="px-4 py-2.5 rounded-full bg-[#FAF7F0] hover:bg-[#E4DCCB] border border-[#E4DCCB] text-[#202920] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+            >
               <Download size={13} />
               <span>Export Federal FFR / SF-425</span>
             </button>
-            <button className="px-5 py-2.5 rounded-full bg-[#3E6248] hover:bg-[#293E30] text-[#FAF7F0] font-sans text-xs uppercase tracking-wider font-semibold transition-all border border-[#66866A]/30 shadow-xs flex items-center gap-1.5 cursor-pointer">
+            <button
+              onClick={handleRegisterAward}
+              className="px-5 py-2.5 rounded-full bg-[#3E6248] hover:bg-[#293E30] text-[#FAF7F0] font-sans text-xs uppercase tracking-wider font-semibold transition-all border border-[#66866A]/30 shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
               <Plus size={14} />
               <span>Register New Award</span>
             </button>

@@ -20,8 +20,17 @@ import {
   X,
   Clock,
   Search,
+  ExternalLink,
 } from "lucide-react";
 import { BooleanQueryBuilder } from "@/components/ui/boolean-query-builder";
+import {
+  fetchScholarlyWorks,
+  fetchScholarlyResearchers,
+  fetchTrendingTopics,
+  ScholarlyWork,
+  ScholarlyAuthor,
+  ScholarlyTopic,
+} from "@/lib/scholarly-api";
 
 // ─── Design tokens (SSOT: Cambium Master Living Materials System) ─────────────
 const C = {
@@ -95,7 +104,7 @@ interface LabCard {
   recentPublications: number;
 }
 
-type AnyCard = PaperCard | ResearcherCard | TopicCard | LabCard;
+type AnyCard = ScholarlyWork | PaperCard | ResearcherCard | TopicCard | LabCard;
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 
@@ -359,7 +368,13 @@ function SearchBar({ onFocus }: { onFocus: () => void }) {
 
 // ─── Search Overlay ───────────────────────────────────────────────────────────
 
-function SearchOverlay({ onClose }: { onClose: () => void }) {
+function SearchOverlay({
+  onClose,
+  onSearch,
+}: {
+  onClose: () => void;
+  onSearch: (q: string) => void;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
 
@@ -375,6 +390,14 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (query.trim()) {
+      onSearch(query.trim());
+      onClose();
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 bg-[#202920]/40 backdrop-blur-xs flex items-start justify-center pt-20 px-4"
@@ -387,7 +410,7 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Input Bar */}
-        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[#E4DCCB] bg-white">
+        <form onSubmit={handleSubmit} className="flex items-center gap-3 px-4 py-3.5 border-b border-[#E4DCCB] bg-white">
           <Search className="w-5 h-5 text-[#3E6248] shrink-0" />
           <input
             ref={inputRef}
@@ -397,12 +420,13 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
             className="flex-1 bg-transparent border-0 outline-none text-[15px] text-[#202920] placeholder:text-[#85877B] font-sans"
           />
           <button
+            type="button"
             onClick={onClose}
             className="p-1 rounded-md text-[#85877B] hover:text-[#202920] hover:bg-[#F2EBDD] transition-colors border-0 bg-transparent cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
-        </div>
+        </form>
 
         {/* Content */}
         <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
@@ -416,7 +440,11 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
                   {RECENT_SEARCHES.map((s, i) => (
                     <button
                       key={i}
-                      onClick={onClose}
+                      type="button"
+                      onClick={() => {
+                        onSearch(s);
+                        onClose();
+                      }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-sm text-[#62685E] hover:text-[#202920] hover:bg-[#F2EBDD] transition-colors border-0 bg-transparent cursor-pointer"
                     >
                       <Clock className="w-3.5 h-3.5 text-[#85877B]" />
@@ -434,7 +462,11 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
                   {SUGGESTED_SEARCHES.map((s, i) => (
                     <button
                       key={i}
-                      onClick={onClose}
+                      type="button"
+                      onClick={() => {
+                        onSearch(s);
+                        onClose();
+                      }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left text-sm text-[#202920] hover:bg-[#F2EBDD] transition-colors border-0 bg-transparent cursor-pointer"
                     >
                       <Search className="w-3.5 h-3.5 text-[#3E6248]" />
@@ -445,10 +477,13 @@ function SearchOverlay({ onClose }: { onClose: () => void }) {
               </div>
             </>
           ) : (
-            <div className="text-center py-8 text-[#62685E] text-sm font-sans">
-              Press Enter to search for &ldquo;
+            <div
+              onClick={() => handleSubmit()}
+              className="text-center py-8 text-[#62685E] text-sm font-sans cursor-pointer hover:bg-white rounded-xl transition-colors"
+            >
+              Press Enter or click to search for &ldquo;
               <span className="font-semibold text-[#202920]">{query}</span>
-              &rdquo; across 120M+ research papers...
+              &rdquo; across 250M+ OpenAlex research papers...
             </div>
           )}
         </div>
@@ -603,13 +638,19 @@ function PaperCardComponent({
   data,
   onOpen,
   onSave,
+  onShare,
   saved,
 }: {
-  data: PaperCard;
+  data: ScholarlyWork | PaperCard;
   onOpen: (d: AnyCard) => void;
   onSave: (id: string) => void;
+  onShare?: () => void;
   saved: boolean;
 }) {
+  const citations = typeof (data as any).citedByCount === "number"
+    ? (data as any).citedByCount
+    : (data as any).cited ?? 0;
+
   return (
     <article
       onClick={() => onOpen(data)}
@@ -636,7 +677,15 @@ function PaperCardComponent({
             <Bookmark className={`w-3.5 h-3.5 ${saved ? "fill-[#3E6248]" : ""}`} />
           </button>
           <button
-            title="Share"
+            onClick={() => {
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(
+                  `${data.title} — ${(data as any).doiUrl || window.location.href}`
+                );
+              }
+              onShare?.();
+            }}
+            title="Share citation & link"
             className="p-1.5 rounded-lg border border-[#E4DCCB] text-[#85877B] hover:text-[#202920] hover:bg-[#F2EBDD] transition-colors cursor-pointer bg-white"
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -649,7 +698,7 @@ function PaperCardComponent({
           {data.title}
         </h3>
         <p className="text-[13px] text-[#62685E] font-sans mt-1 mb-0">
-          {data.authors.join(", ")}
+          {Array.isArray(data.authors) ? data.authors.join(", ") : "Contributing Scholars"}
         </p>
       </div>
 
@@ -658,15 +707,15 @@ function PaperCardComponent({
       </p>
 
       <div className="flex flex-wrap items-center gap-1.5">
-        {data.topics.map((t) => (
+        {(data.topics || []).map((t) => (
           <Tag key={t} label={t} />
         ))}
       </div>
 
       <div className="pt-2 border-t border-[#E4DCCB]/60 flex items-center justify-between">
-        <ReasonChip text={data.reason} />
+        <ReasonChip text={data.reason || "Semantic relevance match"} />
         <span className="font-mono text-[11px] text-[#85877B]">
-          {data.cited} citations
+          {citations.toLocaleString()} citations
         </span>
       </div>
     </article>
@@ -822,10 +871,13 @@ function LabCardComponent({
         </div>
       </div>
 
-      <button className="inline-flex items-center gap-1 text-xs font-sans font-semibold text-[#3E6248] bg-[#DCE6D7] hover:bg-[#3E6248] hover:text-[#FAF7F0] px-3.5 py-1.5 rounded-full transition-colors border border-[#66866A]/30 shrink-0">
+      <Link
+        href="/lab"
+        className="inline-flex items-center gap-1 text-xs font-sans font-semibold text-[#3E6248] bg-[#DCE6D7] hover:bg-[#3E6248] hover:text-[#FAF7F0] px-3.5 py-1.5 rounded-full transition-colors border border-[#66866A]/30 shrink-0 no-underline"
+      >
         <span>Explore Lab</span>
         <ArrowUpRight className="w-3 h-3" />
-      </button>
+      </Link>
     </article>
   );
 }
@@ -1228,7 +1280,7 @@ function DetailPanel({
           )}
         </div>
 
-        <div className="p-6 border-t border-[#E4DCCB] bg-white flex items-center justify-between">
+        <div className="p-6 border-t border-[#E4DCCB] bg-white flex flex-wrap items-center justify-between gap-3">
           {item.type === "paper" ? (
             <button
               onClick={() => onSave(item.id)}
@@ -1246,13 +1298,26 @@ function DetailPanel({
             </button>
           )}
 
-          <Link
-            href="/reader"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#3E6248] hover:underline no-underline"
-          >
-            <span>Open in Workspace</span>
-            <ArrowUpRight className="w-4 h-4" />
-          </Link>
+          <div className="flex items-center gap-2.5">
+            {(item as any).doiUrl && (
+              <a
+                href={(item as any).doiUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#62685E] hover:text-[#202920] px-3 py-2 rounded-xl border border-[#E4DCCB] bg-[#FAF7F0] no-underline"
+              >
+                <span>View DOI</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+            <Link
+              href={`/agent-reader?title=${encodeURIComponent(title)}&doi=${encodeURIComponent((item as any).doi || "")}`}
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#FAF7F0] bg-[#3E6248] hover:bg-[#293E30] px-4 py-2 rounded-xl transition-colors no-underline shadow-xs"
+            >
+              <span>Analyze in Reader</span>
+              <ArrowUpRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>
@@ -1283,11 +1348,51 @@ export default function DiscoverPage() {
   const [followedItems, setFollowedItems] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState({ message: "", visible: false });
 
+  // Live Scholarly Data State (OpenAlex & Europe PMC)
+  const [livePapers, setLivePapers] = useState<ScholarlyWork[]>([]);
+  const [liveResearchers, setLiveResearchers] = useState<ScholarlyAuthor[]>([]);
+  const [liveTopics, setLiveTopics] = useState<ScholarlyTopic[]>([]);
+  const [activeQuery, setActiveQuery] = useState("");
+  const [isSearchingLive, setIsSearchingLive] = useState(false);
+
   const showToast = useCallback((message: string) => {
     setToast({ message, visible: true });
     setTimeout(() => setToast((t) => ({ ...t, visible: false })), 2400);
   }, []);
 
+  useEffect(() => {
+    let isCancelled = false;
+    const loadScholarlyData = async () => {
+      setIsSearchingLive(true);
+      try {
+        const queryToUse = activeQuery || activeArea || "artificial intelligence";
+        const sortType =
+          activeSort === "Most cited"
+            ? "cited"
+            : activeSort === "Newest"
+            ? "newest"
+            : "relevance";
+        const [works, authors, topics] = await Promise.all([
+          fetchScholarlyWorks({ query: queryToUse, sort: sortType, limit: 8 }),
+          fetchScholarlyResearchers(queryToUse, 4),
+          fetchTrendingTopics(),
+        ]);
+        if (!isCancelled) {
+          setLivePapers(works);
+          setLiveResearchers(authors);
+          setLiveTopics(topics);
+        }
+      } catch {
+        // Fallback handled in scholarly-api
+      } finally {
+        if (!isCancelled) setIsSearchingLive(false);
+      }
+    };
+    loadScholarlyData();
+    return () => {
+      isCancelled = true;
+    };
+  }, [activeQuery, activeArea, activeSort]);
   const handleSave = useCallback(
     (id: string) => {
       setSavedItems((prev) => {
@@ -1380,25 +1485,33 @@ export default function DiscoverPage() {
 
           {/* Recommended Section */}
           <section className="space-y-4" aria-labelledby="recommended-heading">
-            <div>
-              <h2
-                id="recommended-heading"
-                className="font-serif text-[22px] font-normal text-[#202920] tracking-tight m-0"
-              >
-                Recommended for you
-              </h2>
-              <p className="text-[13px] text-[#62685E] font-sans m-0 mt-0.5">
-                Calculated from your verified research topics and recent citations.
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2
+                  id="recommended-heading"
+                  className="font-serif text-[22px] font-normal text-[#202920] tracking-tight m-0"
+                >
+                  Recommended for you
+                </h2>
+                <p className="text-[13px] text-[#62685E] font-sans m-0 mt-0.5">
+                  Live scholarly catalog from 250M+ open scientific publications (OpenAlex & Europe PMC).
+                </p>
+              </div>
+              {isSearchingLive && (
+                <span className="text-xs font-mono text-[#3E6248] animate-pulse bg-[#DCE6D7] px-2.5 py-1 rounded-full border border-[#66866A]/30">
+                  Syncing live catalog...
+                </span>
+              )}
             </div>
 
             <div className="space-y-4">
-              {PAPER_CARDS.map((p) => (
+              {(livePapers.length > 0 ? livePapers : PAPER_CARDS).map((p) => (
                 <PaperCardComponent
                   key={p.id}
                   data={p}
                   onOpen={setDetailItem}
                   onSave={handleSave}
+                  onShare={() => showToast("Citation and link copied to clipboard")}
                   saved={savedItems.has(p.id)}
                 />
               ))}
@@ -1450,7 +1563,15 @@ export default function DiscoverPage() {
       </aside>
 
       {/* Overlays */}
-      {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
+      {searchOpen && (
+        <SearchOverlay
+          onClose={() => setSearchOpen(false)}
+          onSearch={(q) => {
+            setActiveQuery(q);
+            showToast(`Searching OpenAlex for "${q}"...`);
+          }}
+        />
+      )}
 
       {detailItem && (
         <DetailPanel

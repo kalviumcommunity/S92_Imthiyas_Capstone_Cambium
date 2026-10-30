@@ -22,6 +22,9 @@ import {
   Bookmark,
 } from "lucide-react";
 
+import { useEffect } from "react";
+import { fetchScholarlyWorks, ScholarlyWork } from "@/lib/scholarly-api";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface AttentionCardData {
@@ -31,6 +34,8 @@ interface AttentionCardData {
   match: number;
   meta: string;
   authors?: string;
+  doi?: string;
+  href?: string;
 }
 
 interface FeedItem {
@@ -57,6 +62,7 @@ const ATTENTION_CARDS: AttentionCardData[] = [
       "Applications open for the 2027 cohort. Strong alignment with your work on predictive ecological modeling and ML-driven climate data pipelines.",
     match: 94,
     meta: "Deadline: Oct 18, 2026 · $37,000/yr",
+    href: "/opportunities",
   },
   {
     badge: "PAPER",
@@ -66,6 +72,7 @@ const ATTENTION_CARDS: AttentionCardData[] = [
     match: 88,
     meta: "arXiv · Sep 9, 2026",
     authors: "Park et al. · DeepMind",
+    href: "/agent-reader?title=Emergent%20Representations%20in%20Sparse%20Transformer%20Architectures",
   },
   {
     badge: "COLLABORATION",
@@ -74,6 +81,7 @@ const ATTENTION_CARDS: AttentionCardData[] = [
       "A new working group at the intersection of NLP and climate science is forming ahead of NeurIPS 2026. 11 researchers already enrolled.",
     match: 91,
     meta: "Virtual · Kickoff Oct 2, 2026",
+    href: "/collaborate",
   },
   {
     badge: "DATASET",
@@ -83,6 +91,7 @@ const ATTENTION_CARDS: AttentionCardData[] = [
     match: 85,
     meta: "6.4 TB · CC BY 4.0 · ecmwf.int",
     authors: "ECMWF Copernicus Team",
+    href: "/workspace/upload",
   },
 ];
 
@@ -234,9 +243,14 @@ const FEED_TABS = ["For You", "Following", "Trending"];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function AttentionCard({ badge, title, description, match, meta, authors }: AttentionCardData) {
+function AttentionCard({ badge, title, description, match, meta, authors, href }: AttentionCardData) {
+  const destination = href || (badge === "PAPER" ? `/agent-reader?title=${encodeURIComponent(title)}` : "/discover");
+
   return (
-    <div className="flex flex-col gap-3 rounded-2xl p-5 h-full transition-all duration-200 cursor-pointer bg-white border border-[#E4DCCB] hover:border-[#66866A] shadow-2xs hover:shadow-md">
+    <Link
+      href={destination}
+      className="flex flex-col gap-3 rounded-2xl p-5 h-full transition-all duration-200 cursor-pointer bg-white border border-[#E4DCCB] hover:border-[#66866A] shadow-2xs hover:shadow-md no-underline group"
+    >
       {/* Header row */}
       <div className="flex items-start justify-between gap-2">
         <span className="text-[10px] rounded-full px-2.5 py-0.5 font-bold uppercase tracking-wider bg-[#F2EBDD] text-[#3E6248] font-mono border border-[#E4DCCB]">
@@ -249,7 +263,7 @@ function AttentionCard({ badge, title, description, match, meta, authors }: Atte
       </div>
 
       {/* Title */}
-      <h3 className="font-serif text-[17px] font-semibold leading-snug text-[#202920] m-0">
+      <h3 className="font-serif text-[17px] font-semibold leading-snug text-[#202920] group-hover:text-[#3E6248] transition-colors m-0">
         {title}
       </h3>
 
@@ -261,9 +275,14 @@ function AttentionCard({ badge, title, description, match, meta, authors }: Atte
       {/* Footer */}
       <div className="flex flex-col gap-1 pt-2.5 border-t border-[#E4DCCB]/60">
         {authors && <p className="text-xs text-[#85877B] font-sans truncate m-0">{authors}</p>}
-        <p className="text-xs text-[#3E6248] font-sans font-medium m-0">{meta}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-[#3E6248] font-sans font-medium m-0">{meta}</p>
+          <span className="text-xs font-mono text-[#66866A] opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+            Open <ArrowRight size={11} />
+          </span>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -428,6 +447,35 @@ function TopBar() {
 
 function MainContent() {
   const [activeTab, setActiveTab] = useState("For You");
+  const [attentionCards, setAttentionCards] = useState<AttentionCardData[]>(ATTENTION_CARDS);
+
+  useEffect(() => {
+    let isCancelled = false;
+    fetchScholarlyWorks({ query: "climate artificial intelligence", limit: 2 })
+      .then((works) => {
+        if (!isCancelled && works.length > 0) {
+          const livePaperCard: AttentionCardData = {
+            badge: "LIVE PAPER",
+            title: works[0].title,
+            description: works[0].abstract
+              ? works[0].abstract.slice(0, 150) + "..."
+              : "Recent open-access breakthrough indexed via OpenAlex & Europe PMC with semantic relevance to your active research track.",
+            match: 96,
+            meta: `OpenAlex · ${works[0].year || 2026} · ${works[0].cited.toLocaleString()} citations`,
+            authors: Array.isArray(works[0].authors) ? works[0].authors.slice(0, 2).join(", ") + " et al." : "Scholarly Collective",
+            href: `/agent-reader?title=${encodeURIComponent(works[0].title)}&doi=${encodeURIComponent(works[0].doi || "")}`,
+          };
+          setAttentionCards((prev) => [livePaperCard, ...prev.slice(1)]);
+        }
+      })
+      .catch(() => {
+        // Fallback to static cards
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   const now = new Date();
   const hour = now.getHours();
@@ -460,7 +508,7 @@ function MainContent() {
         <div className="flex items-center gap-2.5 mb-8 flex-wrap">
           {[
             { icon: Plus, label: "New Hypothesis", href: "/workspace" },
-            { icon: Download, label: "Import Literature", href: "/workspace" },
+            { icon: Download, label: "Import Literature", href: "/workspace/upload" },
             { icon: SlidersHorizontal, label: "Refine Topics", href: "/discover" },
             { icon: Sparkles, label: "Ask Cambium AI", href: "/intelligence" },
           ].map(({ icon: Icon, label, href }) => (
@@ -492,7 +540,7 @@ function MainContent() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {ATTENTION_CARDS.map((card) => (
+            {attentionCards.map((card) => (
               <AttentionCard key={card.title} {...card} />
             ))}
           </div>

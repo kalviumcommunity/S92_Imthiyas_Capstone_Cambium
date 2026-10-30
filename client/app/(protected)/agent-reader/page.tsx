@@ -223,6 +223,37 @@ export default function AgenticReaderPage() {
     }
   };
 
+  const handleExportSynthesis = () => {
+    const lines = [
+      `# Cambium AI Synthesis Dossier: ${manuscript.title}`,
+      `**Journal/Source:** ${manuscript.journal}`,
+      `**Identifier / DOI:** ${manuscript.doi}`,
+      `**Authors:** ${manuscript.authors}`,
+      `**Export Date:** ${new Date().toLocaleString()}`,
+      `\n---\n`,
+      ...messages.map((m) => {
+        const header =
+          m.sender === "user"
+            ? `### 👤 Scholar Inquiry (${m.timestamp})`
+            : `### 🤖 ${m.agentRole || "Cambium Verification Agent"} (${m.timestamp})`;
+        const citations = m.citations?.length
+          ? `\n\n**Grounded Evidence Citations:**\n` +
+            m.citations.map((c) => `- **${c.section}** (p. ${c.page}, ${c.line}): "${c.snippet}"`).join("\n")
+          : "";
+        return `${header}\n\n${m.content}${citations}\n`;
+      }),
+    ];
+    const blob = new Blob([lines.join("\n\n")], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${manuscript.title.toLowerCase().replace(/[^a-z0-9]/g, "_")}_synthesis.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="flex-1 min-w-0 h-screen overflow-hidden flex flex-col bg-[#FAF7F0] text-[#202920] font-sans selection:bg-[#3E6248]/20 selection:text-[#173F35]">
       {/* Top Header */}
@@ -264,7 +295,10 @@ export default function AgenticReaderPage() {
             <UploadCloud size={13} />
             {isUploading ? "Ingesting..." : "Upload Manuscript"}
           </button>
-          <button className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] bg-white text-xs font-mono text-[#202920] hover:bg-[#FAF7F0] flex items-center gap-1.5 transition-colors cursor-pointer">
+          <button
+            onClick={handleExportSynthesis}
+            className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] bg-white text-xs font-mono text-[#202920] hover:bg-[#FAF7F0] flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
             <Download size={13} />
             Export Synthesis Markdown
           </button>
