@@ -82,7 +82,7 @@ Historically, researchers spend over **35% of their working hours** trapped in a
 
 Cambium eliminates this operational debt. By harmonizing high-dimensional semantic search (`pgvector`), deterministic relational state (PostgreSQL 16), and multi-agent retrieval-augmented generation (RAG) with verifiable line-level citations, Cambium accelerates scholarly progress from initial hypothesis formulation to verified publication and peer review.
 
-> **Status (v1.0.0)**: Fully designed, engineered, containerized, and production-ready across frontend, backend, design tokens, database, and devops layers.
+> **Status (v2.0.0 Enterprise)**: Fully designed, engineered, containerized, and production-ready across frontend, backend, design tokens, database, and devops layers.
 
 ---
 
