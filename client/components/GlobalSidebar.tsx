@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Home,
   Compass,
@@ -67,6 +67,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export default function GlobalSidebar() {
+  const router = useRouter();
   const pathname = usePathname() || "";
   const user = useAuthStore((state) => state.user);
   const { t } = useLanguage();
@@ -161,6 +162,12 @@ export default function GlobalSidebar() {
           ) : (
             <Link
               href="/dashboard"
+              prefetch={true}
+              onMouseEnter={() => {
+                try {
+                  router.prefetch("/dashboard");
+                } catch {}
+              }}
               title="CAMBIUM RESEARCH Dashboard"
               style={{ width: 36, height: 36, minWidth: 36, minHeight: 36 }}
               className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] p-0.5 flex items-center justify-center shadow-xs transition-transform hover:scale-105 shrink-0 overflow-hidden"
@@ -232,6 +239,17 @@ export default function GlobalSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={true}
+              onMouseEnter={() => {
+                try {
+                  router.prefetch(item.href);
+                } catch {}
+              }}
+              onTouchStart={() => {
+                try {
+                  router.prefetch(item.href);
+                } catch {}
+              }}
               title={!isOpen ? item.label : undefined}
               className={`flex items-center rounded-xl text-[13.5px] transition-all duration-200 group no-underline relative ${
                 isOpen ? "px-3 py-2.5 justify-between" : "w-11 h-11 mx-auto justify-center"
@@ -284,6 +302,17 @@ export default function GlobalSidebar() {
         {/* Help Center */}
         <Link
           href="/help"
+          prefetch={true}
+          onMouseEnter={() => {
+            try {
+              router.prefetch("/help");
+            } catch {}
+          }}
+          onTouchStart={() => {
+            try {
+              router.prefetch("/help");
+            } catch {}
+          }}
           title={!isOpen ? "Help Center" : undefined}
           className={`flex items-center rounded-xl text-[13px] transition-all duration-200 text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#18231B] font-medium no-underline ${
             isOpen ? "px-3 py-2 gap-3" : "w-11 h-11 mx-auto justify-center"
@@ -296,6 +325,17 @@ export default function GlobalSidebar() {
         {/* Settings (Directly above profile like in photo) */}
         <Link
           href="/settings"
+          prefetch={true}
+          onMouseEnter={() => {
+            try {
+              router.prefetch("/settings");
+            } catch {}
+          }}
+          onTouchStart={() => {
+            try {
+              router.prefetch("/settings");
+            } catch {}
+          }}
           title={!isOpen ? "Settings" : undefined}
           className={`flex items-center rounded-xl text-[13px] transition-all duration-200 text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#18231B] font-medium no-underline ${
             isActive("/settings")
@@ -320,6 +360,17 @@ export default function GlobalSidebar() {
         {/* Profile Avatar & Info Card */}
         <Link
           href="/profile"
+          prefetch={true}
+          onMouseEnter={() => {
+            try {
+              router.prefetch("/profile");
+            } catch {}
+          }}
+          onTouchStart={() => {
+            try {
+              router.prefetch("/profile");
+            } catch {}
+          }}
           title={!isOpen ? displayName : undefined}
           className={`flex items-center rounded-xl transition-all duration-200 hover:bg-[#F2EBDD] dark:hover:bg-[#18231B] group no-underline ${
             isOpen ? "p-2 gap-2.5 justify-between" : "w-11 h-11 mx-auto justify-center"

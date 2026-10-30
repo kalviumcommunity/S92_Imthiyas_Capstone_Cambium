@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import CambiumLogo from "@/components/CambiumLogo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Menu, X, ArrowUpRight } from "lucide-react";
 
 export function PublicHeader() {
+  const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -32,6 +33,12 @@ export function PublicHeader() {
               <Link
                 key={label}
                 href={href}
+                prefetch={true}
+                onMouseEnter={() => {
+                  try {
+                    router.prefetch(href);
+                  } catch {}
+                }}
                 className={`font-sans text-[14px] font-[450] tracking-[-0.01em] transition-colors duration-200 relative py-1 no-underline ${
                   isActive
                     ? "text-[#202920] dark:text-[#EDEAE2] font-semibold after:absolute after:bottom-[-24px] after:left-0 after:w-full after:h-[2px] after:bg-[#3E6248] dark:after:bg-[#4ADE80]"
@@ -49,12 +56,24 @@ export function PublicHeader() {
           <ThemeToggle />
           <Link
             href="/sign-in"
+            prefetch={true}
+            onMouseEnter={() => {
+              try {
+                router.prefetch("/sign-in");
+              } catch {}
+            }}
             className="font-sans text-[14px] font-medium text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] transition-colors no-underline"
           >
             Sign in
           </Link>
           <Link
             href="/dashboard"
+            prefetch={true}
+            onMouseEnter={() => {
+              try {
+                router.prefetch("/dashboard");
+              } catch {}
+            }}
             className="bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] px-5 py-2.5 rounded-full font-sans text-xs font-semibold tracking-wide uppercase shadow-sm shadow-[#3E6248]/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center gap-1.5 text-center no-underline border border-[#66866A]/30 dark:border-[#4ADE80]/30"
           >
             <span>Enter Workspace</span>

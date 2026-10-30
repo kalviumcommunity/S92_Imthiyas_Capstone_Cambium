@@ -101,14 +101,16 @@ function Nav() {
         {/* Action Threshold with Cambium Aligned Theme Toggle */}
         <div className="hidden md:flex items-center gap-4">
           <ThemeToggle />
-          <Link 
-            href="/sign-in" 
+          <Link
+            href="/sign-in"
+            prefetch={true}
             className="font-sans text-[14px] font-medium text-[#4A5246] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] transition-colors no-underline py-2 px-2 inline-flex items-center min-h-[36px] min-w-[24px]"
           >
             Sign in
           </Link>
           <Link
             href="/sign-up"
+            prefetch={true}
             className="bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] px-5 py-2.5 rounded-full font-sans text-xs font-semibold tracking-wide uppercase shadow-sm shadow-[#3E6248]/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center justify-center min-h-[36px] text-center no-underline border border-[#66866A]/30 dark:border-[#4ADE80]/30"
           >
             Create Identity
@@ -168,7 +170,7 @@ function EcosystemGraph({ dark, selectedCategory = 'all' }: { dark?: boolean; se
     { id: 'aris',     x: 530, y: 195, type: 'scholar', label: 'Prof. Aris Thorne', sub: 'Stanford Bio-X · Bio-AI', color: '#66866A', drift: 'animate-drift-2' },
     { id: 'elena',    x: 195, y: 175, type: 'scholar', label: 'Elena Rostova', sub: 'Cambridge · Graph ML', color: '#293E30', drift: 'animate-drift-3' },
     { id: 'marcus',   x: 515, y: 385, type: 'scholar', label: 'Marcus Vance', sub: 'ETH Zürich · Foundation ML', color: '#3E6248', drift: 'animate-drift-4' },
-    
+
     { id: 'paper1',   x: 235, y: 80,  type: 'paper',   label: 'Multimodal Foundations', sub: 'Nature MI · 2026', color: '#293E30', drift: 'animate-drift-2' },
     { id: 'paper2',   x: 535, y: 80,  type: 'paper',   label: 'Cellular Topology GNN', sub: 'Bioinformatics · 2025', color: '#293E30', drift: 'animate-drift-1' },
     { id: 'paper3',   x: 660, y: 280, type: 'paper',   label: 'Neural Graph Synthesis', sub: 'NeurIPS Oral · 2026', color: '#293E30', drift: 'animate-drift-3' },
@@ -275,10 +277,10 @@ function EcosystemGraph({ dark, selectedCategory = 'all' }: { dark?: boolean; se
 
           const active = isEdgeActive(aId, bId)
           const visible = matchesCategory(a.type) || matchesCategory(b.type)
-          const strokeColor = active 
-            ? '#10B981' 
-            : dark 
-              ? 'rgba(46,125,79,0.25)' 
+          const strokeColor = active
+            ? '#10B981'
+            : dark
+              ? 'rgba(46,125,79,0.25)'
               : 'rgba(26,77,56,0.14)'
           const strokeWidth = active ? 2.4 : 1.2
 
