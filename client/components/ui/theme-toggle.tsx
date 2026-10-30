@@ -21,10 +21,43 @@ export function ThemeToggle({
   showLabels = false,
 }: ThemeToggleProps) {
   const { theme, resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const isExpanded = isHovered || isFocused;
+
+  if (!mounted) {
+    if (variant === "minimal") {
+      return (
+        <button
+          type="button"
+          disabled
+          aria-hidden="true"
+          suppressHydrationWarning
+          className={`inline-flex items-center justify-center p-2 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0]/80 dark:bg-[#18231B]/80 text-[#202920] dark:text-[#EDEAE2] min-h-[36px] min-w-[36px] shadow-2xs opacity-75 ${className}`}
+        >
+          <Sun size={16} className="text-[#3E6248] opacity-50" />
+        </button>
+      );
+    }
+
+    return (
+      <div
+        aria-hidden="true"
+        suppressHydrationWarning
+        className={`inline-flex items-center p-1 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0]/90 dark:bg-[#131C15]/90 min-h-[38px] min-w-[38px] ${className}`}
+      >
+        <div className="w-[30px] h-[30px] rounded-full bg-[#3E6248]/20 flex items-center justify-center">
+          <Sun size={14} className="text-[#3E6248] opacity-50" />
+        </div>
+      </div>
+    );
+  }
 
   const options: { id: Theme; label: string; icon: React.ReactNode; tooltip: string }[] = [
     {
@@ -51,6 +84,7 @@ export function ThemeToggle({
     return (
       <button
         type="button"
+        suppressHydrationWarning
         onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
         className={`inline-flex items-center justify-center p-2 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0]/80 dark:bg-[#18231B]/80 text-[#202920] dark:text-[#EDEAE2] hover:border-[#3E6248] dark:hover:border-[#4ADE80] transition-all min-h-[36px] min-w-[36px] cursor-pointer shadow-2xs ${className}`}
         title={`Current: ${theme} (Click to switch)`}
@@ -69,6 +103,7 @@ export function ThemeToggle({
     <div
       role="radiogroup"
       aria-label="Color theme selection"
+      suppressHydrationWarning
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsFocused(true)}
@@ -90,6 +125,7 @@ export function ThemeToggle({
             key={opt.id}
             type="button"
             role="radio"
+            suppressHydrationWarning
             aria-checked={isActive}
             tabIndex={isVisible ? 0 : -1}
             onClick={() => setTheme(opt.id)}
@@ -124,8 +160,13 @@ export function ThemeToggle({
  */
 export function UniversalThemeGearbox() {
   const { theme, resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close when clicked outside
   useEffect(() => {
@@ -181,9 +222,14 @@ export function UniversalThemeGearbox() {
     },
   ];
 
+  if (!mounted) {
+    return null;
+  }
+
   return (
     <div
       ref={dropdownRef}
+      suppressHydrationWarning
       className="fixed bottom-6 right-6 z-50 flex flex-col items-end print:hidden select-none"
     >
       {/* Popover Gearbox Menu */}
@@ -213,6 +259,7 @@ export function UniversalThemeGearbox() {
                 <button
                   key={item.id}
                   type="button"
+                  suppressHydrationWarning
                   onClick={() => {
                     setTheme(item.id);
                   }}
@@ -268,6 +315,7 @@ export function UniversalThemeGearbox() {
       {/* Floating Gearbox Trigger Button */}
       <button
         type="button"
+        suppressHydrationWarning
         onClick={() => setIsOpen((prev) => !prev)}
         className="group flex items-center gap-2 px-3 py-2.5 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0]/95 dark:bg-[#18231B]/95 text-[#202920] dark:text-[#EDEAE2] shadow-lg hover:shadow-xl backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer hover:border-[#3E6248] dark:hover:border-[#4ADE80]"
         aria-label="Universal Theme Gearbox"

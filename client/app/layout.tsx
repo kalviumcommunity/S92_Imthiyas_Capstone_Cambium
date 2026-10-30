@@ -89,7 +89,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-canvas text-ink-primary font-sans antialiased transition-colors duration-200">
+      <body suppressHydrationWarning className="min-h-screen bg-canvas text-ink-primary font-sans antialiased transition-colors duration-200">
         <QueryProvider>
           <LanguageProvider>
             <ThemeProvider>

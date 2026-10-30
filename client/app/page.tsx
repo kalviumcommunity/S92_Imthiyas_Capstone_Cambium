@@ -3311,6 +3311,7 @@ function StructuralSystem() {
   if (!open) {
     return (
       <button
+        suppressHydrationWarning
         onClick={() => setOpen(true)}
         className="fixed bottom-6 right-6 z-50 bg-[#293E30] text-[#FAF7F0] p-3 rounded-full shadow-xl border border-[#66866A]/60 hover:scale-105 transition-all cursor-pointer shadow-[0_8px_24px_rgba(0,0,0,0.3)]"
         title="View Identity System"
@@ -3344,6 +3345,7 @@ function StructuralSystem() {
             <span className="font-sans text-[10px] font-bold tracking-tight text-[#3E6248] dark:text-[#4ADE80]">Active</span>
           </div>
           <button
+            suppressHydrationWarning
             onClick={() => setOpen(false)}
             className="text-[#85877B] hover:text-[#202920] dark:text-[#7E8B7B] dark:hover:text-[#EDEAE2] text-xs p-1 bg-transparent border-0 cursor-pointer ml-1 transition-colors"
             title="Dismiss"
