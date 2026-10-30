@@ -140,7 +140,7 @@ graph TD
 ### Milestone 6: Verification, Production Build & Hardening
 - [x] **TASK-M6-01**: Execute full TypeScript build verification across both client and server packages (`tsc` 0 errors, 49/49 routes statically compiled).
 - [ ] **TASK-M6-02**: Run automated accessibility audit with zero WCAG 2.2 Level AA violations.
-- [ ] **TASK-M6-03**: Verify zero orphaned or unreferenced legacy directories (e.g., safe cleanup of `_vite_raw_code`).
+- [x] **TASK-M6-03**: Verify zero orphaned or unreferenced legacy directories (e.g., safe cleanup of `_vite_raw_code`).
 - [ ] **TASK-M6-04**: Complete final end-to-end browser walkthrough on `http://localhost:3000`.
 
 ---
