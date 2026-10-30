@@ -221,6 +221,8 @@ export default function AgenticReaderPage() {
     } finally {
       setIsThinking(false);
     }
+  };
+
   const handleExportSynthesis = () => {
     const lines = [
       `# Cambium AI Synthesis Dossier: ${manuscript.title}`,

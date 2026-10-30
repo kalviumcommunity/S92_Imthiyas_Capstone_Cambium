@@ -42,6 +42,8 @@ export default function ComplianceWorkspacePage() {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  };
+
   const handleExportIrbPack = () => {
     const pack = {
       title: "SMART IRB Harmonized Protocol Dossier",
@@ -49,13 +51,15 @@ export default function ComplianceWorkspacePage() {
       exportedAt: new Date().toISOString(),
       activeProtocols: protocols.map((p) => ({
         id: p.id,
+        protocolNumber: p.protocolNumber,
         title: p.title,
         status: p.status,
-        riskLevel: p.riskLevel,
+        riskCategory: p.riskCategory,
         pi: p.pi,
-        enrolledPatients: p.enrolledPatients,
-        targetPatients: p.targetPatients,
-        lastApprovalDate: p.lastApprovalDate,
+        board: p.board,
+        expiration: p.expiration,
+        multiSite: p.multiSite,
+        participatingSitesCount: p.participatingSitesCount,
       })),
       relianceAgreement: {
         network: "SMART IRB National Reliance Framework",

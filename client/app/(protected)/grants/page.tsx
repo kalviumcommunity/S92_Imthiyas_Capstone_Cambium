@@ -101,6 +101,10 @@ export default function GrantManagementPage() {
     }
   };
 
+  const totalAllocated = ACTIVE_GRANTS.reduce((a, b) => a + b.allocatedAmount, 0);
+  const totalExpended = ACTIVE_GRANTS.reduce((a, b) => a + b.expendedAmount, 0);
+  const totalPubs = ACTIVE_GRANTS.reduce((a, b) => a + b.publicationsCount, 0);
+
   const handleExportFFR = () => {
     const ffrReport = {
       form: "Standard Form 425 (SF-425) Federal Financial Report",
