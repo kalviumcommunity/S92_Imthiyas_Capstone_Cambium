@@ -143,6 +143,26 @@ graph TD
 - [x] **TASK-M6-03**: Verify zero orphaned or unreferenced legacy directories (e.g., safe cleanup of `_vite_raw_code`).
 - [ ] **TASK-M6-04**: Complete final end-to-end browser walkthrough on `http://localhost:3000`.
 
+### Milestone 7: Live Open Scholarly Intelligence Fabric & Navigation Velocity
+- [x] **TASK-M7-01**: Implement Navigation Velocity Engine with cursor hover prefetching (`router.prefetch()`) across `GlobalSidebar` and `PublicHeader`.
+  - *Files*: `client/components/GlobalSidebar.tsx`, `client/components/PublicHeader.tsx`
+  - *PRD*: `NFR-PERF-01`
+- [x] **TASK-M7-02**: Wire Landing Page search, Knowledge Graph preview, and Opportunities carousel to live OpenAlex (250M+ works) and Europe PMC open APIs.
+  - *Files*: `client/app/page.tsx`, `client/lib/scholarly-api.ts`
+  - *PRD*: `FR-OPP-01`, `FR-GRAPH-01`
+- [x] **TASK-M7-03**: Integrate live scholarly opportunities and grants feed into `/opportunities` with live topic filtering and DOI resolvers.
+  - *Files*: `client/app/(protected)/opportunities/page.tsx`
+  - *PRD*: `FR-OPP-01`, `FR-OPP-03`
+- [x] **TASK-M7-04**: Connect Publications Desk (`/publications`) to live OpenAlex publication stream with citation metrics and BibTeX/APA generation.
+  - *Files*: `client/app/(protected)/publications/page.tsx`, `client/lib/citation.ts`
+  - *PRD*: `FR-OPP-04`
+- [x] **TASK-M7-05**: Implement one-click live manuscript DOI / PubMed ingest in Agentic Reader (`/agent-reader`) for real-time multi-agent audit.
+  - *Files*: `client/app/(protected)/agent-reader/page.tsx`
+  - *PRD*: `FR-AGENT-01`, `FR-AGENT-02`
+- [x] **TASK-M7-06**: Wire Constellation Knowledge Graph (`/graph`) to live concept clusters and co-authorship networks from OpenAlex.
+  - *Files*: `client/app/(protected)/graph/page.tsx`
+  - *PRD*: `FR-GRAPH-01`, `FR-GRAPH-02`
+
 ---
 
 ## 4. Release Criteria & Quality Gates

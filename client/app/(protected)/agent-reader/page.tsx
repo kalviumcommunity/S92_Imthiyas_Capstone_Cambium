@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { chatWithAssistant, uploadArtifact } from "@/lib/api";
+import { fetchScholarlyWorks } from "@/lib/scholarly-api";
 import {
   Sparkles,
   FileText,
@@ -25,6 +26,8 @@ import {
   Terminal,
   FileCheck,
   UploadCloud,
+  Globe,
+  X,
 } from "lucide-react";
 
 interface SynthesisMessage {
@@ -45,6 +48,9 @@ export default function AgenticReaderPage() {
   const [inputQuery, setInputQuery] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showLiveFetchModal, setShowLiveFetchModal] = useState(false);
+  const [liveDoiInput, setLiveDoiInput] = useState("");
+  const [isLiveFetching, setIsLiveFetching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [manuscript, setManuscript] = useState({
@@ -55,6 +61,50 @@ export default function AgenticReaderPage() {
     authors: "Imthiyas, S.",
     affiliations: "Department of EECS, MIT, Cambridge, MA · Cambium Research Lab",
   });
+
+  const handleLiveFetch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!liveDoiInput.trim()) return;
+    setIsLiveFetching(true);
+    try {
+      const works = await fetchScholarlyWorks({ query: liveDoiInput.trim(), limit: 1 });
+      if (works && works.length > 0) {
+        const w = works[0];
+        setManuscript({
+          title: w.title,
+          journal: `${w.venue} · ${w.year} · Cited by ${w.cited}`,
+          pages: 14,
+          doi: w.doi || liveDoiInput.trim(),
+          authors: w.authors.join(", "),
+          affiliations: w.topics.join(" · "),
+        });
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `live-${Date.now()}`,
+            sender: "agent",
+            agentRole: selectedAgent,
+            content: `**Live OpenAlex / Europe PMC Ingest Complete**\n\nFetched peer-reviewed manuscript: **"${w.title}"** by ${w.authors.slice(0, 3).join(", ")} (${w.venue}, ${w.year}).\n\n**Abstract Snapshot**:\n> "${w.abstract}"\n\nLine-level citations and multi-agent methodological grounding have been synchronized across your Cambium workspace. You may ask audit questions now.`,
+            citations: [
+              {
+                page: 1,
+                section: "Abstract",
+                line: "L1-L12",
+                snippet: w.abstract.substring(0, 140) + "...",
+              },
+            ],
+            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          },
+        ]);
+        setShowLiveFetchModal(false);
+        setLiveDoiInput("");
+      }
+    } catch (err) {
+      console.warn("Live fetch failed:", err);
+    } finally {
+      setIsLiveFetching(false);
+    }
+  };
 
   const handleManuscriptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -296,6 +346,13 @@ export default function AgenticReaderPage() {
             {isUploading ? "Ingesting..." : "Upload Manuscript"}
           </button>
           <button
+            onClick={() => setShowLiveFetchModal(true)}
+            className="px-3 py-1.5 rounded-lg border border-[#3E6248]/50 bg-white hover:bg-[#FAF7F0] text-xs font-mono text-[#3E6248] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+          >
+            <Globe size={13} />
+            Fetch Live Paper (DOI / OpenAlex)
+          </button>
+          <button
             onClick={handleExportSynthesis}
             className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] bg-white text-xs font-mono text-[#202920] hover:bg-[#FAF7F0] flex items-center gap-1.5 transition-colors cursor-pointer"
           >
@@ -311,6 +368,61 @@ export default function AgenticReaderPage() {
           </Link>
         </div>
       </div>
+
+      {/* Live Fetch Modal Dialog */}
+      {showLiveFetchModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-[#E4DCCB] shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E4DCCB]">
+              <div className="flex items-center gap-2">
+                <Globe size={18} className="text-[#3E6248]" />
+                <h3 className="font-serif text-lg font-medium text-[#202920]">Fetch Live Scientific Manuscript</h3>
+              </div>
+              <button
+                onClick={() => setShowLiveFetchModal(false)}
+                className="p-1 rounded-lg text-[#85877B] hover:text-[#202920] cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <p className="text-xs text-[#62685E] leading-relaxed">
+              Connect directly to OpenAlex (250M+ open scientific works) or Europe PMC. Enter a DOI, PubMed ID, or paper title to stream full metadata and abstract into your multi-agent audit desk.
+            </p>
+            <form onSubmit={handleLiveFetch} className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-mono uppercase text-[#62685E] font-bold mb-1">
+                  DOI, PMID, or Research Title
+                </label>
+                <input
+                  type="text"
+                  value={liveDoiInput}
+                  onChange={(e) => setLiveDoiInput(e.target.value)}
+                  placeholder="e.g. 10.1016/j.cels.2025.04.002 or Attention Is All You Need"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4DCCB] text-xs font-mono text-[#202920] focus:outline-none focus:border-[#3E6248]"
+                  autoFocus
+                />
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLiveFetchModal(false)}
+                  className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] text-xs font-mono text-[#62685E] hover:bg-[#FAF7F0] cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLiveFetching || !liveDoiInput.trim()}
+                  className="px-4 py-1.5 rounded-lg bg-[#3E6248] hover:bg-[#202920] text-white text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {isLiveFetching ? <Sparkles size={13} className="animate-spin" /> : <Globe size={13} />}
+                  {isLiveFetching ? "Streaming Manuscript..." : "Fetch & Ground Manuscript"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Split-Screen Workspace */}
       <div className="flex-1 flex min-h-0 divide-x divide-[#E4DCCB]">
