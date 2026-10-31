@@ -21,6 +21,14 @@ import { Bookmark } from '../modules/bookmarks/entities/bookmark.entity';
 import { Notification } from '../modules/notifications/entities/notification.entity';
 import { OutboxEvent } from '../database/entities/outbox-event.entity';
 import { AuditLog } from '../database/entities/audit-log.entity';
+import { AcademicPost } from '../modules/community/entities/academic-post.entity';
+import { Comment } from '../modules/community/entities/comment.entity';
+import { PostReaction } from '../modules/community/entities/post-reaction.entity';
+import { ScholarConnection } from '../modules/connections/entities/scholar-connection.entity';
+import { ScholarFollow } from '../modules/connections/entities/scholar-follow.entity';
+import { GroupProject } from '../modules/projects/entities/group-project.entity';
+import { ProjectMember } from '../modules/projects/entities/project-member.entity';
+import { ProjectActivityLog } from '../modules/projects/entities/project-activity-log.entity';
 
 export const getDatabaseConfig = (): TypeOrmModuleOptions => {
   const isProd = process.env.NODE_ENV === 'production';
@@ -49,6 +57,14 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
     Notification,
     OutboxEvent,
     AuditLog,
+    AcademicPost,
+    Comment,
+    PostReaction,
+    ScholarConnection,
+    ScholarFollow,
+    GroupProject,
+    ProjectMember,
+    ProjectActivityLog,
   ];
 
   // PgBouncer pool sizing (50 clients per pod, sustaining 5,000+ cluster connections)
