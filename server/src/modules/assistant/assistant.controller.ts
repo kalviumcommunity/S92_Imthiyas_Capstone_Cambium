@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AssistantService, AssistantChatRequest } from './assistant.service';
 
 @ApiTags('AI Research Assistant (Agentic RAG)')
-@Controller('api/v1/assistant')
+@Controller(['api/v1/assistant', 'api/assistant'])
 export class AssistantController {
   constructor(
     @Inject(AssistantService)

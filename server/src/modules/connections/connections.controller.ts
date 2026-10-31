@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -12,7 +13,7 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ConnectionsService } from './connections.service';
 
 @ApiTags('Scholar Network & Connections')
-@Controller('connections')
+@Controller(['connections', 'api/connections'])
 export class ConnectionsController {
   constructor(private readonly connectionsService: ConnectionsService) {}
 
@@ -57,5 +58,12 @@ export class ConnectionsController {
   async toggleFollow(@Param('targetId') targetId: string, @Req() req: any) {
     const followerId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
     return this.connectionsService.toggleFollow(followerId, targetId);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Remove an existing connection or cancel pending request' })
+  async removeConnection(@Param('id') connectionId: string, @Req() req: any) {
+    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
+    return this.connectionsService.removeConnection(connectionId, userId);
   }
 }

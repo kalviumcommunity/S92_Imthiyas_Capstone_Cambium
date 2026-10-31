@@ -15,6 +15,7 @@ describe('ConnectionsService', () => {
       count: vi.fn().mockResolvedValue(12),
       create: vi.fn((d) => ({ id: 'conn-1', ...d })),
       save: vi.fn((d) => Promise.resolve({ id: 'conn-1', ...d })),
+      remove: vi.fn().mockResolvedValue(true),
       createQueryBuilder: vi.fn(() => ({
         leftJoinAndSelect: vi.fn().mockReturnThis(),
         where: vi.fn().mockReturnThis(),
@@ -85,5 +86,17 @@ describe('ConnectionsService', () => {
     expect(res.success).toBe(true);
     expect(res.metrics.connections).toBe(12);
     expect(res.metrics.followers).toBe(48);
+  });
+
+  it('should remove an active connection', async () => {
+    mockConnRepo.findOne.mockResolvedValueOnce({
+      id: 'conn-1',
+      requesterId: 'u-1',
+      addresseeId: 'u-2',
+    });
+
+    const res = await service.removeConnection('conn-1', 'u-1');
+    expect(res.success).toBe(true);
+    expect(mockConnRepo.remove).toHaveBeenCalled();
   });
 });

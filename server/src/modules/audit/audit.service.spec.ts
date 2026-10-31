@@ -57,3 +57,4 @@ describe('AuditService & Cryptographic Hash Chain Engine', () => {
     expect(proof.signature).toBe(expectedSig);
   });
 });
+

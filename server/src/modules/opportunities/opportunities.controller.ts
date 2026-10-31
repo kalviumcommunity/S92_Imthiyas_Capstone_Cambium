@@ -30,7 +30,7 @@ import { EdgeCacheInterceptor } from '../../common/interceptors/edge-cache.inter
 import { CloudflarePurgeService } from '../../common/services/cloudflare-purge.service';
 
 @ApiTags('Research Opportunities')
-@Controller('api/research-opportunities')
+@Controller(['api/research-opportunities', 'api/opportunities'])
 export class OpportunitiesController {
   constructor(
     @Inject(OpportunitiesService)

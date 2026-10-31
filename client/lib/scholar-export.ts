@@ -134,7 +134,7 @@ IS  - 4
 SP  - 312
 EP  - 325
 DO  - 10.1038/s42256-026-00891-x
-ER  - 
+ER  -
 
 TY  - JOUR
 TI  - High-Throughput Cryo-EM Characterization of Conformational Landscapes
@@ -148,8 +148,9 @@ IS  - 11
 SP  - 2410
 EP  - 2428
 DO  - 10.1016/j.cell.2025.04.019
-ER  - 
+ER  -
 `;
 
   downloadFile(ris, `cambium-citations-${Date.now()}.ris`, "application/x-research-info-systems");
 }
+

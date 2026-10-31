@@ -92,4 +92,25 @@ export class BookmarksService {
       data: {},
     };
   }
+
+  /**
+   * Deletes a bookmark identified by userId and opportunityId
+   */
+  async removeByOpportunity(userId: string, opportunityId: string) {
+    const bookmark = await this.bookmarkRepo.findOne({
+      where: { userId, opportunityId },
+    });
+
+    if (!bookmark) {
+      throw new NotFoundException('Bookmark not found for this user and opportunity');
+    }
+
+    await this.bookmarkRepo.remove(bookmark);
+
+    return {
+      success: true,
+      message: 'Bookmark removed successfully',
+      data: { userId, opportunityId },
+    };
+  }
 }

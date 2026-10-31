@@ -34,11 +34,14 @@ describe('CommunityService', () => {
       }),
       create: vi.fn((data) => ({ id: 'new-post-uuid', ...data })),
       save: vi.fn((data) => Promise.resolve({ id: 'saved-post-uuid', ...data })),
+      remove: vi.fn().mockResolvedValue(true),
     };
 
     mockCommentRepo = {
       create: vi.fn((data) => ({ id: 'comment-uuid', ...data })),
       save: vi.fn((data) => Promise.resolve({ id: 'saved-comment-uuid', ...data })),
+      remove: vi.fn().mockResolvedValue(true),
+      findOne: vi.fn().mockResolvedValue({ id: 'comm-1', postId: 'post-1', authorId: 'user-1' }),
     };
 
     mockReactionRepo = {
@@ -108,5 +111,61 @@ describe('CommunityService', () => {
     expect(result.success).toBe(true);
     expect(result.action).toBe('removed');
     expect(mockReactionRepo.remove).toHaveBeenCalled();
+  });
+
+  it('should update an existing academic post when caller is author', async () => {
+    mockPostRepo.findOne.mockResolvedValueOnce({
+      id: 'post-1',
+      authorId: 'user-1',
+      title: 'Original Title',
+    });
+
+    const result = await service.updatePost('post-1', 'user-1', {
+      title: 'Updated Title',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data.title).toBe('Updated Title');
+    expect(mockPostRepo.save).toHaveBeenCalled();
+  });
+
+  it('should reject post update from non-author with ForbiddenException', async () => {
+    mockPostRepo.findOne.mockResolvedValueOnce({
+      id: 'post-1',
+      authorId: 'user-1',
+    });
+
+    await expect(service.updatePost('post-1', 'intruder-user', { title: 'Hack' })).rejects.toThrow(
+      'Only the author can edit this academic post.',
+    );
+  });
+
+  it('should delete post when requested by author', async () => {
+    mockPostRepo.findOne.mockResolvedValueOnce({
+      id: 'post-1',
+      authorId: 'user-1',
+    });
+
+    const result = await service.deletePost('post-1', 'user-1');
+    expect(result.success).toBe(true);
+    expect(mockPostRepo.remove).toHaveBeenCalled();
+  });
+
+  it('should delete a comment and decrement post comment metrics', async () => {
+    mockPostRepo.findOne.mockResolvedValueOnce({
+      id: 'post-1',
+      authorId: 'user-1',
+      metrics: { comments: 3 },
+    });
+    mockCommentRepo.findOne.mockResolvedValueOnce({
+      id: 'comm-1',
+      postId: 'post-1',
+      authorId: 'user-1',
+    });
+
+    const result = await service.deleteComment('post-1', 'comm-1', 'user-1');
+    expect(result.success).toBe(true);
+    expect(mockCommentRepo.remove).toHaveBeenCalled();
+    expect(mockPostRepo.save).toHaveBeenCalled();
   });
 });

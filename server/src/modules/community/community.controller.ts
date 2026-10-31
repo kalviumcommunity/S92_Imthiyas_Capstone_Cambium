@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Put,
+  Delete,
   Body,
   Param,
   Query,
@@ -15,7 +17,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 
 @ApiTags('Academic Community')
-@Controller('community')
+@Controller(['community', 'api/community'])
 export class CommunityController {
   constructor(private readonly communityService: CommunityService) {}
 
@@ -65,5 +67,37 @@ export class CommunityController {
   ) {
     const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
     return this.communityService.toggleReaction(postId, userId, type || 'like');
+  }
+
+  @Put('posts/:id')
+  @ApiOperation({ summary: 'Update an existing academic post (Author only)' })
+  async updatePost(
+    @Param('id') postId: string,
+    @Body() dto: Partial<CreatePostDto>,
+    @Req() req: any,
+  ) {
+    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
+    return this.communityService.updatePost(postId, userId, dto);
+  }
+
+  @Delete('posts/:id')
+  @ApiOperation({ summary: 'Delete an academic post (Author only)' })
+  async deletePost(
+    @Param('id') postId: string,
+    @Req() req: any,
+  ) {
+    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
+    return this.communityService.deletePost(postId, userId);
+  }
+
+  @Delete('posts/:id/comments/:commentId')
+  @ApiOperation({ summary: 'Delete a comment on an academic post' })
+  async deleteComment(
+    @Param('id') postId: string,
+    @Param('commentId') commentId: string,
+    @Req() req: any,
+  ) {
+    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
+    return this.communityService.deleteComment(postId, commentId, userId);
   }
 }

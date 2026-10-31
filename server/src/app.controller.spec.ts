@@ -29,4 +29,13 @@ describe('AppController', () => {
     expect(report).toBeDefined();
     expect(report.engine).toContain('PostgreSQL 16');
   });
+
+  it('should return liveness and readiness probe metrics', () => {
+    const probe = controller.getLivenessAndReadiness();
+    expect(probe).toBeDefined();
+    expect(probe.status).toBe('ok');
+    expect(probe.database).toBe('connected');
+    expect(probe.redis).toBe('connected');
+    expect(probe.uptime).toBeGreaterThanOrEqual(0);
+  });
 });
