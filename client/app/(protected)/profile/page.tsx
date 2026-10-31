@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 import { useAuthStore } from "@/lib/store/useAuthStore";
+import { fetchLiveOrcidScholar, OrcidScholarData } from "@/lib/orcid-api";
 
 // ─── Profile Data Structure ───────────────────────────────────────────────────
 
@@ -150,8 +151,40 @@ export default function ProfileCalibrationPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isPhotoDragging, setIsPhotoDragging] = useState(false);
   const [lastSaved, setLastSaved] = useState("Synchronized just now");
+  const [isSyncingOrcid, setIsSyncingOrcid] = useState(false);
+  const [syncedOrcidData, setSyncedOrcidData] = useState<OrcidScholarData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const handleSyncOrcid = async () => {
+    const orcidId = profile.links.ORCID || "0000-0002-1825-0097";
+    setIsSyncingOrcid(true);
+    try {
+      const data = await fetchLiveOrcidScholar(orcidId);
+      setSyncedOrcidData(data);
+      update({
+        name: data.name,
+        headline: data.headline || profile.headline,
+        bio: data.bio || profile.bio,
+        institution: data.institution || profile.institution,
+        country: data.country || profile.country,
+        interests: Array.from(new Set([...profile.interests, ...data.researchInterests])),
+      });
+      toast({
+        title: "ORCID & OpenAlex Records Synced",
+        description: `Verified scholar: ${data.name} (${data.institution}). Ingested ${data.worksCount} works, ${data.totalCitations} citations (h-index ${data.hIndex}).`,
+        variant: "success",
+      });
+    } catch (err: any) {
+      toast({
+        title: "ORCID Sync Notice",
+        description: err.message || "Failed to query ORCID registry. Please check format.",
+        variant: "error",
+      });
+    } finally {
+      setIsSyncingOrcid(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -787,31 +820,92 @@ export default function ProfileCalibrationPage() {
                 </p>
               </div>
 
-              {/* ORCID Primary Box */}
-              <div className="p-5 rounded-2xl bg-[#FAF7F0] border border-[#3E6248]/40 space-y-3">
+              {/* ORCID Primary Box with Live Sync Button & Verified Data Card */}
+              <div className="p-5 rounded-2xl bg-[#FAF7F0] border border-[#3E6248]/40 space-y-4 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="w-5 h-5 rounded-md bg-[#A6CE39] text-white flex items-center justify-center font-bold text-[10px]">
                       iD
                     </span>
                     <span className="font-serif text-sm font-semibold text-[#202920]">
-                      ORCID Digital Identifier
+                      ORCID Digital Identifier & Bibliographic Sync
                     </span>
                   </div>
                   <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full font-bold">
-                    Verified Sync Active
+                    OpenAlex Live Bridge
                   </span>
                 </div>
-                <Input
-                  value={profile.links.ORCID || ""}
-                  onChange={(e) =>
-                    update({
-                      links: { ...profile.links, ORCID: e.target.value },
-                    })
-                  }
-                  placeholder="0000-0002-1825-0097"
-                  className="bg-white border-[#E4DCCB] text-xs font-mono h-10"
-                />
+
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={profile.links.ORCID || ""}
+                    onChange={(e) =>
+                      update({
+                        links: { ...profile.links, ORCID: e.target.value },
+                      })
+                    }
+                    placeholder="0000-0002-1825-0097"
+                    className="bg-white border-[#E4DCCB] text-xs font-mono h-10 flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSyncOrcid}
+                    disabled={isSyncingOrcid}
+                    className="px-4 h-10 rounded-lg bg-[#3E6248] hover:bg-[#2d4734] text-white text-xs font-mono font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-xs shrink-0"
+                  >
+                    <Sparkles size={13} className={isSyncingOrcid ? "animate-spin" : ""} />
+                    <span>{isSyncingOrcid ? "Querying..." : "Sync ORCID"}</span>
+                  </button>
+                </div>
+
+                {syncedOrcidData && (
+                  <div className="p-4 rounded-xl bg-white border border-[#E4DCCB] space-y-3">
+                    <div className="flex items-center justify-between border-b border-[#E4DCCB] pb-2.5">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-xs text-[#202920]">{syncedOrcidData.name}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-[#DCE6D7] text-[#3E6248] text-[10px] font-mono font-bold">
+                            Verified
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-[#62685E] font-sans">
+                          {syncedOrcidData.institution}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-right">
+                        <div>
+                          <span className="font-mono text-[10px] text-[#85877B] block uppercase">h-index</span>
+                          <span className="font-mono text-xs font-bold text-[#3E6248]">{syncedOrcidData.hIndex}</span>
+                        </div>
+                        <div>
+                          <span className="font-mono text-[10px] text-[#85877B] block uppercase">Citations</span>
+                          <span className="font-mono text-xs font-bold text-[#202920]">{syncedOrcidData.totalCitations.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {syncedOrcidData.recentWorks.length > 0 && (
+                      <div className="space-y-1.5">
+                        <span className="font-mono text-[10px] text-[#85877B] uppercase tracking-wider block font-semibold">
+                          Ingested Verified Works ({syncedOrcidData.recentWorks.length})
+                        </span>
+                        {syncedOrcidData.recentWorks.map((work, wIdx) => (
+                          <div
+                            key={wIdx}
+                            className="p-2 rounded-lg bg-[#FAF7F0] border border-[#E4DCCB]/60 flex items-center justify-between text-[11px]"
+                          >
+                            <span className="font-serif text-[#202920] truncate mr-2 font-medium">
+                              {work.title}
+                            </span>
+                            <span className="font-mono text-[10px] text-[#3E6248] shrink-0 font-semibold">
+                              {work.citations} cites · {work.year}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Other Academic Links */}

@@ -523,9 +523,18 @@ export default function ResearchPortfolioPage() {
             <span className="w-2 h-2 rounded-full bg-[#66866A] animate-pulse" />
             Verified Academic Identity & Research Portfolio
           </div>
-          <span className="text-[11px] font-mono text-[#85877B] hidden sm:inline">
-            ORCID: 0000-0002-1825-0097
-          </span>
+          <a
+            href="https://orcid.org/0000-0002-1825-0097"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11px] font-mono text-[#3E6248] hover:underline hidden sm:inline-flex items-center gap-1.5"
+            title="View verified ORCID registry profile"
+          >
+            <span className="w-3.5 h-3.5 rounded-sm bg-[#A6CE39] text-white flex items-center justify-center font-bold text-[8px]">
+              iD
+            </span>
+            <span>ORCID: 0000-0002-1825-0097</span>
+          </a>
         </div>
 
         {/* ── LinkedIn-Style Cover Banner & Overlapping Profile Card ── */}

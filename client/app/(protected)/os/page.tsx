@@ -3,6 +3,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useTheme } from "@/lib/theme-provider";
+import { useQuery } from "@tanstack/react-query";
+import { getMyBookmarks } from "@/lib/api";
+import {
+  generateIcsContent,
+  downloadIcsFile,
+  generateGoogleCalendarUrl,
+  CalendarEventItem,
+} from "@/lib/calendar-export";
+import { useToast } from "@/components/ui/toast";
 import {
   LayoutGrid,
   Search,
@@ -343,9 +352,54 @@ function WeekCalendar() {
   );
 }
 
-function AgendaCalendar() {
+function AgendaCalendar({ bookmarkEvents = [] }: { bookmarkEvents?: CalendarEventItem[] }) {
   return (
     <div className="space-y-6">
+      {/* Live Synced Deadlines from Opportunities */}
+      {bookmarkEvents.length > 0 && (
+        <div className="p-4 rounded-xl bg-[#FAF7F0] dark:bg-[#151D16] border border-[#3E6248]/30 space-y-2.5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold tracking-wider uppercase text-[#3E6248] dark:text-[#4ADE80]">
+              <Bookmark size={13} className="fill-[#3E6248] dark:fill-[#4ADE80]" />
+              Monitored Research Deadlines (Auto-Synced from /opportunities)
+            </span>
+            <span className="text-[10px] font-mono text-[#3E6248] bg-[#DCE6D7] px-2.5 py-0.5 rounded-full font-semibold">
+              {bookmarkEvents.length} Active Grants
+            </span>
+          </div>
+          <div className="space-y-1.5">
+            {bookmarkEvents.map((evt) => (
+              <div
+                key={evt.id}
+                className="flex items-center justify-between gap-3 py-2 px-3 rounded-lg border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] text-xs hover:border-[#3E6248] transition-colors"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="w-2 h-2 rounded-full bg-[#8A5A12] shrink-0" />
+                  <span className="font-semibold text-[#202920] dark:text-[#FAF7F0] truncate">
+                    {evt.title}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="font-mono text-[11px] text-[#85877B]">
+                    {new Date(evt.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </span>
+                  <a
+                    href={generateGoogleCalendarUrl(evt)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#F2EBDD] dark:bg-[#203324] text-[#3E6248] dark:text-[#4ADE80] font-mono text-[10px] font-semibold hover:opacity-80 transition-opacity"
+                    title="Add directly to Google Calendar"
+                  >
+                    <CalendarIcon size={11} />
+                    <span>Google Cal</span>
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {AGENDA_EVENTS.map((group) => (
         <div key={group.date}>
           <p className="text-[11px] font-bold tracking-wider uppercase text-ink-tertiary mb-2">
@@ -947,6 +1001,7 @@ function ResearchActivityHeatmap() {
 // ─── Main Personal OS Page Component ──────────────────────────────────────────
 
 export default function PersonalResearchOSPage() {
+  const { toast } = useToast();
   const [calView, setCalView] = useState<CalendarView>("week");
   const [savedTab, setSavedTab] = useState<SavedTab>("all");
   const [notifs, setNotifs] = useState(NOTIFS_INITIAL);
@@ -954,6 +1009,61 @@ export default function PersonalResearchOSPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Dynamic Bookmarks & Calendar Deadlines Sync
+  const { data: bookmarkedItems } = useQuery({
+    queryKey: ["my-bookmarks"],
+    queryFn: getMyBookmarks,
+  });
+
+  const liveBookmarkEvents: CalendarEventItem[] = (bookmarkedItems || [])
+    .filter((b) => b.opportunity && b.opportunity.deadline)
+    .map((b) => {
+      const opp = b.opportunity!;
+      return {
+        id: `grant-${b.id}`,
+        title: `${opp.organization ? `[${opp.organization}] ` : ""}${opp.title} Deadline`,
+        description: `Funding Program: ${opp.title}\nAgency: ${opp.organization || "Undisclosed"}\nPortal: ${
+          opp.link || "https://cambium.research/opportunities"
+        }`,
+        startDate: new Date(opp.deadline!),
+        endDate: new Date(new Date(opp.deadline!).getTime() + 86400000),
+        allDay: true,
+        category: "grant_deadline",
+        url: opp.link || "/opportunities",
+      };
+    });
+
+  const allCalendarEvents: CalendarEventItem[] = [
+    ...liveBookmarkEvents,
+    {
+      id: "meet-1",
+      title: "Cellular Topology Lab Meeting",
+      description: "Weekly sync on neuro-symbolic validation and compute cluster allocations.",
+      startDate: new Date(Date.now() + 86400000 * 2),
+      endDate: new Date(Date.now() + 86400000 * 2 + 3600000),
+      category: "lab_meeting",
+      location: "Room 32-G475 / Cambium Audio Space",
+    },
+    {
+      id: "rev-1",
+      title: "Preprint Peer Review Session",
+      description: "Reviewing Foundation Models in Multi-Center MRI Volumetric Tomography.",
+      startDate: new Date(Date.now() + 86400000 * 4),
+      endDate: new Date(Date.now() + 86400000 * 4 + 7200000),
+      category: "peer_review",
+    },
+  ];
+
+  const handleExportIcs = () => {
+    const icsContent = generateIcsContent(allCalendarEvents);
+    downloadIcsFile("cambium-academic-calendar.ics", icsContent);
+    toast({
+      title: "iCalendar (.ics) Exported",
+      description: `Generated RFC 5545 calendar with ${allCalendarEvents.length} events. Ready to import into Google, Apple, or Outlook Calendar.`,
+      variant: "success",
+    });
+  };
 
   const unreadCount = notifs.filter((n) => !n.read).length;
 
@@ -1144,21 +1254,32 @@ export default function PersonalResearchOSPage() {
             <SectionHeading
               title="Research Calendar"
               action={
-                <div className="flex items-center gap-1 p-0.5 bg-surface-sunken rounded-md border border-edge-default">
-                  {(["week", "month", "agenda"] as CalendarView[]).map((v) => (
-                    <button
-                      key={v}
-                      type="button"
-                      onClick={() => setCalView(v)}
-                      className={`px-3 py-1.5 rounded text-xs font-semibold capitalize transition-all ${
-                        calView === v
-                          ? "bg-surface-raised text-ink-primary shadow-xs border border-edge-default/60"
-                          : "text-ink-tertiary hover:text-ink-primary"
-                      }`}
-                    >
-                      {v}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={handleExportIcs}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#3E6248]/40 bg-[#FAF7F0] dark:bg-[#151D16] hover:bg-[#DCE6D7] text-xs font-mono font-semibold text-[#3E6248] dark:text-[#4ADE80] transition-colors cursor-pointer shadow-xs"
+                    title="Export all deadlines and lab events as RFC 5545 .ics file"
+                  >
+                    <Download size={13} />
+                    <span>Export .ICS Calendar</span>
+                  </button>
+                  <div className="flex items-center gap-1 p-0.5 bg-surface-sunken rounded-md border border-edge-default">
+                    {(["week", "month", "agenda"] as CalendarView[]).map((v) => (
+                      <button
+                        key={v}
+                        type="button"
+                        onClick={() => setCalView(v)}
+                        className={`px-3 py-1.5 rounded text-xs font-semibold capitalize transition-all ${
+                          calView === v
+                            ? "bg-surface-raised text-ink-primary shadow-xs border border-edge-default/60"
+                            : "text-ink-tertiary hover:text-ink-primary"
+                        }`}
+                      >
+                        {v}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               }
             />
@@ -1181,7 +1302,7 @@ export default function PersonalResearchOSPage() {
             <div className="rounded-lg border border-edge-default overflow-hidden bg-surface-raised shadow-xs">
               <div className="p-5">
                 {calView === "week" && <WeekCalendar />}
-                {calView === "agenda" && <AgendaCalendar />}
+                {calView === "agenda" && <AgendaCalendar bookmarkEvents={liveBookmarkEvents} />}
                 {calView === "month" && <MonthCalendar />}
               </div>
             </div>
