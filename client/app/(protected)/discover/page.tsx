@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
 import {
   Compass,
   LayoutDashboard,
@@ -378,6 +379,53 @@ function SearchOverlay({
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
 
+  const discoverIndex = useMemo(() => {
+    const idx = new InvertedIndex<SearchableDocument>({
+      title: 5.0,
+      tags: 3.5,
+      author: 2.0,
+      description: 1.0,
+    });
+    idx.addDocuments([
+      ...PAPER_CARDS.map((p) => ({
+        id: p.id,
+        title: p.title,
+        author: p.authors.join(", "),
+        tags: p.topics,
+        description: p.abstract,
+        category: "paper",
+      })),
+      ...RESEARCHER_CARDS.map((r) => ({
+        id: r.id,
+        title: r.name,
+        author: r.role,
+        tags: r.sharedInterests,
+        description: `${r.institution} ${r.focus}`,
+        category: "researcher",
+      })),
+      ...TOPIC_CARDS.map((t) => ({
+        id: t.id,
+        title: t.name,
+        description: t.description,
+        category: "topic",
+      })),
+      ...LAB_CARDS.map((l) => ({
+        id: l.id,
+        title: l.name,
+        author: l.institution,
+        tags: l.focus,
+        description: `${l.institution} · ${l.focus.join(", ")}`,
+        category: "lab",
+      })),
+    ]);
+    return idx;
+  }, []);
+
+  const instantMatches = useMemo(() => {
+    if (!query.trim()) return [];
+    return discoverIndex.search(query.trim(), { limit: 6 });
+  }, [query, discoverIndex]);
+
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
@@ -477,13 +525,53 @@ function SearchOverlay({
               </div>
             </>
           ) : (
-            <div
-              onClick={() => handleSubmit()}
-              className="text-center py-8 text-[#62685E] text-sm font-sans cursor-pointer hover:bg-white rounded-xl transition-colors"
-            >
-              Press Enter or click to search for &ldquo;
-              <span className="font-semibold text-[#202920]">{query}</span>
-              &rdquo; across 250M+ OpenAlex research papers...
+            <div className="space-y-3">
+              {instantMatches.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="text-[11px] font-mono uppercase tracking-wider text-[#85877B] font-semibold">
+                    Instant Inverted Index Matches ({instantMatches.length})
+                  </div>
+                  {instantMatches.map(({ item, score }) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        onSearch(item.title);
+                        onClose();
+                      }}
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl bg-white border border-[#E4DCCB] text-left hover:border-[#3E6248] transition-all cursor-pointer"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-serif text-sm font-semibold text-[#202920] truncate">
+                            {item.title}
+                          </span>
+                          <span className="px-1.5 py-0.2 rounded font-mono text-[9px] uppercase tracking-wider bg-[#F2EBDD] text-[#62685E]">
+                            {item.category}
+                          </span>
+                        </div>
+                        {item.author && (
+                          <div className="text-xs text-[#62685E] truncate mt-0.5">
+                            {item.author}
+                          </div>
+                        )}
+                      </div>
+                      <span className="font-mono text-[10px] text-[#3E6248] bg-emerald-50 px-1.5 py-0.5 rounded ml-2 shrink-0">
+                        BM25 {score.toFixed(1)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div
+                onClick={() => handleSubmit()}
+                className="text-center py-4 px-3 text-[#62685E] text-xs font-sans cursor-pointer hover:bg-white rounded-xl transition-colors border border-dashed border-[#E4DCCB]"
+              >
+                Press Enter or click to search for &ldquo;
+                <span className="font-semibold text-[#202920]">{query}</span>
+                &rdquo; across 250M+ OpenAlex research papers...
+              </div>
             </div>
           )}
         </div>

@@ -7,6 +7,7 @@ import { Quote } from "lucide-react";
 import CitationExportModal, { CitationItem } from "@/components/CitationExportModal";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fetchScholarlyWorks } from "@/lib/scholarly-api";
+import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
 
@@ -1301,9 +1302,57 @@ export default function OpportunityHub() {
     setToast({ msg, key: toastKey.current });
   }, []);
 
-  // Filter & Search Logic
+  // ─── High-Performance DSA Inverted Indexes ──────────────────────────────────
+  const strongMatchesIndex = useMemo(() => {
+    const idx = new InvertedIndex<Opportunity & SearchableDocument>({
+      title: 5.0,
+      tags: 3.5,
+      author: 2.0,
+      category: 2.0,
+      description: 1.0,
+    });
+    idx.addDocuments(
+      STRONG_MATCHES.map((opp) => ({
+        ...opp,
+        author: opp.org,
+        category: opp.kind,
+        tags: opp.areas,
+        description: `${opp.funding || ""} ${opp.eligibility || ""}`,
+      }))
+    );
+    return idx;
+  }, []);
+
+  const exploreOppsIndex = useMemo(() => {
+    const idx = new InvertedIndex<Opportunity & SearchableDocument>({
+      title: 5.0,
+      tags: 3.5,
+      author: 2.0,
+      category: 2.0,
+      description: 1.0,
+    });
+    idx.addDocuments(
+      EXPLORE_OPPS.map((opp) => ({
+        ...opp,
+        author: opp.org,
+        category: opp.kind,
+        tags: opp.areas,
+        description: `${opp.funding || ""} ${opp.eligibility || ""}`,
+      }))
+    );
+    return idx;
+  }, []);
+
+  // Filter & Search Logic with BM25 Scoring
   const filteredStrongMatches = useMemo(() => {
-    return STRONG_MATCHES.filter((opp) => {
+    let baseList: Opportunity[] = STRONG_MATCHES;
+
+    if (searchQuery.trim()) {
+      const searchResults = strongMatchesIndex.search(searchQuery.trim(), { limit: 50 });
+      baseList = searchResults.map((r) => r.item);
+    }
+
+    return baseList.filter((opp) => {
       // Tab filter
       if (activeTab === "grants" && opp.kind !== "Grant") return false;
       if (activeTab === "fellowships" && opp.kind !== "Fellowship") return false;
@@ -1312,16 +1361,6 @@ export default function OpportunityHub() {
       if (activeTab === "cfp" && opp.kind !== "Call for Papers") return false;
       if (activeTab === "competitions" && opp.kind !== "Competition") return false;
       if (activeTab === "programs" && opp.kind !== "Research Program") return false;
-
-      // Search query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesTitle = opp.title.toLowerCase().includes(q);
-        const matchesOrg = opp.org.toLowerCase().includes(q);
-        const matchesAreas = opp.areas.some((a) => a.toLowerCase().includes(q));
-        const matchesKind = opp.kind.toLowerCase().includes(q);
-        if (!matchesTitle && !matchesOrg && !matchesAreas && !matchesKind) return false;
-      }
 
       // Drawer filters
       if (activeFilters["Opportunity Type"] && activeFilters["Opportunity Type"].size > 0) {
@@ -1334,10 +1373,17 @@ export default function OpportunityHub() {
 
       return true;
     });
-  }, [activeTab, searchQuery, activeFilters]);
+  }, [activeTab, searchQuery, activeFilters, strongMatchesIndex]);
 
   const filteredExploreOpps = useMemo(() => {
-    let list = EXPLORE_OPPS.filter((opp) => {
+    let list: Opportunity[] = EXPLORE_OPPS;
+
+    if (searchQuery.trim()) {
+      const searchResults = exploreOppsIndex.search(searchQuery.trim(), { limit: 50 });
+      list = searchResults.map((r) => r.item);
+    }
+
+    list = list.filter((opp) => {
       // Tab filter
       if (activeTab === "grants" && opp.kind !== "Grant") return false;
       if (activeTab === "fellowships" && opp.kind !== "Fellowship") return false;
@@ -1346,16 +1392,6 @@ export default function OpportunityHub() {
       if (activeTab === "cfp" && opp.kind !== "Call for Papers") return false;
       if (activeTab === "competitions" && opp.kind !== "Competition") return false;
       if (activeTab === "programs" && opp.kind !== "Research Program") return false;
-
-      // Search query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesTitle = opp.title.toLowerCase().includes(q);
-        const matchesOrg = opp.org.toLowerCase().includes(q);
-        const matchesAreas = opp.areas.some((a) => a.toLowerCase().includes(q));
-        const matchesKind = opp.kind.toLowerCase().includes(q);
-        if (!matchesTitle && !matchesOrg && !matchesAreas && !matchesKind) return false;
-      }
 
       // Drawer filters
       if (activeFilters["Opportunity Type"] && activeFilters["Opportunity Type"].size > 0) {
@@ -1369,10 +1405,10 @@ export default function OpportunityHub() {
       return true;
     });
 
-    // Sort
+    // Sort (if no search query or explicit sort selected)
     if (activeSort === "Deadline Soon") {
       list = [...list].sort((a, b) => a.daysLeft - b.daysLeft);
-    } else if (activeSort === "Best Match") {
+    } else if (activeSort === "Best Match" && !searchQuery.trim()) {
       list = [...list].sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
     } else if (activeSort === "Alphabetical") {
       list = [...list].sort((a, b) => a.title.localeCompare(b.title));
