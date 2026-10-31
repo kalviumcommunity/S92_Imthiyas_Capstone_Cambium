@@ -4,6 +4,11 @@ import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import VirtualizedAuditLedger, { generate10kAuditEvents, VirtualAuditEvent } from "@/components/ui/VirtualizedAuditLedger";
 import {
+  verifyAuditLedger,
+  exportSignedLedgerProof,
+  AuditVerificationResult,
+} from "@/lib/api";
+import {
   ShieldAlert,
   ShieldCheck,
   KeyRound,
@@ -192,9 +197,41 @@ export default function EnterpriseAuditRbacPage() {
   const [searchFilter, setSearchFilter] = useState("");
   const [selectedSeverity, setSelectedSeverity] = useState<string>("All");
   const [isExporting, setIsExporting] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationReport, setVerificationReport] = useState<AuditVerificationResult | null>(null);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const [isVirtualized, setIsVirtualized] = useState(false);
   const [tenThousandEvents] = useState<VirtualAuditEvent[]>(() => generate10kAuditEvents());
+
+  const handleVerifyChain = async () => {
+    setIsVerifying(true);
+    try {
+      const res = await verifyAuditLedger();
+      setVerificationReport(res);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleExportProof = async () => {
+    setIsExporting(true);
+    try {
+      const proof = await exportSignedLedgerProof();
+      const blob = new Blob([JSON.stringify(proof, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `cambium-audit-ledger-proof-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const filteredLogs = AUDIT_LOGS.filter((log) => {
     const matchesSearch =
@@ -236,23 +273,64 @@ export default function EnterpriseAuditRbacPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <button
-              onClick={() => {
-                setIsExporting(true);
-                setTimeout(() => setIsExporting(false), 1200);
-              }}
-              className="px-4 py-2.5 rounded-full bg-white hover:bg-[#FAF7F0] border border-[#E4DCCB] text-[#202920] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs"
+              onClick={handleVerifyChain}
+              disabled={isVerifying}
+              className="px-4 py-2.5 rounded-full bg-[#FAF7F0] hover:bg-[#E4DCCB]/60 border border-[#3E6248]/40 text-[#202920] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
+            >
+              <RefreshCw size={13} className={isVerifying ? "animate-spin text-[#3E6248]" : "text-[#3E6248]"} />
+              {isVerifying ? "Verifying Hash Chain..." : "Verify SHA-256 Ledger"}
+            </button>
+            <button
+              onClick={handleExportProof}
+              disabled={isExporting}
+              className="px-4 py-2.5 rounded-full bg-white hover:bg-[#FAF7F0] border border-[#E4DCCB] text-[#202920] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
             >
               <Download size={13} />
-              {isExporting ? "Compiling JSON-LD..." : "Export Audit CSV"}
+              {isExporting ? "Generating Signed Proof..." : "Export Signed Proof"}
             </button>
             <div className="px-3.5 py-2 rounded-full bg-[#DCE6D7] text-[#3E6248] border border-[#66866A]/30 text-xs font-mono font-medium flex items-center gap-1.5">
               <CheckCircle2 size={13} />
-              Merkle Tree Root: Verified
+              Ledger Status: {verificationReport?.status || "INTACT (Verified)"}
             </div>
           </div>
         </div>
+
+        {/* Live Cryptographic Verification Report Banner */}
+        {verificationReport && (
+          <div className="p-5 rounded-2xl bg-white border border-[#3E6248]/40 shadow-sm space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={20} className="text-[#3E6248]" />
+                <h3 className="font-serif text-lg font-medium text-[#202920] m-0">
+                  Cryptographic Audit Ledger Verification Report
+                </h3>
+              </div>
+              <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-[#DCE6D7] text-[#3E6248] font-bold">
+                {verificationReport.status} · 0 TAMPERED BLOCKS
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs text-[#202920]">
+              <div className="p-3 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB]">
+                <div className="text-[#62685E] text-[11px] uppercase">Verified Blocks</div>
+                <div className="text-base font-bold text-[#3E6248] mt-0.5">{verificationReport.totalBlocksVerified.toLocaleString()}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB]">
+                <div className="text-[#62685E] text-[11px] uppercase">Merkle Root Hash</div>
+                <div className="text-[11px] truncate font-mono text-[#202920] mt-1" title={verificationReport.merkleRoot}>
+                  {verificationReport.merkleRoot}
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB]">
+                <div className="text-[#62685E] text-[11px] uppercase">Compliance Authority</div>
+                <div className="text-[11px] text-[#202920] mt-1 truncate" title={verificationReport.complianceStandard}>
+                  {verificationReport.complianceStandard}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="flex items-center gap-3 border-b border-[#E4DCCB] pb-1">

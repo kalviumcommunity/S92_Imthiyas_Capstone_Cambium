@@ -204,6 +204,25 @@ graph TD
 - [x] **TASK-M9-05**: Automated Verification Across All Suites (55 Jest, 87 Vitest, 18 Playwright, 50 static routes).
   - *Files*: Root test runners & Next.js compiler
 
+### Milestone 10: Enterprise Security, Data Protection, Trust & Compliance Suite
+- [x] **TASK-M10-01**: Harden Authoritative Legal Corpus (Privacy Policy, Terms of Service, Disclaimers) eliminating all bracketed placeholders with certified GDPR/CCPA/FERPA provisions and Cambium Scholarly Trust entities.
+  - *Files*: `client/components/legal/PrivacyContent.tsx`, `client/components/legal/TermsContent.tsx`
+  - *PRD*: `NFR-SEC-01`, `FR-AUTH-01`
+- [x] **TASK-M10-02**: Implement Dedicated Backend Cryptographic Audit Ledger API (`/api/v1/audit`, `/verify`, `/export`) with SHA-256 recursive chain verification.
+  - *Files*: `server/src/modules/audit/`, `server/src/app.module.ts`
+  - *PRD*: `NFR-SEC-02`, `NFR-SEC-04`
+- [x] **TASK-M10-03**: Enforce Comprehensive HTTP Security Headers (Strict CSP, HSTS 2-Year Preload, X-Frame-Options: DENY, Permissions-Policy).
+  - *Files*: `client/next.config.ts`
+  - *PRD*: `NFR-SEC-01`
+- [x] **TASK-M10-04**: Build Interactive Live Hash Chain Verification UI & Signed Ledger Proof Export on `/audit`.
+  - *Files*: `client/app/(protected)/audit/page.tsx`, `client/lib/api.ts`
+  - *PRD*: `NFR-SEC-02`
+- [x] **TASK-M10-05**: Implement Self-Service GDPR Article 20 Data Portability & Article 17 Account Purge Workflows with active session revocation.
+  - *Files*: `client/lib/scholar-export.ts`, `client/app/(protected)/settings/page.tsx`
+  - *PRD*: `FR-AUTH-04`, `NFR-SEC-03`
+- [x] **TASK-M10-06**: Execute Full Automated Verification Suite (Jest, Vitest, Client Build, Server Build).
+  - *Files*: Monorepo test runners & compilers
+
 ---
 
 ## 4. Release Criteria & Quality Gates

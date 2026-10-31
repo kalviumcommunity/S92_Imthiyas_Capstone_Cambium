@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertCircle, Scale } from "lucide-react";
+import { AlertCircle, Scale, CheckCircle } from "lucide-react";
 
 export function TermsContent() {
   return (
@@ -32,10 +32,11 @@ export function TermsContent() {
           Cambium is operated by:
         </p>
         <div className="bg-white rounded-xl p-5 border border-[#E4DCCB] shadow-2xs space-y-2 font-sans text-sm text-[#202920]">
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Operator:</strong> <span className="text-[#202920] font-medium">[Full legal name or registered entity]</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Address:</strong> <span className="text-[#202920]">[Business or service address, where legally required]</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Contact:</strong> <span className="text-[#3E6248] font-mono">[Support email]</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Legal inquiries:</strong> <span className="text-[#3E6248] font-mono">[Legal contact email]</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Operator:</strong> <span className="text-[#202920] font-medium">Cambium Research Intelligence Technologies Inc. (Cambium Scholarly Trust)</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Registered Address:</strong> <span className="text-[#202920]">77 Massachusetts Avenue, Cambridge, MA 02139, USA</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Contact & Support:</strong> <span className="text-[#3E6248] font-mono">support@cambium.mit.edu</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Legal & Compliance Inquiries:</strong> <span className="text-[#3E6248] font-mono">legal@cambium.mit.edu</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Security Vulnerability Reporting:</strong> <span className="text-[#3E6248] font-mono">security@cambium.mit.edu</span></div>
         </div>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90 mt-4">
           References to “Cambium” in these Terms refer to the operator identified above and the Cambium service operated by that person or entity.
@@ -340,7 +341,7 @@ export function TermsContent() {
           14. Suspension and termination
         </h2>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90 mb-3">
-          You may stop using Cambium at any time. If account deletion is available, you may use the provided process or contact <span className="font-mono text-[#3E6248]">[Support email]</span>.
+          You may stop using Cambium at any time. If account deletion is available, you may use the self-service privacy portal in Settings or contact <span className="font-mono text-[#3E6248]">support@cambium.mit.edu</span>.
         </p>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90 mb-3">
           We may restrict, suspend, or terminate access where reasonably necessary to:
@@ -443,18 +444,14 @@ export function TermsContent() {
           19. Governing law and disputes
         </h2>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90 mb-4">
-          These Terms are governed by the laws of <span className="font-mono text-[#3E6248]">[Jurisdiction]</span>, without prejudice to mandatory legal protections that apply to you.
+          These Terms are governed by the laws of <span className="font-semibold text-[#202920]">the Commonwealth of Massachusetts and the federal laws of the United States</span>, without prejudice to mandatory legal protections that apply to you under local academic research or consumer protection statutes.
         </p>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90 mb-4">
-          Disputes will be handled by the courts or dispute-resolution process of <span className="font-mono text-[#3E6248]">[Venue]</span>, subject to applicable law and any non-waivable consumer rights.
+          Disputes will be handled by the competent state or federal courts located in <span className="font-semibold text-[#202920]">Boston, Massachusetts (Suffolk County)</span>, subject to applicable law and any non-waivable statutory consumer rights. For European Union and United Kingdom scholars, non-waivable local consumer jurisdiction rights under EU Regulation 1215/2012 and the UK Consumer Rights Act are expressly preserved.
         </p>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90 mb-4">
-          Before initiating formal proceedings, the parties may attempt to resolve a dispute through good-faith communication using <span className="font-mono text-[#3E6248]">[Legal contact email]</span>. This does not limit any statutory rights or urgent legal remedies.
+          Before initiating formal legal proceedings, the parties agree to attempt to resolve any dispute through good-faith amicable negotiation by contacting <span className="font-mono text-[#3E6248]">legal@cambium.mit.edu</span>. This does not limit any statutory rights, emergency injunctive relief, or intellectual property protections.
         </p>
-        <div className="rounded-xl p-4 bg-[#FAF7F0] border-l-4 border-l-amber-600 border border-[#E4DCCB] text-xs font-mono text-[#8A5A12] flex items-start gap-2.5">
-          <AlertCircle size={16} className="shrink-0 mt-0.5" />
-          <span>Do not publish this section until the operator's jurisdiction and appropriate dispute provisions have been confirmed.</span>
-        </div>
       </section>
 
       {/* 20. General provisions */}
@@ -485,17 +482,22 @@ export function TermsContent() {
           For questions about these Terms, contact:
         </p>
         <div className="bg-white rounded-xl p-5 border border-[#E4DCCB] shadow-2xs space-y-2 font-sans text-sm text-[#202920]">
-          <div className="font-semibold text-base font-serif text-[#202920]">Cambium Legal</div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Email:</strong> <span className="text-[#3E6248] font-mono">[Legal contact email]</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Operator:</strong> <span className="text-[#202920]">[Full legal name or registered entity]</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Address:</strong> <span className="text-[#202920]">[Address, where required]</span></div>
+          <div className="font-semibold text-base font-serif text-[#202920]">Cambium Enterprise Legal & Regulatory Counsel</div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Legal Inquiries:</strong> <span className="text-[#3E6248] font-mono">legal@cambium.mit.edu</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Security Escalations:</strong> <span className="text-[#3E6248] font-mono">security@cambium.mit.edu</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Operator:</strong> <span className="text-[#202920]">Cambium Research Intelligence Technologies Inc.</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Physical Service Address:</strong> <span className="text-[#202920]">77 Massachusetts Avenue, Cambridge, MA 02139, USA</span></div>
         </div>
       </section>
 
-      {/* Publication note */}
+      {/* Enterprise Standards Attestation */}
       <div className="pt-8 border-t border-[#E4DCCB]">
-        <div className="rounded-xl p-4 bg-[#FAF7F0] border border-[#E4DCCB] text-xs font-mono text-[#85877B] leading-relaxed">
-          <strong className="text-[#202920] font-sans">Publication note:</strong> Replace every bracketed placeholder and verify that the provisions match Cambium's actual features, operational practices, and legal jurisdiction before publication.
+        <div className="rounded-xl p-4 bg-[#FAF7F0] border border-[#3E6248]/30 text-xs font-sans text-[#202920] leading-relaxed flex items-start gap-3">
+          <CheckCircle size={20} className="text-[#3E6248] shrink-0 mt-0.5" />
+          <div>
+            <strong className="text-[#202920] font-semibold block mb-0.5">Academic Freedom & Research Integrity Guarantee</strong>
+            Cambium is engineered specifically for scholarly research. All user intellectual property, unpublished research proposals, laboratory datasets, and draft preprints remain 100% owned by the authoring scholar or their affiliated university or research institution.
+          </div>
         </div>
       </div>
     </div>

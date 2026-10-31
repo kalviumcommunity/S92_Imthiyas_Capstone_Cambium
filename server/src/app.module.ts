@@ -22,6 +22,7 @@ import { TelemetryModule } from './common/telemetry/telemetry.module';
 import { CommunityModule } from './modules/community/community.module';
 import { ConnectionsModule } from './modules/connections/connections.module';
 import { ProjectsModule } from './modules/projects/projects.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { TelemetryInterceptor } from './common/telemetry/telemetry.interceptor';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -52,6 +53,7 @@ import { DatabaseDiagnosticService } from './database/database-diagnostic.servic
     CommunityModule,
     ConnectionsModule,
     ProjectsModule,
+    AuditModule,
   ],
   controllers: [AppController],
   providers: [
