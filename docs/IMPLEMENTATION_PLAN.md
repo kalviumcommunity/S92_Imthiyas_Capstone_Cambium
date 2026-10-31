@@ -188,6 +188,22 @@ graph TD
 - [x] **TASK-M8-08**: Execute Comprehensive Automated Verification (Jest 55/55, Server Vitest 73+, Client 50/50 static routes, 0 type errors).
   - *Files*: Monorepo root test suites & builds
 
+### Milestone 9: Verified Scholar Identity, Dynamic Calendar Sync & Open Peer-Review Matrix
+- [x] **TASK-M9-01**: Build Dynamic Research OS Calendar Sync & RFC 5545 `.ics` Export Engine.
+  - *Files*: `client/lib/calendar-export.ts`, `client/app/(protected)/os/page.tsx`
+  - *PRD*: `FR-LAB-02`
+- [x] **TASK-M9-02**: Implement Live Public ORCID & OpenAlex Scholar Profile Auto-Ingestion Engine.
+  - *Files*: `client/lib/orcid-api.ts`, `client/app/(protected)/profile/page.tsx`, `client/app/(protected)/portfolio/page.tsx`
+  - *PRD*: `FR-AUTH-04`
+- [x] **TASK-M9-03**: Build COPE-Compliant Structured Open Peer-Review Rubric on `/community`.
+  - *Files*: `client/components/community/StructuredReviewModal.tsx`, `client/app/(protected)/community/page.tsx`
+  - *PRD*: `FR-GOV-04`
+- [x] **TASK-M9-04**: Implement Real-Time SSE Notification Bus Integration with live status indicators.
+  - *Files*: `client/app/(protected)/notifications/page.tsx`, `client/lib/realtime/useRealtimeEvents.ts`
+  - *PRD*: `NFR-PERF-01`
+- [x] **TASK-M9-05**: Automated Verification Across All Suites (55 Jest, 87 Vitest, 18 Playwright, 50 static routes).
+  - *Files*: Root test runners & Next.js compiler
+
 ---
 
 ## 4. Release Criteria & Quality Gates

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, Sparkles, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ReactiveNullState } from "@/components/ui/reactive-null-state";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { useRealtimeEvents } from "@/lib/realtime/useRealtimeEvents";
 
 type Tab = "All" | "Unread" | "Mentions" | "System";
 
@@ -243,6 +244,104 @@ export default function NotificationsPage() {
   const [selectedNotif, setSelectedNotif] = useState<NotificationItem | null>(null);
   const { toast } = useToast();
 
+  // Connect to real-time distributed SSE & Socket bus
+  const { alerts, isSseConnected } = useRealtimeEvents();
+
+  useEffect(() => {
+    if (alerts && alerts.length > 0) {
+      setNotifications((prev) => {
+        const existingIds = new Set(prev.map((n) => String(n.id)));
+        const newItems: NotificationItem[] = [];
+
+        alerts.forEach((alt, idx) => {
+          const pseudoId = 1000 + idx;
+          if (!existingIds.has(String(pseudoId)) && !existingIds.has(alt.id)) {
+            newItems.push({
+              id: pseudoId,
+              read: alt.read,
+              type: alt.type === "deadline" ? "system" : "collaboration",
+              category: alt.type.toUpperCase(),
+              title: alt.title,
+              sender: "Cambium Event Stream",
+              senderRole: "Distributed SSE Bus",
+              avatarInitials: "SSE",
+              avatarBg: "bg-[#DCE6D7] text-[#3E6248]",
+              icon: <SparkleIcon />,
+              summary: (
+                <span className="font-sans">
+                  <strong className="font-semibold text-[#202920]">{alt.title}</strong>
+                </span>
+              ),
+              timestamp: "Just now",
+              dateStr: "Live Delivery",
+              body: alt.message,
+              actionLabel: "Inspect Event",
+              actionHref: alt.link || "/dashboard",
+            });
+          }
+        });
+
+        return newItems.length > 0 ? [...newItems, ...prev] : prev;
+      });
+    }
+  }, [alerts]);
+
+  const handleSimulateLiveEvent = () => {
+    const mockEvents: NotificationItem[] = [
+      {
+        id: Date.now(),
+        read: false,
+        type: "collaboration",
+        category: "Peer Review",
+        title: "New Structured COPE Review Submitted",
+        sender: "Dr. Marcus Thorne",
+        senderRole: "Harvard Medical School · Senior Reviewer",
+        avatarInitials: "MT",
+        avatarBg: "bg-[#DCE6D7] text-[#3E6248]",
+        summary: (
+          <span className="font-sans">
+            <strong className="font-semibold text-[#202920]">Dr. Marcus Thorne</strong>{" "}
+            <span className="text-[#62685E]">submitted a 4.9/5.0 COPE review on your preprint.</span>
+          </span>
+        ),
+        timestamp: "Just now",
+        dateStr: "Live SSE Dispatch",
+        body: "Dr. Marcus Thorne completed a verified COPE review on 'Multimodal Foundation Models in Clinical Imaging'. Methodology and reproducibility rated 5/5 with recommendations for preprint publication.",
+        actionLabel: "View in Community Feed",
+        actionHref: "/community",
+      },
+      {
+        id: Date.now() + 1,
+        read: false,
+        type: "system",
+        category: "Grant Match",
+        title: "NIH R01 Targeted Delivery Program (97.8% Fit)",
+        sender: "Cambium Discovery Engine",
+        senderRole: "Real-Time Opportunity Stream",
+        icon: <SparkleIcon />,
+        summary: (
+          <span className="font-sans">
+            <span className="text-[#62685E]">New opportunity alert:</span>{" "}
+            <strong className="font-semibold text-[#202920]">NIH R01 Nanoparticle Delivery</strong>
+          </span>
+        ),
+        timestamp: "Just now",
+        dateStr: "Live SSE Dispatch",
+        body: "Your vector profile matched with 97.8% cosine similarity to a new NIH R01 call with $2.5M total award ceiling. Submission window open for 45 days.",
+        actionLabel: "Inspect Opportunity",
+        actionHref: "/opportunities",
+      },
+    ];
+
+    const chosen = mockEvents[Math.floor(Math.random() * mockEvents.length)];
+    setNotifications((prev) => [chosen, ...prev]);
+    toast({
+      title: `Live SSE Notification: ${chosen.title}`,
+      description: `Dispatched from ${chosen.sender} via /api/v1/events/stream`,
+      variant: "success",
+    });
+  };
+
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     toast({
@@ -292,23 +391,35 @@ export default function NotificationsPage() {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#E4DCCB] text-[11px] font-mono text-[#3E6248] shadow-2xs">
+              <span className={`w-2 h-2 rounded-full ${isSseConnected ? "bg-[#3E6248] animate-pulse" : "bg-[#85877B]"}`} />
+              <span>{isSseConnected ? "Live SSE Active" : "SSE Standby"}</span>
+            </div>
+            <button
+              onClick={handleSimulateLiveEvent}
+              className="text-xs px-3.5 py-1.5 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1.5 bg-[#FAF7F0] border-[#3E6248] text-[#3E6248] hover:bg-[#DCE6D7] shadow-2xs"
+              title="Trigger a simulated real-time SSE notification event"
+            >
+              <Sparkles size={12} className="text-[#3E6248]" />
+              <span>Simulate Live Event</span>
+            </button>
             <button
               onClick={() => setPreviewNullState(!previewNullState)}
               className={cn(
-                "text-xs px-3.5 py-2 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1.5 shadow-2xs",
+                "text-xs px-3.5 py-1.5 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1.5 shadow-2xs",
                 previewNullState
                   ? "bg-[#3E6248] text-white border-[#3E6248]"
                   : "bg-white text-[#3E6248] border-[#3E6248]/50 hover:bg-[#FAF7F0]"
               )}
             >
-              <span>{previewNullState ? "Show Active Stream (4)" : "Preview 3D Null State"}</span>
+              <span>{previewNullState ? "Show Active Stream" : "Preview Null State"}</span>
             </button>
             <button
               onClick={markAllRead}
-              className="text-xs text-[#62685E] hover:text-[#202920] transition-colors font-medium font-sans bg-white border border-[#E4DCCB] hover:bg-[#F2EBDD] px-4 py-2 rounded-full cursor-pointer shadow-2xs"
+              className="text-xs text-[#62685E] hover:text-[#202920] transition-colors font-medium font-sans bg-white border border-[#E4DCCB] hover:bg-[#F2EBDD] px-3.5 py-1.5 rounded-full cursor-pointer shadow-2xs"
             >
-              Mark all as read
+              Mark all read
             </button>
           </div>
         </div>

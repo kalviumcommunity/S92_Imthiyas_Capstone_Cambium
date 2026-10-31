@@ -4,6 +4,10 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRealtimeEvents } from "@/lib/realtime/useRealtimeEvents";
 import {
+  StructuredReviewModal,
+  StructuredPeerReviewSubmission,
+} from "@/components/community/StructuredReviewModal";
+import {
   Users,
   MessageSquare,
   Share2,
@@ -246,6 +250,36 @@ export default function CommunityPage() {
   // Active Comments Drawer
   const [activeCommentPost, setActiveCommentPost] = useState<AcademicPost | null>(null);
   const [newCommentText, setNewCommentText] = useState("");
+
+  // Structured Review State
+  const [reviewModalPost, setReviewModalPost] = useState<AcademicPost | null>(null);
+  const [reviewsMap, setReviewsMap] = useState<Record<string, StructuredPeerReviewSubmission[]>>({
+    "post-2": [
+      {
+        postId: "post-2",
+        postTitle: "Preprint Release: Neuro-Symbolic Deductive Inference for Biological Cell Atlas Segmentation",
+        reviewerName: "Dr. Elena Vance",
+        reviewerInstitution: "Harvard Medical School",
+        methodologyScore: 5,
+        statisticalScore: 4,
+        reproducibilityScore: 5,
+        noveltyScore: 5,
+        averageScore: 4.8,
+        recommendation: "ACCEPT",
+        writtenCritique: "Rigorous experimental verification on the HuBMAP lung cell benchmark with zero citation leakage.",
+        noConflictOfInterest: true,
+        submittedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+      },
+    ],
+  });
+
+  const handleReviewSubmit = (review: StructuredPeerReviewSubmission) => {
+    setReviewsMap((prev) => ({
+      ...prev,
+      [review.postId]: [review, ...(prev[review.postId] || [])],
+    }));
+    triggerToast(`Structured review published for "${review.postTitle}" (Score: ${review.averageScore}/5.0) ★`);
+  };
 
   // Synchronize incoming distributed WebSocket dispatches into the feed
   useEffect(() => {
@@ -705,7 +739,20 @@ export default function CommunityPage() {
                       <p className="text-xs text-[#62685E] line-clamp-2 mb-3">
                         {post.paperMetadata.abstractPreview}
                       </p>
-                      <div className="flex items-center gap-2">
+                      {/* COPE Structured Review Badge if reviews present */}
+                      {reviewsMap[post.id]?.length > 0 && (
+                        <div className="mb-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#EAB308]/15 border border-[#EAB308]/40 text-[#854D0E] text-[10.5px] font-mono font-bold">
+                          <Award size={12} className="text-[#854D0E]" />
+                          <span>
+                            {(
+                              reviewsMap[post.id].reduce((acc, r) => acc + r.averageScore, 0) /
+                              reviewsMap[post.id].length
+                            ).toFixed(1)} / 5.0 COPE Verified ({reviewsMap[post.id].length} Review{reviewsMap[post.id].length > 1 ? "s" : ""})
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-2 flex-wrap">
                         <Link
                           href={`/agent-reader?doi=${post.doiReference || ""}`}
                           className="px-3 py-1.5 rounded-lg bg-[#1D4ED8] hover:bg-[#1E40AF] text-white text-xs font-mono font-semibold flex items-center gap-1.5 no-underline shadow-xs"
@@ -713,6 +760,14 @@ export default function CommunityPage() {
                           <Bot size={13} />
                           Audit in Agentic Reader ↗
                         </Link>
+                        <button
+                          type="button"
+                          onClick={() => setReviewModalPost(post)}
+                          className="px-3 py-1.5 rounded-lg border border-[#3E6248] text-[#3E6248] hover:bg-[#DCE6D7] text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                        >
+                          <Award size={13} />
+                          <span>Submit COPE Review</span>
+                        </button>
                         {post.doiReference && (
                           <a
                             href={`https://doi.org/${post.doiReference}`}
@@ -1273,6 +1328,19 @@ export default function CommunityPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* COPE Structured Open Peer Review Modal */}
+      {reviewModalPost && (
+        <StructuredReviewModal
+          isOpen={!!reviewModalPost}
+          onClose={() => setReviewModalPost(null)}
+          postId={reviewModalPost.id}
+          postTitle={reviewModalPost.title}
+          authorName={reviewModalPost.author.name}
+          doi={reviewModalPost.doiReference}
+          onSubmitReview={handleReviewSubmit}
+        />
       )}
 
       {/* Toast Notification */}
