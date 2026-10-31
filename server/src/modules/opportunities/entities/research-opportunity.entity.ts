@@ -52,6 +52,13 @@ export class ResearchOpportunity {
   @Column({ type: 'varchar', length: 1000, nullable: true })
   link?: string;
 
+  /**
+   * Data provenance source indicator (e.g. ORIGINAL_FUNDER, OPENALEX_INGESTION, GRANTS_GOV, NSF_FASTLANE, USER_SUBMISSION).
+   * Ensures data integrity and institutional compliance audit trails.
+   */
+  @Column({ type: 'varchar', length: 50, default: 'ORIGINAL_FUNDER' })
+  provenance: string;
+
   @Column({ name: 'created_by_id', type: 'uuid', nullable: true })
   createdById?: string;
 

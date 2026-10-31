@@ -27,8 +27,9 @@ export class ProjectsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Retrieve project repository details with CRediT roster and activity' })
-  async getProjectDetails(@Param('id') id: string) {
-    return this.projectsService.getProjectDetails(id);
+  async getProjectDetails(@Param('id') id: string, @Req() req: any) {
+    const requesterId = req.user?.id || req.headers?.['x-user-id'] || '00000000-0000-0000-0000-000000000001';
+    return this.projectsService.getProjectDetails(id, requesterId);
   }
 
   @Post()

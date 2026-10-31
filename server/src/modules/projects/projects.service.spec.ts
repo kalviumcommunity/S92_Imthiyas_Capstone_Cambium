@@ -89,4 +89,30 @@ describe('ProjectsService', () => {
     expect(res.success).toBe(true);
     expect(res.data).toContain('10.1016/j.cels.2025.04.002');
   });
+
+  it('should allow project owner or accepted member to access private project', async () => {
+    mockProjectRepo.findOne.mockResolvedValueOnce({
+      id: 'proj-priv',
+      ownerId: 'u-1',
+      visibility: 'PRIVATE',
+      members: [{ userId: 'u-1', status: 'ACCEPTED' }],
+    });
+
+    const res = await service.getProjectDetails('proj-priv', 'u-1');
+    expect(res.success).toBe(true);
+    expect(res.data.id).toBe('proj-priv');
+  });
+
+  it('should reject unauthorized scholar access to a PRIVATE project with ForbiddenException (IDOR Protection)', async () => {
+    mockProjectRepo.findOne.mockResolvedValueOnce({
+      id: 'proj-priv',
+      ownerId: 'u-1',
+      visibility: 'PRIVATE',
+      members: [{ userId: 'u-1', status: 'ACCEPTED' }],
+    });
+
+    await expect(service.getProjectDetails('proj-priv', 'intruder-99')).rejects.toThrow(
+      'Access to private research workspace denied. You are not an authorized member.',
+    );
+  });
 });

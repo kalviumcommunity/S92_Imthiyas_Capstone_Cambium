@@ -103,9 +103,10 @@ export class ProjectsService {
   }
 
   /**
-   * Get single project details with CRediT member roster and activity changelog
+   * Get single project details with CRediT member roster and activity changelog.
+   * Enforces tenant and member access boundaries for PRIVATE research workspaces.
    */
-  async getProjectDetails(projectId: string) {
+  async getProjectDetails(projectId: string, requesterId?: string) {
     const project = await this.projectRepo.findOne({
       where: { id: projectId },
       relations: {
@@ -126,6 +127,24 @@ export class ProjectsService {
 
     if (!project) {
       throw new NotFoundException(`Project ${projectId} not found.`);
+    }
+
+    // Zero-Trust Private Workspace ACL Check
+    if (project.visibility === 'PRIVATE') {
+      if (!requesterId) {
+        throw new ForbiddenException('Authentication required to access private research workspace.');
+      }
+
+      const isOwner = project.ownerId === requesterId;
+      const isAcceptedMember = project.members?.some(
+        (m) => m.userId === requesterId && m.status === 'ACCEPTED',
+      );
+
+      if (!isOwner && !isAcceptedMember) {
+        throw new ForbiddenException(
+          'Access to private research workspace denied. You are not an authorized member.',
+        );
+      }
     }
 
     return {
