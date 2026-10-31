@@ -19,6 +19,9 @@ import { QueuesModule } from './common/queues/queues.module';
 import { IngestionModule } from './modules/ingestion/ingestion.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { TelemetryModule } from './common/telemetry/telemetry.module';
+import { CommunityModule } from './modules/community/community.module';
+import { ConnectionsModule } from './modules/connections/connections.module';
+import { ProjectsModule } from './modules/projects/projects.module';
 import { TelemetryInterceptor } from './common/telemetry/telemetry.interceptor';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -46,6 +49,9 @@ import { DatabaseDiagnosticService } from './database/database-diagnostic.servic
     IngestionModule,
     UploadModule,
     TelemetryModule,
+    CommunityModule,
+    ConnectionsModule,
+    ProjectsModule,
   ],
   controllers: [AppController],
   providers: [

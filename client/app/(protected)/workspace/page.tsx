@@ -7,6 +7,7 @@ import { AiProgressModal } from "@/components/ui/ai-progress-modal";
 import { ConflictModal } from "@/components/ui/conflict-modal";
 import { SessionLockModal } from "@/components/ui/session-lock-modal";
 import { SplitPaneReader } from "@/components/workspace/SplitPaneReader";
+import { CollaborativeProjectsDesk } from "@/components/workspace/CollaborativeProjectsDesk";
 import { useToast } from "@/components/ui/toast";
 import CambiumLogo from "@/components/CambiumLogo";
 import { uploadArtifact, getLocalArtifacts, UploadedArtifact } from "@/lib/api";
@@ -154,6 +155,7 @@ const navSections = [
   {
     label: "Workspace",
     items: [
+      { id: "projects", label: "Team Repositories", icon: icons.folder },
       { id: "overview", label: "Overview", icon: icons.target },
       { id: "questions", label: "Research Questions", icon: icons.lightbulb },
       { id: "literature", label: "Literature Review", icon: icons.quote, active: true },
@@ -2623,50 +2625,56 @@ export default function WorkspacePage() {
           onLockSession={() => setShowLockModal(true)}
         />
 
-        {/* ── Main Area (Editor + Split-View Reader or Right Panel) ── */}
-        <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
-          {/* Main Notebook / Editor */}
-          <div style={{ flex: isSplitView ? "1 1 50%" : "1 1 100%", overflowY: "auto", height: "100%", transition: "flex 200ms ease" }}>
-            <Editor
-              saveStatus={saveStatus}
-              setSaveStatus={setSaveStatus}
-              selectedRows={selectedRows}
-              setSelectedRows={setSelectedRows}
-              onOpenCitation={(cite) => {
-                setSelectedCitationItem(cite);
-                setShowCitationModal(true);
-              }}
-              onContextMenu={handleContextMenu}
-            />
+        {/* ── Main Area (Projects Desk OR Editor + Split-View Reader or Right Panel) ── */}
+        {activeNav === "projects" ? (
+          <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+            <CollaborativeProjectsDesk />
           </div>
-
-          {/* Split-Screen Dual Reader View */}
-          {isSplitView && (
-            <div
-              style={{
-                flex: "1 1 50%",
-                height: "100%",
-                borderLeft: `1px solid ${W.border}`,
-                background: W.surface,
-                display: "flex",
-                flexDirection: "column",
-                overflow: "hidden",
-                boxShadow: "-4px 0 20px rgba(0,0,0,0.03)",
-              }}
-            >
-              <SplitPaneReader
-                onClose={() => setIsSplitView(false)}
-                onOpenCitation={() => setShowCitationModal(true)}
-                onOpenAi={() => setShowAiModal(true)}
+        ) : (
+          <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
+            {/* Main Notebook / Editor */}
+            <div style={{ flex: isSplitView ? "1 1 50%" : "1 1 100%", overflowY: "auto", height: "100%", transition: "flex 200ms ease" }}>
+              <Editor
+                saveStatus={saveStatus}
+                setSaveStatus={setSaveStatus}
+                selectedRows={selectedRows}
+                setSelectedRows={setSelectedRows}
+                onOpenCitation={(cite) => {
+                  setSelectedCitationItem(cite);
+                  setShowCitationModal(true);
+                }}
+                onContextMenu={handleContextMenu}
               />
             </div>
-          )}
 
-          {/* Standard Right AI & Graph Rail (when split view is inactive) */}
-          {rightVisible && !isSplitView && (
-            <RightPanel activeTab={activeTab} setActiveTab={setActiveTab} />
-          )}
-        </div>
+            {/* Split-Screen Dual Reader View */}
+            {isSplitView && (
+              <div
+                style={{
+                  flex: "1 1 50%",
+                  height: "100%",
+                  borderLeft: `1px solid ${W.border}`,
+                  background: W.surface,
+                  display: "flex",
+                  flexDirection: "column",
+                  overflow: "hidden",
+                  boxShadow: "-4px 0 20px rgba(0,0,0,0.03)",
+                }}
+              >
+                <SplitPaneReader
+                  onClose={() => setIsSplitView(false)}
+                  onOpenCitation={() => setShowCitationModal(true)}
+                  onOpenAi={() => setShowAiModal(true)}
+                />
+              </div>
+            )}
+
+            {/* Standard Right AI & Graph Rail (when split view is inactive) */}
+            {rightVisible && !isSplitView && (
+              <RightPanel activeTab={activeTab} setActiveTab={setActiveTab} />
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Multi-Select Floating Action Bar ── */}

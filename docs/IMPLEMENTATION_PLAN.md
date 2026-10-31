@@ -163,6 +163,31 @@ graph TD
   - *Files*: `client/app/(protected)/graph/page.tsx`
   - *PRD*: `FR-GRAPH-01`, `FR-GRAPH-02`
 
+### Milestone 8: Academic Social Community, Scholar Connections & Collaborative Workspaces
+- [x] **TASK-M8-01**: Build Backend Community Entities (AcademicPost, Comment, PostReaction) and REST Service with 4 verified post primitives.
+  - *Files*: `server/src/modules/community/entities/`, `server/src/modules/community/community.service.ts`
+  - *PRD*: `FR-COMM-01`, `NG-02`
+- [x] **TASK-M8-02**: Elevate `/community` Frontend with 4 Academic Post Primitives (Collaboration Call, Paper Release, Grant Consortium, Scientific Inquiry) & Nested Peer Discussions.
+  - *Files*: `client/app/(protected)/community/page.tsx`
+  - *PRD*: `FR-COMM-02`
+- [x] **TASK-M8-03**: Build Dual-Layer Network Backend (1-way Follows + 2-way Mutual Connections with Academic Context).
+  - *Files*: `server/src/modules/connections/entities/`, `server/src/modules/connections/connections.service.ts`
+  - *PRD*: `FR-NET-01`
+- [x] **TASK-M8-04**: Build Direct Scholar Messaging Desk (`/messages`) with Socket.IO Real-time Delivery & Academic Cards (Papers, Grants, Project Invites).
+  - *Files*: `client/app/(protected)/messages/page.tsx`, `server/src/modules/chat/`
+  - *PRD*: `FR-NET-02`
+- [x] **TASK-M8-05**: Implement GitHub-Style Collaborative Project Workspaces (`/workspace`) with 14-role CRediT authorship matrix, shared literature vault, and activity changelog.
+  - *Files*: `server/src/modules/projects/`, `client/app/(protected)/workspace/page.tsx`
+  - *PRD*: `FR-WORK-01`, `FR-WORK-02`
+- [x] **TASK-M8-06**: Update Navigation & Sidebar (`GlobalSidebar.tsx`) with Messages desk link and dynamic unread badge counter.
+  - *Files*: `client/components/GlobalSidebar.tsx`
+  - *PRD*: `NFR-PERF-01`
+- [x] **TASK-M8-07**: Embed PLG Viral Ingestion Funnel (Tokenized Collaborator Invites & Lab Team Tier Upgrades).
+  - *Files*: `docs/business/business-model-and-revenue-strategy.md`, `client/app/(protected)/workspace/page.tsx`
+  - *PRD*: `BIZ-PLG-01`
+- [x] **TASK-M8-08**: Execute Comprehensive Automated Verification (Jest 55/55, Server Vitest 73+, Client 50/50 static routes, 0 type errors).
+  - *Files*: Monorepo root test suites & builds
+
 ---
 
 ## 4. Release Criteria & Quality Gates
