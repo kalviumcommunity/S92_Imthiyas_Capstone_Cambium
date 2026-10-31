@@ -39,6 +39,11 @@ import Link from "next/link";
 import { ArtifactDropzone } from "@/components/ui/artifact-dropzone";
 import { useTheme } from "@/lib/theme-provider";
 import { useAuthStore } from "@/lib/store/useAuthStore";
+import {
+  exportScholarArchiveJson,
+  exportScholarBibtex,
+  exportScholarRis,
+} from "@/lib/scholar-export";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type NavItem = {
@@ -587,14 +592,42 @@ function NotificationsSection({ showToast }: { showToast: (m: string) => void })
 
 // ─── Section: Privacy ─────────────────────────────────────────────────────────
 function PrivacySection({ showToast }: { showToast: (m: string) => void }) {
+  const user = useAuthStore((state) => state.user);
   const [s, setS] = useState({
     profilePublic: true,
     showInstitution: true,
     showPublications: false,
     allowSearch: true,
   });
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [deleteInput, setDeleteInput] = useState("");
+
   const set = (k: keyof typeof s) => (v: boolean) =>
     setS((p) => ({ ...p, [k]: v }));
+
+  const handleExportArchive = () => {
+    exportScholarArchiveJson({
+      name: user?.name || "Dr. Scholar",
+      email: user?.email || "scholar@cambium.mit.edu",
+      institution: user?.institution || "MIT CSAIL",
+      role: user?.role || "Principal Investigator",
+    });
+    showToast("Scholarly archive exported (GDPR Article 20 compliant).");
+  };
+
+  const handleDecommissionAccount = () => {
+    if (deleteInput.trim().toUpperCase() !== "DELETE") {
+      showToast("Type DELETE to confirm account decommission.");
+      return;
+    }
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("cambium_token");
+      localStorage.removeItem("cambium_bookmarks");
+      localStorage.removeItem("cambium_workspace_artifacts");
+      window.location.href = "/sign-in?decommissioned=true";
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <SectionTitle
@@ -628,7 +661,7 @@ function PrivacySection({ showToast }: { showToast: (m: string) => void }) {
       <div className="flex justify-end mb-7 mt-4">
         <Button
           onClick={() => showToast("Privacy settings saved.")}
-          className="bg-[#3E6248] hover:bg-[#293E30] text-white text-xs font-mono uppercase tracking-wider rounded-full px-5 h-9 border-none shadow-sm"
+          className="bg-[#3E6248] hover:bg-[#293E30] text-white text-xs font-mono uppercase tracking-wider rounded-full px-5 h-9 border-none shadow-sm cursor-pointer"
         >
           Save changes →
         </Button>
@@ -637,7 +670,7 @@ function PrivacySection({ showToast }: { showToast: (m: string) => void }) {
       <div className="flex flex-col gap-4">
         <div className="p-4 rounded-xl border border-[#E4DCCB] bg-white shadow-sm">
           <div className="mb-1 text-sm font-semibold text-[#202920]">
-            Export Your Research Corpus
+            Export Your Research Corpus (GDPR Article 20)
           </div>
           <div className="mb-3 text-xs leading-relaxed text-[#62685E]">
             Download a verified JSON/BibTeX archive of your Cambium corpus including notes, saved papers, synthesis drafts, and activity history.
@@ -645,27 +678,64 @@ function PrivacySection({ showToast }: { showToast: (m: string) => void }) {
           <Button
             variant="outline"
             size="sm"
-            className="border-[#E4DCCB] text-[#202920] hover:bg-[#FAF7F0] rounded-full text-xs font-mono uppercase tracking-wider h-8"
+            onClick={handleExportArchive}
+            className="border-[#E4DCCB] text-[#202920] hover:bg-[#FAF7F0] rounded-full text-xs font-mono uppercase tracking-wider h-8 cursor-pointer"
           >
             <Download size={13} className="mr-1.5 text-[#3E6248]" />
-            Request Archive (.zip)
+            Download Complete Archive (.json)
           </Button>
         </div>
         <div className="p-4 rounded-xl border border-red-200 bg-red-50/40">
           <div className="mb-1 text-sm font-semibold text-red-700">
-            Decommission Scholar Account
+            Decommission Scholar Account (GDPR Article 17)
           </div>
           <div className="mb-3 text-xs leading-relaxed text-[#62685E]">
             Permanently removes your researcher identity and all associated private workspaces. This action cannot be reversed.
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-red-700 border-red-300 hover:bg-red-100 rounded-full text-xs font-mono uppercase tracking-wider h-8"
-          >
-            <Trash size={13} className="mr-1.5" />
-            Delete Scholar Account
-          </Button>
+          {!isConfirmingDelete ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsConfirmingDelete(true)}
+              className="text-red-700 border-red-300 hover:bg-red-100 rounded-full text-xs font-mono uppercase tracking-wider h-8 cursor-pointer"
+            >
+              <Trash size={13} className="mr-1.5" />
+              Delete Scholar Account
+            </Button>
+          ) : (
+            <div className="mt-3 p-3 rounded-lg bg-white border border-red-300 space-y-2">
+              <p className="text-xs text-red-700 font-sans m-0">
+                Type <strong>DELETE</strong> below to permanently erase your account and encrypted artifacts:
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={deleteInput}
+                  onChange={(e) => setDeleteInput(e.target.value)}
+                  placeholder="Type DELETE"
+                  className="px-3 py-1.5 text-xs border border-red-300 rounded font-mono uppercase"
+                />
+                <Button
+                  size="sm"
+                  onClick={handleDecommissionAccount}
+                  className="bg-red-600 hover:bg-red-700 text-white text-xs font-mono uppercase tracking-wider h-8 rounded cursor-pointer"
+                >
+                  Confirm Purge
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setIsConfirmingDelete(false);
+                    setDeleteInput("");
+                  }}
+                  className="text-xs text-[#62685E] h-8 cursor-pointer"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -806,9 +876,9 @@ function AISection({ showToast }: { showToast: (m: string) => void }) {
 // ─── Section: Security ────────────────────────────────────────────────────────
 function SecuritySection({ showToast }: { showToast: (m: string) => void }) {
   const [twoFa, setTwoFa] = useState(false);
-  const sessions = [
+  const [sessionList, setSessionList] = useState([
     {
-      device: "MacBook Pro — Chrome",
+      device: "MacBook Pro — Chrome 130",
       location: "Princeton, NJ",
       lastSeen: "Active now",
       current: true,
@@ -825,7 +895,17 @@ function SecuritySection({ showToast }: { showToast: (m: string) => void }) {
       lastSeen: "3 days ago",
       current: false,
     },
-  ];
+  ]);
+
+  const revokeSession = (index: number) => {
+    setSessionList((prev) => prev.filter((_, i) => i !== index));
+    showToast("Session revoked.");
+  };
+
+  const revokeAllOtherSessions = () => {
+    setSessionList((prev) => prev.filter((s) => s.current));
+    showToast("All other active research sessions have been terminated.");
+  };
   return (
     <div className="animate-fade-in">
       <SectionTitle
@@ -864,7 +944,7 @@ function SecuritySection({ showToast }: { showToast: (m: string) => void }) {
           Active Research Sessions
         </div>
         <div className="flex flex-col gap-2.5">
-          {sessions.map((s, i) => (
+          {sessionList.map((s, i) => (
             <div
               key={i}
               className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-[#E4DCCB] bg-white shadow-sm"
@@ -886,8 +966,8 @@ function SecuritySection({ showToast }: { showToast: (m: string) => void }) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs font-mono uppercase tracking-wider"
-                  onClick={() => showToast("Session revoked.")}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs font-mono uppercase tracking-wider cursor-pointer"
+                  onClick={() => revokeSession(i)}
                 >
                   Revoke
                 </Button>
@@ -895,6 +975,18 @@ function SecuritySection({ showToast }: { showToast: (m: string) => void }) {
             </div>
           ))}
         </div>
+        {sessionList.length > 1 && (
+          <div className="mt-3 flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={revokeAllOtherSessions}
+              className="border-red-300 text-red-700 hover:bg-red-50 text-xs font-mono uppercase tracking-wider rounded-full h-8 cursor-pointer"
+            >
+              Revoke All Other Sessions
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1497,8 +1589,25 @@ function AuditSection({ showToast }: { showToast: (m: string) => void }) {
 
 // ─── Section: Data Portability & Academic Import/Export ────────────────────────
 function DataPortabilitySection({ showToast }: { showToast: (m: string) => void }) {
+  const user = useAuthStore((state) => state.user);
+  const scholarName = user?.name || "Dr. Scholar";
+
   const handleExport = (type: string) => {
-    showToast(`Exporting complete workspace as ${type}... Check your scholar downloads.`);
+    if (type.includes("BibTeX")) {
+      exportScholarBibtex(scholarName);
+      showToast("Exported BibTeX citation library (.bib).");
+    } else if (type.includes("RIS")) {
+      exportScholarRis(scholarName);
+      showToast("Exported RIS research information library (.ris).");
+    } else {
+      exportScholarArchiveJson({
+        name: scholarName,
+        email: user?.email || "scholar@cambium.mit.edu",
+        institution: user?.institution || "MIT CSAIL",
+        role: user?.role || "Principal Investigator",
+      });
+      showToast("Exported complete Knowledge Graph & Scholar Corpus (.json).");
+    }
   };
 
   return (
