@@ -62,7 +62,7 @@ graph TD
     T2 --> T3
     T3 --> T4["M4: Agentic Reader Desk"]:::done
     T3 --> T5["M5: IRB & FAIR Data Compliance"]:::done
-    T4 --> T6["M6: Cryptographic Audit & Release Gate"]:::active
+    T4 --> T6["M6: Cryptographic Audit & Release Gate"]:::done
     T5 --> T6
 ```
 
@@ -138,10 +138,10 @@ graph TD
   - *PRD*: `FR-GOV-03`
 
 ### Milestone 6: Verification, Production Build & Hardening
-- [x] **TASK-M6-01**: Execute full TypeScript build verification across both client and server packages (`tsc` 0 errors, 49/49 routes statically compiled).
-- [ ] **TASK-M6-02**: Run automated accessibility audit with zero WCAG 2.2 Level AA violations.
+- [x] **TASK-M6-01**: Execute full TypeScript build verification across both client and server packages (`tsc` 0 errors, 50/50 routes statically compiled).
+- [x] **TASK-M6-02**: Run automated accessibility audit with zero WCAG 2.2 Level AA violations (6/6 Axe-Core suites passed).
 - [x] **TASK-M6-03**: Verify zero orphaned or unreferenced legacy directories (e.g., safe cleanup of `_vite_raw_code`).
-- [ ] **TASK-M6-04**: Complete final end-to-end browser walkthrough on `http://localhost:3000`.
+- [x] **TASK-M6-04**: Complete final end-to-end browser walkthrough on `http://localhost:3000` (12/12 Playwright E2E suites passed).
 
 ### Milestone 7: Live Open Scholarly Intelligence Fabric & Navigation Velocity
 - [x] **TASK-M7-01**: Implement Navigation Velocity Engine with cursor hover prefetching (`router.prefetch()`) across `GlobalSidebar` and `PublicHeader`.
