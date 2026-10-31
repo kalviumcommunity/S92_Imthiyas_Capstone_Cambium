@@ -85,3 +85,4 @@ $$\text{currentHash} = \text{SHA-256}(\text{index} \parallel \text{previousHash}
 - **Raw SQL Elimination**: All queries utilize TypeORM parameterized builders (`:id`, `:title`, `:userId`). Zero raw string interpolation is permitted in the codebase.
 - **DTO Validation**: Every incoming request payload undergoes strict NestJS `ValidationPipe` filtering with `{ transform: true, whitelist: true }`, automatically discarding undeclared attributes.
 - **XSS Sanitization**: User-generated markdown in peer reviews and abstracts is sanitized using DOMPurify before rendering in Next.js React components.
+

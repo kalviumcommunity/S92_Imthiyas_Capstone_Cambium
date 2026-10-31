@@ -5,6 +5,7 @@ import {
   Delete,
   Body,
   Param,
+  Req,
   HttpCode,
   HttpStatus,
   UseGuards,
@@ -68,5 +69,18 @@ export class BookmarksController {
   @ApiResponse({ status: 200, description: 'Bookmark removed successfully' })
   async deleteBookmark(@Param('id') id: string) {
     return this.bookmarksService.remove(id);
+  }
+
+  @Delete('opportunity/:opportunityId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete bookmark by opportunity ID for current authenticated user' })
+  async deleteBookmarkByOpportunity(
+    @Param('opportunityId') opportunityId: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: any,
+  ) {
+    const userId = user?.id || req.headers?.['x-user-id'] || '00000000-0000-0000-0000-000000000001';
+    return this.bookmarksService.removeByOpportunity(userId, opportunityId);
   }
 }

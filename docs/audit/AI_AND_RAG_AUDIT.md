@@ -98,3 +98,4 @@ Cambium resolves the primary danger of academic generative AI—hallucinated cit
 - **Max Generation Output**: 1,500 tokens.
 - **Request Throttling**: 30 AI queries per minute per scholar; 300 per minute per institution.
 - **Semantic Cache**: Query embeddings are cached in Redis with a 24-hour TTL; repeated identical or high-similarity (>0.98 cosine) queries return cached completions, reducing LLM API invocation costs by ~42%.
+

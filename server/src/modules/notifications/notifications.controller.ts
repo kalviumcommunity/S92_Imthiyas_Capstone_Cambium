@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Delete,
   Body,
   Param,
   HttpCode,
@@ -54,5 +55,21 @@ export class NotificationsController {
   @ApiResponse({ status: 200, description: 'Batch notifications marked as read' })
   async markAllNotificationsAsRead(@Param('userId') userId: string) {
     return this.notifService.markAllAsRead(userId);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete or dismiss single notification by ID' })
+  @ApiParam({ name: 'id', description: 'Notification UUID' })
+  @ApiResponse({ status: 200, description: 'Notification dismissed' })
+  async deleteNotification(@Param('id') id: string) {
+    return this.notifService.remove(id);
+  }
+
+  @Delete('user/:userId')
+  @ApiOperation({ summary: 'Clear all notifications for a specific user' })
+  @ApiParam({ name: 'userId', description: 'User UUID' })
+  @ApiResponse({ status: 200, description: 'User notifications cleared' })
+  async clearUserNotifications(@Param('userId') userId: string) {
+    return this.notifService.clearUserNotifications(userId);
   }
 }

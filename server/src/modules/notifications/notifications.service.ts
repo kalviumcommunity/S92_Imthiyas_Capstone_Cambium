@@ -82,4 +82,39 @@ export class NotificationsService {
       message: `${updateResult.affected || 0} notifications marked as read`,
     };
   }
+
+  /**
+   * Delete single notification by ID
+   */
+  async remove(id: string) {
+    const notif = await this.notifRepo.findOne({ where: { id } });
+    if (!notif) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    await this.notifRepo.remove(notif);
+    return {
+      success: true,
+      message: 'Notification dismissed successfully',
+      id,
+    };
+  }
+
+  /**
+   * Clear / delete all notifications for a specific user
+   */
+  async clearUserNotifications(userId: string) {
+    const deleteResult = await this.notifRepo
+      .createQueryBuilder()
+      .delete()
+      .from(Notification)
+      .where('userId = :userId', { userId })
+      .execute();
+
+    return {
+      success: true,
+      message: `Cleared ${deleteResult.affected || 0} notifications.`,
+      count: deleteResult.affected || 0,
+    };
+  }
 }

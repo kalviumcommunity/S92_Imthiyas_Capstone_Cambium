@@ -133,6 +133,23 @@ export class UsersService {
     };
   }
 
+  /**
+   * Delete user profile (GDPR Right to Erasure / Admin Deletion)
+   */
+  async delete(id: string) {
+    const user = await this.userRepo.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.userRepo.remove(user);
+    return {
+      success: true,
+      message: 'User profile and associated account deleted successfully',
+      id,
+    };
+  }
+
   private async resolveInterests(rawList?: string[]): Promise<ResearchInterest[]> {
     if (!rawList || !Array.isArray(rawList) || rawList.length === 0) {
       return [];

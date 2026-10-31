@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Delete,
   Body,
   Param,
   HttpCode,
@@ -66,5 +67,15 @@ export class UsersController {
     @Body() dto: UpdateUserDto,
   ) {
     return this.usersService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete user account (GDPR Right to Erasure / Admin Deletion)' })
+  @ApiParam({ name: 'id', description: 'User UUID' })
+  @ApiResponse({ status: 200, description: 'User profile deleted successfully' })
+  async deleteUser(@Param('id') id: string) {
+    return this.usersService.delete(id);
   }
 }

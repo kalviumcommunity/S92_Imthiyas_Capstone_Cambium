@@ -13,18 +13,20 @@ describe('ProjectsService', () => {
     mockProjectRepo = {
       create: vi.fn((d) => ({ id: 'proj-1', ...d })),
       save: vi.fn((d) => Promise.resolve({ id: 'proj-1', ...d })),
+      remove: vi.fn().mockResolvedValue(true),
       findOne: vi.fn().mockResolvedValue({
         id: 'proj-1',
         ownerId: 'u-1',
         title: 'Multimodal NIH Grant',
         linkedDois: [],
-        members: [{ userId: 'u-1', creditRole: CRediTRole.LEAD_PI }],
+        members: [{ userId: 'u-1', creditRole: CRediTRole.LEAD_PI, status: 'ACCEPTED' }],
       }),
     };
 
     mockMemberRepo = {
       create: vi.fn((d) => d),
       save: vi.fn((d) => Promise.resolve(d)),
+      remove: vi.fn().mockResolvedValue(true),
       find: vi.fn().mockResolvedValue([
         {
           projectId: 'proj-1',
@@ -114,5 +116,63 @@ describe('ProjectsService', () => {
     await expect(service.getProjectDetails('proj-priv', 'intruder-99')).rejects.toThrow(
       'Access to private research workspace denied. You are not an authorized member.',
     );
+  });
+
+  it('should update project workspace metadata', async () => {
+    mockProjectRepo.findOne.mockResolvedValueOnce({
+      id: 'proj-1',
+      ownerId: 'u-1',
+      title: 'Initial Title',
+      members: [{ userId: 'u-1', status: 'ACCEPTED' }],
+    });
+
+    const res = await service.updateProject('proj-1', 'u-1', {
+      title: 'Updated AI NIH Grant',
+      description: 'Refined abstract.',
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.data.title).toBe('Updated AI NIH Grant');
+    expect(mockProjectRepo.save).toHaveBeenCalled();
+  });
+
+  it('should delete project workspace when requested by owner', async () => {
+    mockProjectRepo.findOne.mockResolvedValueOnce({
+      id: 'proj-1',
+      ownerId: 'u-1',
+      members: [],
+    });
+
+    const res = await service.deleteProject('proj-1', 'u-1');
+    expect(res.success).toBe(true);
+    expect(mockProjectRepo.remove).toHaveBeenCalled();
+  });
+
+  it('should reject workspace deletion from non-owner with ForbiddenException', async () => {
+    mockProjectRepo.findOne.mockResolvedValueOnce({
+      id: 'proj-1',
+      ownerId: 'u-1',
+      members: [],
+    });
+
+    await expect(service.deleteProject('proj-1', 'intruder')).rejects.toThrow(
+      'Only the designated workspace Owner can delete this project.',
+    );
+  });
+
+  it('should remove collaborator from project workspace roster', async () => {
+    mockProjectRepo.findOne.mockResolvedValueOnce({
+      id: 'proj-1',
+      ownerId: 'u-1',
+      members: [{ userId: 'u-2' }],
+    });
+    mockMemberRepo.findOne.mockResolvedValueOnce({
+      projectId: 'proj-1',
+      userId: 'u-2',
+    });
+
+    const res = await service.removeMember('proj-1', 'u-1', 'u-2');
+    expect(res.success).toBe(true);
+    expect(mockMemberRepo.remove).toHaveBeenCalled();
   });
 });

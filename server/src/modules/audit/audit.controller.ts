@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuditService } from './audit.service';
 
 @ApiTags('Audit & Compliance Ledger')
-@Controller('audit')
+@Controller(['audit', 'api/audit', 'api/v1/audit'])
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
@@ -37,7 +37,7 @@ export class AuditController {
     return this.auditService.verifyLedgerIntegrity();
   }
 
-  @Get('export')
+  @Get(['export', 'export/signed'])
   @ApiOperation({
     summary: 'Export signed cryptographic ledger proof for regulatory compliance',
     description: 'Generates a signed, verifiable JSON audit ledger certificate compliant with NIST SP 800-53 and SOC 2 Type II standards.',

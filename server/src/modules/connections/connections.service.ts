@@ -190,4 +190,28 @@ export class ConnectionsService {
       },
     };
   }
+
+  /**
+   * Remove an existing connection or cancel a pending request
+   */
+  async removeConnection(connectionId: string, userId: string) {
+    const connection = await this.connRepo.findOne({
+      where: [
+        { id: connectionId, requesterId: userId },
+        { id: connectionId, addresseeId: userId },
+      ],
+    });
+
+    if (!connection) {
+      throw new NotFoundException('Connection record not found or unauthorized.');
+    }
+
+    await this.connRepo.remove(connection);
+
+    return {
+      success: true,
+      message: 'Connection removed successfully.',
+      connectionId,
+    };
+  }
 }

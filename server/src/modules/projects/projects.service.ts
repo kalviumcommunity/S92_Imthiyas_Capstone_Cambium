@@ -239,6 +239,125 @@ export class ProjectsService {
   }
 
   /**
+   * Update an existing research workspace
+   */
+  async updateProject(
+    projectId: string,
+    requesterId: string,
+    dto: Partial<CreateProjectDto>,
+  ) {
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      relations: { members: true },
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project ${projectId} not found.`);
+    }
+
+    const isOwner = project.ownerId === requesterId;
+    const isAcceptedMember = project.members?.some(
+      (m) => m.userId === requesterId && m.status === 'ACCEPTED',
+    );
+
+    if (!isOwner && !isAcceptedMember) {
+      throw new ForbiddenException('Only project owners or active members can update this workspace.');
+    }
+
+    if (dto.title !== undefined) project.title = dto.title;
+    if (dto.description !== undefined) project.description = dto.description;
+    if (dto.visibility !== undefined) project.visibility = dto.visibility as any;
+    if (dto.targetGrantId !== undefined) project.targetGrantId = dto.targetGrantId;
+    if (dto.linkedDois !== undefined) project.linkedDois = dto.linkedDois;
+
+    const saved = await this.projectRepo.save(project);
+
+    await this.logActivity(
+      projectId,
+      requesterId,
+      'UPDATED_WORKSPACE',
+      `Workspace metadata updated.`,
+    );
+
+    return {
+      success: true,
+      message: 'Research workspace updated successfully.',
+      data: saved,
+    };
+  }
+
+  /**
+   * Delete or archive a research workspace (Owner only)
+   */
+  async deleteProject(projectId: string, requesterId: string) {
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      relations: { members: true, activityLogs: true },
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project ${projectId} not found.`);
+    }
+
+    if (project.ownerId !== requesterId) {
+      throw new ForbiddenException('Only the designated workspace Owner can delete this project.');
+    }
+
+    await this.projectRepo.remove(project);
+
+    return {
+      success: true,
+      message: 'Research workspace and associated collaboration roster deleted successfully.',
+      projectId,
+    };
+  }
+
+  /**
+   * Remove a collaborator from a research project workspace
+   */
+  async removeMember(projectId: string, requesterId: string, memberUserId: string) {
+    const project = await this.projectRepo.findOne({
+      where: { id: projectId },
+      relations: { members: true },
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project ${projectId} not found.`);
+    }
+
+    const isOwner = project.ownerId === requesterId;
+    const isSelf = requesterId === memberUserId;
+
+    if (!isOwner && !isSelf) {
+      throw new ForbiddenException('Only the workspace owner can remove collaborators.');
+    }
+
+    const member = await this.memberRepo.findOne({
+      where: { projectId, userId: memberUserId },
+    });
+
+    if (!member) {
+      throw new NotFoundException('Collaborator not found in workspace roster.');
+    }
+
+    await this.memberRepo.remove(member);
+
+    await this.logActivity(
+      projectId,
+      requesterId,
+      'REMOVED_COLLABORATOR',
+      `Removed collaborator ${memberUserId} from workspace roster.`,
+    );
+
+    return {
+      success: true,
+      message: 'Collaborator removed from workspace successfully.',
+      projectId,
+      userId: memberUserId,
+    };
+  }
+
+  /**
    * Append an immutable entry to the project activity changelog
    */
   async logActivity(

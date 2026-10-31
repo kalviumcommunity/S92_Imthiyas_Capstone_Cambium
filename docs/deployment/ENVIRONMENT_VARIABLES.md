@@ -53,3 +53,4 @@
 1. **JWT & HMAC Keys**: Must be rotated at least every 90 days or immediately upon credential exposure.
 2. **Zero Plaintext Secrets in Git**: Enforced via `.gitignore` and pre-commit secret scanners.
 3. **Container Injection**: In Kubernetes or Docker Swarm, all `SECRET` variables must be injected using Secret stores (HashiCorp Vault, AWS Secrets Manager, or Doppler).
+

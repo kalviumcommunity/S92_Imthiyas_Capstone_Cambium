@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AcademicPost, AcademicPostType } from './entities/academic-post.entity';
@@ -171,5 +176,85 @@ export class CommunityService {
     await this.postRepo.save(post);
 
     return { success: true, action: 'added', type: reactionType };
+  }
+
+  /**
+   * Update an existing academic community post (Author only)
+   */
+  async updatePost(id: string, userId: string, dto: Partial<CreatePostDto>) {
+    const post = await this.postRepo.findOne({ where: { id } });
+    if (!post) {
+      throw new NotFoundException(`Academic post with ID ${id} not found.`);
+    }
+
+    if (post.authorId !== userId) {
+      throw new ForbiddenException('Only the author can edit this academic post.');
+    }
+
+    if (dto.title !== undefined) post.title = dto.title;
+    if (dto.content !== undefined) post.content = dto.content;
+    if (dto.tags !== undefined) post.tags = dto.tags;
+    if (dto.doiReference !== undefined) post.doiReference = dto.doiReference;
+
+    const saved = await this.postRepo.save(post);
+    return {
+      success: true,
+      message: 'Academic post updated successfully.',
+      data: saved,
+    };
+  }
+
+  /**
+   * Delete an academic post and associated discussion comments (Author only)
+   */
+  async deletePost(id: string, userId: string) {
+    const post = await this.postRepo.findOne({ where: { id } });
+    if (!post) {
+      throw new NotFoundException(`Academic post with ID ${id} not found.`);
+    }
+
+    if (post.authorId !== userId) {
+      throw new ForbiddenException('Only the author can delete this academic post.');
+    }
+
+    await this.postRepo.remove(post);
+    return {
+      success: true,
+      message: 'Academic post deleted successfully.',
+      id,
+    };
+  }
+
+  /**
+   * Delete a comment on an academic post (Comment Author or Post Author)
+   */
+  async deleteComment(postId: string, commentId: string, userId: string) {
+    const post = await this.postRepo.findOne({ where: { id: postId } });
+    if (!post) {
+      throw new NotFoundException(`Academic post with ID ${postId} not found.`);
+    }
+
+    const comment = await this.commentRepo.findOne({ where: { id: commentId, postId } });
+    if (!comment) {
+      throw new NotFoundException(`Comment with ID ${commentId} not found.`);
+    }
+
+    if (comment.authorId !== userId && post.authorId !== userId) {
+      throw new ForbiddenException('Only the comment author or post owner can delete this comment.');
+    }
+
+    await this.commentRepo.remove(comment);
+
+    if (post.metrics && post.metrics.comments > 0) {
+      post.metrics.comments -= 1;
+      await this.postRepo.save(post);
+    }
+
+    return {
+      success: true,
+      message: 'Comment deleted successfully.',
+      postId,
+      commentId,
+    };
   }
 }

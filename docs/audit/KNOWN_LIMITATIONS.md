@@ -36,3 +36,4 @@ To ensure that Cambium installs, compiles, and runs out-of-the-box across develo
 
 - **Database Concurrency**: The default PostgreSQL pool handles up to 100 concurrent connection leases. For institutional deployments exceeding 10,000 active researchers, deploy PgBouncer connection pooling and configure read replicas for `GET /opportunities` and `GET /publications`.
 - **Vector Embedding Latency**: High-volume batch ingestion of >10,000 papers should be scheduled during off-peak hours using the background job processor to avoid rate-limiting on Gemini embedding endpoints.
+
