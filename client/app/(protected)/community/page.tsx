@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
 import { useRealtimeEvents } from "@/lib/realtime/useRealtimeEvents";
 import {
   StructuredReviewModal,
@@ -475,23 +476,45 @@ export default function CommunityPage() {
     triggerToast("Your academic post has been published to the global scholar mesh ✓");
   };
 
-  // Filter posts based on activeTab and searchQuery
-  const filteredPosts = posts.filter((p) => {
-    const matchesSearch =
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.author.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
+  // DSA Inverted Index for Community Posts
+  const communityIndex = useMemo(() => {
+    const idx = new InvertedIndex<SearchableDocument & { originalPost: AcademicPost }>({
+      title: 5.0,
+      tags: 3.5,
+      author: 2.5,
+      description: 1.0,
+    });
+    idx.addDocuments(
+      posts.map((p) => ({
+        id: p.id,
+        title: p.title,
+        author: p.author.name,
+        description: p.content,
+        tags: p.tags,
+        originalPost: p,
+      }))
+    );
+    return idx;
+  }, [posts]);
 
-    if (!matchesSearch) return false;
+  // Filter posts based on activeTab and BM25 Inverted Index
+  const filteredPosts = useMemo(() => {
+    let list = posts;
 
-    if (activeTab === "Collaboration Calls") return p.type === "collaboration_call";
-    if (activeTab === "Paper Releases") return p.type === "paper_release";
-    if (activeTab === "Grant Consortiums") return p.type === "grant_consortium";
-    if (activeTab === "Scientific Inquiries") return p.type === "scientific_inquiry";
-    if (activeTab === "Following Feed") return followingMap[p.author.name];
-    return true;
-  });
+    if (searchQuery.trim()) {
+      const searchRes = communityIndex.search(searchQuery.trim(), { limit: 50 });
+      list = searchRes.map((r) => r.item.originalPost);
+    }
+
+    return list.filter((p) => {
+      if (activeTab === "Collaboration Calls") return p.type === "collaboration_call";
+      if (activeTab === "Paper Releases") return p.type === "paper_release";
+      if (activeTab === "Grant Consortiums") return p.type === "grant_consortium";
+      if (activeTab === "Scientific Inquiries") return p.type === "scientific_inquiry";
+      if (activeTab === "Following Feed") return followingMap[p.author.name];
+      return true;
+    });
+  }, [posts, searchQuery, activeTab, followingMap, communityIndex]);
 
   return (
     <div className="flex-1 min-w-0 h-screen overflow-y-auto bg-[#FAF7F0] text-[#202920] font-sans">

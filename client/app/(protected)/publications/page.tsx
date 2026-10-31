@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { fetchScholarlyWorks } from "@/lib/scholarly-api";
+import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
 
 // ─── Design Tokens (SSOT from 01_Design Systems) ───────────────────────────
 
@@ -991,7 +992,34 @@ function PaperExplorer({
     };
   }, [query, sortBy]);
 
-  const allPapers = livePapers.length > 0 ? livePapers : PAPERS;
+  // DSA Inverted Index for immediate local search
+  const publicationsIndex = useMemo(() => {
+    const idx = new InvertedIndex<Paper & SearchableDocument>({
+      title: 5.0,
+      tags: 3.0,
+      author: 2.0,
+      description: 1.0,
+    });
+    idx.addDocuments(
+      PAPERS.map((p) => ({
+        ...p,
+        author: p.authors.join(", "),
+        tags: p.areas,
+        description: `${p.venue} ${p.abstract}`,
+      }))
+    );
+    return idx;
+  }, []);
+
+  const allPapers = useMemo(() => {
+    if (livePapers.length > 0) return livePapers;
+    if (query.trim()) {
+      const searchRes = publicationsIndex.search(query.trim(), { limit: 20 });
+      if (searchRes.length > 0) return searchRes.map((r) => r.item);
+    }
+    return PAPERS;
+  }, [livePapers, query, publicationsIndex]);
+
   const personalizedPapers = allPapers.filter((p) => p.relevanceNote);
   const mainPapers = allPapers.filter((p) => !p.relevanceNote);
 

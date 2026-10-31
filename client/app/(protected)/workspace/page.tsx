@@ -410,6 +410,7 @@ function Sidebar({
               },
             },
             { label: "Search", icon: icons.search, onClick: () => window.dispatchEvent(new CustomEvent("open-command-palette")) },
+            { label: "RAG AI Copilot", icon: icons.sparkle, onClick: () => window.dispatchEvent(new CustomEvent("open-cambium-rag")) },
             {
               label: isUploading ? "Ingesting..." : "Import PDF",
               icon: icons.upload,

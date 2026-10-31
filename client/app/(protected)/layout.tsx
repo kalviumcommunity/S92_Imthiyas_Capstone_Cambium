@@ -4,6 +4,7 @@ import OfflineBanner from "@/components/OfflineBanner";
 import { CommandPalette } from "@/components/ui/command-palette";
 import { ShortcutsModal } from "@/components/ui/shortcuts-modal";
 import { ToastProvider } from "@/components/ui/toast";
+import { GlobalRagAssistant } from "@/components/ai/GlobalRagAssistant";
 
 export default function ProtectedLayout({
   children,
@@ -22,9 +23,10 @@ export default function ProtectedLayout({
           {children}
         </div>
 
-        {/* Global Overlays & Modals */}
+        {/* Global Overlays, Floating AI & Modals */}
         <CommandPalette />
         <ShortcutsModal />
+        <GlobalRagAssistant />
       </div>
     </ToastProvider>
   );

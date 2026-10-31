@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -18,7 +18,11 @@ import {
   X,
   History,
   Command,
+  Bot,
+  RefreshCw,
 } from "lucide-react";
+import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
+import { queryRagEngine, RagResponse } from "@/lib/ai/rag-engine";
 
 export type PaletteCategory =
   | "all"
@@ -26,11 +30,12 @@ export type PaletteCategory =
   | "papers"
   | "opportunities"
   | "researchers"
-  | "actions";
+  | "actions"
+  | "ai";
 
 export interface PaletteItem {
   id: string;
-  category: "pages" | "papers" | "opportunities" | "researchers" | "actions";
+  category: "pages" | "papers" | "opportunities" | "researchers" | "actions" | "ai";
   title: string;
   subtitle: string;
   href?: string;
@@ -456,20 +461,66 @@ export function CommandPalette() {
     }
   }, [isOpen]);
 
-  // Filter items based on activeCategory and search query
-  const filteredItems = ITEMS.filter((item) => {
-    const matchesCategory =
-      activeCategory === "all" || item.category === activeCategory;
+  // Instantiate DSA Inverted Index
+  const invertedIndex = useMemo(() => {
+    const idx = new InvertedIndex<PaletteItem & SearchableDocument>({
+      title: 5.0,
+      tags: 3.5,
+      subtitle: 2.0,
+      category: 2.0,
+      description: 1.0,
+    });
+    const docs = ITEMS.map((item) => ({
+      ...item,
+      tags: item.keywords || [],
+      description: item.subtitle,
+    }));
+    idx.addDocuments(docs);
+    return idx;
+  }, []);
 
-    const q = query.toLowerCase().trim();
-    if (!q) return matchesCategory;
+  // RAG Query State
+  const [ragResult, setRagResult] = useState<RagResponse | null>(null);
+  const [isRagLoading, setIsRagLoading] = useState(false);
 
-    const inTitle = item.title.toLowerCase().includes(q);
-    const inSubtitle = item.subtitle.toLowerCase().includes(q);
-    const inKeywords = item.keywords?.some((k) => k.toLowerCase().includes(q));
+  // Check if current query is targeted at RAG
+  const isDirectRagQuery = query.startsWith("?") || query.toLowerCase().startsWith("ai:") || activeCategory === "ai";
 
-    return matchesCategory && (inTitle || inSubtitle || inKeywords);
-  });
+  const handleTriggerRag = async (ragQuery?: string) => {
+    const q = (ragQuery || query).replace(/^(\?|ai:)/i, "").trim();
+    if (!q) return;
+    setIsRagLoading(true);
+    try {
+      const res = await queryRagEngine({ query: q, persona: "General Assistant", topK: 3 });
+      setRagResult(res);
+    } finally {
+      setIsRagLoading(false);
+    }
+  };
+
+  // Filter items using Inverted Index with BM25 Scoring
+  const { filteredItems, matchScores } = useMemo(() => {
+    const cleanQ = query.replace(/^(\?|ai:)/i, "").trim();
+    if (!cleanQ) {
+      const list = activeCategory === "all" || activeCategory === "ai"
+        ? ITEMS
+        : ITEMS.filter((item) => item.category === activeCategory);
+      return { filteredItems: list, matchScores: new Map<string, number>() };
+    }
+
+    const searchResults = invertedIndex.search(cleanQ, { limit: 40 });
+    const scoreMap = new Map<string, number>();
+    for (const r of searchResults) {
+      scoreMap.set(r.item.id, r.score);
+    }
+
+    let list = searchResults.map((r) => r.item);
+    if (activeCategory !== "all" && activeCategory !== "ai") {
+      list = list.filter((item) => item.category === activeCategory);
+    }
+
+    return { filteredItems: list, matchScores: scoreMap };
+  }, [query, activeCategory, invertedIndex]);
 
   // Announce search result count to screen readers
   useEffect(() => {
@@ -527,6 +578,7 @@ export function CommandPalette() {
         "opportunities",
         "researchers",
         "actions",
+        "ai",
       ];
       const curIdx = categories.indexOf(activeCategory);
       const nextIdx = e.shiftKey
@@ -636,12 +688,16 @@ export function CommandPalette() {
             { id: "opportunities", label: "Grants" },
             { id: "researchers", label: "Scholars" },
             { id: "actions", label: "Actions" },
+            { id: "ai", label: "✨ Ask RAG AI" },
           ].map((cat) => (
             <button
               key={cat.id}
               onClick={() => {
                 setActiveCategory(cat.id as PaletteCategory);
                 setSelectedIndex(0);
+                if (cat.id === "ai" && query.trim()) {
+                  handleTriggerRag(query);
+                }
               }}
               className={`px-3 py-1 rounded-full font-medium transition-all cursor-pointer whitespace-nowrap text-[11px] ${
                 activeCategory === cat.id
@@ -659,6 +715,62 @@ export function CommandPalette() {
           ref={listRef}
           className="flex-1 overflow-y-auto p-2 divide-y divide-transparent space-y-1"
         >
+          {/* Direct RAG AI Synthesis Box when in AI mode or query contains '?' or 'ai:' */}
+          {isDirectRagQuery && (
+            <div className="p-3.5 mb-2 bg-white rounded-xl border border-[#3E6248]/30 shadow-xs">
+              <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#E4DCCB]">
+                <div className="flex items-center gap-2">
+                  <Bot size={16} className="text-[#3E6248]" />
+                  <span className="font-serif text-sm font-semibold text-[#202920]">
+                    Cambium Scholarly RAG Copilot
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleTriggerRag(query)}
+                  disabled={isRagLoading || !query.trim()}
+                  className="px-2.5 py-1 rounded bg-[#3E6248] text-white text-[11px] font-sans font-medium flex items-center gap-1.5 hover:bg-[#204033] disabled:opacity-40 transition-colors cursor-pointer"
+                >
+                  {isRagLoading ? (
+                    <>
+                      <RefreshCw size={12} className="animate-spin" />
+                      <span>Synthesizing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={12} />
+                      <span>Synthesize Answer</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {ragResult ? (
+                <div className="space-y-2">
+                  <div className="text-xs text-[#202920] font-sans whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto p-2 bg-[#FAF7F0] rounded-lg border border-[#E4DCCB]">
+                    {ragResult.answer}
+                  </div>
+                  {ragResult.citations.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {ragResult.citations.map((c, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-[#3E6248] font-mono text-[10px]"
+                          title={c.snippet}
+                        >
+                          [{c.section}, p.{c.page}]
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-[#62685E] font-sans m-0">
+                  Ask any question about research grants, preprints, IRB compliance, or FAIR data. Press &ldquo;Synthesize Answer&rdquo; to retrieve grounded line citations.
+                </p>
+              )}
+            </div>
+          )}
+
           {/* If query is empty, show recent searches strip */}
           {!query && recentSearches.length > 0 && activeCategory === "all" && (
             <div className="px-3 py-2 mb-2">
@@ -685,6 +797,7 @@ export function CommandPalette() {
 
           {filteredItems.map((item, index) => {
             const isSelected = index === selectedIndex;
+            const bm25Score = matchScores.get(item.id);
             return (
               <div
                 key={item.id}
@@ -718,6 +831,11 @@ export function CommandPalette() {
                           {item.badge}
                         </span>
                       )}
+                      {bm25Score !== undefined && query.trim() && (
+                        <span className="font-mono text-[9px] text-[#3E6248] bg-emerald-50 px-1 rounded">
+                          BM25: {bm25Score.toFixed(1)}
+                        </span>
+                      )}
                     </div>
                     <p className="font-sans text-xs text-[#62685E] truncate mt-0.5">
                       {item.subtitle}
@@ -740,24 +858,36 @@ export function CommandPalette() {
           })}
 
           {filteredItems.length === 0 && (
-            <div className="text-center py-12 px-6">
+            <div className="text-center py-10 px-6">
               <Compass size={24} className="mx-auto text-[#85877B] mb-2" />
               <p className="font-serif text-base text-[#202920]">
                 No matching research artifacts found
               </p>
               <p className="font-serif text-xs text-[#62685E] mt-1 max-w-sm mx-auto">
-                No local nodes matched &ldquo;{query}&rdquo;. Try searching across arXiv or PubMed via the Discover engine.
+                No local nodes matched &ldquo;{query}&rdquo;.
               </p>
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  router.push(`/discover?q=${encodeURIComponent(query)}`);
-                }}
-                className="mt-4 bg-[#3E6248] text-white px-4 py-1.5 rounded-full font-sans text-xs font-semibold uppercase tracking-wider inline-flex items-center gap-1.5"
-              >
-                <span>Launch Search in Discover</span>
-                <ArrowRight size={12} />
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+                <button
+                  onClick={() => {
+                    setActiveCategory("ai");
+                    handleTriggerRag(query);
+                  }}
+                  className="bg-[#3E6248] text-white px-4 py-1.5 rounded-full font-sans text-xs font-semibold inline-flex items-center gap-1.5 hover:bg-[#204033] transition-colors cursor-pointer"
+                >
+                  <Sparkles size={12} />
+                  <span>Ask Cambium RAG AI</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    router.push(`/discover?q=${encodeURIComponent(query)}`);
+                  }}
+                  className="bg-white border border-[#E4DCCB] text-[#202920] px-4 py-1.5 rounded-full font-sans text-xs font-semibold inline-flex items-center gap-1.5 hover:border-[#3E6248] transition-colors cursor-pointer"
+                >
+                  <span>Launch in Discover</span>
+                  <ArrowRight size={12} />
+                </button>
+              </div>
             </div>
           )}
         </div>

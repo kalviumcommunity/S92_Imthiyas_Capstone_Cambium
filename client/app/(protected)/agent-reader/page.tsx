@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { chatWithAssistant, uploadArtifact } from "@/lib/api";
 import { fetchScholarlyWorks } from "@/lib/scholarly-api";
+import { queryRagEngine } from "@/lib/ai/rag-engine";
 import {
   Sparkles,
   FileText,
@@ -251,20 +252,24 @@ export default function AgenticReaderPage() {
 
       setMessages((prev) => [...prev, agentMsg]);
     } catch {
-      // High-fidelity fallback simulation
+      // High-fidelity fallback to client-side Grounded RAG Engine
+      const ragRes = await queryRagEngine({
+        query,
+        persona: selectedAgent,
+        topK: 2,
+      });
+
       const fallbackMsg: SynthesisMessage = {
         id: `agent-${Date.now()}`,
         sender: "agent",
         agentRole: selectedAgent,
-        content: `Audit synthesized under **${selectedAgent}** rules:\n\nAnalyzed query against Section 4 benchmarks. The empirical ablation confirms that the hybrid approach outperforms pure diffusion by **28.4% on chemical validity** while reducing false-positive binding affinities from 14.2% down to 1.8%. Citation grounded in Table 2 and Figure 4B.`,
-        citations: [
-          {
-            page: 9,
-            section: "§4.1 Empirical Ablation Study",
-            line: "L210-224",
-            snippet: "Table 2: Comparative benchmark across ZINC-250k and ChEMBL-34 test splits...",
-          },
-        ],
+        content: ragRes.answer,
+        citations: ragRes.citations.map((c) => ({
+          page: c.page,
+          section: c.section,
+          line: c.line,
+          snippet: c.snippet,
+        })),
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages((prev) => [...prev, fallbackMsg]);
