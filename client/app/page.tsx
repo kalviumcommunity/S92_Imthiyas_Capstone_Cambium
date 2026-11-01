@@ -1851,21 +1851,50 @@ function CommunitySection() {
 
 // ─── Activity / Contribution Graph ───────────────────────────────────────────
 function ActivitySection() {
-  const weeks = 52
-  const days = 7
-  const activities = SCHOLAR_ACTIVITY_BADGES
-
-  // Deterministic organic academic cadence grid with sprint clusters & quiet gaps
-  const grid = Array.from({ length: weeks }, (_, w) =>
-    Array.from({ length: days }, (_, d) => getScholarContributionDetails(w, d))
-  );
-
   return (
-    <section className="bg-[#F2EBDD] dark:bg-[#131C15] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-28 px-6 md:px-16 transition-colors duration-200">
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
-          {/* Graph Card - Flat-Topped Honeycomb Activity Cadence */}
-          <div>
+    <section className="bg-[#F2EBDD] dark:bg-[#131C15] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-24 sm:py-28 px-6 md:px-12 lg:px-16 transition-colors duration-200">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          {/* Left Column: Generous Narrative & UI/UX Value Proposition */}
+          <div className="lg:col-span-5 flex flex-col justify-center">
+            <div className="inline-flex items-center gap-2 font-mono text-xs text-[#3E6248] dark:text-[#4ADE80] font-bold tracking-wider uppercase mb-4">
+              <span className="w-2 h-2 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+              04 / Verified Scholarly Cadence
+            </div>
+
+            <h2
+              style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
+              className="text-3xl sm:text-4xl lg:text-[44px] font-normal leading-[1.18] tracking-[-0.025em] text-[#202920] dark:text-[#EDEAE2] mb-5 m-0"
+            >
+              Every contribution becomes part of your research story.
+            </h2>
+
+            <p className="font-sans text-base sm:text-[17px] leading-[1.68] text-[#62685E] dark:text-[#A3B899] mb-8 m-0">
+              Track publications, experiments, collaborations, and peer milestones in a continuous timeline that documents your intellectual journey from proposal to verified impact.
+            </p>
+
+            {/* 3 Value Pillars */}
+            <div className="flex flex-col gap-3.5 pt-2 border-t border-[#E4DCCB] dark:border-[#233327]">
+              <div className="flex items-center gap-3 text-xs font-sans">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
+                <span className="font-semibold text-[#202920] dark:text-[#EDEAE2]">Attributable Milestones:</span>
+                <span className="text-[#62685E] dark:text-[#A3B899]">Backed by DOIs, arXiv, Zenodo & COPE reviews</span>
+              </div>
+              <div className="flex items-center gap-3 text-xs font-sans">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
+                <span className="font-semibold text-[#202920] dark:text-[#EDEAE2]">Active Calendar Days:</span>
+                <span className="text-[#62685E] dark:text-[#A3B899]">Real cadence decoupled from temporal velocity</span>
+              </div>
+              <div className="flex items-center gap-3 text-xs font-sans">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
+                <span className="font-semibold text-[#202920] dark:text-[#EDEAE2]">Cellular Honeycomb:</span>
+                <span className="text-[#62685E] dark:text-[#A3B899]">Biological cambium growth layer tessellation</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Panoramic Continuous Honeycomb Cadence Card */}
+          <div className="lg:col-span-7 w-full overflow-hidden">
             <HexContributionGraph
               fillSampleData={true}
               year={2026}
@@ -1873,24 +1902,13 @@ function ActivitySection() {
               showLegend={true}
               showCategories={true}
               showDayLabels={false}
-              subtext="Cellular Honeycomb (flat-topped odd-q monthly layout)"
+              subtext="Continuous biological cambium ribbon (53-week flat-topped honeycomb)"
             />
-          </div>
-
-          {/* Copy */}
-          <div>
-            <p className="text-[11px] font-bold tracking-[0.1em] text-[#3E6248] dark:text-[#4ADE80] uppercase mb-5">Research Cadence & Ledger</p>
-            <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal leading-[1.15] tracking-[-0.03em] text-[#202920] dark:text-[#EDEAE2] mb-6">
-              Every contribution becomes part of your research story.
-            </h2>
-            <p className="text-[17px] leading-[1.65] text-[#62685E] dark:text-[#A3B899]">
-              Track publications, experiments, collaborations, and milestones in a continuous timeline that documents your intellectual journey from start to impact.
-            </p>
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 // ─── Opportunities Section ────────────────────────────────────────────────────

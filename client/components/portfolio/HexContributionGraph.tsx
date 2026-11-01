@@ -71,15 +71,14 @@ const LEVEL_STYLES = [
 ];
 
 // Precise Mathematical Dimensions for Flat-Topped Honeycomb Tessellation
-const RADIUS = 6.8; // Circumcircle radius (px)
-const HEX_HEIGHT = RADIUS * Math.sqrt(3); // ~11.78px (distance from flat top to flat bottom)
+const RADIUS = 6.2; // Circumcircle radius (px)
+const HEX_HEIGHT = RADIUS * Math.sqrt(3); // ~10.74px (distance from flat top to flat bottom)
 const GAP_Y = 1.2; // Vertical separation between stacked hexagons
 const GAP_X = 1.0; // Horizontal gap between interlocking columns
-const Y_PITCH = HEX_HEIGHT + GAP_Y; // ~12.98px
-const Y_STAGGER = Y_PITCH / 2; // ~6.49px (vertical shift for odd columns)
-const X_PITCH = 1.5 * RADIUS + GAP_X; // ~11.20px
-const MONTH_GAP = 12.0; // Clean 12px lateral gap between monthly clusters
-const TOP_MARGIN = 24.0; // Space for month headers
+const Y_PITCH = HEX_HEIGHT + GAP_Y; // ~11.94px
+const Y_STAGGER = Y_PITCH / 2; // ~5.97px (vertical shift for odd columns)
+const X_PITCH = 1.5 * RADIUS + GAP_X; // ~10.30px
+const TOP_MARGIN = 22.0; // Space for month headers
 
 const MONTH_NAMES = [
   "Jan",
@@ -236,115 +235,101 @@ export function HexContributionGraph({
     return counts;
   }, [dataMap]);
 
-  // Build the 12 Monthly Honeycomb Clusters with Flat-Topped Tessellation
-  const { monthClusters, totalWidth, totalHeight } = useMemo(() => {
-    const leftMargin = showDayLabels ? 28.0 : 8.0;
-    let currentX = leftMargin;
-
-    const clusters: Array<{
-      name: string;
-      labelX: number;
-      cells: Array<{
-        date: string;
-        dayOfWeek: number;
-        count: number;
-        level: 0 | 1 | 2 | 3 | 4;
-        cx: number;
-        cy: number;
-        isCurrentMonth: boolean;
-        categories?: string[];
-        item?: HexContributionDay;
-      }>;
+  // Build the Continuous 53-Week Honeycomb Ribbon with Monthly Alignments
+  const { cells, monthLabels, totalWidth, totalHeight } = useMemo(() => {
+    const leftMargin = showDayLabels ? 28.0 : 10.0;
+    const allCells: Array<{
+      date: string;
+      weekIndex: number;
+      dayOfWeek: number;
+      count: number;
+      level: 0 | 1 | 2 | 3 | 4;
+      cx: number;
+      cy: number;
+      categories?: string[];
+      item?: HexContributionDay;
     }> = [];
 
-    for (let m = 0; m < 12; m++) {
-      const daysInMonth = new Date(Date.UTC(numericYear, m + 1, 0)).getUTCDate();
-      const firstDate = new Date(Date.UTC(numericYear, m, 1));
-      const firstDayOfWeek = (firstDate.getUTCDay() + 6) % 7; // 0 = Mon ... 6 = Sun
-      const totalWeeks = Math.floor((firstDayOfWeek + daysInMonth - 1) / 7) + 1;
+    const labels: Array<{ name: string; x: number }> = [];
 
-      const monthCells: Array<{
-        date: string;
-        dayOfWeek: number;
-        count: number;
-        level: 0 | 1 | 2 | 3 | 4;
-        cx: number;
-        cy: number;
-        isCurrentMonth: boolean;
-        categories?: string[];
-        item?: HexContributionDay;
-      }> = [];
+    // Jan 1 of numeric year
+    const jan1 = new Date(Date.UTC(numericYear, 0, 1));
+    const jan1DayOfWeek = (jan1.getUTCDay() + 6) % 7; // 0 = Mon ... 6 = Sun
 
-      const monthStartX = currentX;
+    // Track month start columns
+    const monthStartWeeks = new Map<number, number>();
 
-      // Populate every week column and every day-of-week row for a pristine solid mesh
-      for (let w = 0; w < totalWeeks; w++) {
-        for (let d = 0; d < 7; d++) {
-          const dayNum = w * 7 + d - firstDayOfWeek + 1;
-          const isCurrentMonth = dayNum >= 1 && dayNum <= daysInMonth;
+    // Determine total days in year
+    const isLeap = (numericYear % 4 === 0 && numericYear % 100 !== 0) || numericYear % 400 === 0;
+    const totalDays = isLeap ? 366 : 365;
 
-          let dateStr = "";
-          let count = 0;
-          let level: 0 | 1 | 2 | 3 | 4 = 0;
-          let item: HexContributionDay | undefined;
-          let cats: string[] | undefined;
+    let maxWeek = 0;
 
-          if (isCurrentMonth) {
-            const dateObj = new Date(Date.UTC(numericYear, m, dayNum));
-            dateStr = dateObj.toISOString().slice(0, 10);
-            item = dataMap.get(dateStr);
-            count = item?.count || 0;
-            cats = item?.categories;
+    for (let dayOfYear = 0; dayOfYear < totalDays; dayOfYear++) {
+      const dateObj = new Date(Date.UTC(numericYear, 0, dayOfYear + 1));
+      const m = dateObj.getUTCMonth();
+      const dayOfMonth = dateObj.getUTCDate();
+      const d = (dateObj.getUTCDay() + 6) % 7; // 0 = Mon ... 6 = Sun
 
-            if (item?.level !== undefined) {
-              level = item.level;
-            } else if (count >= 4) {
-              level = 4;
-            } else if (count === 3) {
-              level = 3;
-            } else if (count === 2) {
-              level = 2;
-            } else if (count === 1) {
-              level = 1;
-            }
-          }
+      // Calculate calendar week column
+      const w = Math.floor((dayOfYear + jan1DayOfWeek) / 7);
+      if (w > maxWeek) maxWeek = w;
 
-          // Flat-topped honeycomb coordinate: odd columns staggered by Y_STAGGER
-          const cx = monthStartX + w * X_PITCH;
-          const cy = TOP_MARGIN + d * Y_PITCH + (w % 2 === 1 ? Y_STAGGER : 0);
-
-          monthCells.push({
-            date: dateStr,
-            dayOfWeek: d,
-            count,
-            level,
-            cx,
-            cy,
-            isCurrentMonth,
-            categories: cats,
-            item,
-          });
-        }
+      if (dayOfMonth === 1 && !monthStartWeeks.has(m)) {
+        monthStartWeeks.set(m, w);
       }
 
-      const monthWidth = (totalWeeks - 1) * X_PITCH;
-      const labelX = monthStartX + monthWidth / 2;
+      const dateStr = dateObj.toISOString().slice(0, 10);
+      const item = dataMap.get(dateStr);
+      const count = item?.count || 0;
 
-      clusters.push({
-        name: MONTH_NAMES[m],
-        labelX,
-        cells: monthCells,
+      let level: 0 | 1 | 2 | 3 | 4 = 0;
+      if (item?.level !== undefined) {
+        level = item.level;
+      } else if (count >= 4) {
+        level = 4;
+      } else if (count === 3) {
+        level = 3;
+      } else if (count === 2) {
+        level = 2;
+      } else if (count === 1) {
+        level = 1;
+      }
+
+      // Flat-topped honeycomb center: odd columns shifted by Y_STAGGER
+      const cx = leftMargin + w * X_PITCH;
+      const cy = TOP_MARGIN + d * Y_PITCH + (w % 2 === 1 ? Y_STAGGER : 0);
+
+      allCells.push({
+        date: dateStr,
+        weekIndex: w,
+        dayOfWeek: d,
+        count,
+        level,
+        cx,
+        cy,
+        categories: item?.categories,
+        item,
       });
-
-      // Shift currentX for next month, inserting the 12px lateral breath between clusters
-      currentX += monthWidth + MONTH_GAP + X_PITCH;
     }
 
-    const calculatedHeight = TOP_MARGIN + 7 * Y_PITCH + Y_STAGGER + 12;
+    // Month labels aligned to starting week column
+    for (let m = 0; m < 12; m++) {
+      const startW = monthStartWeeks.get(m) ?? Math.round(m * 4.35);
+      const labelX = leftMargin + startW * X_PITCH;
+      labels.push({
+        name: MONTH_NAMES[m],
+        x: labelX,
+      });
+    }
+
+    const calculatedWidth = leftMargin + (maxWeek + 1) * X_PITCH + RADIUS + 10;
+    const calculatedHeight = TOP_MARGIN + 7 * Y_PITCH + Y_STAGGER + 10;
 
     return {
-      monthClusters: clusters,
-      totalWidth: currentX + 8,
+      cells: allCells,
+      monthLabels: labels,
+      totalWidth: calculatedWidth,
       totalHeight: calculatedHeight,
     };
   }, [numericYear, dataMap, showDayLabels]);
@@ -360,134 +345,120 @@ export function HexContributionGraph({
 
   return (
     <div
-      className={`rounded-2xl border border-[#E5DDD3] dark:border-[#28382C] bg-[#FAF7F0]/60 dark:bg-[#121B14]/80 p-5 md:p-6 shadow-2xs ${className}`}
+      className={`rounded-2xl border border-[#E5DDD3] dark:border-[#28382C] bg-[#FAF7F0]/80 dark:bg-[#121B14]/90 p-5 sm:p-6 shadow-2xs ${className}`}
     >
       {/* ── TOP HEADER: Title (Left) and Less/More 5-Hex Legend (Right) ── */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <h3 className="font-sans font-bold text-base md:text-lg text-[#1F2922] dark:text-[#FAF7F0] tracking-tight m-0">
+        <h3 className="font-sans font-bold text-sm sm:text-base text-[#1F2922] dark:text-[#FAF7F0] tracking-tight m-0">
           {title || `${numericYear} Research Activity Cadence`}
         </h3>
 
         {showLegend && (
           <div className="flex items-center gap-1.5 text-xs font-mono text-[#85877B] dark:text-[#8FA89B]">
-            <span className="text-[11px] font-medium mr-0.5">Less</span>
+            <span className="text-[10px] font-medium mr-0.5">Less</span>
             {LEVEL_STYLES.map((style) => (
               <svg
                 key={style.level}
-                width={13}
-                height={14}
-                viewBox="0 0 13 14"
+                width={12}
+                height={13}
+                viewBox="0 0 12 13"
                 className="inline-block overflow-visible"
               >
                 <polygon
-                  points={getFlatHexPoints(6.5, 7, 5.2)}
+                  points={getFlatHexPoints(6, 6.5, 4.8)}
                   className={`${style.className} transition-colors`}
                   strokeWidth={0.8}
                 />
               </svg>
             ))}
-            <span className="text-[11px] font-medium ml-0.5">More</span>
+            <span className="text-[10px] font-medium ml-0.5">More</span>
           </div>
         )}
       </div>
 
-      {/* ── HONEYCOMB SVG CANVAS ── */}
+      {/* ── CONTINUOUS HONEYCOMB SVG CANVAS ── */}
       <div className="overflow-x-auto pb-2 scrollbar-thin">
         <svg
           width={totalWidth}
           height={totalHeight}
           viewBox={`0 0 ${totalWidth} ${totalHeight}`}
-          className="select-none overflow-visible block"
+          className="select-none overflow-visible block min-w-[580px]"
         >
           {/* Day of Week Labels (Optional Mon, Wed, Fri) */}
           {showDayLabels && (
-            <g className="fill-[#85877B] dark:fill-[#7E8B7B] text-[9px] font-mono">
-              <text x={4} y={TOP_MARGIN + 0 * Y_PITCH + 4}>
+            <g className="fill-[#85877B] dark:fill-[#7E8B7B] text-[8.5px] font-mono">
+              <text x={2} y={TOP_MARGIN + 0 * Y_PITCH + 4}>
                 Mon
               </text>
-              <text x={4} y={TOP_MARGIN + 2 * Y_PITCH + 4}>
+              <text x={2} y={TOP_MARGIN + 2 * Y_PITCH + 4}>
                 Wed
               </text>
-              <text x={4} y={TOP_MARGIN + 4 * Y_PITCH + 4}>
+              <text x={2} y={TOP_MARGIN + 4 * Y_PITCH + 4}>
                 Fri
               </text>
             </g>
           )}
 
-          {/* 12 Monthly Honeycomb Clusters */}
-          {monthClusters.map((cluster) => (
-            <g key={cluster.name}>
-              {/* Centered Month Header Label */}
-              <text
-                x={cluster.labelX}
-                y={13}
-                textAnchor="middle"
-                className="fill-[#85877B] dark:fill-[#8FA89B] text-[10px] font-mono font-medium tracking-wide"
-              >
-                {cluster.name}
-              </text>
-
-              {/* Flat-Topped Hexagon Cells */}
-              {cluster.cells.map((cell, idx) => {
-                // If it's a boundary padding cell (not in current month), render faint Level 0 cell
-                if (!cell.isCurrentMonth) {
-                  return (
-                    <polygon
-                      key={`pad-${idx}`}
-                      points={getFlatHexPoints(cell.cx, cell.cy, RADIUS)}
-                      className="fill-[#EDE7DF]/35 dark:fill-[#17231B]/30 stroke-[#E1D8CC]/30 dark:stroke-[#253629]/25 pointer-events-none"
-                      strokeWidth={0.7}
-                    />
-                  );
-                }
-
-                const style = LEVEL_STYLES[cell.level];
-                const isSelected = selectedDate === cell.date;
-
-                // Category filtering highlight logic
-                const matchesCategory =
-                  !activeCategory ||
-                  (cell.categories && cell.categories.includes(activeCategory));
-                const opacityClass = matchesCategory ? "opacity-100" : "opacity-25";
-
-                return (
-                  <polygon
-                    key={cell.date}
-                    points={getFlatHexPoints(cell.cx, cell.cy, RADIUS)}
-                    strokeWidth={isSelected ? 2 : 0.8}
-                    className={`transition-all duration-150 cursor-pointer ${
-                      style.className
-                    } ${opacityClass} hover:opacity-85 ${
-                      isSelected
-                        ? "stroke-[#202920] dark:stroke-white stroke-[2px] z-10"
-                        : ""
-                    } ${
-                      activeCategory && matchesCategory && cell.count > 0
-                        ? "stroke-[#274833] dark:stroke-[#4ADE80] stroke-[1.5px]"
-                        : ""
-                    }`}
-                    onMouseEnter={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      setHoveredCell({
-                        date: cell.date,
-                        count: cell.count,
-                        level: cell.level,
-                        categories: cell.categories,
-                        x: rect.left + rect.width / 2,
-                        y: rect.top,
-                      });
-                    }}
-                    onMouseLeave={() => setHoveredCell(null)}
-                    onClick={() => onSelectDate?.(cell.date, cell.item)}
-                  >
-                    <title>
-                      {`${cell.date}: ${cell.count} research milestone(s)`}
-                    </title>
-                  </polygon>
-                );
-              })}
-            </g>
+          {/* Month Header Labels Aligned to Month Starts */}
+          {monthLabels.map((lbl) => (
+            <text
+              key={lbl.name}
+              x={lbl.x}
+              y={12}
+              textAnchor="start"
+              className="fill-[#85877B] dark:fill-[#8FA89B] text-[9.5px] font-mono font-medium tracking-wide"
+            >
+              {lbl.name}
+            </text>
           ))}
+
+          {/* Continuous Interlocking Flat-Topped Hexagon Cells */}
+          {cells.map((cell) => {
+            const style = LEVEL_STYLES[cell.level];
+            const isSelected = selectedDate === cell.date;
+
+            // Category filtering highlight logic
+            const matchesCategory =
+              !activeCategory ||
+              (cell.categories && cell.categories.includes(activeCategory));
+            const opacityClass = matchesCategory ? "opacity-100" : "opacity-25";
+
+            return (
+              <polygon
+                key={cell.date}
+                points={getFlatHexPoints(cell.cx, cell.cy, RADIUS)}
+                strokeWidth={isSelected ? 2 : 0.75}
+                className={`transition-all duration-150 cursor-pointer ${
+                  style.className
+                } ${opacityClass} hover:opacity-85 ${
+                  isSelected
+                    ? "stroke-[#202920] dark:stroke-white stroke-[2px] z-10"
+                    : ""
+                } ${
+                  activeCategory && matchesCategory && cell.count > 0
+                    ? "stroke-[#274833] dark:stroke-[#4ADE80] stroke-[1.5px]"
+                    : ""
+                }`}
+                onMouseEnter={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setHoveredCell({
+                    date: cell.date,
+                    count: cell.count,
+                    level: cell.level,
+                    categories: cell.categories,
+                    x: rect.left + rect.width / 2,
+                    y: rect.top,
+                  });
+                }}
+                onMouseLeave={() => setHoveredCell(null)}
+                onClick={() => onSelectDate?.(cell.date, cell.item)}
+              >
+                <title>
+                  {`${cell.date}: ${cell.count} research milestone(s)`}
+                </title>
+              </polygon>
+            );
+          })}
         </svg>
       </div>
 
@@ -540,7 +511,7 @@ export function HexContributionGraph({
                 key={cat.id}
                 type="button"
                 onClick={() => handleToggleCategory(cat.id)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-sans transition-all cursor-pointer border flex items-center gap-1.5 ${
+                className={`px-3 py-1 rounded-full text-xs font-sans transition-all cursor-pointer border flex items-center gap-1.5 ${
                   isFiltered
                     ? "bg-[#274833] dark:bg-[#4ADE80] text-white dark:text-[#111A13] border-[#274833] dark:border-[#4ADE80] shadow-xs font-semibold"
                     : "bg-white/80 dark:bg-[#1A251E]/80 text-[#4A5568] dark:text-[#C5D5BE] border-[#E5DDD3] dark:border-[#2D3E32] hover:border-[#8FA89B] hover:text-[#202920] dark:hover:text-white"
