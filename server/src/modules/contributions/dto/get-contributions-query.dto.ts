@@ -54,3 +54,4 @@ export class GetContributionsQueryDto {
   @IsEnum(ContributionVisibility)
   visibility?: ContributionVisibility;
 }
+

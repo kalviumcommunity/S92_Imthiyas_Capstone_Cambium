@@ -14,7 +14,7 @@
 
 ## 1. Executive Summary & Core Philosophy
 
-Modern academia has long suffered from two flawed extremes: vanity metric gaming (e.g., commit counts, artificial daily streaks, superficial social actions) and opaque, unverified claims. 
+Modern academia has long suffered from two flawed extremes: vanity metric gaming (e.g., commit counts, artificial daily streaks, superficial social actions) and opaque, unverified claims.
 
 Cambium replaces synthetic activity streaks with an **evidence-based, cryptographic research contributions ledger**. Our system is anchored on four cardinal principles:
 
@@ -47,7 +47,7 @@ Cambium structures researcher portfolios around four distinct, unblended pillars
 A discrete, verifiable scholarly milestone completed on a specific UTC timestamp by a recognized researcher.
 
 ### Pillar 2: Active Research Days
-A calendar day (standardized to UTC or the scholar's chosen institutional timezone) containing at least one eligible research contribution. 
+A calendar day (standardized to UTC or the scholar's chosen institutional timezone) containing at least one eligible research contribution.
 $$\mathbf{Active\ Days} = \left| \{ \text{date}(e) \mid e \in \text{EligibleEvents} \} \right|$$
 *Constraint*: Completing 5 experiment milestones on a single day counts as **1 Active Day**.
 
@@ -147,3 +147,4 @@ To honor both attribution and confidentiality:
 1. **Honest Connection State**: If GitHub OAuth or API tokens are unconfigured, Cambium displays a clear `Disconnected` badge with an instruction to connect in Settings. It is strictly forbidden to fall back to hardcoded mock repositories.
 2. **ORCID & Crossref Sync**: Public publications and confirmed peer reviews imported from ORCID or Crossref retain their persistent identifiers and are marked `VERIFIED`.
 3. **Idempotency**: Importing or re-syncing from external sources uses deterministic compound keys `(actorId, source, externalId)` to prevent duplicate milestone creation.
+

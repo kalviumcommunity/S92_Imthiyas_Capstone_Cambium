@@ -15,3 +15,4 @@ import { ContributionsController } from './contributions.controller';
   exports: [ContributionsService],
 })
 export class ContributionsModule {}
+
