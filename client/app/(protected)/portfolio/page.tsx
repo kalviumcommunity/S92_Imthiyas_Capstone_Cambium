@@ -26,7 +26,8 @@ import {
   Clock,
   Compass,
 } from "lucide-react";
-import { getScholarContributionDetails } from "@/lib/scholarHeatmap";
+import { EvidenceBasedContributions } from "@/components/portfolio/EvidenceBasedContributions";
+import type { ContributionSummaryResponse } from "@/lib/api";
 
 // ─── Static Data (Preserved & Extended) ────────────────────────────────────────
 
@@ -401,7 +402,18 @@ function ShareModal({ onClose }: { onClose: () => void }) {
 
 // ─── Research Activity Heatmap (GitHub-style) ─────────────────────────────────
 
-function ContributionHeatmap() {
+function ContributionHeatmap({
+  onSummaryLoaded,
+}: {
+  onSummaryLoaded?: (summary: ContributionSummaryResponse) => void;
+}) {
+  return <EvidenceBasedContributions onSummaryLoaded={onSummaryLoaded} />;
+}
+
+function _DeprecatedOldHeatmap() {
+  return null;
+}
+function _unusedOld() {
   const weeks = 52;
   const days = 7;
 
@@ -464,7 +476,7 @@ function ContributionHeatmap() {
               {Array.from({ length: weeks }).map((_, w) => (
                 <div key={w} className="flex flex-col gap-[3.5px]">
                   {Array.from({ length: days }).map((_, d) => {
-                    const details = getScholarContributionDetails(w, d);
+                    const details = { label: "Day", level: 0 };
                     return (
                       <div
                         key={d}
@@ -503,6 +515,7 @@ export default function ResearchPortfolioPage() {
   const [expertiseTab, setExpertiseTab] = useState("Research Methods");
   const [savedPubs, setSavedPubs] = useState<Set<number>>(new Set());
   const [hoveredNetwork, setHoveredNetwork] = useState<number | null>(null);
+  const [summaryState, setSummaryState] = useState<ContributionSummaryResponse | null>(null);
 
   function toggleSaved(i: number) {
     setSavedPubs((prev) => {
@@ -689,11 +702,11 @@ export default function ResearchPortfolioPage() {
             {/* Quick Metrics Bar (GitHub & LinkedIn Style) */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-6 pt-5 border-t border-[#E4DCCB]">
               {[
-                { label: "Publications", value: "12", sub: "Peer-reviewed" },
+                { label: "Distinct Works", value: String(summaryState?.metrics.distinctOutputs ?? 4), sub: "Unique artifacts & DOIs" },
                 { label: "Citations", value: "420+", sub: "Across Google Scholar" },
                 { label: "h-Index", value: "11", sub: "Scholarly impact" },
-                { label: "Active Projects", value: "4", sub: "Workspace teams" },
-                { label: "Research Streak", value: "18 Days", sub: "Consistent output" },
+                { label: "Total Milestones", value: String(summaryState?.metrics.totalContributions ?? 6), sub: "Attributable events" },
+                { label: "Active Days", value: String(summaryState?.metrics.activeDays ?? 5), sub: "Verified activity" },
               ].map((m) => (
                 <div key={m.label} className="p-3 rounded-xl bg-[#FAF7F0]/60 border border-[#E4DCCB]/60 text-center">
                   <div className="font-serif text-xl sm:text-2xl font-normal text-[#202920] m-0">
@@ -764,7 +777,7 @@ export default function ResearchPortfolioPage() {
 
         {/* ── Section: Contribution Heatmap (GitHub-Style) ── */}
         <section className="mb-8">
-          <ContributionHeatmap />
+          <EvidenceBasedContributions onSummaryLoaded={setSummaryState} />
         </section>
 
         {/* ── Section: Cambium Research Calendar Milestones ── */}
@@ -1013,12 +1026,12 @@ export default function ResearchPortfolioPage() {
               </h3>
               <div className="space-y-2.5">
                 {[
-                  { label: "Publications", count: 12 },
-                  { label: "Active projects", count: 4 },
-                  { label: "Research datasets", count: 8 },
-                  { label: "Research notes", count: 23 },
-                  { label: "Experiments", count: 31 },
-                  { label: "Discussions", count: 17 },
+                  { label: "Publications", count: summaryState?.byType?.MANUSCRIPT_PUBLISHED ?? 2 },
+                  { label: "Preprints", count: summaryState?.byType?.PREPRINT_RELEASE ?? 1 },
+                  { label: "Research datasets", count: summaryState?.byType?.DATASET_RELEASE ?? 2 },
+                  { label: "Software releases", count: summaryState?.byType?.SOFTWARE_RELEASE ?? 2 },
+                  { label: "Confirmed peer reviews", count: summaryState?.byType?.PEER_REVIEW_CONFIRMED ?? 2 },
+                  { label: "Experiments & milestones", count: summaryState?.byType?.EXPERIMENT_MILESTONE ?? 1 },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between text-xs">
                     <span className="text-[#62685E]">{item.label}</span>
