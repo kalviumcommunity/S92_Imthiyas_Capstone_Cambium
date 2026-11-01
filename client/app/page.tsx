@@ -8,6 +8,7 @@ import { CambiumIntroPreloader } from '@/components/landing/CambiumIntroPreloade
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useTheme } from '@/lib/theme-provider'
 import { getNaturalScholarContributionLevel, getScholarContributionDetails, SCHOLAR_ACTIVITY_BADGES } from '@/lib/scholarHeatmap'
+import { HexContributionGraph } from '@/components/portfolio/HexContributionGraph'
 import { fetchScholarlyWorks, fetchScholarlyResearchers, fetchTrendingTopics, type ScholarlyWork } from '@/lib/scholarly-api'
 
 // ─── Design System Tokens (Cambium Master Living Materials System) ────────────
@@ -1152,8 +1153,14 @@ function IdentitySection() {
                     </span>
                   </div>
 
-                  {/* 36 Weeks Heatmap Visualization */}
-                  <div style={{ overflowX: 'auto', paddingBottom: 2 }}>
+                  {/* Monthly-Separated Pointy-Topped Honeycomb Tessellation */}
+                  <HexContributionGraph
+                    fillSampleData={true}
+                    year={2026}
+                    showLegend={false}
+                    showDayLabels={true}
+                  />
+                  <div style={{ display: 'none' }}>
                     <div style={{ display: 'flex', gap: 3.5, minWidth: 460 }}>
                       {Array.from({ length: weeks }).map((_, w) => (
                         <div key={w} style={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
@@ -1873,7 +1880,7 @@ function ActivitySection() {
           {/* Graph Card */}
           <div className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl p-7 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
             <div className="flex justify-between items-center mb-5">
-              <div className="text-sm font-semibold text-[#202920] dark:text-[#EDEAE2]">2026 Research Activity Cadence</div>
+              <div className="text-sm font-semibold text-[#202920] dark:text-[#EDEAE2]">2026 Cellular Honeycomb Activity Cadence</div>
               <div className="flex items-center gap-1.5 text-xs text-[#85877B] dark:text-[#7E8B7B]">
                 <span>Less</span>
                 {[0, 1, 2, 3, 4].map((i) => (
@@ -1892,7 +1899,14 @@ function ActivitySection() {
               </div>
             </div>
 
-            <div className="flex gap-1 overflow-x-auto pb-2">
+            <HexContributionGraph
+              fillSampleData={true}
+              year={2026}
+              showLegend={false}
+              showDayLabels={true}
+              subtext="Cellular Honeycomb (odd-q monthly layout)"
+            />
+            <div className="hidden">
               {grid.map((week, w) => (
                 <div key={w} className="flex flex-col gap-1">
                   {week.map((item, d) => (

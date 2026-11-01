@@ -96,7 +96,7 @@ CREATE INDEX IF NOT EXISTS idx_opps_created_by ON research_opportunities(created
 
 -- HNSW Vector Cosine Distance Index for pgvector Semantic Search
 DO $$ BEGIN
-    CREATE INDEX idx_opps_embedding_hnsw 
+    CREATE INDEX idx_opps_embedding_hnsw
     ON research_opportunities USING hnsw (embedding vector_cosine_ops)
     WITH (m = 16, ef_construction = 64);
 EXCEPTION
@@ -104,7 +104,7 @@ EXCEPTION
 END $$;
 
 -- Full-Text Search (GIN) Index for Hybrid Keyword + Semantic Search
-CREATE INDEX IF NOT EXISTS idx_opps_fts 
+CREATE INDEX IF NOT EXISTS idx_opps_fts
 ON research_opportunities USING gin(to_tsvector('english', title || ' ' || COALESCE(description, '')));
 
 -- 8. Opportunity <-> Tags Junction Table (Many-to-Many)

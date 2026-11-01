@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   Calendar,
@@ -28,6 +28,7 @@ import {
   ContributionEventType,
   ContributionVisibility,
 } from "@/lib/api";
+import { HexContributionGraph, type HexContributionDay } from "./HexContributionGraph";
 
 const LEVEL_COLORS = [
   "bg-[#FAF7F0] border-[#E4DCCB]",
@@ -86,6 +87,7 @@ export function EvidenceBasedContributions({
   // Modals state
   const [inspectedDate, setInspectedDate] = useState<string | null>(null);
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
+  const [graphViewMode, setGraphViewMode] = useState<"hex" | "both">("both");
 
   // Fetch real data on year or scholar change
   const refreshData = async () => {
@@ -120,6 +122,13 @@ export function EvidenceBasedContributions({
 
   // Group heatmap cells into 52 weeks x 7 days
   const heatmapCells = summary?.dailyHeatmap || [];
+  const hexDays: HexContributionDay[] = useMemo(() => {
+    return (summary?.dailyHeatmap || []).map((c) => ({
+      date: c.date,
+      count: c.count,
+      level: c.level,
+    }));
+  }, [summary]);
   const weeks: Array<Array<{ date: string; count: number; level: 0 | 1 | 2 | 3 | 4 }>> = [];
   for (let i = 0; i < heatmapCells.length; i += 7) {
     weeks.push(heatmapCells.slice(i, i + 7));
@@ -308,9 +317,43 @@ export function EvidenceBasedContributions({
         </button>
       </div>
 
-      {/* ── TAB 1: Daily Cadence Heatmap ── */}
+      {/* ── TAB 1: Daily Cadence Heatmap (Pointy-Topped Honeycomb Tessellation) ── */}
       {activeTab === "cadence" && (
-        <div>
+        <div className="space-y-6">
+          {/* Top Sub-toggle for Honeycomb vs Verification Comparison */}
+          <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[11px] text-[#62685E]">Tessellation Mode:</span>
+              <div className="flex items-center bg-[#FAF7F0] p-0.5 rounded-lg border border-[#E4DCCB] text-[11px] font-mono">
+                <button
+                  type="button"
+                  onClick={() => setGraphViewMode("hex")}
+                  className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                    graphViewMode === "hex"
+                      ? "bg-white text-[#202920] shadow-2xs font-semibold"
+                      : "text-[#62685E] hover:text-[#202920]"
+                  }`}
+                >
+                  Honeycomb (Pointy-Topped Hex)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGraphViewMode("both")}
+                  className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                    graphViewMode === "both"
+                      ? "bg-white text-[#202920] shadow-2xs font-semibold"
+                      : "text-[#62685E] hover:text-[#202920]"
+                  }`}
+                >
+                  Side-by-Side Comparison
+                </button>
+              </div>
+            </div>
+            <span className="text-[11px] font-mono text-[#85877B]">
+              365 calendar days mapped · 16px lateral month separation
+            </span>
+          </div>
+
           {loading ? (
             <div className="py-16 text-center text-xs font-mono text-[#85877B] animate-pulse">
               Querying verified research ledger and cryptographic proofs…
@@ -325,76 +368,88 @@ export function EvidenceBasedContributions({
                 Retry
               </button>
             </div>
-          ) : heatmapCells.length === 0 ? (
-            <div className="py-12 text-center text-xs text-[#85877B] font-sans">
-              No eligible research activity has been recorded for this period yet.
-            </div>
           ) : (
-            <div className="overflow-x-auto pb-2">
-              <div className="inline-flex flex-col gap-1 min-w-[760px]">
-                {/* Month labels */}
-                <div className="flex text-[10px] font-mono text-[#85877B] pl-7 justify-between pr-4 mb-1">
-                  <span>Jan</span>
-                  <span>Feb</span>
-                  <span>Mar</span>
-                  <span>Apr</span>
-                  <span>May</span>
-                  <span>Jun</span>
-                  <span>Jul</span>
-                  <span>Aug</span>
-                  <span>Sep</span>
-                  <span>Oct</span>
-                  <span>Nov</span>
-                  <span>Dec</span>
+            <div className="space-y-6">
+              {/* PRIMARY VIEW: Monthly-Separated Hexagonal Honeycomb Tessellation */}
+              <div className="p-4 rounded-2xl bg-[#FAF7F0]/60 border border-[#E4DCCB]/60">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-[#3E6248] font-bold mb-2">
+                  Cellular Honeycomb Tessellation (Biological Growth Layer)
                 </div>
-
-                <div className="flex gap-2 items-center">
-                  {/* Day of week labels */}
-                  <div className="flex flex-col justify-between text-[9px] font-mono text-[#85877B] h-[92px] pr-1">
-                    <span>Mon</span>
-                    <span>Wed</span>
-                    <span>Fri</span>
-                  </div>
-
-                  {/* Columns of 7 days */}
-                  <div className="flex gap-[3.5px]">
-                    {weeks.map((week, wIdx) => (
-                      <div key={wIdx} className="flex flex-col gap-[3.5px]">
-                        {week.map((day) => (
-                          <div
-                            key={day.date}
-                            onClick={() => setInspectedDate(day.date)}
-                            title={`${day.date}: ${day.count} verified research milestone(s) · Click to view evidence`}
-                            className={`w-[13px] h-[13px] rounded-[2.5px] border transition-transform hover:scale-135 hover:z-20 cursor-pointer ${
-                              LEVEL_COLORS[day.level]
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <HexContributionGraph
+                  data={hexDays}
+                  year={selectedYear || 2026}
+                  onSelectDate={(date) => setInspectedDate(date)}
+                  selectedDate={inspectedDate}
+                  showLegend={true}
+                  showDayLabels={true}
+                  subtext="Cellular Honeycomb (odd-q pointy-topped layout with 16px month separation)"
+                />
               </div>
+
+              {/* SECONDARY VERIFICATION VIEW: Legacy Cartesian Square Grid (if 'both' is selected) */}
+              {graphViewMode === "both" && (
+                <div className="p-4 rounded-2xl bg-white border border-[#E4DCCB] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#85877B] font-bold">
+                      Legacy Cartesian Square Grid (Verification Reference)
+                    </span>
+                    <span className="text-[10px] font-mono text-[#85877B]">
+                      52 Weeks × 7 Days
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto pb-2">
+                    <div className="inline-flex flex-col gap-1 min-w-[760px]">
+                      {/* Month labels */}
+                      <div className="flex text-[10px] font-mono text-[#85877B] pl-7 justify-between pr-4 mb-1">
+                        <span>Jan</span>
+                        <span>Feb</span>
+                        <span>Mar</span>
+                        <span>Apr</span>
+                        <span>May</span>
+                        <span>Jun</span>
+                        <span>Jul</span>
+                        <span>Aug</span>
+                        <span>Sep</span>
+                        <span>Oct</span>
+                        <span>Nov</span>
+                        <span>Dec</span>
+                      </div>
+
+                      <div className="flex gap-2 items-center">
+                        <div className="flex flex-col justify-between text-[9px] font-mono text-[#85877B] h-[92px] pr-1">
+                          <span>Mon</span>
+                          <span>Wed</span>
+                          <span>Fri</span>
+                        </div>
+
+                        <div className="flex gap-[3.5px]">
+                          {weeks.map((week, wIdx) => (
+                            <div key={wIdx} className="flex flex-col gap-[3.5px]">
+                              {week.map((day) => (
+                                <div
+                                  key={day.date}
+                                  onClick={() => setInspectedDate(day.date)}
+                                  title={`${day.date}: ${day.count} verified research milestone(s)`}
+                                  className={`w-[13px] h-[13px] rounded-[2.5px] border transition-transform hover:scale-135 hover:z-20 cursor-pointer ${
+                                    LEVEL_COLORS[day.level]
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
-
-          {/* Legend and Ledger Footnote */}
-          <div className="flex items-center justify-between flex-wrap gap-3 text-xs text-[#85877B] mt-4 pt-3 border-t border-[#E4DCCB]">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono">
-                Click any calendar cell to inspect verifiable research receipts & CRediT roles
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5 text-[11px] font-mono">
-              <span>0 events</span>
-              {LEVEL_COLORS.map((cls, i) => (
-                <div key={i} className={`w-3 h-3 rounded-[2px] border ${cls}`} />
-              ))}
-              <span>4+ events</span>
-            </div>
-          </div>
         </div>
       )}
+
+
 
       {/* ── TAB 2: Monthly Aggregation ── */}
       {activeTab === "monthly" && (
@@ -822,3 +877,4 @@ function RecordMilestoneModal({
     </div>
   );
 }
+

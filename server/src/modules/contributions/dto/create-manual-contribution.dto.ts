@@ -94,3 +94,4 @@ export class CreateManualContributionDto {
   @IsOptional()
   metadata?: Record<string, any>;
 }
+
