@@ -8,6 +8,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Install libc6-compat for Next.js native binaries on Alpine Linux
+RUN apk add --no-cache libc6-compat
+
 # Install dependencies with frozen lockfile
 COPY package*.json ./
 RUN npm ci
@@ -25,12 +28,17 @@ COPY tokens ./tokens
 
 # Build Next.js standalone application (disabling build telemetry)
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV NEXT_PUBLIC_API_URL=http://localhost:5000
 RUN npm run build
 
 # Stage 2: Minimal Production Runtime
 FROM node:20-alpine AS runner
 
 WORKDIR /app
+
+# Install runtime libc6-compat
+RUN apk add --no-cache libc6-compat
 
 ENV NODE_ENV=production
 ENV PORT=3000

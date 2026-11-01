@@ -956,9 +956,11 @@ function ResearchActivityHeatmap() {
       <HexContributionGraph
         data={hexDays}
         year={2026}
+        title="2026 Research Activity Cadence"
         showLegend={true}
-        showDayLabels={true}
-        subtext="Pointy-topped hexagonal tessellation with 16px lateral month separation"
+        showCategories={true}
+        showDayLabels={false}
+        subtext="Monthly-separated flat-topped honeycomb tessellation (Biological Growth Layer)"
       />
     </div>
   );

@@ -68,6 +68,33 @@ const STANDARD_CREDIT_ROLES = [
   "Writing - review & editing",
 ];
 
+function mapEventTypeToCategoryId(eventType: string): string {
+  switch (eventType) {
+    case "MANUSCRIPT_PUBLISHED":
+      return "manuscripts";
+    case "PREPRINT_RELEASE":
+      return "preprints";
+    case "PEER_REVIEW_CONFIRMED":
+      return "peer_reviews";
+    case "EXPERIMENT_MILESTONE":
+    case "METHOD_STEP":
+      return "experiments";
+    case "DATASET_RELEASE":
+    case "SOFTWARE_RELEASE":
+      return "datasets";
+    case "GRANT_AWARD":
+    case "GRANT_SUBMISSION":
+    case "PROTOCOL_APPROVAL":
+      return "grants";
+    case "LAB_COLLABORATION":
+      return "collaborations";
+    case "RESEARCH_NOTE":
+      return "notes";
+    default:
+      return "experiments";
+  }
+}
+
 interface EvidenceBasedContributionsProps {
   scholarId?: string;
   onSummaryLoaded?: (summary: ContributionSummaryResponse) => void;
@@ -123,12 +150,25 @@ export function EvidenceBasedContributions({
   // Group heatmap cells into 52 weeks x 7 days
   const heatmapCells = summary?.dailyHeatmap || [];
   const hexDays: HexContributionDay[] = useMemo(() => {
+    // Map items by date to collect distinct categories for that day
+    const dayCategoriesMap = new Map<string, Set<string>>();
+    for (const it of items) {
+      if (it?.occurredAt) {
+        const d = it.occurredAt.slice(0, 10);
+        if (!dayCategoriesMap.has(d)) {
+          dayCategoriesMap.set(d, new Set());
+        }
+        dayCategoriesMap.get(d)!.add(mapEventTypeToCategoryId(it.eventType));
+      }
+    }
+
     return (summary?.dailyHeatmap || []).map((c) => ({
       date: c.date,
       count: c.count,
       level: c.level,
+      categories: Array.from(dayCategoriesMap.get(c.date) || []),
     }));
-  }, [summary]);
+  }, [summary, items]);
   const weeks: Array<Array<{ date: string; count: number; level: 0 | 1 | 2 | 3 | 4 }>> = [];
   for (let i = 0; i < heatmapCells.length; i += 7) {
     weeks.push(heatmapCells.slice(i, i + 7));
@@ -317,7 +357,7 @@ export function EvidenceBasedContributions({
         </button>
       </div>
 
-      {/* ── TAB 1: Daily Cadence Heatmap (Pointy-Topped Honeycomb Tessellation) ── */}
+      {/* ── TAB 1: Daily Cadence Heatmap (Flat-Topped Honeycomb Tessellation) ── */}
       {activeTab === "cadence" && (
         <div className="space-y-6">
           {/* Top Sub-toggle for Honeycomb vs Verification Comparison */}
@@ -334,7 +374,7 @@ export function EvidenceBasedContributions({
                       : "text-[#62685E] hover:text-[#202920]"
                   }`}
                 >
-                  Honeycomb (Pointy-Topped Hex)
+                  Honeycomb (Flat-Topped Hex)
                 </button>
                 <button
                   type="button"
@@ -350,7 +390,7 @@ export function EvidenceBasedContributions({
               </div>
             </div>
             <span className="text-[11px] font-mono text-[#85877B]">
-              365 calendar days mapped · 16px lateral month separation
+              365 calendar days mapped · Monthly separated 12-cluster ribbon
             </span>
           </div>
 
@@ -370,21 +410,18 @@ export function EvidenceBasedContributions({
             </div>
           ) : (
             <div className="space-y-6">
-              {/* PRIMARY VIEW: Monthly-Separated Hexagonal Honeycomb Tessellation */}
-              <div className="p-4 rounded-2xl bg-[#FAF7F0]/60 border border-[#E4DCCB]/60">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-[#3E6248] font-bold mb-2">
-                  Cellular Honeycomb Tessellation (Biological Growth Layer)
-                </div>
-                <HexContributionGraph
-                  data={hexDays}
-                  year={selectedYear || 2026}
-                  onSelectDate={(date) => setInspectedDate(date)}
-                  selectedDate={inspectedDate}
-                  showLegend={true}
-                  showDayLabels={true}
-                  subtext="Cellular Honeycomb (odd-q pointy-topped layout with 16px month separation)"
-                />
-              </div>
+              {/* PRIMARY VIEW: Monthly-Separated Flat-Topped Honeycomb Tessellation */}
+              <HexContributionGraph
+                data={hexDays}
+                year={selectedYear || 2026}
+                title={`${selectedYear || 2026} Research Activity Cadence`}
+                onSelectDate={(date) => setInspectedDate(date)}
+                selectedDate={inspectedDate}
+                showLegend={true}
+                showCategories={true}
+                showDayLabels={false}
+                subtext="Monthly-separated flat-topped honeycomb tessellation (Biological Growth Layer)"
+              />
 
               {/* SECONDARY VERIFICATION VIEW: Legacy Cartesian Square Grid (if 'both' is selected) */}
               {graphViewMode === "both" && (

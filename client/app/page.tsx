@@ -1138,27 +1138,14 @@ function IdentitySection() {
             {/* Interactive Dynamic Tab Body */}
             <div className="p-5 bg-[#FAF7F0] dark:bg-[#131C15]">
               {activeTab === 'Heatmap' && (
-                <div style={{ background: '#FFFFFF', border: '1px solid #E4DCCB', borderRadius: 12, padding: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 6 }}>
-                    <div>
-                      <div style={{ fontSize: 12.5, fontWeight: 700, color: '#202920' }}>
-                        Scholarly Contribution & Momentum Ledger
-                      </div>
-                      <div style={{ fontSize: 11, color: '#62685E' }}>
-                        1,482 verified commits, checkpoints & peer reviews in 52 weeks
-                      </div>
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#202920', background: '#DCE6D7', padding: '3px 8px', borderRadius: 999 }}>
-                      🔥 18-Day Streak
-                    </span>
-                  </div>
-
-                  {/* Monthly-Separated Pointy-Topped Honeycomb Tessellation */}
+                <div>
                   <HexContributionGraph
                     fillSampleData={true}
                     year={2026}
-                    showLegend={false}
-                    showDayLabels={true}
+                    title="2026 Research Activity Cadence"
+                    showLegend={true}
+                    showCategories={true}
+                    showDayLabels={false}
                   />
                   <div style={{ display: 'none' }}>
                     <div style={{ display: 'flex', gap: 3.5, minWidth: 460 }}>
@@ -1864,85 +1851,64 @@ function CommunitySection() {
 
 // ─── Activity / Contribution Graph ───────────────────────────────────────────
 function ActivitySection() {
-  const weeks = 52
-  const days = 7
-  const activities = SCHOLAR_ACTIVITY_BADGES
-
-  // Deterministic organic academic cadence grid with sprint clusters & quiet gaps
-  const grid = Array.from({ length: weeks }, (_, w) =>
-    Array.from({ length: days }, (_, d) => getScholarContributionDetails(w, d))
-  );
-
   return (
-    <section className="bg-[#F2EBDD] dark:bg-[#131C15] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-28 px-6 md:px-16 transition-colors duration-200">
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
-          {/* Graph Card */}
-          <div className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl p-7 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-            <div className="flex justify-between items-center mb-5">
-              <div className="text-sm font-semibold text-[#202920] dark:text-[#EDEAE2]">2026 Cellular Honeycomb Activity Cadence</div>
-              <div className="flex items-center gap-1.5 text-xs text-[#85877B] dark:text-[#7E8B7B]">
-                <span>Less</span>
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className={`w-2.5 h-2.5 rounded-xs border border-[#E4DCCB] dark:border-[#233327] ${
-                      i === 0 ? 'bg-[#EAE5D9] dark:bg-[#202D23]' :
-                      i === 1 ? 'bg-[#DCE6D7] dark:bg-[#1A281E]' :
-                      i === 2 ? 'bg-[#A3C4A8] dark:bg-[#233F2B]' :
-                      i === 3 ? 'bg-[#66866A] dark:bg-[#365F42]' :
-                      'bg-[#3E6248] dark:bg-[#4ADE80]'
-                    }`}
-                  />
-                ))}
-                <span>More</span>
+    <section className="bg-[#F2EBDD] dark:bg-[#131C15] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-24 sm:py-28 px-6 md:px-12 lg:px-16 transition-colors duration-200">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          {/* Left Column: Generous Narrative & UI/UX Value Proposition */}
+          <div className="lg:col-span-5 flex flex-col justify-center">
+            <div className="inline-flex items-center gap-2 font-mono text-xs text-[#3E6248] dark:text-[#4ADE80] font-bold tracking-wider uppercase mb-4">
+              <span className="w-2 h-2 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+              04 / Verified Scholarly Cadence
+            </div>
+
+            <h2
+              style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
+              className="text-3xl sm:text-4xl lg:text-[44px] font-normal leading-[1.18] tracking-[-0.025em] text-[#202920] dark:text-[#EDEAE2] mb-5 m-0"
+            >
+              Every contribution becomes part of your research story.
+            </h2>
+
+            <p className="font-sans text-base sm:text-[17px] leading-[1.68] text-[#62685E] dark:text-[#A3B899] mb-8 m-0">
+              Track publications, experiments, collaborations, and peer milestones in a continuous timeline that documents your intellectual journey from proposal to verified impact.
+            </p>
+
+            {/* 3 Value Pillars */}
+            <div className="flex flex-col gap-3.5 pt-2 border-t border-[#E4DCCB] dark:border-[#233327]">
+              <div className="flex items-center gap-3 text-xs font-sans">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
+                <span className="font-semibold text-[#202920] dark:text-[#EDEAE2]">Attributable Milestones:</span>
+                <span className="text-[#62685E] dark:text-[#A3B899]">Backed by DOIs, arXiv, Zenodo & COPE reviews</span>
               </div>
-            </div>
-
-            <HexContributionGraph
-              fillSampleData={true}
-              year={2026}
-              showLegend={false}
-              showDayLabels={true}
-              subtext="Cellular Honeycomb (odd-q monthly layout)"
-            />
-            <div className="hidden">
-              {grid.map((week, w) => (
-                <div key={w} className="flex flex-col gap-1">
-                  {week.map((item, d) => (
-                    <div
-                      key={d}
-                      title={`Week ${w + 1}, Day ${d + 1}: ${item.label}`}
-                      className="w-2.5 h-2.5 rounded-xs transition-transform duration-100 hover:scale-125 cursor-default bg-[#EAE5D9] dark:bg-[#202D23] data-[lvl='1']:bg-[#DCE6D7] dark:data-[lvl='1']:bg-[#1A281E] data-[lvl='2']:bg-[#A3C4A8] dark:data-[lvl='2']:bg-[#233F2B] data-[lvl='3']:bg-[#66866A] dark:data-[lvl='3']:bg-[#365F42] data-[lvl='4']:bg-[#3E6248] dark:data-[lvl='4']:bg-[#4ADE80]"
-                      data-lvl={item.level}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-
-            {/* Activity types */}
-            <div className="mt-6 flex flex-wrap gap-2">
-              {activities.map((a) => (
-                <span key={a} className="text-xs px-2.5 py-1 border border-[#E4DCCB] dark:border-[#233327] rounded-md text-[#62685E] dark:text-[#A3B899] bg-[#FAF7F0] dark:bg-[#131C15]">{a}</span>
-              ))}
+              <div className="flex items-center gap-3 text-xs font-sans">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
+                <span className="font-semibold text-[#202920] dark:text-[#EDEAE2]">Active Calendar Days:</span>
+                <span className="text-[#62685E] dark:text-[#A3B899]">Real cadence decoupled from temporal velocity</span>
+              </div>
+              <div className="flex items-center gap-3 text-xs font-sans">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
+                <span className="font-semibold text-[#202920] dark:text-[#EDEAE2]">Cellular Honeycomb:</span>
+                <span className="text-[#62685E] dark:text-[#A3B899]">Biological cambium growth layer tessellation</span>
+              </div>
             </div>
           </div>
 
-          {/* Copy */}
-          <div>
-            <p className="text-[11px] font-bold tracking-[0.1em] text-[#3E6248] dark:text-[#4ADE80] uppercase mb-5">Research Cadence & Ledger</p>
-            <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal leading-[1.15] tracking-[-0.03em] text-[#202920] dark:text-[#EDEAE2] mb-6">
-              Every contribution becomes part of your research story.
-            </h2>
-            <p className="text-[17px] leading-[1.65] text-[#62685E] dark:text-[#A3B899]">
-              Track publications, experiments, collaborations, and milestones in a continuous timeline that documents your intellectual journey from start to impact.
-            </p>
+          {/* Right Column: Panoramic Continuous Honeycomb Cadence Card */}
+          <div className="lg:col-span-7 w-full overflow-hidden">
+            <HexContributionGraph
+              fillSampleData={true}
+              year={2026}
+              title="2026 Research Activity Cadence"
+              showLegend={true}
+              showCategories={true}
+              showDayLabels={false}
+              subtext="Continuous biological cambium ribbon (53-week flat-topped honeycomb)"
+            />
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 // ─── Opportunities Section ────────────────────────────────────────────────────
