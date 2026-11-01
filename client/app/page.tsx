@@ -1138,27 +1138,14 @@ function IdentitySection() {
             {/* Interactive Dynamic Tab Body */}
             <div className="p-5 bg-[#FAF7F0] dark:bg-[#131C15]">
               {activeTab === 'Heatmap' && (
-                <div style={{ background: '#FFFFFF', border: '1px solid #E4DCCB', borderRadius: 12, padding: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 6 }}>
-                    <div>
-                      <div style={{ fontSize: 12.5, fontWeight: 700, color: '#202920' }}>
-                        Scholarly Contribution & Momentum Ledger
-                      </div>
-                      <div style={{ fontSize: 11, color: '#62685E' }}>
-                        1,482 verified commits, checkpoints & peer reviews in 52 weeks
-                      </div>
-                    </div>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: '#202920', background: '#DCE6D7', padding: '3px 8px', borderRadius: 999 }}>
-                      🔥 18-Day Streak
-                    </span>
-                  </div>
-
-                  {/* Monthly-Separated Pointy-Topped Honeycomb Tessellation */}
+                <div>
                   <HexContributionGraph
                     fillSampleData={true}
                     year={2026}
-                    showLegend={false}
-                    showDayLabels={true}
+                    title="2026 Research Activity Cadence"
+                    showLegend={true}
+                    showCategories={true}
+                    showDayLabels={false}
                   />
                   <div style={{ display: 'none' }}>
                     <div style={{ display: 'flex', gap: 3.5, minWidth: 460 }}>
@@ -1877,56 +1864,17 @@ function ActivitySection() {
     <section className="bg-[#F2EBDD] dark:bg-[#131C15] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-28 px-6 md:px-16 transition-colors duration-200">
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
-          {/* Graph Card */}
-          <div className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl p-7 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
-            <div className="flex justify-between items-center mb-5">
-              <div className="text-sm font-semibold text-[#202920] dark:text-[#EDEAE2]">2026 Cellular Honeycomb Activity Cadence</div>
-              <div className="flex items-center gap-1.5 text-xs text-[#85877B] dark:text-[#7E8B7B]">
-                <span>Less</span>
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className={`w-2.5 h-2.5 rounded-xs border border-[#E4DCCB] dark:border-[#233327] ${
-                      i === 0 ? 'bg-[#EAE5D9] dark:bg-[#202D23]' :
-                      i === 1 ? 'bg-[#DCE6D7] dark:bg-[#1A281E]' :
-                      i === 2 ? 'bg-[#A3C4A8] dark:bg-[#233F2B]' :
-                      i === 3 ? 'bg-[#66866A] dark:bg-[#365F42]' :
-                      'bg-[#3E6248] dark:bg-[#4ADE80]'
-                    }`}
-                  />
-                ))}
-                <span>More</span>
-              </div>
-            </div>
-
+          {/* Graph Card - Flat-Topped Honeycomb Activity Cadence */}
+          <div>
             <HexContributionGraph
               fillSampleData={true}
               year={2026}
-              showLegend={false}
-              showDayLabels={true}
-              subtext="Cellular Honeycomb (odd-q monthly layout)"
+              title="2026 Research Activity Cadence"
+              showLegend={true}
+              showCategories={true}
+              showDayLabels={false}
+              subtext="Cellular Honeycomb (flat-topped odd-q monthly layout)"
             />
-            <div className="hidden">
-              {grid.map((week, w) => (
-                <div key={w} className="flex flex-col gap-1">
-                  {week.map((item, d) => (
-                    <div
-                      key={d}
-                      title={`Week ${w + 1}, Day ${d + 1}: ${item.label}`}
-                      className="w-2.5 h-2.5 rounded-xs transition-transform duration-100 hover:scale-125 cursor-default bg-[#EAE5D9] dark:bg-[#202D23] data-[lvl='1']:bg-[#DCE6D7] dark:data-[lvl='1']:bg-[#1A281E] data-[lvl='2']:bg-[#A3C4A8] dark:data-[lvl='2']:bg-[#233F2B] data-[lvl='3']:bg-[#66866A] dark:data-[lvl='3']:bg-[#365F42] data-[lvl='4']:bg-[#3E6248] dark:data-[lvl='4']:bg-[#4ADE80]"
-                      data-lvl={item.level}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-
-            {/* Activity types */}
-            <div className="mt-6 flex flex-wrap gap-2">
-              {activities.map((a) => (
-                <span key={a} className="text-xs px-2.5 py-1 border border-[#E4DCCB] dark:border-[#233327] rounded-md text-[#62685E] dark:text-[#A3B899] bg-[#FAF7F0] dark:bg-[#131C15]">{a}</span>
-              ))}
-            </div>
           </div>
 
           {/* Copy */}
