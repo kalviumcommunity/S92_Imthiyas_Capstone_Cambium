@@ -160,3 +160,28 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_logs(entity_name, entity_id);
 CREATE INDEX IF NOT EXISTS idx_audit_created_at ON audit_logs(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_hash ON audit_logs(current_hash);
+
+-- 12. Research Contributions & Attribution Ledger (SSOT for Evidence-Based Portfolio)
+CREATE TABLE IF NOT EXISTS research_contributions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    actor_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    project_id UUID REFERENCES group_projects(id) ON DELETE SET NULL,
+    output_ref VARCHAR(255),
+    title VARCHAR(255) NOT NULL,
+    event_type VARCHAR(50) NOT NULL,
+    occurred_at TIMESTAMPTZ NOT NULL,
+    source VARCHAR(50) NOT NULL DEFAULT 'CAMBIUM',
+    external_id VARCHAR(255),
+    evidence_url VARCHAR(1000),
+    verification_status VARCHAR(50) NOT NULL DEFAULT 'VERIFIED',
+    visibility VARCHAR(50) NOT NULL DEFAULT 'PUBLIC',
+    credit_roles JSONB DEFAULT '[]'::jsonb,
+    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_contrib_actor_date ON research_contributions(actor_id, occurred_at);
+CREATE INDEX IF NOT EXISTS idx_contrib_actor_type ON research_contributions(actor_id, event_type);
+CREATE INDEX IF NOT EXISTS idx_contrib_actor_output ON research_contributions(actor_id, output_ref);
+CREATE INDEX IF NOT EXISTS idx_contrib_actor_source_ext ON research_contributions(actor_id, source, external_id);

@@ -29,6 +29,7 @@ import { ScholarFollow } from '../modules/connections/entities/scholar-follow.en
 import { GroupProject } from '../modules/projects/entities/group-project.entity';
 import { ProjectMember } from '../modules/projects/entities/project-member.entity';
 import { ProjectActivityLog } from '../modules/projects/entities/project-activity-log.entity';
+import { ResearchContribution } from '../modules/contributions/entities/research-contribution.entity';
 
 export const getDatabaseConfig = (): TypeOrmModuleOptions => {
   const isProd = process.env.NODE_ENV === 'production';
@@ -65,6 +66,7 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
     GroupProject,
     ProjectMember,
     ProjectActivityLog,
+    ResearchContribution,
   ];
 
   // PgBouncer pool sizing (50 clients per pod, sustaining 5,000+ cluster connections)
