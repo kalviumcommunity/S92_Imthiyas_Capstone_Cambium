@@ -1058,18 +1058,20 @@ function PaperExplorer({
         {/* Search Input */}
         <div className="relative">
           <div
-            className="relative flex items-center rounded"
+            className="relative flex items-center rounded-full shadow-xs hover:shadow-sm"
             style={{
               border: focused ? `1.5px solid ${P.forest}` : `1.5px solid ${P.hairline}`,
               backgroundColor: focused ? P.surface : P.parchment,
-              transition: "border-color 150ms, background-color 150ms",
+              boxShadow: focused ? "0 4px 16px -2px rgba(62,98,72,0.12), 0 0 0 3px rgba(62,98,72,0.10)" : undefined,
+              borderRadius: "9999px",
+              transition: "border-color 150ms, background-color 150ms, box-shadow 150ms",
             }}
           >
             <svg
-              className="absolute"
-              style={{ left: "12px", color: P.ink3 }}
-              width="15"
-              height="15"
+              className="absolute pointer-events-none"
+              style={{ left: "16px", color: focused ? P.forest : P.ink3 }}
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -1085,27 +1087,32 @@ function PaperExplorer({
               onFocus={() => setFocused(true)}
               onBlur={() => setTimeout(() => setFocused(false), 200)}
               placeholder="Search papers, authors, topics, DOI..."
-              className="w-full outline-none bg-transparent"
+              className="w-full outline-none bg-transparent border-0"
               style={{
-                padding: "10px 40px 10px 38px",
+                padding: "12px 44px 12px 46px",
                 fontSize: "14px",
                 color: P.ink,
                 fontFamily: "'Inter', sans-serif",
+                boxShadow: "none",
               }}
             />
             {query && (
               <button
+                type="button"
                 onMouseDown={() => setQuery("")}
                 style={{
                   position: "absolute",
-                  right: "10px",
+                  right: "14px",
                   fontSize: "13px",
                   color: P.ink3,
                   backgroundColor: "transparent",
                   border: "none",
                   cursor: "pointer",
-                  padding: "2px 6px",
+                  padding: "4px 8px",
+                  borderRadius: "9999px",
                 }}
+                className="hover:text-[#202920] hover:bg-[#FAF7F0] transition-colors"
+                title="Clear search query"
               >
                 ✕
               </button>
@@ -1115,9 +1122,9 @@ function PaperExplorer({
           {/* Search suggestions dropdown */}
           {focused && !query && (
             <div
-              className="absolute left-0 right-0 rounded"
+              className="absolute left-0 right-0 rounded-2xl shadow-xl overflow-hidden"
               style={{
-                top: "calc(100% + 4px)",
+                top: "calc(100% + 8px)",
                 backgroundColor: P.surface,
                 border: `1px solid ${P.hairline}`,
                 boxShadow: "0 6px 24px rgba(0,0,0,0.08)",

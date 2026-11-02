@@ -230,8 +230,18 @@ export default function ChangelogPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search release highlights..."
-              className="w-full pl-9 pr-4 py-2 text-xs font-sans text-[#202920] placeholder:text-[#85877B] bg-[#FAF7F0] border border-[#E4DCCB] rounded-full focus:outline-none focus:border-[#3E6248] transition-colors"
+              className="w-full pl-9 pr-8 py-2 text-xs font-sans text-[#202920] placeholder:text-[#85877B] bg-[#FAF7F0] border border-[#E4DCCB] rounded-full focus:outline-none focus:border-[#3E6248] transition-colors shadow-2xs hover:shadow-xs"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#85877B] hover:text-[#202920] p-0.5"
+                title="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </div>
         </div>
 

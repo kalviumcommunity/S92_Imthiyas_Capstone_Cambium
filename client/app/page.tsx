@@ -1354,7 +1354,15 @@ function WorkspaceSection() {
               </div>
 
               {/* Center Search Input */}
-              <div className="flex-1 max-w-xl mx-auto flex items-center bg-white border border-[#E4DCCB] rounded-full px-4 py-2 shadow-xs gap-2.5">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (searchQuery.trim()) {
+                    window.location.href = `/discover?q=${encodeURIComponent(searchQuery.trim())}`;
+                  }
+                }}
+                className="flex-1 max-w-xl mx-auto flex items-center bg-white border border-[#E4DCCB] rounded-full px-4 py-2 shadow-xs hover:shadow-sm focus-within:border-[#3E6248] focus-within:ring-2 focus-within:ring-[#3E6248]/20 transition-all gap-2.5"
+              >
                 <Search size={15} className="text-[#85877B] shrink-0" />
                 <input
                   type="text"
@@ -1363,10 +1371,21 @@ function WorkspaceSection() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-transparent border-none outline-none text-xs text-[#202920] placeholder-[#85877B] font-sans"
                 />
-                <kbd className="font-mono text-[10px] text-[#85877B] bg-[#FAF7F0] border border-[#E4DCCB] px-1.5 py-0.5 rounded shrink-0">
-                  ⌘K
-                </kbd>
-              </div>
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="text-xs text-[#85877B] hover:text-[#202920] p-0.5"
+                    title="Clear search"
+                  >
+                    ✕
+                  </button>
+                ) : (
+                  <kbd className="font-mono text-[10px] text-[#85877B] bg-[#FAF7F0] border border-[#E4DCCB] px-1.5 py-0.5 rounded shrink-0">
+                    ⌘K
+                  </kbd>
+                )}
+              </form>
 
               {/* Right Icons & User Profile Badge */}
               <div className="flex items-center gap-4 shrink-0">
@@ -1517,7 +1536,18 @@ function WorkspaceSection() {
 
                   {/* 2x2 Grid of Attention Cards (Photo 2 Match) */}
                   <div className="grid grid-cols-2 gap-4">
-                    {cards.map((card) => {
+                    {cards.filter(c => {
+                      if (!searchQuery.trim()) return true;
+                      const q = searchQuery.toLowerCase();
+                      return (
+                        c.title.toLowerCase().includes(q) ||
+                        c.desc.toLowerCase().includes(q) ||
+                        c.type.toLowerCase().includes(q) ||
+                        (c.footer ? c.footer.toLowerCase().includes(q) : false) ||
+                        (c.footerLine1 ? c.footerLine1.toLowerCase().includes(q) : false) ||
+                        (c.footerLine2 ? c.footerLine2.toLowerCase().includes(q) : false)
+                      );
+                    }).map((card) => {
                       const isSaved = savedCards[card.id]
                       return (
                         <div

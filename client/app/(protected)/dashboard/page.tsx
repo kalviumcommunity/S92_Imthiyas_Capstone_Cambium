@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Bell,
+  X,
   Search,
   MessageSquare,
   Plus,
@@ -381,28 +382,129 @@ function FeedItemCard({ initials, badgeLabel, author, role, date, title, body, l
 // ─── TopBar ───────────────────────────────────────────────────────────────────
 
 function TopBar() {
+  const router = useRouter();
+  const [dashboardQuery, setDashboardQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
+
+  const handleSearchSubmit = (e?: React.FormEvent, customQuery?: string) => {
+    if (e) e.preventDefault();
+    const q = (customQuery || dashboardQuery).trim();
+    if (q) {
+      router.push(`/discover?q=${encodeURIComponent(q)}`);
+      setIsFocused(false);
+    }
+  };
+
   return (
-    <header className="h-16 px-8 bg-[#FAF7F0] border-b border-[#E4DCCB] sticky top-0 z-10 flex items-center justify-between gap-4">
+    <header className="h-16 px-6 sm:px-8 bg-[#FAF7F0] dark:bg-[#0E140F] border-b border-[#E4DCCB] dark:border-[#233327] sticky top-0 z-30 flex items-center justify-between gap-4 transition-colors">
       {/* Left: Context Indicator to balance center search */}
-      <div className="hidden md:flex items-center gap-2.5 min-w-[220px] shrink-0">
-        <span className="w-2 h-2 rounded-full bg-[#66866A] animate-pulse" />
-        <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#3E6248]">
+      <div className="hidden md:flex items-center gap-2.5 min-w-[200px] shrink-0">
+        <span className="w-2 h-2 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+        <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80]">
           Live Research Desk
         </span>
       </div>
 
-      {/* Center Search Bar - Perfectly centered in top margin without entering body */}
-      <div className="flex-1 max-w-[540px] mx-auto flex items-center gap-2 rounded-xl px-3.5 py-2 bg-white border border-[#E4DCCB] hover:border-[#66866A]/60 focus-within:border-[#3E6248] focus-within:ring-2 focus-within:ring-[#3E6248]/15 transition-all shadow-2xs">
-        <Search size={15} className="text-[#85877B] shrink-0" strokeWidth={1.5} />
-        <input
-          type="text"
-          placeholder="Search 240M+ papers, researchers, topics, grants…"
-          className="flex-1 bg-transparent text-sm text-[#202920] placeholder:text-[#85877B] outline-none font-sans"
-          aria-label="Search"
-        />
-        <span className="text-[10px] font-mono font-medium rounded px-1.5 py-0.5 text-[#62685E] bg-[#F2EBDD] border border-[#E4DCCB]">
-          ⌘K
-        </span>
+      {/* Center Search Bar - Google Scholar Style Rounded Pill with Live Working Autocomplete */}
+      <div className="flex-1 max-w-[560px] mx-auto relative">
+        <form
+          onSubmit={handleSearchSubmit}
+          className="flex items-center gap-2.5 rounded-full px-4 py-2 bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#28382C] shadow-sm hover:border-[#8FA89B] dark:hover:border-[#3E7750] hover:shadow-md focus-within:border-[#3E6248] dark:focus-within:border-[#4ADE80] focus-within:ring-2 focus-within:ring-[#3E6248]/15 dark:focus-within:ring-[#4ADE80]/20 transition-all"
+        >
+          <Search size={15} className="text-[#3E6248] dark:text-[#4ADE80] shrink-0" strokeWidth={1.8} />
+          <input
+            type="text"
+            value={dashboardQuery}
+            onChange={(e) => setDashboardQuery(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setTimeout(() => setIsFocused(false), 220)}
+            placeholder="Search 240M+ papers, researchers, topics, grants…"
+            className="flex-1 bg-transparent text-sm text-[#202920] dark:text-[#EDEAE2] placeholder:text-[#85877B] dark:placeholder:text-[#6E7D72] outline-none border-0 font-sans"
+            aria-label="Global Research Search"
+          />
+          {dashboardQuery && (
+            <button
+              type="button"
+              onClick={() => setDashboardQuery("")}
+              className="p-1 rounded-full text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] transition-colors cursor-pointer border-0 bg-transparent"
+              title="Clear text"
+            >
+              <X size={13} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+            className="text-[10px] font-mono font-medium rounded-full px-2 py-0.5 text-[#62685E] dark:text-[#A3B899] bg-[#F2EBDD] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#28382C] hover:border-[#3E6248] transition-colors cursor-pointer"
+            title="Open Command Palette (⌘K)"
+          >
+            ⌘K
+          </button>
+        </form>
+
+        {/* Live Suggestions Dropdown when typing */}
+        {isFocused && dashboardQuery.trim().length >= 1 && (
+          <div className="absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#28382C] shadow-2xl overflow-hidden p-2 text-xs font-sans animate-in fade-in slide-in-from-top-1 duration-150">
+            <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-[#85877B] font-semibold border-b border-[#E4DCCB]/60 dark:border-[#28382C]">
+              Instant Scholarly Routing
+            </div>
+            <div className="py-1 space-y-1">
+              <button
+                type="button"
+                onMouseDown={() => handleSearchSubmit(undefined, dashboardQuery)}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left hover:bg-[#FAF7F0] dark:hover:bg-[#121B14] text-[#202920] dark:text-[#EDEAE2] cursor-pointer border-0 bg-transparent transition-colors group"
+              >
+                <div className="flex items-center gap-2.5 truncate">
+                  <Search size={13} className="text-[#3E6248] dark:text-[#4ADE80] shrink-0" />
+                  <span className="truncate">
+                    Search OpenAlex 240M+ papers for <strong className="text-[#3E6248] dark:text-[#4ADE80]">&ldquo;{dashboardQuery}&rdquo;</strong>
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-[#85877B] group-hover:text-[#3E6248] shrink-0">
+                  Discover ↵
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onMouseDown={() => {
+                  router.push(`/opportunities?search=${encodeURIComponent(dashboardQuery.trim())}`);
+                  setIsFocused(false);
+                }}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left hover:bg-[#FAF7F0] dark:hover:bg-[#121B14] text-[#202920] dark:text-[#EDEAE2] cursor-pointer border-0 bg-transparent transition-colors group"
+              >
+                <div className="flex items-center gap-2.5 truncate">
+                  <span className="text-amber-600 dark:text-amber-400 font-bold shrink-0">$</span>
+                  <span className="truncate">
+                    Search Active Research Grants & Fellowships for <strong className="text-amber-700 dark:text-amber-300">&ldquo;{dashboardQuery}&rdquo;</strong>
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-[#85877B] group-hover:text-amber-600 shrink-0">
+                  Grants ↗
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onMouseDown={() => {
+                  router.push(`/graph?focus=${encodeURIComponent(dashboardQuery.trim())}`);
+                  setIsFocused(false);
+                }}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left hover:bg-[#FAF7F0] dark:hover:bg-[#121B14] text-[#202920] dark:text-[#EDEAE2] cursor-pointer border-0 bg-transparent transition-colors group"
+              >
+                <div className="flex items-center gap-2.5 truncate">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0">✦</span>
+                  <span className="truncate">
+                    Explore in Knowledge Constellation: <strong className="text-emerald-700 dark:text-emerald-300">&ldquo;{dashboardQuery}&rdquo;</strong>
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-[#85877B] group-hover:text-emerald-600 shrink-0">
+                  Graph ↗
+                </span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Right Controls - Balanced min-w to preserve center alignment */}

@@ -216,7 +216,7 @@ export default function HelpPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search guides, protocols, FAQs, or troubleshooting…"
-              className="w-full h-14 sm:h-16 pl-12 pr-12 rounded-2xl text-[15px] sm:text-base outline-none transition-all duration-200 bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] font-sans shadow-2xs hover:border-[#66866A]/60 dark:hover:border-[#4ADE80]/60 focus:border-[#3E6248] dark:focus:border-[#4ADE80] focus:ring-4 focus:ring-[#3E6248]/10 dark:focus:ring-[#4ADE80]/10 placeholder:text-[#85877B] dark:placeholder:text-[#7E8B7B]"
+              className="w-full h-14 sm:h-16 pl-12 pr-12 rounded-full text-[15px] sm:text-base outline-none transition-all duration-200 bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] font-sans shadow-sm hover:shadow-md focus:border-[#3E6248] dark:focus:border-[#4ADE80] focus:ring-4 focus:ring-[#3E6248]/10 dark:focus:ring-[#4ADE80]/10 placeholder:text-[#85877B] dark:placeholder:text-[#7E8B7B]"
               aria-label="Search help resources"
             />
 

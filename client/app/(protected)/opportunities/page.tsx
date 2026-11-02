@@ -1539,28 +1539,31 @@ export default function OpportunityHub() {
             </div>
           </div>
 
-          {/* Search */}
-          <div className="relative mb-5">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-faint pointer-events-none">
-              <IconSearch />
+          {/* Search - Google Scholar Style Rounded Pill */}
+          <div className="relative mb-6">
+            <div className="flex items-center rounded-full bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#28382C] shadow-sm hover:border-[#8FA89B] dark:hover:border-[#3E7750] hover:shadow-md focus-within:border-[#3E6248] dark:focus-within:border-[#4ADE80] focus-within:ring-2 focus-within:ring-[#3E6248]/15 dark:focus-within:ring-[#4ADE80]/20 transition-all px-5 py-3">
+              <div className="text-[#3E6248] dark:text-[#4ADE80] mr-3 shrink-0">
+                <IconSearch />
+              </div>
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t("opp.search_placeholder", "Search grants, fellowships, conferences, scholarships...")}
+                className="flex-1 bg-transparent border-0 outline-none text-sm text-[#202920] dark:text-[#EDEAE2] placeholder:text-[#85877B] dark:placeholder:text-[#6E7D72] font-sans"
+                aria-label="Search opportunities"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="p-1 rounded-full text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#202E24] cursor-pointer border-0 bg-transparent transition-colors"
+                  aria-label="Clear search"
+                >
+                  <IconX size={14} />
+                </button>
+              )}
             </div>
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t("opp.search_placeholder", "Search grants, fellowships, conferences, scholarships...")}
-              className="w-full pl-11 pr-4 py-3.5 bg-surface border border-border rounded-md text-sm text-ink placeholder:text-faint focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors shadow-sm"
-              aria-label="Search opportunities"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-faint hover:text-ink cursor-pointer"
-                aria-label="Clear search"
-              >
-                <IconX size={14} />
-              </button>
-            )}
           </div>
 
           {/* Type tabs */}

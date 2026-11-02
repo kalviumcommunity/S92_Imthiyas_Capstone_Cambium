@@ -524,7 +524,7 @@ export default function ReaderPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search within paper..."
-                    className="w-full pl-8 pr-3 py-1 bg-surface-sunken/60 border border-edge-default rounded-md text-xs text-ink-primary focus:outline-none focus:border-moss-500 font-sans"
+                    className="w-full pl-8 pr-7 py-1.5 bg-surface-sunken/60 border border-edge-default rounded-full text-xs text-ink-primary focus:outline-none focus:border-moss-500 font-sans shadow-2xs hover:shadow-xs transition-all"
                   />
                   {searchQuery && (
                     <button
