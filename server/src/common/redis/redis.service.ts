@@ -30,21 +30,22 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     const redisPassword = process.env.REDIS_PASSWORD || undefined;
 
     try {
+      const redisOptions = {
+        lazyConnect: true,
+        maxRetriesPerRequest: 1,
+        enableOfflineQueue: false,
+        connectTimeout: 2000,
+        retryStrategy: () => null,
+        reconnectOnError: () => false,
+      };
+
       this.client = redisUrl
-        ? new Redis(redisUrl, {
-            lazyConnect: true,
-            maxRetriesPerRequest: 1,
-            enableOfflineQueue: false,
-            connectTimeout: 2000,
-          })
+        ? new Redis(redisUrl, redisOptions)
         : new Redis({
             host: redisHost,
             port: redisPort,
             password: redisPassword,
-            lazyConnect: true,
-            maxRetriesPerRequest: 1,
-            enableOfflineQueue: false,
-            connectTimeout: 2000,
+            ...redisOptions,
           });
 
       this.client.on('connect', () => {
@@ -62,6 +63,10 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       await this.client.connect().catch((err) => {
         this.logger.warn(`Redis server unavailable (${err.message}). Using resilient in-memory fallback.`);
         this.isConnected = false;
+        if (this.client) {
+          this.client.removeAllListeners('error');
+          this.client.disconnect(false);
+        }
       });
     } catch (err: any) {
       this.logger.warn(`Failed to initialize Redis client: ${err?.message || err}. Fallback enabled.`);

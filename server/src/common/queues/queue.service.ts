@@ -40,22 +40,26 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
     const redisPassword = process.env.REDIS_PASSWORD || undefined;
 
     try {
+      const redisOptions = {
+        maxRetriesPerRequest: null,
+        enableReadyCheck: false,
+        connectTimeout: 2000,
+        lazyConnect: true,
+        retryStrategy: () => null,
+      };
+
       this.redisClient = redisUrl
-        ? new Redis(redisUrl, {
-            maxRetriesPerRequest: null,
-            enableReadyCheck: false,
-            connectTimeout: 2000,
-            lazyConnect: true,
-          })
+        ? new Redis(redisUrl, redisOptions)
         : new Redis({
             host: redisHost,
             port: redisPort,
             password: redisPassword,
-            maxRetriesPerRequest: null,
-            enableReadyCheck: false,
-            connectTimeout: 2000,
-            lazyConnect: true,
+            ...redisOptions,
           });
+
+      this.redisClient.on('error', () => {
+        // Prevent unhandled error event during initial connection probe
+      });
 
       await this.redisClient.connect().catch(() => {
         // Ignored; handled by fallback below
@@ -73,6 +77,10 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
 
         this.logger.log(' BullMQ queues registered on Redis backbone (Ingestion, Embedding, Email, Digest)');
       } else {
+        if (this.redisClient) {
+          this.redisClient.removeAllListeners('error');
+          this.redisClient.disconnect(false);
+        }
         this.logger.warn(' Redis broker unavailable. BullMQ operating in zero-crash in-memory dispatcher mode.');
       }
     } catch (err: any) {

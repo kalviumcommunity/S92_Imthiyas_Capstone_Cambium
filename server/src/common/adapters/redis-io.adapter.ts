@@ -18,25 +18,39 @@ export class RedisIoAdapter extends IoAdapter {
     const redisPort = parseInt(process.env.REDIS_PORT || '6379', 10);
     const redisPassword = process.env.REDIS_PASSWORD || undefined;
 
+    let pubClient: Redis | null = null;
+    let subClient: Redis | null = null;
+
     try {
-      const pubClient = redisUrl
-        ? new Redis(redisUrl, { lazyConnect: true, maxRetriesPerRequest: 1, connectTimeout: 2000 })
+      const redisOptions = {
+        lazyConnect: true,
+        maxRetriesPerRequest: 1,
+        connectTimeout: 2000,
+        retryStrategy: () => null,
+        reconnectOnError: () => false,
+        enableOfflineQueue: false,
+      };
+
+      pubClient = redisUrl
+        ? new Redis(redisUrl, redisOptions)
         : new Redis({
             host: redisHost,
             port: redisPort,
             password: redisPassword,
-            lazyConnect: true,
-            maxRetriesPerRequest: 1,
-            connectTimeout: 2000,
+            ...redisOptions,
           });
 
-      const subClient = pubClient.duplicate();
+      subClient = pubClient.duplicate();
 
       pubClient.on('error', (err) => {
-        this.adapterLogger.warn(`Redis pubClient error: ${err.message}`);
+        if (this.adapterConstructor) {
+          this.adapterLogger.warn(`Redis pubClient error: ${err.message}`);
+        }
       });
       subClient.on('error', (err) => {
-        this.adapterLogger.warn(`Redis subClient error: ${err.message}`);
+        if (this.adapterConstructor) {
+          this.adapterLogger.warn(`Redis subClient error: ${err.message}`);
+        }
       });
 
       await Promise.all([pubClient.connect(), subClient.connect()]);
@@ -45,9 +59,17 @@ export class RedisIoAdapter extends IoAdapter {
       this.adapterLogger.log(' Distributed Socket.io Redis adapter connected successfully');
     } catch (err: any) {
       this.adapterLogger.warn(
-        `Redis adapter connection failed (${err?.message || err}). Falling back to standalone Socket.io memory engine.`,
+        `Redis adapter unavailable (${err?.message || err}). Falling back to standalone Socket.io memory engine.`,
       );
       this.adapterConstructor = null;
+      if (pubClient) {
+        pubClient.removeAllListeners('error');
+        pubClient.disconnect(false);
+      }
+      if (subClient) {
+        subClient.removeAllListeners('error');
+        subClient.disconnect(false);
+      }
     }
   }
 

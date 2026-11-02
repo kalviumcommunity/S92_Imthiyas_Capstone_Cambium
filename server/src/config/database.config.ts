@@ -76,6 +76,11 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
     connectionTimeoutMillis: 5000,
   };
 
+  const dbLogging: boolean | ('error' | 'warn' | 'migration' | 'schema')[] =
+    process.env.DB_LOGGING === 'true'
+      ? true
+      : (!isProd ? ['error', 'warn', 'migration', 'schema'] : false);
+
   // Master-Replica splitting when replica host is configured
   if (replicaHost && replicaHost !== masterHost) {
     return {
@@ -100,7 +105,7 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
       },
       entities,
       synchronize: false,
-      logging: !isProd,
+      logging: dbLogging,
       extra: poolExtra,
       retryAttempts: 3,
       retryDelay: 1000,
@@ -117,7 +122,7 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
     database,
     entities,
     synchronize: true, // Auto-sync in single-node dev
-    logging: !isProd,
+    logging: dbLogging,
     extra: poolExtra,
     retryAttempts: 2,
     retryDelay: 1000,
