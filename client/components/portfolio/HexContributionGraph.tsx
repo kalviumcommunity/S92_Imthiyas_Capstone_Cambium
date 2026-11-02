@@ -45,28 +45,28 @@ export const RESEARCH_CATEGORIES = [
 const LEVEL_STYLES = [
   {
     level: 0,
-    className: "fill-[#EDE7DF] dark:fill-[#17231B] stroke-[#E1D8CC] dark:stroke-[#253629]",
-    badgeBg: "bg-[#EDE7DF] dark:bg-[#17231B]",
+    className: "fill-[#EDE6DC] dark:fill-[#17231B] stroke-[#E0D7CB] dark:stroke-[#253629]",
+    badgeBg: "bg-[#EDE6DC] dark:bg-[#17231B]",
   },
   {
     level: 1,
-    className: "fill-[#C5DAC9] dark:fill-[#1E3A26] stroke-[#B3CBB7] dark:stroke-[#2D5438]",
-    badgeBg: "bg-[#C5DAC9] dark:bg-[#1E3A26]",
+    className: "fill-[#C2D8C6] dark:fill-[#1E3A26] stroke-[#B0CCA6] dark:stroke-[#2D5438]",
+    badgeBg: "bg-[#C2D8C6] dark:bg-[#1E3A26]",
   },
   {
     level: 2,
-    className: "fill-[#8FA89B] dark:fill-[#2D583B] stroke-[#7E9789] dark:stroke-[#3E7750]",
-    badgeBg: "bg-[#8FA89B] dark:bg-[#2D583B]",
+    className: "fill-[#82AB8E] dark:fill-[#2D583B] stroke-[#719B7D] dark:stroke-[#3E7750]",
+    badgeBg: "bg-[#82AB8E] dark:bg-[#2D583B]",
   },
   {
     level: 3,
-    className: "fill-[#527C63] dark:fill-[#3E754E] stroke-[#426852] dark:stroke-[#549D6A]",
-    badgeBg: "bg-[#527C63] dark:bg-[#3E754E]",
+    className: "fill-[#497A58] dark:fill-[#3E754E] stroke-[#3B6648] dark:stroke-[#549D6A]",
+    badgeBg: "bg-[#497A58] dark:bg-[#3E754E]",
   },
   {
     level: 4,
-    className: "fill-[#274833] dark:fill-[#4ADE80] stroke-[#1E3827] dark:stroke-[#22C55E]",
-    badgeBg: "bg-[#274833] dark:bg-[#4ADE80]",
+    className: "fill-[#295237] dark:fill-[#48A465] stroke-[#1F402B] dark:stroke-[#378B52]",
+    badgeBg: "bg-[#295237] dark:bg-[#48A465]",
   },
 ];
 
@@ -434,7 +434,7 @@ export function HexContributionGraph({
                     : ""
                 } ${
                   activeCategory && matchesCategory && cell.count > 0
-                    ? "stroke-[#274833] dark:stroke-[#4ADE80] stroke-[1.5px]"
+                    ? "stroke-[#295237] dark:stroke-[#48A465] stroke-[1.5px]"
                     : ""
                 }`}
                 onMouseEnter={(e) => {
@@ -511,7 +511,7 @@ export function HexContributionGraph({
                 onClick={() => handleToggleCategory(cat.id)}
                 className={`px-3 py-1 rounded-full text-xs font-sans transition-all cursor-pointer border flex items-center gap-1.5 ${
                   isFiltered
-                    ? "bg-[#274833] dark:bg-[#4ADE80] text-white dark:text-[#111A13] border-[#274833] dark:border-[#4ADE80] shadow-xs font-semibold"
+                    ? "bg-[#295237] dark:bg-[#48A465] text-white dark:text-[#0E1510] border-[#295237] dark:border-[#48A465] shadow-xs font-semibold"
                     : "bg-white/80 dark:bg-[#1A251E]/80 text-[#4A5568] dark:text-[#C5D5BE] border-[#E5DDD3] dark:border-[#2D3E32] hover:border-[#8FA89B] hover:text-[#202920] dark:hover:text-white"
                 }`}
               >
