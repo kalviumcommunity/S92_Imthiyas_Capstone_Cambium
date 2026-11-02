@@ -146,7 +146,7 @@ export function GlobalRagAssistant() {
           onClick={() => setIsOpen(true)}
           title="Open Cambium Scholarly RAG Copilot"
           aria-label="Open Cambium Scholarly RAG Copilot"
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#3E6248] text-white shadow-xl hover:bg-[#204033] hover:scale-105 transition-all duration-200 border border-[#FAF7F0]/20 cursor-pointer group"
+          className="fixed bottom-6 right-[144px] max-sm:bottom-[76px] max-sm:right-6 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-[#3E6248] dark:bg-[#1E3A26] text-white shadow-xl hover:bg-[#204033] dark:hover:bg-[#284E34] hover:scale-105 transition-all duration-200 border border-[#FAF7F0]/20 dark:border-[#4ADE80]/30 cursor-pointer group"
         >
           <Sparkles className="w-4 h-4 text-emerald-300 animate-pulse" />
           <span className="font-sans text-xs font-semibold tracking-wide">Ask Cambium RAG AI</span>
@@ -159,10 +159,10 @@ export function GlobalRagAssistant() {
         <div
           role="region"
           aria-label="Cambium RAG Copilot Chat Window"
-          className={`fixed right-6 z-50 bg-[#FAF7F0] border border-[#E4DCCB] rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-all duration-200 ${
+          className={`fixed right-6 z-50 bg-[#FAF7F0] dark:bg-[#121B14] border border-[#E4DCCB] dark:border-[#28382C] rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-all duration-200 max-sm:right-3 max-sm:left-3 ${
             isMinimized
-              ? "bottom-6 w-80 h-14"
-              : "bottom-6 w-[420px] max-w-[94vw] h-[580px] max-h-[85vh]"
+              ? "bottom-20 w-80 max-sm:w-auto h-14"
+              : "bottom-20 w-[420px] max-w-[94vw] h-[580px] max-h-[calc(100vh-100px)]"
           }`}
         >
           {/* Header Bar */}
@@ -202,7 +202,7 @@ export function GlobalRagAssistant() {
           {!isMinimized && (
             <>
               {/* Persona Selector Strip */}
-              <div className="flex items-center gap-1 px-3 py-1.5 bg-[#F2EBDD] border-b border-[#E4DCCB] overflow-x-auto text-[11px] shrink-0 font-sans">
+              <div className="flex items-center gap-1 px-3 py-1.5 bg-[#F2EBDD] dark:bg-[#172219] border-b border-[#E4DCCB] dark:border-[#28382C] overflow-x-auto text-[11px] shrink-0 font-sans">
                 {(
                   [
                     "General Assistant",
@@ -217,7 +217,7 @@ export function GlobalRagAssistant() {
                     className={`px-2.5 py-0.5 rounded-full font-medium transition-colors whitespace-nowrap cursor-pointer ${
                       activePersona === p
                         ? "bg-[#3E6248] text-white font-semibold"
-                        : "bg-white text-[#62685E] hover:text-[#202920] border border-[#E4DCCB]"
+                        : "bg-white dark:bg-[#1E2B21] text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] border border-[#E4DCCB] dark:border-[#2E4133]"
                     }`}
                   >
                     {p.split(" ")[0]}
@@ -226,7 +226,7 @@ export function GlobalRagAssistant() {
               </div>
 
               {/* Chat Messages Log */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 font-sans text-xs bg-[#FAF7F0]">
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 font-sans text-xs bg-[#FAF7F0] dark:bg-[#0E140F]">
                 {messages.map((m) => (
                   <div
                     key={m.id}
@@ -238,7 +238,7 @@ export function GlobalRagAssistant() {
                       className={`max-w-[88%] p-3 rounded-xl ${
                         m.sender === "user"
                           ? "bg-[#3E6248] text-white rounded-br-none"
-                          : "bg-white text-[#202920] border border-[#E4DCCB] rounded-bl-none shadow-2xs"
+                          : "bg-white dark:bg-[#18231B] text-[#202920] dark:text-[#EDEAE2] border border-[#E4DCCB] dark:border-[#28382C] rounded-bl-none shadow-2xs"
                       }`}
                     >
                       {/* Persona tag for AI message */}
@@ -301,7 +301,7 @@ export function GlobalRagAssistant() {
                   e.preventDefault();
                   handleSend();
                 }}
-                className="flex items-center gap-2 p-2.5 bg-white border-t border-[#E4DCCB] shrink-0"
+                className="flex items-center gap-2 p-2.5 bg-white dark:bg-[#121B14] border-t border-[#E4DCCB] dark:border-[#28382C] shrink-0"
               >
                 <input
                   ref={inputRef}
@@ -309,7 +309,7 @@ export function GlobalRagAssistant() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={`Ask ${activePersona.split(" ")[0]} (grants, proofs, IRB, FAIR)...`}
-                  className="flex-1 px-3 py-2 bg-[#FAF7F0] border border-[#E4DCCB] rounded-lg text-xs font-sans text-[#202920] placeholder:text-[#85877B] outline-none focus:border-[#3E6248]"
+                  className="flex-1 px-3 py-2 bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#28382C] rounded-lg text-xs font-sans text-[#202920] dark:text-[#EDEAE2] placeholder:text-[#85877B] dark:placeholder:text-[#6E7D72] outline-none focus:border-[#3E6248] dark:focus:border-[#4ADE80]"
                 />
                 <button
                   type="submit"

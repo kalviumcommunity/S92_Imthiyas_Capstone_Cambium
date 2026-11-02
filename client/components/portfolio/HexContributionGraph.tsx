@@ -78,7 +78,8 @@ const GAP_X = 1.0; // Horizontal gap between interlocking columns
 const Y_PITCH = HEX_HEIGHT + GAP_Y; // ~11.94px
 const Y_STAGGER = Y_PITCH / 2; // ~5.97px (vertical shift for odd columns)
 const X_PITCH = 1.5 * RADIUS + GAP_X; // ~10.30px
-const TOP_MARGIN = 22.0; // Space for month headers
+const MONTH_GAP = 14.0; // Lateral gap between monthly clusters
+const TOP_MARGIN = 24.0; // Space for month headers
 
 const MONTH_NAMES = [
   "Jan",
@@ -235,12 +236,13 @@ export function HexContributionGraph({
     return counts;
   }, [dataMap]);
 
-  // Build the Continuous 53-Week Honeycomb Ribbon with Monthly Alignments
+  // Build the 12 Monthly-Separated Flat-Topped Honeycomb Tessellation Clusters
   const { cells, monthLabels, totalWidth, totalHeight } = useMemo(() => {
-    const leftMargin = showDayLabels ? 28.0 : 10.0;
+    const leftMargin = showDayLabels ? 30.0 : 12.0;
     const allCells: Array<{
       date: string;
-      weekIndex: number;
+      month: number;
+      colInMonth: number;
       dayOfWeek: number;
       count: number;
       level: 0 | 1 | 2 | 3 | 4;
@@ -252,85 +254,81 @@ export function HexContributionGraph({
 
     const labels: Array<{ name: string; x: number }> = [];
 
-    // Jan 1 of numeric year
-    const jan1 = new Date(Date.UTC(numericYear, 0, 1));
-    const jan1DayOfWeek = (jan1.getUTCDay() + 6) % 7; // 0 = Mon ... 6 = Sun
+    let currentX = leftMargin;
 
-    // Track month start columns
-    const monthStartWeeks = new Map<number, number>();
-
-    // Determine total days in year
-    const isLeap = (numericYear % 4 === 0 && numericYear % 100 !== 0) || numericYear % 400 === 0;
-    const totalDays = isLeap ? 366 : 365;
-
-    let maxWeek = 0;
-
-    for (let dayOfYear = 0; dayOfYear < totalDays; dayOfYear++) {
-      const dateObj = new Date(Date.UTC(numericYear, 0, dayOfYear + 1));
-      const m = dateObj.getUTCMonth();
-      const dayOfMonth = dateObj.getUTCDate();
-      const d = (dateObj.getUTCDay() + 6) % 7; // 0 = Mon ... 6 = Sun
-
-      // Calculate calendar week column
-      const w = Math.floor((dayOfYear + jan1DayOfWeek) / 7);
-      if (w > maxWeek) maxWeek = w;
-
-      if (dayOfMonth === 1 && !monthStartWeeks.has(m)) {
-        monthStartWeeks.set(m, w);
-      }
-
-      const dateStr = dateObj.toISOString().slice(0, 10);
-      const item = dataMap.get(dateStr);
-      const count = item?.count || 0;
-
-      let level: 0 | 1 | 2 | 3 | 4 = 0;
-      if (item?.level !== undefined) {
-        level = item.level;
-      } else if (count >= 4) {
-        level = 4;
-      } else if (count === 3) {
-        level = 3;
-      } else if (count === 2) {
-        level = 2;
-      } else if (count === 1) {
-        level = 1;
-      }
-
-      // Flat-topped honeycomb center: odd columns shifted by Y_STAGGER
-      const cx = leftMargin + w * X_PITCH;
-      const cy = TOP_MARGIN + d * Y_PITCH + (w % 2 === 1 ? Y_STAGGER : 0);
-
-      allCells.push({
-        date: dateStr,
-        weekIndex: w,
-        dayOfWeek: d,
-        count,
-        level,
-        cx,
-        cy,
-        categories: item?.categories,
-        item,
-      });
-    }
-
-    // Month labels aligned to starting week column
     for (let m = 0; m < 12; m++) {
-      const startW = monthStartWeeks.get(m) ?? Math.round(m * 4.35);
-      const labelX = leftMargin + startW * X_PITCH;
+      const daysInMonth = new Date(Date.UTC(numericYear, m + 1, 0)).getUTCDate();
+      const firstDate = new Date(Date.UTC(numericYear, m, 1));
+      const firstDow = (firstDate.getUTCDay() + 6) % 7; // 0 = Mon ... 6 = Sun
+
+      const monthStartX = currentX;
+      let maxColInMonth = 0;
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateObj = new Date(Date.UTC(numericYear, m, day));
+        const dow = (dateObj.getUTCDay() + 6) % 7; // 0 = Mon ... 6 = Sun
+        const colInMonth = Math.floor((day - 1 + firstDow) / 7);
+        if (colInMonth > maxColInMonth) {
+          maxColInMonth = colInMonth;
+        }
+
+        const dateStr = dateObj.toISOString().slice(0, 10);
+        const item = dataMap.get(dateStr);
+        const count = item?.count || 0;
+
+        let level: 0 | 1 | 2 | 3 | 4 = 0;
+        if (item?.level !== undefined) {
+          level = item.level;
+        } else if (count >= 4) {
+          level = 4;
+        } else if (count === 3) {
+          level = 3;
+        } else if (count === 2) {
+          level = 2;
+        } else if (count === 1) {
+          level = 1;
+        }
+
+        // Flat-topped honeycomb center:
+        // cx = monthStartX + colInMonth * X_PITCH
+        // cy = TOP_MARGIN + dow * Y_PITCH + (colInMonth % 2 === 1 ? Y_STAGGER : 0)
+        const cx = monthStartX + colInMonth * X_PITCH;
+        const cy = TOP_MARGIN + dow * Y_PITCH + (colInMonth % 2 === 1 ? Y_STAGGER : 0);
+
+        allCells.push({
+          date: dateStr,
+          month: m,
+          colInMonth,
+          dayOfWeek: dow,
+          count,
+          level,
+          cx,
+          cy,
+          categories: item?.categories,
+          item,
+        });
+      }
+
+      // Centered month label directly above this month's cluster
+      const clusterSpan = maxColInMonth * X_PITCH;
+      const labelX = monthStartX + clusterSpan / 2;
       labels.push({
         name: MONTH_NAMES[m],
         x: labelX,
       });
+
+      // Advance currentX to the start of next month with lateral separation gap
+      currentX += (maxColInMonth + 1) * X_PITCH + MONTH_GAP;
     }
 
-    const calculatedWidth = leftMargin + (maxWeek + 1) * X_PITCH + RADIUS + 10;
-    const calculatedHeight = TOP_MARGIN + 7 * Y_PITCH + Y_STAGGER + 10;
+    const calculatedWidth = currentX - MONTH_GAP + leftMargin + RADIUS;
+    const calculatedHeight = TOP_MARGIN + 7 * Y_PITCH + Y_STAGGER + 12;
 
     return {
       cells: allCells,
       monthLabels: labels,
-      totalWidth: calculatedWidth,
-      totalHeight: calculatedHeight,
+      totalWidth: Math.ceil(calculatedWidth),
+      totalHeight: Math.ceil(calculatedHeight),
     };
   }, [numericYear, dataMap, showDayLabels]);
 
@@ -382,7 +380,7 @@ export function HexContributionGraph({
           width={totalWidth}
           height={totalHeight}
           viewBox={`0 0 ${totalWidth} ${totalHeight}`}
-          className="select-none overflow-visible block min-w-[580px]"
+          className="select-none overflow-visible block min-w-[720px] max-w-full"
         >
           {/* Day of Week Labels (Optional Mon, Wed, Fri) */}
           {showDayLabels && (
@@ -404,8 +402,8 @@ export function HexContributionGraph({
             <text
               key={lbl.name}
               x={lbl.x}
-              y={12}
-              textAnchor="start"
+              y={14}
+              textAnchor="middle"
               className="fill-[#85877B] dark:fill-[#8FA89B] text-[9.5px] font-mono font-medium tracking-wide"
             >
               {lbl.name}
