@@ -2609,6 +2609,49 @@ function PortfolioSection() {
   )
 }
 
+// ─── Botanical Dendrochronology Wood Ring Helpers (Authentic Tree Cross-Section) ──
+function getTreeRingPath(cx: number, cy: number, r: number, seed: number, roughness = 1) {
+  const steps = 48;
+  let d = '';
+  for (let i = 0; i <= steps; i++) {
+    const angle = (i / steps) * Math.PI * 2;
+    const wobble1 = Math.sin(angle * 2 + seed * 1.3) * (2.0 * roughness);
+    const wobble2 = Math.cos(angle * 3 + seed * 2.1) * (1.5 * roughness);
+    const wobble3 = Math.sin(angle * 5 + seed * 0.7) * (0.9 * roughness);
+    const currR = r + wobble1 + wobble2 + wobble3;
+    const x = cx + currR * Math.cos(angle);
+    const y = cy + currR * Math.sin(angle);
+    if (i === 0) {
+      d += `M ${x.toFixed(2)} ${y.toFixed(2)}`;
+    } else {
+      d += ` L ${x.toFixed(2)} ${y.toFixed(2)}`;
+    }
+  }
+  return d + ' Z';
+}
+
+function getBarkContourPath(cx: number, cy: number, r: number) {
+  const steps = 64;
+  let d = '';
+  for (let i = 0; i <= steps; i++) {
+    const angle = (i / steps) * Math.PI * 2;
+    const barkRidge =
+      Math.sin(angle * 3) * 4.2 +
+      Math.cos(angle * 7) * 2.8 +
+      Math.sin(angle * 13) * 1.6 +
+      Math.cos(angle * 21) * 0.9;
+    const currR = r + barkRidge;
+    const x = cx + currR * Math.cos(angle);
+    const y = cy + currR * Math.sin(angle);
+    if (i === 0) {
+      d += `M ${x.toFixed(2)} ${y.toFixed(2)}`;
+    } else {
+      d += ` L ${x.toFixed(2)} ${y.toFixed(2)}`;
+    }
+  }
+  return d + ' Z';
+}
+
 // ─── Ecosystem Map Section (Botanical Wood Cross-Section & Living Cambium Meristem) ───
 function EcosystemMapSection() {
   const [activeEntity, setActiveEntity] = useState<string | null>(null)
@@ -2660,7 +2703,7 @@ function EcosystemMapSection() {
           In botanical nature, the cambium layer is the living meristem of the tree — dividing cells to form annual growth rings and pumping nutrient-rich sap outward to nourish the entire canopy. Cambium Research works identically: nourishing your ideas, linking your artifacts, and expanding your scholarly horizon year after year.
         </p>
 
-        {/* Botanical Cut-Tree Stem Wood Cross-Section Graphic */}
+        {/* Botanical Cut-Tree Stem Wood Cross-Section Graphic (Authentic Dendrochronology Inspired by Real Tree Slices) */}
         <div style={{ maxWidth: 840, margin: '0 auto', minHeight: 620, position: 'relative' }}>
           <svg
             viewBox="0 0 820 620"
@@ -2668,24 +2711,32 @@ function EcosystemMapSection() {
             aria-label="Botanical cut tree stem wood cross-section showing annual growth rings and living cambium meristem layer"
           >
             <defs>
-              {/* Radial gradient for the warm heartwood glow */}
+              {/* Radial gradient for the warm heartwood pith */}
               <radialGradient id="treePithGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#FAF7F0" stopOpacity="0.22" />
-                <stop offset="60%" stopColor="#2E7D4F" stopOpacity="0.08" />
+                <stop offset="0%" stopColor="#FAF7F0" stopOpacity="0.25" />
+                <stop offset="50%" stopColor="#B89A78" stopOpacity="0.12" />
                 <stop offset="100%" stopColor="#18231B" stopOpacity="0" />
               </radialGradient>
 
-              {/* Radial wood cross-section timber shading */}
+              {/* Natural wood cross-section timber shading */}
               <radialGradient id="woodTrunkShading" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#1B281E" stopOpacity="0.95" />
-                <stop offset="35%" stopColor="#18241A" stopOpacity="0.95" />
-                <stop offset="70%" stopColor="#141E16" stopOpacity="0.98" />
-                <stop offset="100%" stopColor="#0F1710" stopOpacity="1" />
+                <stop offset="0%" stopColor="#251D16" stopOpacity="0.96" />
+                <stop offset="28%" stopColor="#211A13" stopOpacity="0.96" />
+                <stop offset="60%" stopColor="#1B1510" stopOpacity="0.98" />
+                <stop offset="85%" stopColor="#140F0B" stopOpacity="0.99" />
+                <stop offset="100%" stopColor="#0D0A08" stopOpacity="1" />
               </radialGradient>
 
-              {/* Glow filter for sap particles */}
-              <filter id="sapGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+              {/* Heartwood grain gradient */}
+              <radialGradient id="heartwoodTone" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#2E2319" stopOpacity="0.8" />
+                <stop offset="70%" stopColor="#221A12" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#140F0B" stopOpacity="0" />
+              </radialGradient>
+
+              {/* Soft living cambium glow filter */}
+              <filter id="cambiumGlowFilter" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur" />
                 <feMerge>
                   <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
@@ -2693,124 +2744,116 @@ function EcosystemMapSection() {
               </filter>
             </defs>
 
-            {/* 1. Outer Bark Rim & Trunk Silhouette (Top view of cut tree trunk) */}
-            <circle cx="410" cy="310" r="280" fill="url(#woodTrunkShading)" />
-
-            {/* Rugged Outer Bark Surface */}
-            <circle
-              cx="410" cy="310" r="282"
-              fill="none"
-              stroke="#2D4231"
-              strokeWidth="4.5"
-              strokeDasharray="14 3 8 4 22 2"
-              opacity="0.85"
+            {/* 1. Realistic Cut-Tree Bark Trunk Silhouette (Natural Undulating Edge) */}
+            <path
+              d={getBarkContourPath(410, 310, 282)}
+              fill="url(#woodTrunkShading)"
+              stroke="#3D2E20"
+              strokeWidth="4"
+              strokeDasharray="16 3 8 4 24 2"
+              opacity="0.92"
             />
-            <circle
-              cx="410" cy="310" r="278"
+            {/* Outer bark fissures and texture */}
+            <path
+              d={getBarkContourPath(410, 310, 276)}
               fill="none"
-              stroke="#1D2A1F"
+              stroke="#2A1F16"
               strokeWidth="2.5"
+              opacity="0.8"
             />
-
-            {/* 2. Secondary Phloem (Inner Bark nutrient corridor) */}
-            <circle
-              cx="410" cy="310" r="264"
+            <path
+              d={getTreeRingPath(410, 310, 268, 9, 1.2)}
               fill="none"
-              stroke="rgba(74, 222, 128, 0.18)"
+              stroke="rgba(196, 172, 140, 0.20)"
               strokeWidth="1.5"
-              strokeDasharray="6 6"
+              strokeDasharray="8 6"
             />
 
-            {/* 3. Subtle Organic Wood Grain Micro-Rings */}
-            {[65, 95, 142, 192, 238].map((grainRadius, idx) => (
-              <circle
-                key={`grain-${idx}`}
-                cx="410" cy="310" r={grainRadius}
+            {/* 2. Natural Wood Grain Micro-Rings (Annual Growth Dendrochronology from Photo 4) */}
+            {[72, 92, 138, 154, 188, 204, 238].map((grainRadius, idx) => (
+              <path
+                key={`micro-ring-${idx}`}
+                d={getTreeRingPath(410, 310, grainRadius, idx * 3 + 1, 0.75)}
                 fill="none"
-                stroke="rgba(216, 205, 184, 0.08)"
-                strokeWidth="0.85"
-                strokeDasharray="3 5"
+                stroke="rgba(216, 202, 178, 0.08)"
+                strokeWidth="0.8"
+                strokeDasharray="3 4"
               />
             ))}
 
-            {/* 4. Concentric Annual Growth Rings (Dendrochronology Layers) */}
-            {/* Ring 1: Heartwood Pith Boundary */}
-            <circle
-              cx="410" cy="310" r="115"
+            {/* 3. Core Concentric Annual Growth Rings */}
+            {/* Ring 1: Heartwood Pith Boundary (r ~115) */}
+            <path
+              d={getTreeRingPath(410, 310, 115, 1, 0.85)}
               fill="none"
-              stroke={activeEntity === 'notes' || activeEntity === 'topics' ? '#4ADE80' : 'rgba(184, 178, 167, 0.26)'}
+              stroke={activeEntity === 'notes' || activeEntity === 'topics' ? '#4ADE80' : 'rgba(214, 196, 170, 0.28)'}
               strokeWidth={activeEntity === 'notes' || activeEntity === 'topics' ? '2.5' : '1.5'}
-              strokeDasharray="8 4"
+              strokeDasharray="9 4"
               style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }}
             />
 
-            {/* Ring 2: Secondary Xylem / Deep Sapwood */}
-            <circle
-              cx="410" cy="310" r="172"
+            {/* Ring 2: Secondary Xylem / Deep Sapwood (r ~172) */}
+            <path
+              d={getTreeRingPath(410, 310, 172, 2, 0.95)}
               fill="none"
-              stroke={activeEntity === 'datasets' || activeEntity === 'people' || activeEntity === 'labs' ? '#4ADE80' : 'rgba(184, 178, 167, 0.28)'}
+              stroke={activeEntity === 'datasets' || activeEntity === 'people' || activeEntity === 'labs' ? '#4ADE80' : 'rgba(214, 196, 170, 0.26)'}
               strokeWidth={activeEntity === 'datasets' || activeEntity === 'people' || activeEntity === 'labs' ? '2.5' : '1.5'}
               strokeDasharray="10 5"
               style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }}
             />
 
-            {/* Ring 3: THE LIVING VASCULAR CAMBIUM LAYER (Active Cell Mitosis & Outward Growth) */}
-            {/* Ambient aura behind cambium meristem */}
-            <circle
-              cx="410" cy="310" r="221"
+            {/* Ring 3: THE LIVING VASCULAR CAMBIUM LAYER (Authentic Living Tissue Ring) */}
+            {/* Ambient biological tissue glow */}
+            <path
+              d={getTreeRingPath(410, 310, 222, 5, 1.1)}
               fill="none"
-              stroke="#4ADE80"
-              strokeWidth="5"
-              opacity="0.18"
+              stroke="#3E6248"
+              strokeWidth="6"
+              opacity="0.25"
+              filter="url(#cambiumGlowFilter)"
             >
-              <animate attributeName="opacity" values="0.12;0.32;0.12" dur="4s" repeatCount="indefinite" />
-            </circle>
-            {/* Active Cambium ring line with animated mitosis dashes */}
-            <circle
-              cx="410" cy="310" r="221"
+              <animate attributeName="opacity" values="0.18;0.35;0.18" dur="6s" repeatCount="indefinite" />
+            </path>
+            {/* Living Cambium generative ring */}
+            <path
+              d={getTreeRingPath(410, 310, 222, 5, 1.1)}
               fill="none"
-              stroke="#4ADE80"
-              strokeWidth="2.2"
-              strokeDasharray="9 6"
-              style={{ filter: 'drop-shadow(0 0 6px rgba(74,222,128,0.45))' }}
+              stroke="#3E6248"
+              strokeWidth="2.4"
+              strokeDasharray="12 5"
+              style={{ filter: 'drop-shadow(0 0 5px rgba(62,98,72,0.5))' }}
             >
-              <animate attributeName="stroke-dashoffset" values="30;0" dur="12s" repeatCount="indefinite" />
-            </circle>
+              <animate attributeName="stroke" values="#3E6248;#52855E;#3E6248" dur="6s" repeatCount="indefinite" />
+            </path>
 
-            {/* Ring 4: Outer Sapwood Horizon */}
-            <circle
-              cx="410" cy="310" r="256"
+            {/* Ring 4: Outer Sapwood Horizon (r ~256) */}
+            <path
+              d={getTreeRingPath(410, 310, 256, 4, 1.15)}
               fill="none"
-              stroke={activeEntity === 'papers' || activeEntity === 'conferences' || activeEntity === 'funding' ? '#4ADE80' : 'rgba(184, 178, 167, 0.3)'}
+              stroke={activeEntity === 'papers' || activeEntity === 'conferences' || activeEntity === 'funding' ? '#4ADE80' : 'rgba(214, 196, 170, 0.28)'}
               strokeWidth={activeEntity === 'papers' || activeEntity === 'conferences' || activeEntity === 'funding' ? '2.5' : '1.5'}
               strokeDasharray="12 6"
               style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }}
             />
 
-            {/* 5. Natural Medullary Wood Rays (Passive radial timber grain) */}
+            {/* 4. Natural Medullary Wood Rays (Radial timber grain cutting through annual rings) */}
             {passiveRays.map(([x1, y1, x2, y2], idx) => (
               <line
                 key={`passive-ray-${idx}`}
                 x1={x1} y1={y1} x2={x2} y2={y2}
-                stroke="rgba(184, 178, 167, 0.08)"
+                stroke="rgba(214, 196, 170, 0.12)"
                 strokeWidth="1"
-                strokeDasharray="2 4"
+                strokeDasharray="3 5"
               />
             ))}
 
-            {/* 6. Continuous Growth Waves (Simulating how Cambium expands the tree trunk year after year) */}
-            {/* Growth Wave Ripple 1 */}
-            <circle cx="410" cy="310" r="54" fill="none" stroke="#4ADE80" strokeWidth="1.75">
-              <animate attributeName="r" values="54;275" dur="6.5s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.45;0.22;0" dur="6.5s" repeatCount="indefinite" />
-            </circle>
-            {/* Growth Wave Ripple 2 (Staggered offset) */}
-            <circle cx="410" cy="310" r="54" fill="none" stroke="#66866A" strokeWidth="1.5">
-              <animate attributeName="r" values="54;275" dur="6.5s" begin="3.25s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.4;0.18;0" dur="6.5s" begin="3.25s" repeatCount="indefinite" />
-            </circle>
+            {/* 5. Authentic Natural Radial Wood Checks / Drying Cracks (Photo 4 Match) */}
+            <line x1="410" y1="260" x2="410" y2="230" stroke="rgba(25,18,12,0.85)" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="445" y1="335" x2="475" y2="355" stroke="rgba(25,18,12,0.85)" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="375" y1="335" x2="345" y2="355" stroke="rgba(25,18,12,0.85)" strokeWidth="1.2" strokeLinecap="round" />
+            <line x1="440" y1="285" x2="470" y2="270" stroke="rgba(25,18,12,0.85)" strokeWidth="1.2" strokeLinecap="round" />
 
-            {/* 7. Active Medullary Rays & Nutrient Sap Flow to each Research Entity */}
+            {/* 6. Active Medullary Conduits & Gentle Botanical Sap Nourishment */}
             {entities.map((node, i) => {
               const isActive = activeEntity === node.id
               return (
@@ -2818,54 +2861,48 @@ function EcosystemMapSection() {
                   {/* Radial Medullary Conduit */}
                   <line
                     x1="410" y1="310" x2={node.x} y2={node.y}
-                    stroke={isActive ? '#4ADE80' : 'rgba(74, 222, 128, 0.24)'}
-                    strokeWidth={isActive ? '2' : '1.25'}
+                    stroke={isActive ? '#3E6248' : 'rgba(102, 134, 106, 0.28)'}
+                    strokeWidth={isActive ? '2' : '1.2'}
                     strokeDasharray="4 4"
                     style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }}
-                  >
-                    <animate attributeName="stroke-dashoffset" values="16;0" dur={`${2 + (i * 0.15)}s`} repeatCount="indefinite" />
-                  </line>
+                  />
 
-                  {/* Flowing Sap Nutrient Particles (Cambium feeding outward to help research grow) */}
-                  <circle r={isActive ? '3.5' : '2.5'} fill="#4ADE80" filter="url(#sapGlowFilter)">
-                    <animate attributeName="cx" values={`410;${node.x}`} dur={`${2.2 + (i * 0.18)}s`} repeatCount="indefinite" />
-                    <animate attributeName="cy" values={`310;${node.y}`} dur={`${2.2 + (i * 0.18)}s`} repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0;0.95;0.95;0" keyTimes="0;0.15;0.85;1" dur={`${2.2 + (i * 0.18)}s`} repeatCount="indefinite" />
+                  {/* Gentle Living Nutrient Pulse (Authentic botanical sap nourishing research entities) */}
+                  <circle r={isActive ? '3.5' : '2.5'} fill={isActive ? '#3E6248' : '#66866A'} opacity="0.85">
+                    <animate attributeName="cx" values={`410;${node.x}`} dur={`${4.5 + (i * 0.3)}s`} repeatCount="indefinite" />
+                    <animate attributeName="cy" values={`310;${node.y}`} dur={`${4.5 + (i * 0.3)}s`} repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.9;0.9;0" keyTimes="0;0.15;0.85;1" dur={`${4.5 + (i * 0.3)}s`} repeatCount="indefinite" />
                   </circle>
                 </g>
               )
             })}
 
-            {/* 8. Center Core: Heartwood Pith & Living Cambium Meristem Hub */}
-            <ellipse cx="410" cy="310" rx="110" ry="110" fill="url(#treePithGlow)">
-              <animate attributeName="rx" values="95;125;95" dur="5s" repeatCount="indefinite" />
-              <animate attributeName="ry" values="95;125;95" dur="5s" repeatCount="indefinite" />
-            </ellipse>
+            {/* 7. Center Core: Heartwood Pith & Living Cambium Meristem Hub */}
+            <ellipse cx="410" cy="310" rx="90" ry="90" fill="url(#treePithGlow)" />
+            <ellipse cx="410" cy="310" rx="70" ry="70" fill="url(#heartwoodTone)" />
 
             <g
               style={{ cursor: 'pointer', transition: 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)', transformOrigin: '410px 310px' }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.08)'}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.06)'}
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
-              {/* Outer pulsing ring */}
-              <circle
-                cx="410" cy="310" r="58"
+              {/* Heartwood outer organic ring */}
+              <path
+                d={getTreeRingPath(410, 310, 56, 0, 0.6)}
                 fill="none"
-                stroke="#4ADE80"
-                strokeWidth="1.75"
-                strokeDasharray="6 4"
-                opacity="0.8"
-              >
-                <animate attributeName="stroke-dashoffset" values="20;0" dur="8s" repeatCount="indefinite" />
-              </circle>
+                stroke="#3E6248"
+                strokeWidth="1.5"
+                strokeDasharray="5 3"
+                opacity="0.75"
+              />
 
-              {/* Heartwood circle in Warm Sand */}
+              {/* Heartwood Pith Disk in Living Materials Parchment */}
               <circle
-                cx="410" cy="310" r="52"
+                cx="410" cy="310" r="50"
                 fill="#FAF7F0"
                 stroke="#3E6248"
                 strokeWidth="2.5"
-                style={{ filter: 'drop-shadow(0 10px 28px rgba(0,0,0,0.5))' }}
+                style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))' }}
               />
 
               {/* Official Cambium Golden Spiral Logo */}
@@ -2896,7 +2933,7 @@ function EcosystemMapSection() {
               </text>
             </g>
 
-            {/* 9. The 10 Research Entities (Positioned at their respective wood growth rings) */}
+            {/* 8. The 10 Research Entities (Positioned at their respective wood growth rings) */}
             {entities.map(({ id, label, botanical, x, y, delay }) => {
               const isActive = activeEntity === id
               return (
@@ -2908,7 +2945,7 @@ function EcosystemMapSection() {
                     transformOrigin: `${x}px ${y}px`,
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'scale(1.12)'
+                    e.currentTarget.style.transform = 'scale(1.10)'
                     setActiveEntity(id)
                   }}
                   onMouseLeave={(e) => {
@@ -2921,7 +2958,7 @@ function EcosystemMapSection() {
                     <animateTransform
                       attributeName="transform"
                       type="translate"
-                      values="0,0; 0,-6; 0,0"
+                      values="0,0; 0,-5; 0,0"
                       dur="6s"
                       begin={delay}
                       repeatCount="indefinite"
@@ -2940,7 +2977,7 @@ function EcosystemMapSection() {
                       strokeWidth={isActive ? '2' : '1.5'}
                       style={{
                         transition: 'stroke 0.25s, fill 0.25s',
-                        filter: isActive ? 'drop-shadow(0 8px 24px rgba(74,222,128,0.35))' : 'drop-shadow(0 6px 18px rgba(0,0,0,0.4))',
+                        filter: isActive ? 'drop-shadow(0 6px 20px rgba(62,98,72,0.4))' : 'drop-shadow(0 4px 14px rgba(0,0,0,0.4))',
                       }}
                     />
 
@@ -3392,42 +3429,43 @@ function StructuralSystem() {
       <button
         suppressHydrationWarning
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 bg-[#293E30] text-[#FAF7F0] p-3 rounded-full shadow-xl border border-[#66866A]/60 hover:scale-105 transition-all cursor-pointer shadow-[0_8px_24px_rgba(0,0,0,0.3)]"
+        className="fixed bottom-[74px] right-6 z-40 bg-[#FAF7F0]/95 dark:bg-[#18231B]/95 text-[#3E6248] dark:text-[#4ADE80] p-2.5 rounded-full shadow-lg border border-[#E4DCCB] dark:border-[#28382C] hover:scale-105 hover:border-[#3E6248] dark:hover:border-[#4ADE80] transition-all cursor-pointer backdrop-blur-md"
         title="View Identity System"
         aria-label="View Identity System"
       >
-        <User className="w-4 h-4 text-[#FAF7F0]" />
+        <User className="w-4 h-4" />
       </button>
     )
   }
 
   return (
-    <div className="fixed bottom-20 right-6 z-40 flex flex-col items-end gap-3 max-w-sm">
-      <div className="bg-white/95 dark:bg-[#18231B]/95 text-[#202920] dark:text-[#EDEAE2] rounded-xl p-4 shadow-xl border border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between gap-4 w-full backdrop-blur-md transform transition-all duration-300 hover:scale-[1.01]">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-[#DCE6D7] dark:bg-[#1A281E] rounded-lg text-[#3E6248] dark:text-[#4ADE80] border border-[#66866A]/30 dark:border-[#4ADE80]/30 shadow-xs">
-            <User className="w-4 h-4" />
+    <div className="fixed bottom-[74px] right-6 z-40 flex flex-col items-end max-w-sm select-none print:hidden">
+      <div className="bg-[#FAF7F0]/95 dark:bg-[#18231B]/95 text-[#202920] dark:text-[#EDEAE2] rounded-2xl p-3.5 shadow-xl border border-[#E4DCCB] dark:border-[#28382C] flex items-center justify-between gap-3.5 w-full backdrop-blur-md transition-all duration-200 hover:shadow-2xl hover:border-[#3E6248]/40 dark:hover:border-[#4ADE80]/40">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 bg-[#E4DCCB]/50 dark:bg-[#202D23] rounded-xl text-[#3E6248] dark:text-[#4ADE80] border border-[#3E6248]/20 dark:border-[#4ADE80]/20 shadow-2xs">
+            <User className="w-3.5 h-3.5" />
           </div>
           <div className="flex flex-col">
-            <span className="font-sans text-xs font-semibold tracking-wide uppercase text-[#202920] dark:text-[#EDEAE2]">
+            <span className="font-mono text-[11px] font-bold tracking-wider uppercase text-[#3E6248] dark:text-[#4ADE80]">
               Identity System Active
             </span>
-            <span className="font-sans text-[11px] text-[#62685E] dark:text-[#A3B899] mt-0.5">
+            <span className="font-sans text-[10.5px] text-[#62685E] dark:text-[#A3B899]">
               Verified cryptographic ledger anchor
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="inline-flex items-center gap-1.5 bg-[#DCE6D7] dark:bg-[#1A281E] border border-[#66866A]/20 dark:border-[#4ADE80]/30 px-2.5 py-0.5 rounded-full text-[#3E6248] dark:text-[#4ADE80] shadow-xs">
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="inline-flex items-center gap-1.5 bg-[#DCE6D7] dark:bg-[#1A281E] border border-[#3E6248]/30 dark:border-[#4ADE80]/30 px-2.5 py-0.5 rounded-full text-[#3E6248] dark:text-[#4ADE80] shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
-            <span className="font-sans text-[10px] font-bold tracking-tight text-[#3E6248] dark:text-[#4ADE80]">Active</span>
+            <span className="font-mono text-[9.5px] font-bold tracking-tight">ACTIVE</span>
           </div>
           <button
             suppressHydrationWarning
             onClick={() => setOpen(false)}
-            className="text-[#85877B] hover:text-[#202920] dark:text-[#7E8B7B] dark:hover:text-[#EDEAE2] text-xs p-1 bg-transparent border-0 cursor-pointer ml-1 transition-colors"
+            className="text-[#85877B] hover:text-[#202920] dark:hover:text-[#FAF7F0] p-1 rounded-full hover:bg-[#E4DCCB]/40 dark:hover:bg-[#202D23] transition-colors cursor-pointer"
             title="Dismiss"
+            aria-label="Dismiss Identity System notice"
           >
             ✕
           </button>
