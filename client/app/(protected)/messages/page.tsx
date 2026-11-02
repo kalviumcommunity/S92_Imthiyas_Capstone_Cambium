@@ -370,7 +370,7 @@ export default function ScholarMessagesPage() {
           <div className="p-3.5 border-b border-[#E4DCCB] space-y-2.5">
             <div className="relative">
               <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-[#85877B]"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#85877B]"
                 size={14}
               />
               <input
@@ -378,8 +378,18 @@ export default function ScholarMessagesPage() {
                 placeholder="Search connected scholars, topics..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-lg border border-[#E4DCCB] bg-[#FAF7F0] text-xs font-sans text-[#202920] focus:outline-none focus:border-[#3E6248]"
+                className="w-full pl-9 pr-8 py-2 rounded-full border border-[#E4DCCB] bg-[#FAF7F0] text-xs font-sans text-[#202920] focus:outline-none focus:border-[#3E6248] shadow-xs hover:shadow-sm transition-all"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#85877B] hover:text-[#202920] p-0.5"
+                  title="Clear search"
+                >
+                  ✕
+                </button>
+              )}
             </div>
             <div className="flex items-center justify-between text-[11px] font-mono text-[#62685E]">
               <span>Mutual Scholars ({scholars.length})</span>

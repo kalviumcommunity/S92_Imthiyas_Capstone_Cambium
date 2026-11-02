@@ -284,7 +284,65 @@
     outline: none;
     box-shadow: 0 0 0 2px #0E140F, 0 0 0 4px #4ADE80;
   }
+
+  /* Exclude seamless borderless inputs inside search bars/pills from raw boxy outline */
+  input.outline-none:focus-visible,
+  input.border-0:focus-visible,
+  input.border-none:focus-visible,
+  .search-pill input:focus-visible,
+  .search-bar input:focus-visible,
+  .search-box input:focus-visible,
+  .scholarly-search-pill input:focus-visible,
+  input[type="search"]:focus-visible {
+    box-shadow: none !important;
+    outline: none !important;
+  }
+  .dark input.outline-none:focus-visible,
+  .dark input.border-0:focus-visible,
+  .dark input.border-none:focus-visible,
+  .dark .search-pill input:focus-visible,
+  .dark .search-bar input:focus-visible,
+  .dark .search-box input:focus-visible,
+  .dark .scholarly-search-pill input:focus-visible,
+  .dark input[type="search"]:focus-visible {
+    box-shadow: none !important;
+    outline: none !important;
+  }
 }
+
+/* Scholarly Google-Style Clean Search Pill Container */
+.scholarly-search-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  border: 1px solid #E4DCCB;
+  box-shadow: 0 1px 3px 0 rgba(32, 41, 32, 0.05);
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scholarly-search-pill:hover {
+  border-color: #8FA89B;
+  box-shadow: 0 2px 6px 0 rgba(32, 41, 32, 0.08);
+}
+.scholarly-search-pill:focus-within {
+  border-color: #3E6248;
+  box-shadow: 0 0 0 3px rgba(62, 98, 72, 0.15), 0 4px 12px 0 rgba(32, 41, 32, 0.08);
+}
+.dark .scholarly-search-pill {
+  background-color: #151F17;
+  border-color: #28382C;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+}
+.dark .scholarly-search-pill:hover {
+  border-color: #3E7750;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.3);
+}
+.dark .scholarly-search-pill:focus-within {
+  border-color: #4ADE80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2), 0 4px 16px 0 rgba(0, 0, 0, 0.4);
+}
+
 
 @layer utilities {
   /* -------------------------------------------------------------------------

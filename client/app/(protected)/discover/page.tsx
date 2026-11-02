@@ -347,23 +347,54 @@ function ReasonChip({ text }: { text: string }) {
 
 // ─── Search Bar ───────────────────────────────────────────────────────────────
 
-function SearchBar({ onFocus }: { onFocus: () => void }) {
+function SearchBar({
+  onFocus,
+  activeQuery,
+  onClear,
+}: {
+  onFocus: () => void;
+  activeQuery?: string;
+  onClear?: () => void;
+}) {
   return (
-    <button
-      onClick={onFocus}
-      className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-white border border-[#E4DCCB] text-[#62685E] shadow-2xs hover:border-[#3E6248] hover:shadow-xs transition-all duration-200 cursor-text text-left"
-      aria-label="Search papers, researchers, topics, labs, datasets"
-    >
-      <div className="flex items-center gap-3 min-w-0">
-        <Search className="w-4 h-4 text-[#3E6248] shrink-0" />
-        <span className="text-[14px] text-[#85877B] truncate font-sans">
-          Search papers, researchers, topics, labs, datasets across the network...
-        </span>
+    <div className="w-full flex items-center justify-between gap-3 px-5 py-3.5 rounded-full bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#28382C] text-[#62685E] dark:text-[#A3B899] shadow-sm hover:border-[#8FA89B] dark:hover:border-[#3E7750] hover:shadow-md transition-all duration-200">
+      <div className="flex items-center gap-3 min-w-0 flex-1 cursor-text" onClick={onFocus}>
+        <Search className="w-4 h-4 text-[#3E6248] dark:text-[#4ADE80] shrink-0" />
+        {activeQuery ? (
+          <div className="flex items-center gap-2 text-sm text-[#202920] dark:text-[#EDEAE2] truncate">
+            <span className="text-[#85877B] dark:text-[#6E7D72]">Filtering by:</span>
+            <span className="font-semibold text-[#3E6248] dark:text-[#4ADE80] bg-[#FAF7F0] dark:bg-[#121B14] px-2.5 py-0.5 rounded-full border border-[#3E6248]/20 truncate">
+              {activeQuery}
+            </span>
+          </div>
+        ) : (
+          <span className="text-[14px] text-[#85877B] dark:text-[#6E7D72] truncate font-sans">
+            Search papers, researchers, topics, labs, datasets across the network...
+          </span>
+        )}
       </div>
-      <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 text-[11px] font-mono font-medium text-[#62685E] bg-[#F2EBDD] border border-[#E4DCCB] rounded-md">
-        ⌘ K
-      </kbd>
-    </button>
+      <div className="flex items-center gap-2 shrink-0">
+        {activeQuery && onClear && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClear();
+            }}
+            className="p-1 rounded-full text-[#85877B] hover:text-[#202920] dark:hover:text-white hover:bg-[#F2EBDD] dark:hover:bg-[#202E24] transition-colors border-0 bg-transparent cursor-pointer"
+            title="Clear filter"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+        <kbd
+          onClick={onFocus}
+          className="hidden sm:inline-flex items-center px-2 py-0.5 text-[11px] font-mono font-medium text-[#62685E] dark:text-[#A3B899] bg-[#F2EBDD] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#28382C] rounded-full cursor-pointer"
+        >
+          ⌘ K
+        </kbd>
+      </div>
+    </div>
   );
 }
 
@@ -448,29 +479,51 @@ function SearchOverlay({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[#202920]/40 backdrop-blur-xs flex items-start justify-center pt-20 px-4"
+      className="fixed inset-0 z-50 bg-[#202920]/45 dark:bg-black/60 backdrop-blur-xs flex items-start justify-center pt-20 px-4"
       onClick={onClose}
       aria-modal="true"
       role="dialog"
     >
       <div
-        className="w-full max-w-2xl bg-[#FAF7F0] border border-[#E4DCCB] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="w-full max-w-2xl bg-[#FAF7F0] dark:bg-[#121B14] border border-[#E4DCCB] dark:border-[#28382C] rounded-[28px] shadow-2xl p-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Input Bar */}
-        <form onSubmit={handleSubmit} className="flex items-center gap-3 px-4 py-3.5 border-b border-[#E4DCCB] bg-white">
-          <Search className="w-5 h-5 text-[#3E6248] shrink-0" />
+        {/* Google-Style Clean Rounded Pill Input Bar */}
+        <form
+          onSubmit={handleSubmit}
+          className="flex items-center gap-3 px-5 py-3.5 rounded-full bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#28382C] shadow-sm hover:border-[#8FA89B] dark:hover:border-[#3E7750] focus-within:border-[#3E6248] dark:focus-within:border-[#4ADE80] focus-within:ring-2 focus-within:ring-[#3E6248]/15 dark:focus-within:ring-[#4ADE80]/20 transition-all mb-4"
+        >
+          <Search className="w-5 h-5 text-[#3E6248] dark:text-[#4ADE80] shrink-0" />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search papers, researchers, topics, labs, datasets..."
-            className="flex-1 bg-transparent border-0 outline-none text-[15px] text-[#202920] placeholder:text-[#85877B] font-sans"
+            className="flex-1 bg-transparent border-0 outline-none text-[15px] text-[#202920] dark:text-[#EDEAE2] placeholder:text-[#85877B] dark:placeholder:text-[#6E7D72] font-sans"
           />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="p-1 rounded-full text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#202E24] transition-colors border-0 bg-transparent cursor-pointer"
+              title="Clear text"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={!query.trim()}
+            className="px-4 py-1.5 rounded-full bg-[#3E6248] dark:bg-[#2D583B] text-white text-xs font-sans font-semibold hover:bg-[#204033] dark:hover:bg-[#386D49] transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1.5 shrink-0 shadow-xs"
+          >
+            <span>Search</span>
+            <span className="font-mono text-[10px] opacity-75">↵</span>
+          </button>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-md text-[#85877B] hover:text-[#202920] hover:bg-[#F2EBDD] transition-colors border-0 bg-transparent cursor-pointer"
+            className="p-1.5 rounded-full text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#202E24] transition-colors border-0 bg-transparent cursor-pointer"
+            title="Close (Esc)"
           >
             <X className="w-4 h-4" />
           </button>
@@ -1546,7 +1599,7 @@ export default function DiscoverPage() {
             </p>
 
             <div className="pt-2 space-y-3">
-              <SearchBar onFocus={() => setSearchOpen(true)} />
+              <SearchBar onFocus={() => setSearchOpen(true)} activeQuery={activeQuery} onClear={() => setActiveQuery("")} />
               <BooleanQueryBuilder
                 onApply={(queryExpr) => {
                   if (queryExpr) {

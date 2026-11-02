@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import { CitationModal, CitationItem } from "@/components/ui/citation-modal";
 import { AiProgressModal } from "@/components/ui/ai-progress-modal";
@@ -382,6 +382,43 @@ function Sidebar({
             <span style={{ fontSize: 12.5, fontWeight: 500, color: W.text1, flex: 1 }}>AI in Healthcare</span>
             <Icon d={icons.chevronDown} size={12} stroke={W.text3} strokeWidth={1.8} />
           </button>
+        </div>
+      )}
+
+      {/* Workspace Quick Search Pill */}
+      {!collapsed && (
+        <div style={{ padding: "0 12px 8px" }}>
+          <div
+            onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "6px 12px",
+              borderRadius: 9999,
+              border: `1px solid ${W.border}`,
+              background: "#FFFFFF",
+              cursor: "pointer",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+            }}
+            title="Search workspace documents & commands (⌘K)"
+          >
+            <Icon d={icons.search} size={12} stroke={W.text3} strokeWidth={1.8} />
+            <span style={{ fontSize: 11.5, color: W.text3, flex: 1 }}>Search workspace…</span>
+            <span
+              style={{
+                fontSize: 9.5,
+                fontFamily: "monospace",
+                color: W.text3,
+                background: W.surface2,
+                border: `1px solid ${W.border}`,
+                borderRadius: 4,
+                padding: "1px 4px",
+              }}
+            >
+              ⌘K
+            </span>
+          </div>
         </div>
       )}
 
@@ -1158,8 +1195,24 @@ function LiteratureMatrix({
   setSelectedRows: React.Dispatch<React.SetStateAction<number[]>>;
   onContextMenu?: (e: React.MouseEvent, row: any) => void;
 }) {
+  const [matrixFilter, setMatrixFilter] = useState("");
   const cols = ["Paper", "Year", "Method", "Dataset", "Result", "Limitation", "Relevance"];
-  const allSelected = selectedRows.length === matrixRows.length && matrixRows.length > 0;
+
+  const filteredRows = useMemo(() => {
+    if (!matrixFilter.trim()) return matrixRows;
+    const q = matrixFilter.toLowerCase();
+    return matrixRows.filter(
+      (r) =>
+        r.paper.toLowerCase().includes(q) ||
+        r.method.toLowerCase().includes(q) ||
+        r.dataset.toLowerCase().includes(q) ||
+        r.doi.toLowerCase().includes(q) ||
+        r.result.toLowerCase().includes(q) ||
+        String(r.year).includes(q)
+    );
+  }, [matrixFilter]);
+
+  const allSelected = selectedRows.length === filteredRows.length && filteredRows.length > 0;
 
   return (
     <div style={{ border: `1px solid ${W.border}`, borderRadius: 10, overflow: "hidden", marginBottom: 20 }}>
@@ -1183,7 +1236,55 @@ function LiteratureMatrix({
             </span>
           )}
         </div>
-        <div style={{ display: "flex", gap: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {/* Google-Style Literature Filter Pill */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              borderRadius: 9999,
+              border: `1px solid ${W.border}`,
+              background: "#FFFFFF",
+              padding: "3px 10px",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+            }}
+          >
+            <Icon d={icons.search} size={11} stroke={W.text3} strokeWidth={1.8} />
+            <input
+              value={matrixFilter}
+              onChange={(e) => setMatrixFilter(e.target.value)}
+              placeholder="Search literature table…"
+              style={{
+                border: "none",
+                outline: "none",
+                background: "transparent",
+                fontSize: 11.5,
+                color: W.text1,
+                width: 145,
+                fontFamily: "inherit",
+              }}
+            />
+            {matrixFilter && (
+              <button
+                type="button"
+                onClick={() => setMatrixFilter("")}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: W.text3,
+                  cursor: "pointer",
+                  padding: 0,
+                  fontSize: 10,
+                  lineHeight: 1,
+                }}
+                title="Clear filter"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
           {["Sort", "Filter", "Add Paper"].map((label) => (
             <button
               key={label}
@@ -1244,7 +1345,7 @@ function LiteratureMatrix({
             </tr>
           </thead>
           <tbody>
-            {matrixRows.map((row, i) => {
+            {filteredRows.map((row, i) => {
               const isSelected = selectedRows.includes(i);
               return (
                 <tr

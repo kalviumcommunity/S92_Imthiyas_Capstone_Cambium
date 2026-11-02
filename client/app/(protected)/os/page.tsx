@@ -1089,11 +1089,21 @@ export default function PersonalResearchOSPage() {
                 onKeyDown={(e) =>
                   e.key === "Escape" && (setSearchOpen(false), setSearchQuery(""))
                 }
-                className="w-72 h-8 pl-8 pr-3 rounded-md border border-moss-300 bg-surface-raised text-xs text-ink-primary outline-none focus:ring-2 focus:ring-moss-600/20 shadow-xs"
+                className="w-72 sm:w-80 h-9 pl-9 pr-8 rounded-full border border-moss-400 bg-surface-raised text-xs text-ink-primary outline-none focus:ring-2 focus:ring-moss-600/20 shadow-xs transition-all"
               />
-              <Search size={13} className="absolute left-2.5 top-2.5 text-ink-tertiary" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-tertiary" />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-ink-tertiary hover:text-ink-primary p-0.5"
+                  title="Clear search"
+                >
+                  ✕
+                </button>
+              )}
               {searchQuery && filteredSearch.length > 0 && (
-                <div className="absolute top-10 right-0 w-80 bg-surface-raised border border-edge-default rounded-lg shadow-elevation3 py-1.5 z-50 animate-in fade-in zoom-in-95">
+                <div className="absolute top-11 right-0 w-80 bg-surface-raised border border-edge-default rounded-xl shadow-elevation3 py-1.5 z-50 animate-in fade-in zoom-in-95">
                   {filteredSearch.map((item) => (
                     <div
                       key={item.id}

@@ -957,8 +957,18 @@ export default function ResearchIntelligencePage() {
                   value={historySearch}
                   onChange={(e) => setHistorySearch(e.target.value)}
                   placeholder="Search sessions..."
-                  className="w-full pl-7 pr-2.5 py-1 text-xs rounded border border-edge-default bg-surface-raised text-ink-primary placeholder:text-ink-tertiary outline-none focus:border-moss-600 transition-colors"
+                  className="w-full pl-7 pr-7 py-1 text-xs rounded-full border border-edge-default bg-surface-raised text-ink-primary placeholder:text-ink-tertiary outline-none focus:border-moss-600 transition-colors"
                 />
+                {historySearch && (
+                  <button
+                    type="button"
+                    onClick={() => setHistorySearch("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-ink-tertiary hover:text-ink-primary"
+                    title="Clear search"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
               <div className="space-y-0.5">
                 {filteredHistory.map((h, i) => (

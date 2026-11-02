@@ -552,14 +552,24 @@ export default function CommunityPage() {
 
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#62685E]" size={14} />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#62685E]" size={14} />
             <input
               type="text"
               placeholder="Search concepts, DOIs, authors..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-1.5 rounded-lg border border-[#E4DCCB] bg-white text-xs font-sans text-[#202920] focus:outline-none focus:border-[#3E6248] w-64 shadow-xs"
+              className="pl-9 pr-8 py-2 rounded-full border border-[#E4DCCB] bg-white dark:bg-[#1D261D] text-xs font-sans text-[#202920] dark:text-[#EAE5D9] outline-none focus:border-[#3E6248] focus:ring-2 focus:ring-[#3E6248]/20 w-72 sm:w-80 shadow-xs hover:shadow-sm transition-all"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#62685E] hover:text-[#202920] dark:hover:text-[#FAF7F0] p-0.5"
+                title="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
           <Link

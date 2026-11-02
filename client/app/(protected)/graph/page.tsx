@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import {
   Share2,
   Sparkles,
   Search,
+  X,
   Filter,
   Maximize2,
   ZoomIn,
@@ -181,6 +182,18 @@ export default function SemanticGraphPage() {
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [highlightBridgesOnly, setHighlightBridgesOnly] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
+
+  const matchingNodes = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase();
+    return nodes.filter(
+      (n) =>
+        n.title.toLowerCase().includes(q) ||
+        n.authors.toLowerCase().includes(q) ||
+        n.category.toLowerCase().includes(q)
+    ).slice(0, 6);
+  }, [searchQuery, nodes]);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [isPhysicsRunning, setIsPhysicsRunning] = useState<boolean>(true);
   const [canvasAnnouncement, setCanvasAnnouncement] = useState<string>("");
@@ -625,19 +638,96 @@ export default function SemanticGraphPage() {
         {/* Global Action Tools */}
         <div className="flex items-center gap-2.5 flex-wrap">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#62685E]" size={14} />
-            <input
-              type="text"
-              placeholder="Search OpenAlex concepts, DOIs (Press Enter)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && searchQuery.trim()) {
-                  handleSyncLiveOpenAlex(searchQuery.trim());
-                }
-              }}
-              className="pl-9 pr-4 py-1.5 rounded-lg border border-[#E4DCCB] bg-white text-xs font-sans text-[#202920] focus:outline-none focus:border-[#3E6248] focus:ring-1 focus:ring-[#3E6248] w-64 shadow-xs"
-            />
+            <div className="flex items-center rounded-full border border-[#E4DCCB] dark:border-[#28382C] bg-white dark:bg-[#151F17] shadow-xs hover:border-[#8FA89B] dark:hover:border-[#3E7750] hover:shadow-sm focus-within:border-[#3E6248] dark:focus-within:border-[#4ADE80] focus-within:ring-2 focus-within:ring-[#3E6248]/15 dark:focus-within:ring-[#4ADE80]/20 transition-all px-3 py-1.5 w-72 sm:w-80">
+              <Search className="text-[#3E6248] dark:text-[#4ADE80] shrink-0 mr-2" size={14} strokeWidth={1.8} />
+              <input
+                type="text"
+                placeholder="Search concepts, DOIs (Press Enter)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setTimeout(() => setIsSearchFocused(false), 220)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && searchQuery.trim()) {
+                    handleSyncLiveOpenAlex(searchQuery.trim());
+                    setIsSearchFocused(false);
+                  }
+                }}
+                className="flex-1 bg-transparent text-xs font-sans text-[#202920] dark:text-[#EDEAE2] placeholder:text-[#85877B] dark:placeholder:text-[#6E7D72] outline-none border-0"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="p-0.5 rounded-full text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] cursor-pointer border-0 bg-transparent shrink-0 mr-1"
+                  title="Clear search"
+                >
+                  <X size={13} />
+                </button>
+              )}
+              <span className="text-[10px] font-mono text-[#85877B] bg-[#F2EBDD] dark:bg-[#1E2B21] px-1.5 py-0.2 rounded-md shrink-0">
+                ↵
+              </span>
+            </div>
+
+            {/* Instant Constellation Matches Dropdown */}
+            {isSearchFocused && searchQuery.trim().length >= 1 && (
+              <div className="absolute left-0 top-full mt-2 w-80 sm:w-96 z-50 rounded-2xl bg-white dark:bg-[#151F17] border border-[#E4DCCB] dark:border-[#28382C] shadow-2xl overflow-hidden p-2 text-xs font-sans animate-in fade-in slide-in-from-top-1 duration-150">
+                <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-[#85877B] font-semibold flex items-center justify-between border-b border-[#E4DCCB]/60 dark:border-[#28382C]">
+                  <span>Matching Nodes ({matchingNodes.length})</span>
+                  <span>Press ↵ to sync OpenAlex</span>
+                </div>
+                <div className="py-1 space-y-1 max-h-56 overflow-y-auto">
+                  {matchingNodes.length === 0 ? (
+                    <div className="px-3 py-2 text-xs text-[#85877B] italic">
+                      No local nodes found. Press Enter to query OpenAlex 250M+ live publications.
+                    </div>
+                  ) : (
+                    matchingNodes.map((node) => (
+                      <button
+                        key={node.id}
+                        type="button"
+                        onMouseDown={() => {
+                          setSelectedNode(node);
+                          setCanvasAnnouncement(`Focused on "${node.title}" in constellation`);
+                          setIsSearchFocused(false);
+                        }}
+                        className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left hover:bg-[#FAF7F0] dark:hover:bg-[#1E2B21] text-[#202920] dark:text-[#EDEAE2] cursor-pointer border-0 bg-transparent transition-colors group"
+                      >
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: getCategoryColor(node.category) }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-xs text-[#202920] dark:text-[#EDEAE2] truncate group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80]">
+                            {node.title}
+                          </div>
+                          <div className="text-[10px] text-[#85877B] truncate">
+                            {node.authors} · {node.citations} citations
+                          </div>
+                        </div>
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#FAF7F0] dark:bg-[#1E2B21] text-[#62685E] dark:text-[#A3B899] shrink-0">
+                          {node.category}
+                        </span>
+                      </button>
+                    ))
+                  )}
+
+                  {/* Quick Action to sync OpenAlex */}
+                  <button
+                    type="button"
+                    onMouseDown={() => {
+                      handleSyncLiveOpenAlex(searchQuery.trim());
+                      setIsSearchFocused(false);
+                    }}
+                    className="w-full flex items-center justify-between p-2 rounded-xl text-left bg-[#3E6248]/10 dark:bg-[#4ADE80]/10 hover:bg-[#3E6248]/20 text-[#3E6248] dark:text-[#4ADE80] font-mono text-[11px] cursor-pointer border border-[#3E6248]/20 transition-colors mt-1"
+                  >
+                    <span>✦ Ingest live OpenAlex papers for &ldquo;{searchQuery}&rdquo;</span>
+                    <span>↵</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <button
