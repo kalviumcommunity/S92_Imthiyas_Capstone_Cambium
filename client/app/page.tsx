@@ -1902,7 +1902,7 @@ function ActivitySection() {
               showLegend={true}
               showCategories={true}
               showDayLabels={false}
-              subtext="Continuous biological cambium ribbon (53-week flat-topped honeycomb)"
+              subtext="Monthly-separated flat-topped honeycomb tessellation (Biological Growth Layer)"
             />
           </div>
         </div>
