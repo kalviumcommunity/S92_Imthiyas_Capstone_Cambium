@@ -9,9 +9,11 @@ node_modules/
 dist/
 dist-ssr/
 
-# Environment files
+# Environment files & Secrets (Comprehensive Git Leak Shield)
 .env
-.env*.local
+.env.*
+!.env.example
+!.env.production.example
 
 # Logs
 *.log

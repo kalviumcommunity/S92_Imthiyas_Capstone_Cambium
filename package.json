@@ -15,6 +15,8 @@
     "test": "npm --prefix server run test",
     "test:jest": "jest --runInBand",
     "test:e2e": "playwright test",
+    "verify:env": "node scripts/verify-env.mjs",
+    "verify:env:prod": "node scripts/verify-env.mjs --production",
     "docker:up": "docker-compose up -d --build",
     "docker:down": "docker-compose down"
   },

@@ -1,15 +1,49 @@
 const { Client } = require('pg');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+const fs = require('fs');
+
+const localEnv = path.join(__dirname, '../.env');
+const parentEnv = path.join(__dirname, '../../.env');
+if (fs.existsSync(localEnv)) {
+  require('dotenv').config({ path: localEnv });
+} else if (fs.existsSync(parentEnv)) {
+  require('dotenv').config({ path: parentEnv });
+} else {
+  require('dotenv').config();
+}
 
 async function initDatabase() {
-  const host = process.env.POSTGRES_HOST || 'localhost';
-  const port = parseInt(process.env.POSTGRES_PORT || '5432', 10);
-  const user = process.env.POSTGRES_USER || 'postgres';
-  const password = process.env.POSTGRES_PASSWORD || 'postgres';
-  const targetDb = process.env.POSTGRES_DB || 'cambium';
+  let host = process.env.POSTGRES_HOST || 'localhost';
+  let port = parseInt(process.env.POSTGRES_PORT || '5432', 10);
+  let user = process.env.POSTGRES_USER || 'postgres';
+  let password = process.env.POSTGRES_PASSWORD || 'postgres';
+  let targetDb = process.env.POSTGRES_DB || 'cambium';
 
-  console.log(`Connecting to maintenance database 'postgres' as user '${user}'...`);
+  if (process.env.DATABASE_URL) {
+    try {
+      const parsed = new URL(process.env.DATABASE_URL);
+      if (parsed.hostname) host = parsed.hostname;
+      if (parsed.port) port = parseInt(parsed.port, 10);
+      if (parsed.username) user = decodeURIComponent(parsed.username);
+      if (parsed.password) password = decodeURIComponent(parsed.password);
+      if (parsed.pathname && parsed.pathname.length > 1) {
+        targetDb = parsed.pathname.replace(/^\//, '');
+      }
+    } catch (e) {
+      // Fallback to discrete parameters
+    }
+  }
+
+  const isProd = process.env.NODE_ENV === 'production';
+  const isSsl =
+    process.env.DB_SSL === 'true' ||
+    (isProd &&
+      process.env.DB_SSL !== 'false' &&
+      host !== 'localhost' &&
+      host !== '127.0.0.1');
+  const sslOption = isSsl ? { rejectUnauthorized: false } : undefined;
+
+  console.log(`Connecting to maintenance database 'postgres' at ${host}:${port} as user '${user}'...`);
 
   const maintenanceClient = new Client({
     host,
@@ -17,6 +51,7 @@ async function initDatabase() {
     user,
     password,
     database: 'postgres',
+    ssl: sslOption,
   });
 
   try {
@@ -36,10 +71,13 @@ async function initDatabase() {
       console.log(`✅ Database '${targetDb}' already exists.`);
     }
   } catch (err) {
-    console.error('Database creation error:', err.message);
-    throw err;
+    console.error('Database creation/maintenance error:', err.message);
+    // On managed databases like Supabase/Neon, creating database via maintenance client might not be permitted
+    console.log('ℹ️ Proceeding to connect to target database directly...');
   } finally {
-    await maintenanceClient.end();
+    try {
+      await maintenanceClient.end();
+    } catch {}
   }
 
   // Connect to targetDb to check extensions
@@ -49,6 +87,7 @@ async function initDatabase() {
     user,
     password,
     database: targetDb,
+    ssl: sslOption,
   });
 
   try {
