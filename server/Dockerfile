@@ -12,9 +12,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Copy server source code and TypeScript compiler configuration
+# Copy server source code, scripts, and TypeScript compiler configuration
 COPY tsconfig*.json ./
 COPY src ./src
+COPY scripts ./scripts
 
 # Build production artifacts
 RUN npm run build
@@ -40,6 +41,7 @@ USER node
 COPY --chown=node:node --from=builder /app/package*.json ./
 COPY --chown=node:node --from=builder /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/dist ./dist
+COPY --chown=node:node --from=builder /app/scripts ./scripts
 
 EXPOSE 5000
 
