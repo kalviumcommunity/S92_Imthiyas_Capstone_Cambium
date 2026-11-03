@@ -589,203 +589,211 @@ export default function SemanticGraphPage() {
   return (
     <div className="flex-1 min-w-0 h-screen overflow-hidden flex flex-col bg-[#FAF7F0] text-[#202920] font-sans selection:bg-[#3E6248]/20 selection:text-[#173F35]">
       {/* Top Navigation & Subheader */}
-      <div className="px-6 py-4 border-b border-[#E4DCCB] bg-[#FAF7F0] flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-[#DCE6D7] border border-[#66866A]/30 text-[#3E6248]">
-            <Compass size={20} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-serif text-2xl font-normal text-[#202920] tracking-tight m-0">
-                Semantic Constellation Explorer
-              </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium bg-[#DCE6D7]/80 text-[#3E6248] border border-[#66866A]/20">
-                2D Topography v2.4
-              </span>
+      <div className="px-6 py-3.5 border-b border-[#E4DCCB] dark:border-[#28382C] bg-[#FAF7F0] dark:bg-[#131C15] shrink-0 space-y-3">
+        {/* Tier 1: Title, Topography Badge & Mode Switcher */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2.5 rounded-xl bg-[#DCE6D7] dark:bg-[#1E2B21] border border-[#66866A]/30 text-[#3E6248] dark:text-[#4ADE80] shrink-0">
+              <Compass size={22} />
             </div>
-            <p className="text-xs text-[#62685E] font-sans mt-0.5">
-              Unsupervised clustering across 4.2M biomedical preprints, citation trajectories, and high-impact structural holes.
-            </p>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h1 className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight m-0">
+                  Semantic Constellation Explorer
+                </h1>
+                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium bg-[#DCE6D7]/80 dark:bg-[#1E2B21] text-[#3E6248] dark:text-[#4ADE80] border border-[#66866A]/20">
+                  2D Topography v2.4
+                </span>
+              </div>
+              <p className="text-xs text-[#62685E] dark:text-[#8FA89B] font-sans mt-0.5 m-0 truncate">
+                Unsupervised clustering across 4.2M biomedical preprints, citation trajectories, and high-impact structural holes.
+              </p>
+            </div>
+          </div>
+
+          {/* View Mode Switcher: Relational Network vs 2D Force Constellation */}
+          <div className="flex items-center bg-[#F2EBDD] dark:bg-[#18231B] p-1 rounded-xl border border-[#E4DCCB] dark:border-[#28382C] shrink-0 self-start md:self-auto shadow-2xs">
+            <button
+              onClick={() => setViewMode("relational")}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                viewMode === "relational"
+                  ? "bg-[#202920] dark:bg-[#FAF7F0] text-[#FAF7F0] dark:text-[#18231B] shadow-xs"
+                  : "text-[#62685E] dark:text-[#8FA89B] hover:text-[#202920] dark:hover:text-[#FAF7F0]"
+              }`}
+            >
+              <Network size={13} />
+              <span>Relational Knowledge Network (Ecosystem Drift)</span>
+            </button>
+            <button
+              onClick={() => setViewMode("constellation")}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                viewMode === "constellation"
+                  ? "bg-[#202920] dark:bg-[#FAF7F0] text-[#FAF7F0] dark:text-[#18231B] shadow-xs"
+                  : "text-[#62685E] dark:text-[#8FA89B] hover:text-[#202920] dark:hover:text-[#FAF7F0]"
+              }`}
+            >
+              <Compass size={13} />
+              <span>Semantic Constellation (2D Force)</span>
+            </button>
           </div>
         </div>
 
-        {/* View Mode Switcher: Relational Network (Photo 1) vs 2D Force Constellation */}
-        <div className="flex items-center bg-[#F2EBDD] p-1 rounded-xl border border-[#E4DCCB]">
-          <button
-            onClick={() => setViewMode("relational")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-              viewMode === "relational"
-                ? "bg-[#202920] text-[#FAF7F0] shadow-xs"
-                : "text-[#62685E] hover:text-[#202920]"
-            }`}
-          >
-            <Network size={13} />
-            Relational Knowledge Network (Ecosystem Drift)
-          </button>
-          <button
-            onClick={() => setViewMode("constellation")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-              viewMode === "constellation"
-                ? "bg-[#202920] text-[#FAF7F0] shadow-xs"
-                : "text-[#62685E] hover:text-[#202920]"
-            }`}
-          >
-            <Compass size={13} />
-            Semantic Constellation (2D Force)
-          </button>
-        </div>
-
-        {/* Global Action Tools */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="relative">
-            <div className="flex items-center rounded-full border border-[#E4DCCB] dark:border-[#28382C] bg-white dark:bg-[#151F17] shadow-xs hover:border-[#8FA89B] dark:hover:border-[#3E7750] hover:shadow-sm focus-within:border-[#3E6248] dark:focus-within:border-[#4ADE80] focus-within:ring-2 focus-within:ring-[#3E6248]/15 dark:focus-within:ring-[#4ADE80]/20 transition-all px-3 py-1.5 w-72 sm:w-80">
-              <Search className="text-[#3E6248] dark:text-[#4ADE80] shrink-0 mr-2" size={14} strokeWidth={1.8} />
-              <input
-                type="text"
-                placeholder="Search concepts, DOIs (Press Enter)..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setTimeout(() => setIsSearchFocused(false), 220)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && searchQuery.trim()) {
-                    handleSyncLiveOpenAlex(searchQuery.trim());
-                    setIsSearchFocused(false);
-                  }
-                }}
-                className="flex-1 bg-transparent text-xs font-sans text-[#202920] dark:text-[#EDEAE2] placeholder:text-[#85877B] dark:placeholder:text-[#6E7D72] outline-none border-0"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="p-0.5 rounded-full text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] cursor-pointer border-0 bg-transparent shrink-0 mr-1"
-                  title="Clear search"
-                >
-                  <X size={13} />
-                </button>
-              )}
-              <span className="text-[10px] font-mono text-[#85877B] bg-[#F2EBDD] dark:bg-[#1E2B21] px-1.5 py-0.2 rounded-md shrink-0">
-                ↵
-              </span>
-            </div>
-
-            {/* Instant Constellation Matches Dropdown */}
-            {isSearchFocused && searchQuery.trim().length >= 1 && (
-              <div className="absolute left-0 top-full mt-2 w-80 sm:w-96 z-50 rounded-2xl bg-white dark:bg-[#151F17] border border-[#E4DCCB] dark:border-[#28382C] shadow-2xl overflow-hidden p-2 text-xs font-sans animate-in fade-in slide-in-from-top-1 duration-150">
-                <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-[#85877B] font-semibold flex items-center justify-between border-b border-[#E4DCCB]/60 dark:border-[#28382C]">
-                  <span>Matching Nodes ({matchingNodes.length})</span>
-                  <span>Press ↵ to sync OpenAlex</span>
-                </div>
-                <div className="py-1 space-y-1 max-h-56 overflow-y-auto">
-                  {matchingNodes.length === 0 ? (
-                    <div className="px-3 py-2 text-xs text-[#85877B] italic">
-                      No local nodes found. Press Enter to query OpenAlex 250M+ live publications.
-                    </div>
-                  ) : (
-                    matchingNodes.map((node) => (
-                      <button
-                        key={node.id}
-                        type="button"
-                        onMouseDown={() => {
-                          setSelectedNode(node);
-                          setCanvasAnnouncement(`Focused on "${node.title}" in constellation`);
-                          setIsSearchFocused(false);
-                        }}
-                        className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left hover:bg-[#FAF7F0] dark:hover:bg-[#1E2B21] text-[#202920] dark:text-[#EDEAE2] cursor-pointer border-0 bg-transparent transition-colors group"
-                      >
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: getCategoryColor(node.category) }}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="font-semibold text-xs text-[#202920] dark:text-[#EDEAE2] truncate group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80]">
-                            {node.title}
-                          </div>
-                          <div className="text-[10px] text-[#85877B] truncate">
-                            {node.authors} · {node.citations} citations
-                          </div>
-                        </div>
-                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#FAF7F0] dark:bg-[#1E2B21] text-[#62685E] dark:text-[#A3B899] shrink-0">
-                          {node.category}
-                        </span>
-                      </button>
-                    ))
-                  )}
-
-                  {/* Quick Action to sync OpenAlex */}
-                  <button
-                    type="button"
-                    onMouseDown={() => {
+        {/* Tier 2: Scholarly Search & Aligned Action Toolbar */}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Search Box */}
+            <div className="relative">
+              <div className="flex items-center rounded-full border border-[#E4DCCB] dark:border-[#28382C] bg-white dark:bg-[#151F17] shadow-xs hover:border-[#8FA89B] dark:hover:border-[#3E7750] hover:shadow-sm focus-within:border-[#3E6248] dark:focus-within:border-[#4ADE80] focus-within:ring-2 focus-within:ring-[#3E6248]/15 dark:focus-within:ring-[#4ADE80]/20 transition-all px-3.5 py-1.5 w-72 sm:w-88">
+                <Search className="text-[#3E6248] dark:text-[#4ADE80] shrink-0 mr-2" size={14} strokeWidth={1.8} />
+                <input
+                  type="text"
+                  placeholder="Search concepts, DOIs (Press Enter)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setTimeout(() => setIsSearchFocused(false), 220)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && searchQuery.trim()) {
                       handleSyncLiveOpenAlex(searchQuery.trim());
                       setIsSearchFocused(false);
-                    }}
-                    className="w-full flex items-center justify-between p-2 rounded-xl text-left bg-[#3E6248]/10 dark:bg-[#4ADE80]/10 hover:bg-[#3E6248]/20 text-[#3E6248] dark:text-[#4ADE80] font-mono text-[11px] cursor-pointer border border-[#3E6248]/20 transition-colors mt-1"
+                    }
+                  }}
+                  className="flex-1 bg-transparent text-xs font-sans text-[#202920] dark:text-[#EDEAE2] placeholder:text-[#85877B] dark:placeholder:text-[#6E7D72] outline-none border-0"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="p-0.5 rounded-full text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] cursor-pointer border-0 bg-transparent shrink-0 mr-1"
+                    title="Clear search"
                   >
-                    <span>✦ Ingest live OpenAlex papers for &ldquo;{searchQuery}&rdquo;</span>
-                    <span>↵</span>
+                    <X size={13} />
                   </button>
+                )}
+                <span className="text-[10px] font-mono text-[#85877B] bg-[#F2EBDD] dark:bg-[#1E2B21] px-1.5 py-0.2 rounded-md shrink-0">
+                  ↵
+                </span>
+              </div>
+
+              {/* Instant Constellation Matches Dropdown */}
+              {isSearchFocused && searchQuery.trim().length >= 1 && (
+                <div className="absolute left-0 top-full mt-2 w-80 sm:w-96 z-50 rounded-2xl bg-white dark:bg-[#151F17] border border-[#E4DCCB] dark:border-[#28382C] shadow-2xl overflow-hidden p-2 text-xs font-sans animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-[#85877B] font-semibold flex items-center justify-between border-b border-[#E4DCCB]/60 dark:border-[#28382C]">
+                    <span>Matching Nodes ({matchingNodes.length})</span>
+                    <span>Press ↵ to sync OpenAlex</span>
+                  </div>
+                  <div className="py-1 space-y-1 max-h-56 overflow-y-auto">
+                    {matchingNodes.length === 0 ? (
+                      <div className="px-3 py-2 text-xs text-[#85877B] italic">
+                        No local nodes found. Press Enter to query OpenAlex 250M+ live publications.
+                      </div>
+                    ) : (
+                      matchingNodes.map((node) => (
+                        <button
+                          key={node.id}
+                          type="button"
+                          onMouseDown={() => {
+                            setSelectedNode(node);
+                            setCanvasAnnouncement(`Focused on "${node.title}" in constellation`);
+                            setIsSearchFocused(false);
+                          }}
+                          className="w-full flex items-center gap-2.5 p-2 rounded-xl text-left hover:bg-[#FAF7F0] dark:hover:bg-[#1E2B21] text-[#202920] dark:text-[#EDEAE2] cursor-pointer border-0 bg-transparent transition-colors group"
+                        >
+                          <span
+                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{ backgroundColor: getCategoryColor(node.category) }}
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="font-semibold text-xs text-[#202920] dark:text-[#EDEAE2] truncate group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80]">
+                              {node.title}
+                            </div>
+                            <div className="text-[10px] text-[#85877B] truncate">
+                              {node.authors} · {node.citations} citations
+                            </div>
+                          </div>
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#FAF7F0] dark:bg-[#1E2B21] text-[#62685E] dark:text-[#A3B899] shrink-0">
+                            {node.category}
+                          </span>
+                        </button>
+                      ))
+                    )}
+
+                    {/* Quick Action to sync OpenAlex */}
+                    <button
+                      type="button"
+                      onMouseDown={() => {
+                        handleSyncLiveOpenAlex(searchQuery.trim());
+                        setIsSearchFocused(false);
+                      }}
+                      className="w-full flex items-center justify-between p-2 rounded-xl text-left bg-[#3E6248]/10 dark:bg-[#4ADE80]/10 hover:bg-[#3E6248]/20 text-[#3E6248] dark:text-[#4ADE80] font-mono text-[11px] cursor-pointer border border-[#3E6248]/20 transition-colors mt-1"
+                    >
+                      <span>✦ Ingest live OpenAlex papers for &ldquo;{searchQuery}&rdquo;</span>
+                      <span>↵</span>
+                    </button>
+                  </div>
                 </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => handleSyncLiveOpenAlex()}
+              disabled={isLiveOpenAlexLoading}
+              className="px-3.5 py-1.5 rounded-lg border border-[#3E6248]/30 bg-[#3E6248]/10 hover:bg-[#3E6248]/20 text-[#3E6248] dark:text-[#4ADE80] text-xs font-mono font-medium flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
+              title="Ingest real-world research graph from OpenAlex 250M+ open publications"
+            >
+              {isLiveOpenAlexLoading ? (
+                <Loader2 size={13} className="animate-spin text-[#3E6248]" />
+              ) : (
+                <Globe size={13} />
+              )}
+              {isLiveOpenAlexLoading ? "Syncing..." : "Sync OpenAlex"}
+            </button>
+
+            {isLiveSynced && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono bg-[#4ADE80]/15 text-[#173F35] dark:text-[#4ADE80] border border-[#4ADE80]/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] animate-pulse" />
+                <span>Live OpenAlex ({nodes.length} nodes)</span>
+                <button
+                  onClick={handleResetToBenchmark}
+                  className="ml-1 text-[10px] underline hover:text-[#202920] cursor-pointer"
+                  title="Reset to benchmark graph"
+                >
+                  Reset
+                </button>
               </div>
             )}
           </div>
 
-          <button
-            onClick={() => handleSyncLiveOpenAlex()}
-            disabled={isLiveOpenAlexLoading}
-            className="px-3 py-1.5 rounded-lg border border-[#3E6248]/30 bg-[#3E6248]/10 hover:bg-[#3E6248]/20 text-[#3E6248] text-xs font-mono font-medium flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-            title="Ingest real-world research graph from OpenAlex 250M+ open publications"
-          >
-            {isLiveOpenAlexLoading ? (
-              <Loader2 size={13} className="animate-spin text-[#3E6248]" />
-            ) : (
-              <Globe size={13} />
-            )}
-            {isLiveOpenAlexLoading ? "Syncing..." : "Sync OpenAlex"}
-          </button>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              onClick={() => setHighlightBridgesOnly(!highlightBridgesOnly)}
+              className={`px-3.5 py-1.5 rounded-lg border text-xs font-mono font-medium flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+                highlightBridgesOnly
+                  ? "bg-[#D97706] text-white border-[#D97706]"
+                  : "bg-white dark:bg-[#1B271E] text-[#202920] dark:text-[#EDEAE2] border-[#E4DCCB] dark:border-[#28382C] hover:bg-[#FAF7F0] dark:hover:bg-[#233327]"
+              }`}
+            >
+              <Zap size={13} />
+              {highlightBridgesOnly ? "Showing Structural Holes" : "Filter Structural Holes"}
+            </button>
 
-          {isLiveSynced && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono bg-[#4ADE80]/15 text-[#173F35] dark:text-[#4ADE80] border border-[#4ADE80]/30">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] animate-pulse" />
-              <span>Live OpenAlex ({nodes.length} nodes)</span>
-              <button
-                onClick={handleResetToBenchmark}
-                className="ml-1 text-[10px] underline hover:text-[#202920] cursor-pointer"
-                title="Reset to benchmark graph"
-              >
-                Reset
-              </button>
+            <Link
+              href="/agent-reader"
+              className="px-4 py-1.5 rounded-lg bg-[#3E6248] hover:bg-[#173F35] text-white text-xs font-mono font-medium flex items-center gap-1.5 transition-all shadow-xs no-underline"
+            >
+              <Sparkles size={13} />
+              Synthesize Graph
+            </Link>
+
+            {/* Accessible Keyboard Traversal Badge */}
+            <div className="hidden lg:flex items-center gap-1.5 text-[11px] font-mono text-[#62685E] dark:text-[#8FA89B] bg-[#F2EBDD]/60 dark:bg-[#1E2B21]/60 px-2.5 py-1.5 rounded-lg border border-[#E4DCCB] dark:border-[#28382C]">
+              <span className="font-semibold text-[#202920] dark:text-[#EDEAE2]">Keys:</span>
+              <span>[+][-] Zoom</span>
+              <span>·</span>
+              <span>[R] Reset</span>
+              <span>·</span>
+              <span>[Space] Cycle Node</span>
             </div>
-          )}
-
-          <button
-            onClick={() => setHighlightBridgesOnly(!highlightBridgesOnly)}
-            className={`px-3 py-1.5 rounded-lg border text-xs font-mono font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-              highlightBridgesOnly
-                ? "bg-[#D97706] text-white border-[#D97706]"
-                : "bg-white text-[#202920] border-[#E4DCCB] hover:bg-[#FAF7F0]"
-            }`}
-          >
-            <Zap size={13} />
-            {highlightBridgesOnly ? "Showing Structural Holes" : "Filter Structural Holes"}
-          </button>
-
-          <Link
-            href="/agent-reader"
-            className="px-3.5 py-1.5 rounded-lg bg-[#3E6248] hover:bg-[#173F35] text-white text-xs font-mono font-medium flex items-center gap-1.5 transition-all shadow-xs"
-          >
-            <Sparkles size={13} />
-            Synthesize Graph
-          </Link>
-
-          {/* Accessible Keyboard Traversal Badge */}
-          <div className="hidden xl:flex items-center gap-1.5 text-[11px] font-mono text-[#62685E] bg-[#FAF7F0] px-2.5 py-1.5 rounded-lg border border-[#E4DCCB]">
-            <span className="font-semibold text-[#202920]">Keys:</span>
-            <span>[+][-] Zoom</span>
-            <span>·</span>
-            <span>[R] Reset</span>
-            <span>·</span>
-            <span>[Space] Cycle Node</span>
           </div>
         </div>
 

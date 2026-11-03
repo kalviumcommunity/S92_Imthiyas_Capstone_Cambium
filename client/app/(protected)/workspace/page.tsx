@@ -240,8 +240,8 @@ function Sidebar({
   return (
     <aside
       style={{
-        width: collapsed ? 52 : 240,
-        minWidth: collapsed ? 52 : 240,
+        width: collapsed ? 56 : 250,
+        minWidth: collapsed ? 56 : 250,
         background: W.surface,
         borderRight: `1px solid ${W.border}`,
         display: "flex",
@@ -252,60 +252,86 @@ function Sidebar({
         height: "100vh",
       }}
     >
-      {/* Brand & Toggle */}
+      {/* Brand & Toggle Header */}
       <div
         style={{
-          padding: collapsed ? "14px 12px" : "14px 16px",
+          padding: collapsed ? "12px 8px" : "14px 16px",
           display: "flex",
           alignItems: "center",
-          gap: 10,
+          justifyContent: collapsed ? "center" : "space-between",
           borderBottom: `1px solid ${W.borderSubtle}`,
           flexShrink: 0,
+          minHeight: 52,
         }}
       >
         {collapsed ? (
-          <Link
-            href="/dashboard"
-            title="CAMBIUM Research Dashboard"
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: "50%",
-              background: "#FAF7F0",
-              border: `1px solid ${W.border}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-              padding: 1,
-              flexShrink: 0,
-            }}
-          >
-            <img src="/public_logo/cambium-logo-light.svg" alt="CAMBIUM Research" style={{ width: "100%", height: "100%", objectFit: "contain" }} className="block dark:hidden scale-[1.3] transition-transform" />
-            <img src="/public_logo/cambium-logo-dark.svg" alt="CAMBIUM Research" style={{ width: "100%", height: "100%", objectFit: "contain" }} className="hidden dark:block scale-[1.3] transition-transform" />
-          </Link>
+          <Tooltip text="Maximize sidebar">
+            <button
+              onClick={onToggle}
+              title="Maximize sidebar"
+              aria-label="Maximize sidebar"
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 8,
+                background: "#FAF7F0",
+                border: `1px solid ${W.border}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: W.green,
+                boxShadow: "0 1px 2px rgba(32,41,32,0.06)",
+                transition: "all 150ms ease",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = W.surface2;
+                (e.currentTarget as HTMLButtonElement).style.borderColor = W.green;
+                (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.08)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "#FAF7F0";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = W.border;
+                (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+              }}
+            >
+              <Icon d={icons.chevronRight} size={16} strokeWidth={2.4} stroke={W.green} />
+            </button>
+          </Tooltip>
         ) : (
-          <CambiumLogo size="sm" href="/dashboard" />
+          <>
+            <CambiumLogo size="sm" href="/dashboard" />
+            <button
+              onClick={onToggle}
+              title="Minimize sidebar"
+              aria-label="Minimize sidebar"
+              style={{
+                marginLeft: "auto",
+                padding: "4px 6px",
+                borderRadius: 6,
+                color: W.text3,
+                cursor: "pointer",
+                background: "transparent",
+                border: `1px solid ${W.borderSubtle}`,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                fontSize: 11,
+                fontFamily: "monospace",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = W.surface2;
+                (e.currentTarget as HTMLButtonElement).style.color = W.text1;
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                (e.currentTarget as HTMLButtonElement).style.color = W.text3;
+              }}
+            >
+              <Icon d={icons.chevronLeft} size={13} strokeWidth={2} />
+            </button>
+          </>
         )}
-        <button
-          onClick={onToggle}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          style={{
-            marginLeft: "auto",
-            padding: 4,
-            borderRadius: 5,
-            color: W.text3,
-            cursor: "pointer",
-            background: "transparent",
-            border: "none",
-            flexShrink: 0,
-            display: "flex",
-          }}
-          onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = W.surface2)}
-          onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "transparent")}
-        >
-          <Icon d={collapsed ? icons.expand : icons.collapse} size={14} strokeWidth={1.8} />
-        </button>
       </div>
 
       {/* Global Navigation links (Dashboard & Discover) */}
@@ -489,7 +515,7 @@ function Sidebar({
           ))}
         </div>
       ) : (
-        <div style={{ padding: "10px 8px", display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+        <div style={{ padding: "10px 0", display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
           {[
             { ic: icons.dashboard, href: "/dashboard", tip: "Dashboard" },
             { ic: icons.compass, href: "/discover", tip: "Discover" },
@@ -573,7 +599,7 @@ function Sidebar({
       )}
 
       {/* Navigation List */}
-      <nav style={{ flex: 1, overflowY: "auto", padding: "4px 8px" }}>
+      <nav style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: collapsed ? "6px 0" : "4px 8px", scrollbarWidth: "none", msOverflowStyle: "none" }} className="[&::-webkit-scrollbar]:hidden">
         {!collapsed && (
           <div
             style={{
@@ -588,44 +614,55 @@ function Sidebar({
             Workspace
           </div>
         )}
-        {navSections[0].items.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setActiveNav(item.id)}
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              gap: 9,
-              padding: collapsed ? "7px 8px" : "6px 10px",
-              borderRadius: 6,
-              border: "none",
-              background: activeNav === item.id ? W.greenBg : "transparent",
-              color: activeNav === item.id ? W.green : W.text2,
-              cursor: "pointer",
-              textAlign: "left",
-              fontSize: 13,
-              fontWeight: activeNav === item.id ? 500 : 400,
-              marginBottom: 1,
-              transition: "background 120ms, color 120ms",
-            }}
-            onMouseEnter={(e) => {
-              if (activeNav !== item.id) {
-                (e.currentTarget as HTMLButtonElement).style.background = W.surface2;
-                (e.currentTarget as HTMLButtonElement).style.color = W.text1;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (activeNav !== item.id) {
-                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                (e.currentTarget as HTMLButtonElement).style.color = W.text2;
-              }
-            }}
-          >
-            <Icon d={item.icon} size={14} strokeWidth={1.7} stroke={activeNav === item.id ? W.green : "currentColor"} />
-            {!collapsed && <span style={{ lineHeight: 1.2 }}>{item.label}</span>}
-          </button>
-        ))}
+        {navSections[0].items.map((item) => {
+          const btn = (
+            <button
+              key={item.id}
+              onClick={() => setActiveNav(item.id)}
+              style={{
+                width: collapsed ? 36 : "100%",
+                height: collapsed ? 36 : "auto",
+                margin: collapsed ? "2px auto" : "0 0 1px 0",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: collapsed ? "center" : "flex-start",
+                gap: 9,
+                padding: collapsed ? "0" : "6px 10px",
+                borderRadius: collapsed ? 8 : 6,
+                border: "none",
+                background: activeNav === item.id ? W.greenBg : "transparent",
+                color: activeNav === item.id ? W.green : W.text2,
+                cursor: "pointer",
+                textAlign: "left",
+                fontSize: 13,
+                fontWeight: activeNav === item.id ? 500 : 400,
+                transition: "background 120ms, color 120ms",
+              }}
+              onMouseEnter={(e) => {
+                if (activeNav !== item.id) {
+                  (e.currentTarget as HTMLButtonElement).style.background = W.surface2;
+                  (e.currentTarget as HTMLButtonElement).style.color = W.text1;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeNav !== item.id) {
+                  (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                  (e.currentTarget as HTMLButtonElement).style.color = W.text2;
+                }
+              }}
+            >
+              <Icon d={item.icon} size={15} strokeWidth={1.7} stroke={activeNav === item.id ? W.green : "currentColor"} />
+              {!collapsed && <span style={{ lineHeight: 1.2 }}>{item.label}</span>}
+            </button>
+          );
+          return collapsed ? (
+            <div key={item.id} style={{ display: "flex", justifyContent: "center" }}>
+              <Tooltip text={item.label}>{btn}</Tooltip>
+            </div>
+          ) : (
+            btn
+          );
+        })}
 
         {/* Divider */}
         <div style={{ height: 1, background: W.borderSubtle, margin: "8px 4px" }} />
