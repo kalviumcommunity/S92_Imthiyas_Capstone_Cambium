@@ -22,3 +22,4 @@ else
     echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] Error: Node.js runtime not found on PATH." >> "$LOG_FILE"
     exit 1
 fi
+

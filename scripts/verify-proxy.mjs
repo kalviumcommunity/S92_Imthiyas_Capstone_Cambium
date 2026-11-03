@@ -282,3 +282,4 @@ if (failed === 0) {
   console.log(`${c.crimson}${c.bold}STATUS: ${failed} CHECKS FAILED! Please review issues above.${c.reset}\n`);
   process.exit(1);
 }
+
