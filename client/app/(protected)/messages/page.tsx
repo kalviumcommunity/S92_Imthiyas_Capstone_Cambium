@@ -580,58 +580,84 @@ export default function ScholarMessagesPage() {
 
           {/* Message Composer Dock */}
           <div className="p-4 bg-white border-t border-[#E4DCCB] shrink-0 relative">
-            {/* Attachment Flyout Menu */}
-            {showAttachmentMenu && (
-              <div className="absolute bottom-18 left-6 z-30 bg-white border border-[#E4DCCB] rounded-xl shadow-xl p-2 w-72 space-y-1">
-                <div className="text-[10px] font-mono font-bold text-[#85877B] px-2.5 py-1 uppercase tracking-wider">
-                  Attach Academic Artifact
-                </div>
+            <form onSubmit={handleSendMessage} className="flex items-center gap-2.5 relative">
+              <div className="relative">
                 <button
-                  onClick={handleAttachPaper}
-                  className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-[#FAF7F0] flex items-center gap-2.5 text-xs text-[#202920] cursor-pointer transition-colors"
+                  type="button"
+                  onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
+                  className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
+                    showAttachmentMenu
+                      ? "bg-[#3E6248] text-white border-[#3E6248] shadow-xs"
+                      : "border-[#E4DCCB] text-[#62685E] hover:bg-[#FAF7F0] hover:text-[#202920]"
+                  }`}
+                  title="Attach academic paper, grant, or project invite"
                 >
-                  <BookOpen size={14} className="text-[#3E6248]" />
-                  <div>
-                    <div className="font-semibold">Research Preprint / Paper</div>
-                    <div className="text-[10px] text-[#62685E]">Send verified DOI with abstract</div>
-                  </div>
+                  <Paperclip size={16} />
                 </button>
-                <button
-                  onClick={handleAttachOpportunity}
-                  className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-[#FAF7F0] flex items-center gap-2.5 text-xs text-[#202920] cursor-pointer transition-colors"
-                >
-                  <DollarSign size={14} className="text-[#D97706]" />
-                  <div>
-                    <div className="font-semibold">Grant / CFP Opportunity</div>
-                    <div className="text-[10px] text-[#62685E]">Propose multi-PI co-application</div>
-                  </div>
-                </button>
-                <button
-                  onClick={handleAttachProjectInvite}
-                  className="w-full text-left px-2.5 py-2 rounded-lg hover:bg-[#FAF7F0] flex items-center gap-2.5 text-xs text-[#202920] cursor-pointer transition-colors"
-                >
-                  <Layers size={14} className="text-[#2563EB]" />
-                  <div>
-                    <div className="font-semibold">Collaborative Workspace Invite</div>
-                    <div className="text-[10px] text-[#62685E]">Assign CRediT authorship role</div>
-                  </div>
-                </button>
-              </div>
-            )}
 
-            <form onSubmit={handleSendMessage} className="flex items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => setShowAttachmentMenu(!showAttachmentMenu)}
-                className={`p-2 rounded-lg border transition-colors cursor-pointer ${
-                  showAttachmentMenu
-                    ? "bg-[#3E6248] text-white border-[#3E6248]"
-                    : "border-[#E4DCCB] text-[#62685E] hover:bg-[#FAF7F0]"
-                }`}
-                title="Attach academic paper, grant, or project invite"
-              >
-                <Paperclip size={16} />
-              </button>
+                {/* Attachment Flyout Menu: Anchored strictly ABOVE the toolbar with backdrop */}
+                {showAttachmentMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40 cursor-default"
+                      onClick={() => setShowAttachmentMenu(false)}
+                    />
+                    <div className="absolute bottom-full mb-3 left-0 z-50 bg-white border border-[#E4DCCB] rounded-2xl shadow-2xl p-2.5 w-80 space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-150">
+                      <div className="text-[10px] font-mono font-bold text-[#85877B] px-2.5 py-1 uppercase tracking-wider border-b border-[#E4DCCB]/50 pb-1.5 mb-1">
+                        Attach Academic Artifact
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleAttachPaper();
+                          setShowAttachmentMenu(false);
+                        }}
+                        className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-[#FAF7F0] flex items-center gap-2.5 text-xs text-[#202920] cursor-pointer transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-[#DCE6D7] flex items-center justify-center shrink-0">
+                          <BookOpen size={14} className="text-[#3E6248]" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-[#202920]">Research Preprint / Paper</div>
+                          <div className="text-[10px] text-[#62685E]">Send verified DOI with abstract</div>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleAttachOpportunity();
+                          setShowAttachmentMenu(false);
+                        }}
+                        className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-[#FAF7F0] flex items-center gap-2.5 text-xs text-[#202920] cursor-pointer transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-[#FEF3C7] flex items-center justify-center shrink-0">
+                          <DollarSign size={14} className="text-[#D97706]" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-[#202920]">Grant / CFP Opportunity</div>
+                          <div className="text-[10px] text-[#62685E]">Propose multi-PI co-application</div>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleAttachProjectInvite();
+                          setShowAttachmentMenu(false);
+                        }}
+                        className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-[#FAF7F0] flex items-center gap-2.5 text-xs text-[#202920] cursor-pointer transition-colors"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-[#DBEAFE] flex items-center justify-center shrink-0">
+                          <Layers size={14} className="text-[#2563EB]" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-[#202920]">Collaborative Workspace Invite</div>
+                          <div className="text-[10px] text-[#62685E]">Assign CRediT authorship role</div>
+                        </div>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
 
               <input
                 type="text"

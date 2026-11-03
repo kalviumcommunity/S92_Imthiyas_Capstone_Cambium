@@ -158,8 +158,19 @@ export function HexContributionGraph({
         "notes",
       ];
 
+      // Deterministic, high-fidelity pseudo-random generator
+      const seededHash = (seed: number) => {
+        const x = Math.sin(seed * 12.9898 + numericYear * 78.233) * 43758.5453;
+        return x - Math.floor(x);
+      };
+
+      // Realistic seasonal weights (Spring grant cycle, Fall paper deadlines, Summer reading breaks)
+      const MONTH_WEIGHTS = [0.85, 1.12, 1.24, 1.18, 0.92, 1.05, 0.72, 0.58, 0.94, 1.28, 1.22, 0.68];
+
       for (let m = 0; m < 12; m++) {
         const daysInMonth = new Date(Date.UTC(numericYear, m + 1, 0)).getUTCDate();
+        const mWeight = MONTH_WEIGHTS[m];
+
         for (let day = 1; day <= daysInMonth; day++) {
           const dateObj = new Date(Date.UTC(numericYear, m, day));
           const dateStr = dateObj.toISOString().slice(0, 10);
@@ -167,36 +178,47 @@ export function HexContributionGraph({
             (dateObj.getTime() - Date.UTC(numericYear, 0, 1)) / 86400000
           );
           const w = Math.floor(dayOfYear / 7);
-          const d = (dateObj.getUTCDay() + 6) % 7;
+          const dayOfWeek = (dateObj.getUTCDay() + 6) % 7; // 0=Mon, 6=Sun
 
-          // Harmonic multi-frequency waves creating realistic scholarly rhythms
-          const wave =
-            (Math.sin(w * 0.32) * 1.2 +
-              Math.cos(d * 0.85) * 0.7 +
-              Math.sin(w * 0.12 + d * 0.95) * 0.9 +
-              Math.cos(m * 0.6) * 0.5) /
-            3.3;
+          // Seeded daily variation + weekly research sprint cluster
+          const dayRand = seededHash(dayOfYear * 37 + day * 13);
+          const sprintWave = Math.sin(dayOfYear * 0.38) * 0.45 + Math.cos(w * 0.72) * 0.35;
+          const streakAffinity = (dayRand * 0.45 + (sprintWave + 0.8) * 0.55) * mWeight;
+
+          // Weekend scholarly dampening (weekends feature fewer, more focused sessions)
+          const isWeekend = dayOfWeek >= 5;
+          const weekendFactor = isWeekend ? (dayRand > 0.65 ? 0.85 : 0.4) : 1.0;
+          const score = streakAffinity * weekendFactor;
 
           let level: 0 | 1 | 2 | 3 | 4 = 0;
           let count = 0;
           const assignedCats: string[] = [];
 
-          if (wave > 0.38) {
+          // Authentic human distribution with natural streaks, breaks, and balanced contrast:
+          // ~34% Level 0 (Parchment rest / literature reading)
+          // ~26% Level 1 (Light Sage: peer reviews, quick notes)
+          // ~22% Level 2 (Medium Foliage: benchmark experiments, analysis)
+          // ~12% Level 3 (Forest Green: manuscript drafts, preprint releases)
+          // ~6%  Level 4 (Canopy Pine: major grant awards & journal publications)
+          if (score > 1.28) {
             level = 4;
             count = 4 + (day % 3);
-            assignedCats.push(allCatKeys[0], allCatKeys[1], allCatKeys[3]);
-          } else if (wave > 0.16) {
+            assignedCats.push(allCatKeys[0], allCatKeys[1], allCatKeys[5]);
+          } else if (score > 1.02) {
             level = 3;
             count = 3;
-            assignedCats.push(allCatKeys[2], allCatKeys[4]);
-          } else if (wave > -0.05) {
+            assignedCats.push(allCatKeys[1], allCatKeys[3]);
+          } else if (score > 0.72) {
             level = 2;
             count = 2;
-            assignedCats.push(allCatKeys[5], allCatKeys[6]);
-          } else if (wave > -0.28) {
+            assignedCats.push(allCatKeys[2], allCatKeys[4], allCatKeys[6]);
+          } else if (score > 0.42) {
             level = 1;
             count = 1;
             assignedCats.push(allCatKeys[day % allCatKeys.length]);
+          } else {
+            level = 0;
+            count = 0;
           }
 
           map.set(dateStr, {
