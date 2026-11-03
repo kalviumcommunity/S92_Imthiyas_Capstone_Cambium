@@ -202,6 +202,24 @@ async function seedDatabase() {
   const passwordHash = await bcrypt.hash('Cambium2026!Master', 10);
   const seededUsers: User[] = [];
 
+  // Ensure Default Scholar Anchor (00000000-0000-0000-0000-000000000001) exists
+  const DEFAULT_SCHOLAR_ID = '00000000-0000-0000-0000-000000000001';
+  let defaultScholar = await userRepo.findOne({ where: { id: DEFAULT_SCHOLAR_ID } });
+  if (!defaultScholar) {
+    defaultScholar = userRepo.create({
+      id: DEFAULT_SCHOLAR_ID,
+      username: 'cambium.scholar',
+      email: 'scholar@cambium.research',
+      passwordHash,
+      fullName: 'Dr. Cambium Scholar',
+      institution: 'Cambium Advanced Research Institute',
+      role: UserRole.PI,
+    });
+    defaultScholar = await userRepo.save(defaultScholar);
+    console.log(`👤 Created default scholar anchor: ${defaultScholar.fullName} (${defaultScholar.id})`);
+  }
+  seededUsers.push(defaultScholar);
+
   for (const profile of SCHOLAR_PROFILES) {
     let user = await userRepo.findOne({
       where: [{ email: profile.email }, { username: profile.username }],

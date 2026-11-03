@@ -14,6 +14,7 @@ import {
   ContributionVerificationStatus,
   ContributionVisibility,
 } from './entities/research-contribution.entity';
+import { User } from '../users/entities/user.entity';
 import { GetContributionsQueryDto } from './dto/get-contributions-query.dto';
 import { CreateManualContributionDto } from './dto/create-manual-contribution.dto';
 
@@ -120,10 +121,19 @@ export class ContributionsService {
    * Seed authentic baseline research records if the scholar has no entries yet
    */
   async seedInitialContributionsIfEmpty(actorId: string): Promise<void> {
-    const count = await this.contribRepo.count({ where: { actorId } });
-    if (count > 0) return;
+    try {
+      const count = await this.contribRepo.count({ where: { actorId } });
+      if (count > 0) return;
 
-    this.logger.log(`Seeding authentic baseline research contributions for actor: ${actorId}`);
+      const userExists = await this.contribRepo.manager
+        .getRepository(User)
+        .findOne({ where: { id: actorId } });
+      if (!userExists) {
+        this.logger.warn(`Cannot seed contributions for non-existent actorId: ${actorId}`);
+        return;
+      }
+
+      this.logger.log(`Seeding authentic baseline research contributions for actor: ${actorId}`);
 
     const baselineRecords: Partial<ResearchContribution>[] = [
       {
@@ -346,6 +356,9 @@ export class ContributionsService {
 
     for (const record of baselineRecords) {
       await this.contribRepo.save(this.contribRepo.create(record));
+    }
+    } catch (err: any) {
+      this.logger.warn(`Safely skipped seeding contributions: ${err.message}`);
     }
   }
 

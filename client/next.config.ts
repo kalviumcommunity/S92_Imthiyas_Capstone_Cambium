@@ -1,11 +1,10 @@
 import type { NextConfig } from "next";
-
 import path from "path";
 
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  outputFileTracingRoot: path.join(__dirname),
+  outputFileTracingRoot: path.join(__dirname, ".."),
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -27,9 +26,24 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
+    // Robust CSP: Supports both Next.js HMR Fast Refresh WebSockets in dev and strict Zero-Trust production
+    const connectSrc =
+      "connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:* wss: https:";
+
+    const cspHeader = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com blob:",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "img-src 'self' data: https: blob:",
+      connectSrc,
+      "frame-ancestors 'none'",
+    ].join("; ");
+
     return [
       {
-        source: "/(.*)",
+        // Apply security headers to HTML pages while strictly bypassing Next.js static asset pipelines
+        source: "/((?!_next/static|_next/image|favicon.ico|public_logo).*)",
         headers: [
           {
             key: "X-Frame-Options",
@@ -53,8 +67,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' http://localhost:3000 http://localhost:5000 ws://localhost:5000 wss: https:; frame-ancestors 'none';",
+            value: cspHeader,
           },
         ],
       },

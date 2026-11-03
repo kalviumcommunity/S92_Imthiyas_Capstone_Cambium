@@ -49,15 +49,19 @@ export async function getOpportunities(params?: {
   tag?: string;
   search?: string;
 }): Promise<ResearchOpportunity[]> {
-  const query = new URLSearchParams();
-  if (params?.type && params.type !== "All") query.append("type", params.type);
-  if (params?.tag) query.append("tag", params.tag);
-  if (params?.search) query.append("search", params.search);
+  try {
+    const query = new URLSearchParams();
+    if (params?.type && params.type !== "All") query.append("type", params.type);
+    if (params?.tag) query.append("tag", params.tag);
+    if (params?.search) query.append("search", params.search);
 
-  const res = await fetch(`${API_BASE}/research-opportunities?${query.toString()}`);
-  if (!res.ok) throw new Error("Failed to fetch opportunities");
-  const json = await res.json();
-  return json.data || [];
+    const res = await fetch(`${API_BASE}/research-opportunities?${query.toString()}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data || [];
+  } catch {
+    return [];
+  }
 }
 
 export async function hybridSearchOpportunities(params: {
@@ -91,10 +95,14 @@ export async function chatWithAssistant(payload: {
 }
 
 export async function getOpportunityStats(): Promise<OpportunityStats> {
-  const res = await fetch(`${API_BASE}/research-opportunities/stats`);
-  if (!res.ok) throw new Error("Failed to fetch stats");
-  const json = await res.json();
-  return json.stats || { total: 0, grants: 0, cfps: 0, journals: 0, papers: 0 };
+  try {
+    const res = await fetch(`${API_BASE}/research-opportunities/stats`);
+    if (!res.ok) return { total: 0, grants: 0, cfps: 0, journals: 0, papers: 0 };
+    const json = await res.json();
+    return json.stats || { total: 0, grants: 0, cfps: 0, journals: 0, papers: 0 };
+  } catch {
+    return { total: 0, grants: 0, cfps: 0, journals: 0, papers: 0 };
+  }
 }
 
 export async function createOpportunity(data: {
