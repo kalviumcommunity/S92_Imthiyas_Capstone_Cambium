@@ -517,9 +517,9 @@ export default function CommunityPage() {
   }, [posts, searchQuery, activeTab, followingMap, communityIndex]);
 
   return (
-    <div className="flex-1 min-w-0 h-screen overflow-y-auto bg-[#FAF7F0] text-[#202920] font-sans">
+    <div className="flex-1 min-w-0 h-screen overflow-y-auto overflow-x-hidden bg-[#FAF7F0] dark:bg-[#0E140F] text-[#202920] dark:text-[#EDEAE2] font-sans">
       {/* Top Header */}
-      <div className="px-8 py-5 border-b border-[#E4DCCB] bg-[#FAF7F0]/90 sticky top-0 z-20 backdrop-blur-md flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0]/95 dark:bg-[#131C15]/95 sticky top-0 z-20 backdrop-blur-md flex flex-col md:flex-row md:items-center md:justify-between gap-4 min-w-0">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-[#DCE6D7] border border-[#66866A]/30 text-[#3E6248]">
             <Users size={22} />
@@ -558,7 +558,7 @@ export default function CommunityPage() {
               placeholder="Search concepts, DOIs, authors..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-8 py-2 rounded-full border border-[#E4DCCB] bg-white dark:bg-[#1D261D] text-xs font-sans text-[#202920] dark:text-[#EAE5D9] outline-none focus:border-[#3E6248] focus:ring-2 focus:ring-[#3E6248]/20 w-72 sm:w-80 shadow-xs hover:shadow-sm transition-all"
+              className="pl-9 pr-8 py-2 rounded-full border border-[#E4DCCB] bg-white dark:bg-[#1D261D] text-xs font-sans text-[#202920] dark:text-[#EAE5D9] outline-none focus:border-[#3E6248] focus:ring-2 focus:ring-[#3E6248]/20 w-64 sm:w-72 md:w-80 shadow-xs hover:shadow-sm transition-all"
             />
             {searchQuery && (
               <button
@@ -590,9 +590,9 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-[1fr_330px] gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_330px] gap-6 xl:gap-8 min-w-0 w-full">
         {/* Main Feed Column */}
-        <div className="space-y-6">
+        <div className="min-w-0 w-full space-y-6">
           {/* Feed Filter Tabs */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-[#E4DCCB] pb-3">
             {[
@@ -914,9 +914,9 @@ export default function CommunityPage() {
         </div>
 
         {/* Right Sidebar: Active Communities & Scholar Radar */}
-        <div className="space-y-6">
+        <div className="min-w-0 w-full space-y-6">
           {/* Active Scholar Radar */}
-          <div className="bg-white border border-[#E4DCCB] rounded-2xl p-5 shadow-xs space-y-4">
+          <div className="bg-white dark:bg-[#151F17] border border-[#E4DCCB] dark:border-[#28382C] rounded-2xl p-5 shadow-xs space-y-4 w-full max-w-full overflow-hidden">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold font-mono uppercase tracking-wider text-[#202920]">
                 Co-Author Radar
@@ -989,7 +989,7 @@ export default function CommunityPage() {
           </div>
 
           {/* Academic Governance Box */}
-          <div className="bg-[#FAF7F0] border border-[#E4DCCB] rounded-2xl p-5 shadow-xs space-y-3">
+          <div className="bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#28382C] rounded-2xl p-5 shadow-xs space-y-3 w-full max-w-full overflow-hidden">
             <h4 className="text-xs font-bold text-[#202920] flex items-center gap-1.5">
               <Award size={14} className="text-[#3E6248]" />
               Scholarly Verification Guarantee
