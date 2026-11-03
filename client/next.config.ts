@@ -1,10 +1,16 @@
 import type { NextConfig } from "next";
 import path from "path";
+import fs from "fs";
+
+// Resilient tracing root: If monorepo parent package.json exists, use parent; inside standalone container context use __dirname
+const tracingRoot = fs.existsSync(path.join(__dirname, "..", "package.json"))
+  ? path.join(__dirname, "..")
+  : __dirname;
 
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
-  outputFileTracingRoot: path.join(__dirname, ".."),
+  outputFileTracingRoot: tracingRoot,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -59,11 +65,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
-          },
-          {
-            key: "Strict-Transport-Security",
-            value: "max-age=63072000; includeSubDomains; preload",
+            value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
           },
           {
             key: "Content-Security-Policy",
