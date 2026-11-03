@@ -7,6 +7,7 @@
     "server:build": "npm --prefix server run build",
     "server:start": "npm --prefix server run start",
     "init:db": "npm --prefix server run init:db",
+    "schema:apply": "npm --prefix server run schema:apply",
     "seed": "npm --prefix server run seed",
     "client:dev": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
@@ -17,6 +18,7 @@
     "test:e2e": "playwright test",
     "verify:env": "node scripts/verify-env.mjs",
     "verify:env:prod": "node scripts/verify-env.mjs --production",
+    "verify:db": "node scripts/verify-db.mjs",
     "docker:up": "docker-compose up -d --build",
     "docker:down": "docker-compose down"
   },

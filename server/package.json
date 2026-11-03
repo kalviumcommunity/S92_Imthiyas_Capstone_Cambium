@@ -10,6 +10,7 @@
     "start:dev": "tsx watch src/main.ts",
     "start:prod": "node dist/src/main.js",
     "init:db": "node scripts/init-db.js",
+    "schema:apply": "node scripts/run-schema.js",
     "seed": "tsx src/database/seeds/seed.ts",
     "test": "vitest run",
     "test:watch": "vitest"
