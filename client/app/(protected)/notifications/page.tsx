@@ -379,48 +379,69 @@ export default function NotificationsPage() {
   return (
     <div className="flex-1 min-h-screen overflow-y-auto bg-[#FAF7F0] font-sans p-6 sm:p-10 pb-24">
       <div className="w-full max-w-4xl mx-auto space-y-7">
-        {/* Header */}
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-3">
-            <h1 className="font-serif text-[34px] sm:text-[40px] md:text-[42px] font-normal tracking-[-0.02em] text-[#202920] m-0">
-              Research <span className="italic text-[#3E6248]">Inbox</span>
-            </h1>
-            {unreadCount > 0 && (
-              <span className="text-xs font-semibold bg-[#DCE6D7] text-[#3E6248] border border-[#66866A]/30 rounded-full px-2.5 py-0.5 leading-none font-mono">
-                {unreadCount} new
-              </span>
-            )}
+        {/* Header with Clear Purpose & Aligned Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-b border-[#E4DCCB]/60 pb-5">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="font-serif text-[32px] sm:text-[38px] font-normal tracking-[-0.02em] text-[#202920] m-0">
+                Research <span className="italic text-[#3E6248]">Inbox</span>
+              </h1>
+              {unreadCount > 0 ? (
+                <span className="text-xs font-semibold bg-[#DCE6D7] text-[#3E6248] border border-[#66866A]/30 rounded-full px-2.5 py-0.5 leading-none font-mono">
+                  {unreadCount} new
+                </span>
+              ) : (
+                <span className="text-[11px] font-medium text-[#85877B] bg-[#FAF7F0] border border-[#E4DCCB] rounded-full px-2.5 py-0.5 font-mono">
+                  All caught up
+                </span>
+              )}
+            </div>
+            <p className="text-xs sm:text-sm text-[#62685E] mt-1 m-0 font-sans">
+              Real-time peer reviews, grant deadline alerts, and citation network dispatches.
+            </p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#E4DCCB] text-[11px] font-mono text-[#3E6248] shadow-2xs">
+
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            {/* Live SSE Status Indicator */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E4DCCB] text-[11px] font-mono text-[#3E6248] shadow-2xs whitespace-nowrap">
               <span className={`w-2 h-2 rounded-full ${isSseConnected ? "bg-[#3E6248] animate-pulse" : "bg-[#85877B]"}`} />
               <span>{isSseConnected ? "Live SSE Active" : "SSE Standby"}</span>
             </div>
-            <button
-              onClick={handleSimulateLiveEvent}
-              className="text-xs px-3.5 py-1.5 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1.5 bg-[#FAF7F0] border-[#3E6248] text-[#3E6248] hover:bg-[#DCE6D7] shadow-2xs"
-              title="Trigger a simulated real-time SSE notification event"
-            >
-              <Sparkles size={12} className="text-[#3E6248]" />
-              <span>Simulate Live Event</span>
-            </button>
-            <button
-              onClick={() => setPreviewNullState(!previewNullState)}
-              className={cn(
-                "text-xs px-3.5 py-1.5 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1.5 shadow-2xs",
-                previewNullState
-                  ? "bg-[#3E6248] text-white border-[#3E6248]"
-                  : "bg-white text-[#3E6248] border-[#3E6248]/50 hover:bg-[#FAF7F0]"
-              )}
-            >
-              <span>{previewNullState ? "Show Active Stream" : "Preview Null State"}</span>
-            </button>
-            <button
-              onClick={markAllRead}
-              className="text-xs text-[#62685E] hover:text-[#202920] transition-colors font-medium font-sans bg-white border border-[#E4DCCB] hover:bg-[#F2EBDD] px-3.5 py-1.5 rounded-full cursor-pointer shadow-2xs"
-            >
-              Mark all read
-            </button>
+
+            {/* Mark All Read Button */}
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllRead}
+                className="text-xs text-[#202920] hover:text-[#3E6248] transition-colors font-medium font-sans bg-white border border-[#E4DCCB] hover:bg-[#FAF7F0] px-3.5 py-1.5 rounded-full cursor-pointer shadow-2xs whitespace-nowrap flex items-center gap-1.5"
+              >
+                <Check size={12} className="text-[#3E6248]" />
+                <span>Mark all read</span>
+              </button>
+            )}
+
+            {/* Evaluation & Simulation Controls */}
+            <div className="flex items-center gap-1.5 pl-1 border-l border-[#E4DCCB]">
+              <button
+                onClick={handleSimulateLiveEvent}
+                className="text-[11px] px-3 py-1.5 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1.5 bg-[#FAF7F0] border-[#3E6248]/40 text-[#3E6248] hover:bg-[#DCE6D7] shadow-2xs whitespace-nowrap"
+                title="Trigger a simulated real-time SSE notification event"
+              >
+                <Sparkles size={11} className="text-[#3E6248]" />
+                <span className="hidden md:inline">Simulate Event</span>
+              </button>
+              <button
+                onClick={() => setPreviewNullState(!previewNullState)}
+                className={cn(
+                  "text-[11px] px-3 py-1.5 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1 shadow-2xs whitespace-nowrap",
+                  previewNullState
+                    ? "bg-[#3E6248] text-white border-[#3E6248]"
+                    : "bg-white text-[#62685E] border-[#E4DCCB] hover:bg-[#FAF7F0]"
+                )}
+                title="Toggle preview of empty inbox state"
+              >
+                <span>{previewNullState ? "Show Stream" : "Preview Null"}</span>
+              </button>
+            </div>
           </div>
         </div>
 
