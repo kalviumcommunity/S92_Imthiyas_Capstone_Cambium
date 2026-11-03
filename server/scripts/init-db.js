@@ -80,7 +80,7 @@ async function initDatabase() {
     } catch {}
   }
 
-  // Connect to targetDb to check extensions
+  // Connect to targetDb to check extensions and apply schema
   const dbClient = new Client({
     host,
     port,
@@ -99,6 +99,14 @@ async function initDatabase() {
       console.log('✅ Extension pgvector enabled.');
     } catch (vErr) {
       console.log('ℹ️ Note on vector extension:', vErr.message);
+    }
+
+    const schemaPath = path.join(__dirname, '../src/database/schema.sql');
+    if (fs.existsSync(schemaPath)) {
+      console.log('⚙️ Applying initial schema definitions from schema.sql...');
+      const sql = fs.readFileSync(schemaPath, 'utf8');
+      await dbClient.query(sql);
+      console.log('✅ Initial database schema and pgvector indexes applied.');
     }
   } finally {
     await dbClient.end();
