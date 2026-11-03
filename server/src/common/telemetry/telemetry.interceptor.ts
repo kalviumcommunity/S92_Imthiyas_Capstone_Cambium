@@ -3,6 +3,8 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
+  Optional,
+  Inject,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
@@ -10,10 +12,22 @@ import { TelemetryService } from './telemetry.service';
 
 @Injectable()
 export class TelemetryInterceptor implements NestInterceptor {
-  constructor(private readonly telemetryService: TelemetryService) {}
+  private readonly telemetryService: TelemetryService;
+
+  constructor(
+    @Optional()
+    @Inject(TelemetryService)
+    telemetryService?: TelemetryService,
+  ) {
+    this.telemetryService = telemetryService || new TelemetryService();
+  }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    if (context.getType() !== 'http') {
+    if (
+      context.getType() !== 'http' ||
+      !this.telemetryService ||
+      typeof this.telemetryService.startSpan !== 'function'
+    ) {
       return next.handle();
     }
 
