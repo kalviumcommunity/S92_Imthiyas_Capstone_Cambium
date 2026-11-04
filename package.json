@@ -21,7 +21,11 @@
     "verify:db": "node scripts/verify-db.mjs",
     "docker:up": "docker-compose up -d --build",
     "docker:down": "docker-compose down",
-    "verify:proxy": "node scripts/verify-proxy.mjs"
+    "verify:proxy": "node scripts/verify-proxy.mjs",
+    "health": "node scripts/health-check.mjs",
+    "backup:db": "node scripts/backup-db.mjs",
+    "restore:db": "node scripts/restore-db.mjs",
+    "smoke": "node scripts/smoke-test.mjs"
   },
   "keywords": [
     "cambium",

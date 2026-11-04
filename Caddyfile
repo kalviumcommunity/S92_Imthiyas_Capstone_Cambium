@@ -65,3 +65,4 @@
         reverse_proxy {$CLIENT_UPSTREAM:client:3000}
     }
 }
+

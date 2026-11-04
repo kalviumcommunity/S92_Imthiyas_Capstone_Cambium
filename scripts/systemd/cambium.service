@@ -1,0 +1,29 @@
+# ==============================================================================
+# CAMBIUM RESEARCH PLATFORM — SYSTEMD SERVICE UNIT SPECIFICATION
+# Installs to: /etc/systemd/system/cambium.service
+# Document ID: SYSTEMD-CAMBIUM-2026-V2
+# ==============================================================================
+
+[Unit]
+Description=Cambium AI-Powered Research Operating System
+Documentation=https://cambium.edu
+After=network.target postgresql.service redis.service nginx.service
+Wants=postgresql.service redis.service
+
+[Service]
+Type=forking
+User=cambium
+Group=cambium
+WorkingDirectory=/var/www/cambium
+Environment=NODE_ENV=production
+ExecStart=/usr/local/bin/pm2 start ecosystem.config.js
+ExecReload=/usr/local/bin/pm2 reload ecosystem.config.js
+ExecStop=/usr/local/bin/pm2 stop ecosystem.config.js
+Restart=on-failure
+RestartSec=10s
+KillMode=process
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
+
