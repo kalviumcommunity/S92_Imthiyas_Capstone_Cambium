@@ -380,7 +380,7 @@ export default function NotificationsPage() {
     <div className="flex-1 min-h-screen overflow-y-auto bg-[#FAF7F0] font-sans p-6 sm:p-10 pb-24">
       <div className="w-full max-w-4xl mx-auto space-y-7">
         {/* Header with Clear Purpose & Aligned Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-b border-[#E4DCCB]/60 pb-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-2 border-b border-[#E4DCCB]/60 pb-5">
           <div>
             <div className="flex items-center gap-3">
               <h1 className="font-serif text-[32px] sm:text-[38px] font-normal tracking-[-0.02em] text-[#202920] m-0">
@@ -401,7 +401,7 @@ export default function NotificationsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2.5 flex-wrap">
             {/* Live SSE Status Indicator */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E4DCCB] text-[11px] font-mono text-[#3E6248] shadow-2xs whitespace-nowrap">
               <span className={`w-2 h-2 rounded-full ${isSseConnected ? "bg-[#3E6248] animate-pulse" : "bg-[#85877B]"}`} />
@@ -419,27 +419,28 @@ export default function NotificationsPage() {
               </button>
             )}
 
-            {/* Evaluation & Simulation Controls */}
-            <div className="flex items-center gap-1.5 pl-1 border-l border-[#E4DCCB]">
+            {/* Visual Divider & Simulation Controls */}
+            <div className="h-5 w-px bg-[#E4DCCB] hidden sm:block mx-0.5" />
+            <div className="inline-flex items-center gap-1.5 bg-[#F4EFE6]/70 p-1 rounded-full border border-[#E4DCCB]">
               <button
                 onClick={handleSimulateLiveEvent}
-                className="text-[11px] px-3 py-1.5 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1.5 bg-[#FAF7F0] border-[#3E6248]/40 text-[#3E6248] hover:bg-[#DCE6D7] shadow-2xs whitespace-nowrap"
+                className="text-[11px] px-3 py-1 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1.5 bg-white border-[#3E6248]/30 text-[#3E6248] hover:bg-[#DCE6D7] shadow-2xs whitespace-nowrap"
                 title="Trigger a simulated real-time SSE notification event"
               >
                 <Sparkles size={11} className="text-[#3E6248]" />
-                <span className="hidden md:inline">Simulate Event</span>
+                <span>Simulate Event</span>
               </button>
               <button
                 onClick={() => setPreviewNullState(!previewNullState)}
                 className={cn(
-                  "text-[11px] px-3 py-1.5 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1 shadow-2xs whitespace-nowrap",
+                  "text-[11px] px-3 py-1 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1 shadow-2xs whitespace-nowrap",
                   previewNullState
                     ? "bg-[#3E6248] text-white border-[#3E6248]"
                     : "bg-white text-[#62685E] border-[#E4DCCB] hover:bg-[#FAF7F0]"
                 )}
                 title="Toggle preview of empty inbox state"
               >
-                <span>{previewNullState ? "Show Stream" : "Preview Null"}</span>
+                <span>{previewNullState ? "Show Stream" : "Preview Empty"}</span>
               </button>
             </div>
           </div>

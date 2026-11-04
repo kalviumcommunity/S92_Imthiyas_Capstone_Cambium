@@ -1147,41 +1147,6 @@ function IdentitySection() {
                     showCategories={true}
                     showDayLabels={false}
                   />
-                  <div style={{ display: 'none' }}>
-                    <div style={{ display: 'flex', gap: 3.5, minWidth: 460 }}>
-                      {Array.from({ length: weeks }).map((_, w) => (
-                        <div key={w} style={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
-                          {Array.from({ length: days }).map((_, d) => {
-                            const details = getScholarContributionDetails(w, d)
-                            return (
-                              <div
-                                key={d}
-                                title={`Week ${w + 1}, Day ${d + 1}: ${details.label}`}
-                                style={{
-                                  width: 9.5,
-                                  height: 9.5,
-                                  borderRadius: 2,
-                                  backgroundColor: levelColors[details.level],
-                                  border: `1px solid ${details.level === 0 ? '#E4DCCB' : levelColors[details.level]}`,
-                                }}
-                              />
-                            )
-                          })}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 10.5, color: '#85877B', marginTop: 10, paddingTop: 8, borderTop: '1px solid #E4DCCB' }}>
-                    <span>Cryptographic proof of continuous scientific inquiry</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 3.5 }}>
-                      <span>Less</span>
-                      {levelColors.map((c, i) => (
-                        <div key={i} style={{ width: 8, height: 8, borderRadius: 1.5, background: c, border: '1px solid #E4DCCB' }} />
-                      ))}
-                      <span>More</span>
-                    </div>
-                  </div>
                 </div>
               )}
 

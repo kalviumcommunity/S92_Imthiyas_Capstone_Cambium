@@ -602,7 +602,7 @@ export default function ScholarMessagesPage() {
                       className="fixed inset-0 z-40 cursor-default"
                       onClick={() => setShowAttachmentMenu(false)}
                     />
-                    <div className="absolute bottom-full mb-3 left-0 z-50 bg-white border border-[#E4DCCB] rounded-2xl shadow-2xl p-2.5 w-80 space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-150">
+                    <div className="absolute bottom-full mb-3 left-0 z-50 bg-white border border-[#E4DCCB] rounded-2xl shadow-2xl p-2.5 w-80 max-h-[calc(100vh-140px)] overflow-y-auto space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-150">
                       <div className="text-[10px] font-mono font-bold text-[#85877B] px-2.5 py-1 uppercase tracking-wider border-b border-[#E4DCCB]/50 pb-1.5 mb-1">
                         Attach Academic Artifact
                       </div>
