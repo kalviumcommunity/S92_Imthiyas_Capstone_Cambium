@@ -8,6 +8,7 @@ import { ConflictModal } from "@/components/ui/conflict-modal";
 import { SessionLockModal } from "@/components/ui/session-lock-modal";
 import { SplitPaneReader } from "@/components/workspace/SplitPaneReader";
 import { CollaborativeProjectsDesk } from "@/components/workspace/CollaborativeProjectsDesk";
+import { AiAutocompleteCopilotStudio } from "@/components/ai/AiAutocompleteCopilotStudio";
 import { useToast } from "@/components/ui/toast";
 import CambiumLogo from "@/components/CambiumLogo";
 import { uploadArtifact, getLocalArtifacts, UploadedArtifact } from "@/lib/api";
@@ -157,6 +158,7 @@ const navSections = [
     items: [
       { id: "projects", label: "Team Repositories", icon: icons.folder },
       { id: "overview", label: "Overview", icon: icons.target },
+      { id: "ai-copilot", label: "AI Copilot & Autocomplete", icon: icons.sparkle },
       { id: "questions", label: "Research Questions", icon: icons.lightbulb },
       { id: "literature", label: "Literature Review", icon: icons.quote, active: true },
       { id: "reading", label: "Reading Notes", icon: icons.file },
@@ -2768,6 +2770,10 @@ export default function WorkspacePage() {
         {activeNav === "projects" ? (
           <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
             <CollaborativeProjectsDesk />
+          </div>
+        ) : activeNav === "ai-copilot" ? (
+          <div style={{ flex: 1, overflowY: "auto", height: "100%", padding: "28px 36px" }}>
+            <AiAutocompleteCopilotStudio />
           </div>
         ) : (
           <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>

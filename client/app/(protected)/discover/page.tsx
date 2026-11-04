@@ -24,6 +24,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { BooleanQueryBuilder } from "@/components/ui/boolean-query-builder";
+import { AiAutocompleteInput } from "@/components/ai/AiAutocompleteInput";
 import {
   fetchScholarlyWorks,
   fetchScholarlyResearchers,
@@ -1599,7 +1600,16 @@ export default function DiscoverPage() {
             </p>
 
             <div className="pt-2 space-y-3">
-              <SearchBar onFocus={() => setSearchOpen(true)} activeQuery={activeQuery} onClear={() => setActiveQuery("")} />
+              <div className="flex flex-col gap-2">
+                <AiAutocompleteInput
+                  placeholder="Search 120M+ preprints, topics, and grants with AI autocomplete (Try 'quantum', 'crispr', 'deep')..."
+                  mode="search"
+                  onSelect={(query) => {
+                    setActiveQuery(query);
+                    showToast(`AI Autocomplete: "${query}"`);
+                  }}
+                />
+              </div>
               <BooleanQueryBuilder
                 onApply={(queryExpr) => {
                   if (queryExpr) {
