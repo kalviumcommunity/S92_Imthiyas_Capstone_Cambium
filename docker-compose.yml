@@ -116,6 +116,29 @@ services:
     networks:
       - cambium_mesh
 
+  # ----------------------------------------------------------------------------
+  # 5. Nginx Edge Reverse Proxy Gateway (SSL/TLS, WebSockets, SSE, Static Cache)
+  # ----------------------------------------------------------------------------
+  gateway:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: cambium_gateway
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - client
+      - server
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:80/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - cambium_mesh
+
 # ------------------------------------------------------------------------------
 # Persistent Enterprise Storage Volumes
 # ------------------------------------------------------------------------------

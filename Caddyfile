@@ -1,0 +1,67 @@
+# ==============================================================================
+# CAMBIUM RESEARCH PLATFORM — CADDY EDGE REVERSE PROXY
+# Auto-HTTPS, WebSockets, Server-Sent Events, and Rate Limiting
+# Document ID: CADDY-CAMBIUM-2026-V2
+# ==============================================================================
+
+# Global Options
+{
+    email {$ACME_EMAIL:admin@cambium.edu}
+    admin off
+}
+
+# Unified Domain Configuration
+{$CAMBIUM_DOMAIN:localhost} {
+    # Security Headers
+    header {
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        -Server
+    }
+
+    # Request Body Limit (50MB for scientific datasets & preprints)
+    request_body {
+        max_size 50MB
+    }
+
+    # Health Check Probe
+    handle /health {
+        respond "healthy" 200
+    }
+
+    # Server-Sent Events (SSE) Stream - Unbuffered Continuous Pipe
+    handle /api/v1/events/stream* {
+        reverse_proxy {$SERVER_UPSTREAM:server:5000} {
+            flush_interval -1
+            transport http {
+                response_header_timeout 86400s
+            }
+        }
+    }
+
+    # Socket.io Distributed WebSockets
+    handle /socket.io/* {
+        reverse_proxy {$SERVER_UPSTREAM:server:5000} {
+            transport http {
+                response_header_timeout 86400s
+            }
+        }
+    }
+
+    # General REST API Proxy
+    handle /api/* {
+        reverse_proxy {$SERVER_UPSTREAM:server:5000}
+    }
+
+    # Next.js Static Assets Caching
+    @static path /_next/static/* /public/*
+    header @static Cache-Control "public, max-age=31536000, immutable"
+
+    # Frontend UI (Next.js 15 App Router)
+    handle {
+        reverse_proxy {$CLIENT_UPSTREAM:client:3000}
+    }
+}

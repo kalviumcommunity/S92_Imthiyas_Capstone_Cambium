@@ -20,7 +20,8 @@
     "verify:env:prod": "node scripts/verify-env.mjs --production",
     "verify:db": "node scripts/verify-db.mjs",
     "docker:up": "docker-compose up -d --build",
-    "docker:down": "docker-compose down"
+    "docker:down": "docker-compose down",
+    "verify:proxy": "node scripts/verify-proxy.mjs"
   },
   "keywords": [
     "cambium",
