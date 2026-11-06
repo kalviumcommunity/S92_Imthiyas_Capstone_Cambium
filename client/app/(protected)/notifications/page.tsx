@@ -472,9 +472,9 @@ export default function NotificationsPage() {
           {previewNullState || filtered.length === 0 ? (
             <div className="bg-white border border-[#E4DCCB] rounded-3xl overflow-hidden p-3 shadow-xs">
               <ReactiveNullState
-                title={previewNullState ? "Zero Active Notifications (Clean Stream)" : "No active notifications in this stream"}
-                description={previewNullState ? "You are experiencing the Cambium Reactive 3D Null State. Move your cursor across the card to engage perspective physics and specular light." : "All scholarly peer commentary, citation alerts, and grant milestones have been reviewed or cleared."}
-                actionLabel={previewNullState ? "Restore Active Stream" : "Explore Frontier Opportunities"}
+                title={previewNullState ? "All notifications cleared" : "No active notifications in this category"}
+                description={previewNullState ? "You have zero unread notifications. New citations, grant deadlines, and peer review dispatches will arrive here in real time." : "All scholarly peer commentary, citation alerts, and grant milestones for this filter have been reviewed."}
+                actionLabel={previewNullState ? "Show Notification Stream" : "Browse Research Opportunities"}
                 onAction={() => {
                   if (previewNullState) {
                     setPreviewNullState(false);

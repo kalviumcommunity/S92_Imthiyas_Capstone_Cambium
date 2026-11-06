@@ -54,11 +54,11 @@ export default function ForbiddenPage() {
           </div>
 
           <h1 className="font-serif text-4xl sm:text-5xl font-normal text-[#202920] tracking-tight leading-tight m-0">
-            Restricted Institutional Enclave
+            Access Restricted
           </h1>
 
           <p className="font-serif text-base sm:text-lg text-[#62685E] leading-relaxed">
-            You do not hold active RBAC clearance or SMART IRB reliance authorization for this laboratory's confidential genomic datasets and manuscripts.
+            You do not have permission to access this private laboratory workspace or its confidential research files.
           </p>
         </div>
 
@@ -71,15 +71,15 @@ export default function ForbiddenPage() {
           <div className="space-y-2 text-xs font-mono text-[#202920]">
             <div className="flex justify-between py-1.5 border-b border-[#E4DCCB]/60">
               <span className="text-[#62685E]">Requested Boundary:</span>
-              <span className="font-semibold">MIT CSAIL · Lab Enclave #884</span>
+              <span className="font-semibold">Private Laboratory Workspace</span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-[#E4DCCB]/60">
               <span className="text-[#62685E]">Your Current Role:</span>
-              <span>Visiting Scholar / Guest (Tier 4)</span>
+              <span>Authenticated Scholar (Guest)</span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-[#E4DCCB]/60">
               <span className="text-[#62685E]">Required Clearance:</span>
-              <span className="text-[#991B1B] font-semibold">Principal Investigator or Co-PI Delegation</span>
+              <span className="text-[#991B1B] font-semibold">Workspace Member or Principal Investigator</span>
             </div>
             <div className="flex justify-between py-1.5">
               <span className="text-[#62685E]">Audit Event Logged:</span>
@@ -135,10 +135,10 @@ export default function ForbiddenPage() {
           <div className="p-6 rounded-2xl bg-[#DCE6D7] border border-[#66866A]/40 text-[#173F35] space-y-2">
             <div className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
               <CheckCircle2 size={16} className="text-[#3E6248]" />
-              Delegation Petition Dispatched
+              Access Request Sent
             </div>
             <p className="text-xs font-serif leading-relaxed">
-              Your cryptographic access request has been sent to the lab Principal Investigator and logged in the institutional audit ledger. You will receive an email confirmation once reviewed.
+              Your access request has been sent to the workspace administrator. You will receive an email notification when your request is reviewed.
             </p>
           </div>
         )}
@@ -146,7 +146,7 @@ export default function ForbiddenPage() {
 
       {/* Footer */}
       <footer className="relative z-10 max-w-6xl mx-auto w-full pt-6 border-t border-[#E4DCCB] text-center text-xs font-mono text-[#62685E]">
-        Cambium Research Compliance OS · Standard ISO/IEC 27001 & HIPAA Multi-Tenant Isolation
+        Cambium Research · Role-Based Access Control & Workspace Isolation
       </footer>
     </div>
   );

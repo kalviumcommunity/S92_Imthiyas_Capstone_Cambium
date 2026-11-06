@@ -480,14 +480,14 @@ export default function UploadPage() {
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-[#3E6248] dark:text-[#4ADE80]" />
                 <h2 className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] m-0">
-                  Artifact Ingestion Ledger
+                  Uploaded Documents & Artifacts
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#DCE6D7] dark:bg-[#1E2B21] text-[#3E6248] dark:text-[#4ADE80] font-semibold border border-[#66866A]/20">
                   {historyArtifacts.length} Indexed
                 </span>
               </div>
               <p className="text-xs text-[#62685E] dark:text-[#8FA89B] mt-1 m-0">
-                Persistent cryptographic audit trail of all research materials ingested into your workspace.
+                Record of research materials uploaded to your active workspace.
               </p>
             </div>
 

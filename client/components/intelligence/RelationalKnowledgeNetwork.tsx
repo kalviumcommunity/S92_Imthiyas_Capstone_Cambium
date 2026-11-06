@@ -469,7 +469,7 @@ export default function RelationalKnowledgeNetwork({
                   ? "bg-[#DCE6D7] text-[#3E6248] border-[#3E6248]/30 font-semibold"
                   : "bg-white text-[#62685E] border-[#E4DCCB] hover:text-[#202920]"
               }`}
-              title="Toggle Live Neural Drift Animation"
+              title="Toggle Live Network Motion Animation"
             >
               {isMotionActive ? <Pause size={12} /> : <Play size={12} />}
               <span>{isMotionActive ? "Motion On" : "Fixed View"}</span>

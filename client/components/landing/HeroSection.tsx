@@ -161,7 +161,7 @@ export function HeroSection() {
             className="animate-fade-up opacity-0 animate-fill-forwards text-lg leading-relaxed text-muted-foreground max-w-lg mb-11 font-normal"
             style={{ animationDelay: "0.35s" }}
           >
-            Discover ideas, build your academic identity, collaborate with researchers, explore opportunities, and organize the knowledge behind your work — all in one living research environment.
+            Discover funding calls, build your academic identity, collaborate on preprints, and organize the references and data behind your research.
           </p>
 
           <div

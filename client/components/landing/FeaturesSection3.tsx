@@ -21,8 +21,8 @@ export function CollaborationSection() {
             Meet the researchers your work is already pointing toward.
           </h2>
           <p className="text-[17px] text-muted-foreground max-w-lg mx-auto">
-            Cambium surfaces researchers who share your intellectual territory — before
-            you know to search for them.
+            Cambium surfaces active researchers working on shared methodologies, topics,
+            and upcoming grant proposals.
           </p>
         </div>
 

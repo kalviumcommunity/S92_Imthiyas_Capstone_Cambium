@@ -136,20 +136,20 @@ export default function Error({
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-[#E4DCCB] shadow-sm z-10 whitespace-nowrap">
             <span className="w-2 h-2 rounded-full bg-[#A33B32] animate-pulse" />
             <span className="font-mono text-[11px] sm:text-xs uppercase tracking-widest text-[#202920] font-semibold">
-              Cambium Telemetry // Computational Interruption
+              HTTP 500 // Server Error
             </span>
           </div>
         </div>
 
         {/* Editorial Headline completely cleared of the number above */}
         <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-normal leading-[1.12] tracking-tight text-[#202920] mb-3 max-w-2xl">
-          System disruption <br className="hidden sm:block" />
-          <span className="italic text-[#A33B32]">in progress</span>.
+          Something went wrong <br className="hidden sm:block" />
+          <span className="italic text-[#A33B32]">on our end</span>.
         </h1>
 
         {/* Minimized Font Size Subtitle as requested */}
         <p className="font-serif text-sm sm:text-base text-[#62685E] leading-relaxed max-w-lg mx-auto mb-6">
-          Our distributed research cluster encountered an unexpected runtime interruption. Your active hypotheses, notebooks, and graphs remain securely preserved.
+          An unexpected server error occurred while processing your request. Your workspace notes, saved queries, and documents are safe.
         </p>
 
         {/* Action CTAs */}
@@ -158,7 +158,7 @@ export default function Error({
             onClick={() => reset()}
             className="w-full sm:w-auto inline-flex items-center justify-center bg-[#3E6248] hover:bg-[#293E30] text-[#FAF7F0] font-sans text-xs font-semibold uppercase tracking-wider px-7 py-3 rounded-full border border-[#66866A]/30 shadow-sm transition-all cursor-pointer"
           >
-            Reload System Node
+            Try Again
           </button>
 
           <Link
@@ -192,7 +192,7 @@ export default function Error({
             <line x1="8" y1="8" x2="14" y2="12" stroke="#A33B32" strokeWidth="0.8" />
           </svg>
           <span className="font-mono text-[11px] font-semibold text-[#85877B] tracking-wider uppercase">
-            CAMBIUM TELEMETRY // SYSTEM_FAULT_500 // STATE: PRESERVED
+            CAMBIUM RESEARCH PLATFORM // HTTP 500
           </span>
         </div>
       </div>

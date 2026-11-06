@@ -494,7 +494,7 @@ function _unusedOld() {
 
       {/* Footer legend */}
       <div className="flex items-center justify-between text-xs text-[#85877B] mt-4 pt-3 border-t border-[#E4DCCB]">
-        <span>Verified cryptographic research momentum ledger</span>
+        <span>Verified research activity record</span>
         <div className="flex items-center gap-1.5 text-[11px] font-mono">
           <span>Less</span>
           {levelColors.map((cls, i) => (
@@ -1137,7 +1137,7 @@ export default function ResearchPortfolioPage() {
                 />
               </div>
               <p className="text-xs text-[#62685E] leading-relaxed mb-3">
-                Your profile is cryptographically verified against ORCID and institutional domain records.
+                Your profile is verified with your connected ORCID record and institutional email domain.
               </p>
               <div className="space-y-1.5">
                 {["Add Secondary Institution", "Sync PubMed Repository", "Export BibTeX Citations"].map(

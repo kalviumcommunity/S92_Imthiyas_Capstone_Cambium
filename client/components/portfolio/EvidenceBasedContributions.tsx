@@ -363,7 +363,7 @@ export function EvidenceBasedContributions({
 
           {loading ? (
             <div className="py-16 text-center text-xs font-mono text-[#85877B] animate-pulse">
-              Querying verified research ledger and cryptographic proofs…
+              Querying verified research activity and audit logs…
             </div>
           ) : error ? (
             <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center justify-between">

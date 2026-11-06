@@ -201,7 +201,7 @@ const TRENDING_ITEMS: FeedItem[] = [
     role: "Global Research Network",
     date: "4h ago",
     title: "NIH & Horizon Europe Announce Unified Open Data Standard for 2027",
-    body: "Starting January 2027, all funded researchers must provide machine-actionable metadata and raw tensor checkpoints in FAIR-compliant repositories with persistent cryptographic verification.",
+    body: "Starting January 2027, all funded researchers must provide machine-actionable metadata and open tensor checkpoints in FAIR-compliant repositories with persistent identifier (PID) minting.",
     likes: 183,
     comments: 65,
     reposts: 74,

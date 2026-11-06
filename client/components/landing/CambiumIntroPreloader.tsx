@@ -660,10 +660,10 @@ export function CambiumIntroPreloader({
             The Research Operating System.
           </p>
           <span className="font-mono text-[11px] text-[#88B790] tracking-[0.18em] uppercase font-semibold">
-            {step === 0 && "SYNCHRONIZING SCHOLARLY TOPOLOGY"}
-            {step === 1 && "CONNECTING ACADEMIC MESH"}
-            {step === 2 && "INITIALIZING RESEARCH WORKSPACE"}
-            {step === 3 && "TOPOLOGY CONVERGED · SYSTEM READY"}
+            {step === 0 && "INDEXING RESEARCH TOPICS"}
+            {step === 1 && "CONNECTING CITATION GRAPH"}
+            {step === 2 && "PREPARING WORKSPACE"}
+            {step === 3 && "ENVIRONMENT READY"}
           </span>
         </div>
       </div>
@@ -672,7 +672,7 @@ export function CambiumIntroPreloader({
       <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between gap-4 border-t border-[#3E6248]/30 pt-5">
         <div className="flex items-center gap-2 text-[11px] font-mono text-[#85877B]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#66866A] inline-block animate-pulse" />
-          <span>FIBONACCI MESH · VERIFIED SECURE</span>
+          <span>RESEARCH PLATFORM · READY</span>
         </div>
 
         {/* Clean Hairline Progress Meter */}

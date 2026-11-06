@@ -504,10 +504,10 @@ function Hero() {
         {/* Scholarly Verification Ledger Strip (Stripe Press / Nature grade evidence metrics) */}
         <div className="mt-10 lg:mt-12 pt-6 border-t border-[#E4DCCB] dark:border-[#233327] grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">120M+</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">250M+</div>
             <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Indexed Publications</div>
             <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
-              <span>Crossref · PubMed · arXiv</span>
+              <span>OpenAlex · Europe PMC · Crossref</span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Verified Pipeline" />
             </div>
           </div>
@@ -520,19 +520,19 @@ function Hero() {
             </div>
           </div>
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">4.8M</div>
-            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Verified Researchers</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">100+</div>
+            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Research Disciplines</div>
             <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
-              <span>ORCID Anchor · Cryptographic</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Cryptographically Anchored" />
+              <span>ORCID 2.0 Integration</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Verified ORCID OAuth 2.0" />
             </div>
           </div>
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">100%</div>
-            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Evidence-Linked</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">Direct</div>
+            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">DOI & Source Traceability</div>
             <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
-              <span>Inspectable Citations & DOIs</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Claim-Level Traceability" />
+              <span>Inspectable Primary Sources</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Direct Citation Links" />
             </div>
           </div>
         </div>
@@ -628,7 +628,7 @@ function KnowledgeGraphSection() {
             </div>
 
             <span className="font-mono text-xs text-[#62685E] hidden md:inline">
-              Active Nodes: 20 · Cross-domain connections: 28 · Live Neural Drift
+              Active Research Topics: 20 · Cross-Discipline Links: 28
             </span>
           </div>
 
@@ -780,8 +780,8 @@ function LifecycleSection() {
     {
       name: 'Discover',
       tagline: 'Formulate questions & surface hidden connections',
-      desc: 'Explore literature with semantic neural synthesis, identify emerging frontier topics, and track citation cascades across 120M+ indexed research papers.',
-      metrics: ['120M+ Papers Indexed', 'Semantic Citation Synthesis', 'Daily Frontier Alerts'],
+      desc: 'Explore literature with semantic search, find emerging research topics, and trace citation connections across 250M+ indexed research papers.',
+      metrics: ['250M+ Papers Indexed', 'Semantic Citation Links', 'Daily Funding Alerts'],
       action: 'Query cross-disciplinary literature across Bio & AI',
       targetRoute: '/discover',
       targetLabel: 'Discover Console',
@@ -819,7 +819,7 @@ function LifecycleSection() {
     },
     {
       name: 'Publish',
-      tagline: 'Author camera-ready papers & preprints seamlessly',
+      tagline: 'Author camera-ready papers and preprints directly',
       desc: 'Prepare manuscripts with automated citation verification, institutional formatting templates, double-blind peer review desks, and camera-ready exports for top venues.',
       metrics: ['Automated Reference Formatting', 'Double-Blind Peer Review', 'IRB & Compliance Checks'],
       action: 'Compile camera-ready submission for NeurIPS or Nature',
@@ -996,7 +996,7 @@ function IdentitySection() {
                 'GitHub-style 52-week research cadence & contribution ledger',
                 'Interactive pinned artifacts with code, preprints & licenses',
                 'Real-time citation velocity & institutional co-author graph',
-                'Tenure dossier export & cryptographic portfolio anchors',
+                'Tenure dossier export and verified portfolio activity',
               ].map((item) => (
                 <div key={item} className="flex items-center gap-3 text-sm text-[#62685E] dark:text-[#A3B899]">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
@@ -1234,7 +1234,7 @@ function WorkspaceSection() {
     { id: 'hypothesis', label: '+ New Hypothesis', note: 'Synthesizing novel hypothesis from Chapter 3 literature...' },
     { id: 'import', label: '↓ Import Literature', note: 'Importing literature batches from arXiv, bioRxiv & CrossRef...' },
     { id: 'refine', label: 'Refine Topics', note: 'Topic vectors recalibrated to Multimodal AI & Proteomics.' },
-    { id: 'ai', label: '✦ Ask Cambium AI', note: 'Cambium Neural Assistant initialized and ready for research query.' },
+    { id: 'ai', label: '✦ Ask Cambium AI', note: 'Cambium AI Assistant ready for research inquiries.' },
   ]
 
   const cards = [
@@ -1365,7 +1365,7 @@ function WorkspaceSection() {
                 <button
                   className="p-1.5 text-[#62685E] hover:text-[#202920] transition-colors cursor-pointer"
                   title="AI Copilot"
-                  onClick={() => setActiveAction('Cambium Neural AI Copilot active')}
+                  onClick={() => setActiveAction('Cambium AI Assistant active')}
                 >
                   <Sparkles size={16} />
                 </button>
@@ -2659,7 +2659,7 @@ function EcosystemMapSection() {
       <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center' }}>
         <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-5">
           <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80]" />
-          RESEARCH ECOSYSTEM · LIVING VASCULAR MERISTEM
+          KNOWLEDGE TOPOLOGY · INTERCONNECTED RESEARCH
         </div>
         <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-4xl md:text-6xl font-normal leading-[1.08] tracking-[-0.03em] text-[#F5F4F0] mb-4">
           Everything connects.
@@ -2962,22 +2962,22 @@ function TestimonialsSection() {
 
   const testimonials = [
     {
-      initials: 'I',
-      quote: 'Cambium gives my research a place to live — not just a list of papers.',
-      name: 'Imthiyas',
-      role: 'Computer Vision Researcher · MIT',
+      initials: 'PD',
+      quote: 'Keep track of expiring dissertation grants, monitor relevant arXiv preprints, and maintain an organized BibTeX library without manual spreadsheet upkeep.',
+      name: 'PhD Researchers & Postdocs',
+      role: 'Literature Reviews · Funding Alerts',
     },
     {
-      initials: 'AR',
-      quote: "The difference is that everything is connected to the work I'm actually doing.",
-      name: 'Arjun Rao',
-      role: 'PhD Researcher · IISc',
+      initials: 'PI',
+      quote: 'Coordinate multi-institution grant proposals, allocate computing credits, and maintain an audit log of student contributions and dataset versions.',
+      name: 'Principal Investigators',
+      role: 'Lab Administration · Post-Award Grant Management',
     },
     {
-      initials: 'DE',
-      quote: 'Finally, a research environment that understands how scholars actually work.',
-      name: 'Dr. Elena Park',
-      role: 'Computational Biology · Stanford University',
+      initials: 'IC',
+      quote: 'Bridge methodologies across computer vision, genomics, and climate modeling with interactive relational graphs and mutual scholar messaging.',
+      name: 'Interdisciplinary Teams',
+      role: 'Joint Publications · Collaborative Working Groups',
     },
   ]
 
@@ -2997,10 +2997,10 @@ function TestimonialsSection() {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#3E6248] dark:text-[#4ADE80] mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
-            VOICES OF THE SCHOLARLY NETWORK
+            SCHOLAR WORKFLOWS
           </div>
           <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight leading-tight">
-            Built around the way research actually happens.
+            Built for every stage of modern research.
           </h2>
         </div>
 
@@ -3357,7 +3357,7 @@ function StructuralSystem() {
               Identity System Active
             </span>
             <span className="font-sans text-[10.5px] text-[#62685E] dark:text-[#A3B899]">
-              Verified cryptographic ledger anchor
+              Verifiable citations, open access metadata, and collaborative workspaces
             </span>
           </div>
         </div>
