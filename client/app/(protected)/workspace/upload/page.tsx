@@ -304,7 +304,7 @@ export default function UploadPage() {
             className="hidden"
             onChange={handleFileInput}
           />
-          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-5 rounded-full bg-[#FAF7F0] dark:bg-[#1A261D] border-2 border-[#E4DCCB] dark:border-[#28382C] flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80] shadow-sm transition-transform duration-200 hover:scale-105">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-5 rounded-full bg-[#DCE6D7]/35 dark:bg-[#1A261D] border border-[#3E6248]/25 dark:border-[#28382C] flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80] shadow-xs transition-transform duration-200 hover:scale-105 shrink-0 aspect-square">
             <UploadCloud className="w-8 h-8 sm:w-9 sm:h-9" />
           </div>
           <p className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] mb-2">
@@ -480,14 +480,14 @@ export default function UploadPage() {
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-[#3E6248] dark:text-[#4ADE80]" />
                 <h2 className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] m-0">
-                  Artifact Ingestion Ledger
+                  Uploaded Documents & Artifacts
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#DCE6D7] dark:bg-[#1E2B21] text-[#3E6248] dark:text-[#4ADE80] font-semibold border border-[#66866A]/20">
                   {historyArtifacts.length} Indexed
                 </span>
               </div>
               <p className="text-xs text-[#62685E] dark:text-[#8FA89B] mt-1 m-0">
-                Persistent cryptographic audit trail of all research materials ingested into your workspace.
+                Record of research materials uploaded to your active workspace.
               </p>
             </div>
 

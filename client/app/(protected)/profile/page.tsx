@@ -414,7 +414,7 @@ export default function ProfileCalibrationPage() {
           {/* Quick Provenance Note */}
           <div className="p-4 rounded-xl bg-[#F2EBDD]/60 border border-[#E4DCCB] text-[11px] text-[#62685E] leading-relaxed">
             <span className="font-semibold text-[#202920] block mb-1">
-              Cryptographic Data Sovereignty
+              Data Privacy & Portability
             </span>
             All profile attributes are encrypted and portable. You can export this record anytime in BibTeX or CSL-JSON under Account Settings.
           </div>

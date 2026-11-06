@@ -227,10 +227,10 @@ export function AiAutocompleteCopilotStudio() {
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
-            Zero-Crash Fallback Active
+            Academic RAG Fallback Ready
           </span>
           <span>·</span>
-          <span>Ghost Text Engine v2.0</span>
+          <span>Inline Ghost Text Active</span>
         </div>
       </div>
     </div>

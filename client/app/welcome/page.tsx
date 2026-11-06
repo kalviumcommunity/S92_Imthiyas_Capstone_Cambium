@@ -424,7 +424,7 @@ function SetupWelcome({
             starting point.
           </h1>
           <p className="text-sm sm:text-base text-ink-secondary mb-8 leading-relaxed max-w-md">
-            Connect your academic identity, define what you research, and bring your publications directly into the Cambium ecosystem.
+            Connect your academic identity, define what you research, and bring your publications directly into your workspace.
           </p>
 
           {/* Step Cards */}

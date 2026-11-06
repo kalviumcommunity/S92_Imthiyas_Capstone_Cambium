@@ -17,7 +17,7 @@
 
 ## 1. Project Purpose & Repository Map
 
-Cambium is an **AI-powered Research Opportunity Discovery and Intelligence Platform**—the Enterprise Operating System for Modern Scholarship. 
+Cambium is an **AI-powered Research Opportunity Discovery and Intelligence Platform**—the Enterprise Operating System for Modern Scholarship.
 
 Every AI agent operating in this repository **MUST** understand the directory boundaries:
 
@@ -154,3 +154,20 @@ Every task completion report delivered by an AI agent must conclude with this co
   - Next.js Dev Build: `COMPILED (1118 modules in 1.6s)`
   - Browser Visual Check: `VERIFIED at http://localhost:3000`
 ```
+
+
+---
+
+## 8. Content Quality & Anti-AI-Slop Rules
+
+All user-facing copy, interface labels, microcopy, and system notices **MUST** adhere to `docs/content/content-quality-standard.md`.
+
+AI coding agents are strictly prohibited from introducing:
+- **Unsupported Statistics or Fake User Counts** (e.g. claiming millions of active researchers without telemetry data).
+- **Fabricated Testimonials or Case Studies** (e.g. fictitious Stanford/MIT quotes).
+- **Decorative Technical Badges** (e.g. "Cryptographic Anchor", "Neural Drift", "Quantum Secured").
+- **Repetitive Linguistic Tropes** (e.g. symmetrical "— not just X, but Y" constructions, excessive em dashes).
+- **Interface Meta-Commentary** in empty states or error dialogs (explaining animation physics or AI reasoning).
+- **Generic Marketing Buzzwords** (e.g. "seamless", "revolutionary", "supercharge", "unleash").
+
+Every piece of user-facing content must describe genuine application capabilities and serve a tangible user need.

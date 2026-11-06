@@ -40,7 +40,7 @@ export default function RateLimitedPage() {
 
       {/* Top Header */}
       <header className="relative z-10 max-w-6xl mx-auto w-full flex items-center justify-between border-b border-[#E4DCCB] pb-6">
-        <CambiumLogo size="md" badge="Compute Governor" href="/" />
+        <CambiumLogo size="md" badge="System Limits" href="/" />
 
         <Link
           href="/dashboard"
@@ -57,16 +57,16 @@ export default function RateLimitedPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FEF3C7] border border-[#F59E0B]/30 text-[#92400E]">
             <Clock size={13} />
             <span className="font-mono text-xs uppercase tracking-widest font-semibold">
-              HTTP 429 // Quota Exhaustion
+              HTTP 429 // Rate Limit Reached
             </span>
           </div>
 
           <h1 className="font-serif text-4xl sm:text-5xl font-normal text-[#202920] tracking-tight leading-tight m-0">
-            Hourly Reasoning Quota Depleted
+            Hourly Request Limit Reached
           </h1>
 
           <p className="font-serif text-base sm:text-lg text-[#62685E] leading-relaxed">
-            Your laboratory account has exhausted its hourly inference allowance for frontier reasoning models (120,000 reasoning tokens/hour).
+            Your account has reached the maximum number of requests permitted for this hour. Limits automatically reset at the start of the next hour.
           </p>
         </div>
 
@@ -106,7 +106,7 @@ export default function RateLimitedPage() {
           <div className="space-y-3">
             <div>
               <div className="flex justify-between text-xs font-mono text-[#202920] mb-1">
-                <span>Frontier Deductive Synthesis (Claude 3.7 / RAG)</span>
+                <span>AI Assistant Queries (Gemini 1.5 Flash)</span>
                 <span className="text-[#991B1B] font-bold">120,000 / 120,000 (100%)</span>
               </div>
               <div className="w-full h-2 rounded-full bg-[#FAF7F0] border border-[#E4DCCB] overflow-hidden">
@@ -116,7 +116,7 @@ export default function RateLimitedPage() {
 
             <div>
               <div className="flex justify-between text-xs font-mono text-[#202920] mb-1">
-                <span>Semantic Embeddings (text-embedding-3-large)</span>
+                <span>Vector Search Queries (pgvector)</span>
                 <span className="text-[#3E6248]">84,100 / 500,000 (16.8%)</span>
               </div>
               <div className="w-full h-2 rounded-full bg-[#FAF7F0] border border-[#E4DCCB] overflow-hidden">
@@ -132,11 +132,11 @@ export default function RateLimitedPage() {
             <div className="flex items-center gap-2">
               <Zap size={16} className="text-[#D97706]" />
               <h2 className="font-serif text-base font-semibold text-[#202920] m-0">
-                Grant-Funded Compute Burst
+                Need Higher Capacity?
               </h2>
             </div>
             <p className="text-xs text-[#62685E]">
-              If you have urgent grant deadlines or peer-review filings, you can route overage queries directly through your lab's NSF/NIH grant compute allocation.
+              If your research team requires higher rate limits for large literature sweeps or batch document ingestion, you can configure institutional allocation.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 pt-1">
@@ -145,7 +145,7 @@ export default function RateLimitedPage() {
                 className="flex-1 py-2.5 px-4 rounded-xl bg-[#3E6248] hover:bg-[#173F35] text-white font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer"
               >
                 <Cpu size={13} />
-                Activate Lab Grant Burst (NIH R01)
+                View Plan Options
               </button>
 
               <Link

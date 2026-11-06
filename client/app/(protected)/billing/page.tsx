@@ -27,10 +27,10 @@ const freeTierFeatures = [
 ];
 
 const proTierFeatures = [
-  "10,000 Neural AI Reasoning Tokens / month",
+  "10,000 AI Assistant query credits / month",
   "Multi-paper synthesis & literature matrix",
   "Unlimited workspace drafts & notebook projects",
-  "Split-screen Agentic PDF Reader & RAG search",
+  "Split-screen PDF Reader with citation lookup",
   "Priority peer review pipeline access",
   "High-performance GPU compute cluster allocation",
   "One-click export to LaTeX, BibTeX & Nature formats",
@@ -266,7 +266,7 @@ export default function BillingPage() {
             <div>
               <div className="flex items-start justify-between mb-1">
                 <span className="font-mono text-[10px] font-bold text-[#85877B] dark:text-[#7E8B7B] uppercase tracking-wider">
-                  Neural Intelligence Quota
+                  AI Assistant Monthly Quota
                 </span>
                 <span className="text-xs font-mono font-bold text-[#3E6248] dark:text-[#4ADE80] bg-[#DCE6D7] dark:bg-[#1A281E] px-2 py-0.5 rounded border border-[#66866A]/20 dark:border-[#4ADE80]/30">
                   84.5% Used
@@ -274,7 +274,7 @@ export default function BillingPage() {
               </div>
 
               <h2 className="text-2xl font-serif font-normal text-[#202920] dark:text-[#EDEAE2] mb-5 m-0">
-                Cambium AI Compute
+                AI Assistant Allowance
               </h2>
 
               {/* Progress Bar */}

@@ -16,9 +16,9 @@ export function IntelligenceSection() {
             Intelligence that works around your research.
           </h2>
           <p className="text-[17px] leading-relaxed text-[#F5F4F0]/55 mb-10">
-            Cambium understands your work — not just your search queries. It surfaces
-            connections, opportunities, and collaborators as you research, not when
-            you ask.
+            Cambium indexes your research topics to surface relevant grants, preprints, and collaborators.
+
+
           </p>
           <div className="flex flex-col gap-3.5">
             {[

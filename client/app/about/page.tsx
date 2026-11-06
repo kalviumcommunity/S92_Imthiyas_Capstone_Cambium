@@ -387,7 +387,7 @@ export default function AboutPage() {
                 In living systems, cambium is the growing tissue that enables a plant to develop. We chose the name as a metaphor for research: knowledge grows through connections, ideas develop through exchange, and meaningful progress emerges over time.
               </p>
               <p className="font-serif text-[17px] leading-relaxed text-[#202920]">
-                Cambium is being built around that principle—not simply as a directory of opportunities, but as a developing intelligence layer designed to help research possibilities connect and grow.
+                Cambium is built on that principle: connecting opportunities, publications, and researchers so scientific inquiry can compound over time.
               </p>
             </div>
           </div>

@@ -809,8 +809,8 @@ function AISection({ showToast }: { showToast: (m: string) => void }) {
   return (
     <div className="animate-fade-in">
       <SectionTitle
-        title="Synthetic Cognition & AI"
-        subtitle="Configure how Cambium's neural assistants reason over your private corpus."
+        title="AI Assistant & Document Indexing"
+        subtitle="Manage how the AI assistant indexes and searches your workspace documents."
       />
       <div className="mb-6 rounded-xl border border-[#E4DCCB] bg-white p-4 shadow-sm">
         <div className="flex items-center gap-2 mb-1.5">
@@ -819,7 +819,7 @@ function AISection({ showToast }: { showToast: (m: string) => void }) {
           </span>
         </div>
         <div className="text-xs leading-relaxed text-[#62685E]">
-          Cambium uses specialized cognitive models to surface relevant literature, draft synthesis summaries, and trace citations. Your data is isolated to your private research session.
+          Cambium uses AI assistance to surface relevant literature, draft synthesis summaries, and trace citations. Your data remains isolated to your private workspace.
         </div>
       </div>
       <div className="mb-3 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-[#62685E]">

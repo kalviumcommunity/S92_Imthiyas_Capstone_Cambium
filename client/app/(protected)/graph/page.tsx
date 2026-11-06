@@ -622,7 +622,7 @@ export default function SemanticGraphPage() {
               }`}
             >
               <Network size={13} />
-              <span>Relational Knowledge Network (Ecosystem Drift)</span>
+              <span>Relational Knowledge Network</span>
             </button>
             <button
               onClick={() => setViewMode("constellation")}
