@@ -66,8 +66,8 @@ export class SamlController {
     // Set HttpOnly refresh cookie
     res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production' || process.env.COOKIE_SAME_SITE === 'none',
+      sameSite: (process.env.COOKIE_SAME_SITE as any) || (process.env.NODE_ENV === 'production' ? 'none' : 'lax'),
       path: '/api/auth',
       maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
@@ -103,8 +103,8 @@ export class SamlController {
 
     res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production' || process.env.COOKIE_SAME_SITE === 'none',
+      sameSite: (process.env.COOKIE_SAME_SITE as any) || (process.env.NODE_ENV === 'production' ? 'none' : 'lax'),
       path: '/api/auth',
       maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
