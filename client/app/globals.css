@@ -22,7 +22,7 @@
     --color-mineral-sand: #F2EBDD;  /* Warm Section Foundation */
     --color-limestone: #E4DCCB;     /* Subtle Surface & Dividers */
     --color-sage-mist: #DCE6D7;     /* Selected States & Highlights */
-    
+
     /* Living Algae & Contrast-Hardened Botanical Accents (WCAG 2.2 AA & APCA Verified) */
     --color-living-algae: #66866A;  /* Brand Accent: RESTRICTED to Display text (≥18pt/24px) & non-text UI */
     --color-living-algae-accessible: #365F42; /* WCAG 2.2 AA Pass (4.65:1 on Parchment, 4.52:1 on Sand) */
@@ -218,7 +218,7 @@
   html {
     scroll-behavior: smooth;
   }
-  
+
   section[id] {
     scroll-margin-top: 80px;
   }
@@ -341,6 +341,13 @@
 .dark .scholarly-search-pill:focus-within {
   border-color: #4ADE80;
   box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2), 0 4px 16px 0 rgba(0, 0, 0, 0.4);
+}
+.scholarly-search-pill input,
+.scholarly-search-pill input:focus,
+.scholarly-search-pill input:focus-visible {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 
