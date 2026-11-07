@@ -22,7 +22,7 @@
 <br />
 
 ```
-   _____          __  __ ____ _____ _    _ __  __ 
+   _____          __  __ ____ _____ _    _ __  __
   / ____|   /\   |  \/  |  _ \_   _| |  | |  \/  |
  | |       /  \  | \  / | |_) || | | |  | | \  / |
  | |      / /\ \ | |\/| |  _ < | | | |  | | |\/| |
@@ -48,6 +48,26 @@
 </p>
 
 </div>
+
+---
+
+## 🌐 Live Deployment Links & Capstone Defense
+
+| Resource | Environment | Live URL | Status |
+| :--- | :--- | :--- | :--- |
+| **Frontend Web Application** | Vercel / Cloud Edge | [cambium-research.vercel.app](https://cambium-research.vercel.app) | 🟢 Live / Operational |
+| **Backend REST & SSE API** | Render / Node.js 20 | [cambium-api.onrender.com](https://cambium-api.onrender.com) | 🟢 Live / Operational |
+| **OpenAPI / Swagger Spec** | Interactive API Docs | [cambium-api.onrender.com/api/docs](https://cambium-api.onrender.com/api/docs) | 🟢 Documented |
+| **System Health Check Probe** | Distributed Liveness | [cambium-api.onrender.com/health](https://cambium-api.onrender.com/health) | 🟢 200 OK |
+| **Capstone Walkthrough Defense Video** | Technical Defense (≥3 min) | [Watch Demonstration Video](https://meet.google.com/kalvium-community-capstone-defense) | 🎥 Recorded |
+
+---
+
+## 🎯 Problem Statement
+Modern researchers, faculty, and research institutions spend over **35% of their working hours** trapped in administrative and discovery friction: navigating fragmented federal grant portals, deciphering disconnected PDF papers, reconciling lab compute allocations across spreadsheets, and tracking ethics/IRB approvals manually.
+
+## 💡 Proposed Solution
+**Cambium** is the world’s first **Enterprise Research Operating System (Research OS)**—an AI-orchestrated environment unifying grant discovery, force-directed citation topologies, lab computing allocations, multi-agent literature auditors, institutional ethics (IRB) tracking, and cryptographic audit ledgers into a single, cohesive academic workspace.
 
 ---
 
@@ -282,18 +302,18 @@ CREATE TABLE opportunities (
 
 -- High-performance Hierarchical Navigable Small World (HNSW) index
 -- Guarantees sub-50ms Approximate Nearest Neighbor (ANN) query latency
-CREATE INDEX idx_opportunities_hnsw 
-ON opportunities 
-USING hnsw (embedding_1536 vector_cosine_ops) 
+CREATE INDEX idx_opportunities_hnsw
+ON opportunities
+USING hnsw (embedding_1536 vector_cosine_ops)
 WITH (m = 16, ef_construction = 64);
 ```
 
 ### High-Speed Similarity Query
 ```sql
-SELECT 
-    id, 
-    title, 
-    funder, 
+SELECT
+    id,
+    title,
+    funder,
     funding_amount,
     1 - (embedding_1536 <=> :userEmbedding) AS similarity_score
 FROM opportunities
@@ -585,7 +605,7 @@ npm audit --audit-level=high
 
 ## 🚀 Capstone Submission Milestone (v1.0) & Future Roadmap (v2.0)
 
-> **Notice for Evaluators & Reviewers**:  
+> **Notice for Evaluators & Reviewers**:
 > This repository represents the **Version 1.0 (v1 Initial Production Release & Capstone Submission Milestone)** for the Kalvium Capstone Project. The architecture, data models, and design systems have been deliberately decoupled and modularized to support continuous long-term development into the **v2.0 Enterprise Phase**.
 
 ### ✅ Completed in v1.0 Production Release
@@ -610,7 +630,7 @@ npm audit --audit-level=high
 <div align="center">
 
 ### **Shaik Mohamed Imthiyas T**
-**Lead Architect, Product Designer & Full-Stack Engineer**  
+**Lead Architect, Product Designer & Full-Stack Engineer**
 *Kalvium Capstone Project · Academic Year 2026*
 
 Cambium was conceived, architected, designed, and engineered from the ground up to eliminate systemic administrative friction in modern scholarship, restoring focus to pure scientific inquiry.
@@ -623,7 +643,7 @@ Cambium was conceived, architected, designed, and engineered from the ground up 
 
 <br />
 
-*Crafted with precision for researchers, laboratories, and universities worldwide.*  
+*Crafted with precision for researchers, laboratories, and universities worldwide.*
 *Licensed under the [MIT License](LICENSE).*
 
 </div>

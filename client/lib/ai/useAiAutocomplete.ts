@@ -60,9 +60,11 @@ export function useAiAutocomplete(options: UseAiAutocompleteOptions = {}) {
       setIsLoading(true);
 
       const startTime = performance.now();
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/ai/autocomplete`
-        : "http://localhost:5000/api/v1/ai/autocomplete";
+      const rawBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1").replace(/\/$/, "");
+      const apiV1Base = rawBase.endsWith("/api/v1") ? rawBase : `${rawBase}/api/v1`;
+      const apiUrl = `${apiV1Base}/ai/autocomplete`; // normalized endpoint
+
+
 
       try {
         const res = await fetch(apiUrl, {

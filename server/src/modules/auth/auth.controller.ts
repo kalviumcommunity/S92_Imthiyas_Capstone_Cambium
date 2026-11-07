@@ -29,8 +29,8 @@ export class AuthController {
     const isProduction = process.env.NODE_ENV === 'production';
     res.cookie(REFRESH_COOKIE_NAME, refreshToken, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite: 'strict',
+      secure: isProduction || process.env.COOKIE_SAME_SITE === 'none',
+      sameSite: (process.env.COOKIE_SAME_SITE as any) || (process.env.NODE_ENV === 'production' ? 'none' : 'lax'),
       path: '/api/auth',
       maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
@@ -39,8 +39,8 @@ export class AuthController {
   private clearRefreshCookie(res: Response) {
     res.clearCookie(REFRESH_COOKIE_NAME, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production' || process.env.COOKIE_SAME_SITE === 'none',
+      sameSite: (process.env.COOKIE_SAME_SITE as any) || (process.env.NODE_ENV === 'production' ? 'none' : 'lax'),
       path: '/api/auth',
     });
   }

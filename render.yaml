@@ -1,0 +1,76 @@
+# ==============================================================================
+# CAMBIUM RESEARCH PLATFORM — RENDER CLOUD BLUEPRINT (render.yaml)
+# Enterprise Research Operating System Deployment Stack
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. NestJS Enterprise API Backend (REST, WebSockets, Real-Time SSE, Agentic RAG)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: cambium-api
+    runtime: node
+    plan: starter
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cambium-postgres
+          property: connectionString
+      - key: DB_SSL
+        value: "true"
+      - key: DB_SYNCHRONIZE
+        value: "true"
+      - key: CORS_ORIGIN
+        value: "https://cambium-research.vercel.app,https://cambium.onrender.com,http://localhost:3000"
+      - key: COOKIE_SAME_SITE
+        value: "none"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+
+  # ----------------------------------------------------------------------------
+  # 2. Next.js 15 Presentation Client (Living Materials UI, App Router)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: cambium-client
+    runtime: node
+    plan: starter
+    rootDir: client
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: cambium-api
+          property: host
+
+databases:
+  # ----------------------------------------------------------------------------
+  # 3. PostgreSQL 16 System of Record (pgvector & relational schemas)
+  # ----------------------------------------------------------------------------
+  - name: cambium-postgres
+    plan: starter
+    databaseName: cambium
+    user: cambium_admin
+    postgresMajorVersion: "16"
+
