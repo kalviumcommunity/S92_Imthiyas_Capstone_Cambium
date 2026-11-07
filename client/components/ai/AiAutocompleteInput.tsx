@@ -54,7 +54,7 @@ export function AiAutocompleteInput({
   return (
     <div className={`relative w-full ${className}`}>
       {/* Outer Glow Container */}
-      <div className="relative flex items-center bg-[#FAF7F0] dark:bg-[#1A261D] border-2 border-[#E4DCCB] dark:border-[#28382C] focus-within:border-[#3E6248] dark:focus-within:border-[#4ADE80] rounded-2xl shadow-sm transition-all duration-200">
+      <div className="scholarly-search-pill relative flex items-center bg-white dark:bg-[#151F17] border border-[#E4DCCB] dark:border-[#28382C] hover:border-[#8FA89B] dark:hover:border-[#3E7750] focus-within:border-[#3E6248] dark:focus-within:border-[#4ADE80] focus-within:ring-2 focus-within:ring-[#3E6248]/15 dark:focus-within:ring-[#4ADE80]/20 rounded-full shadow-2xs transition-all duration-200">
         {/* Left AI Sparkle Icon */}
         <div className="pl-4 pr-2 flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80]">
           <Sparkles size={18} className={isLoading ? "animate-spin" : ""} />
@@ -85,7 +85,8 @@ export function AiAutocompleteInput({
               if (suggestions.length > 0) setIsOpen(true);
             }}
             placeholder={placeholder}
-            className="w-full bg-transparent text-sm font-sans font-normal text-[#202920] dark:text-[#EDEAE2] placeholder-[#85877B] focus:outline-none z-10"
+            className="w-full bg-transparent text-sm font-sans font-normal text-[#202920] dark:text-[#EDEAE2] placeholder-[#85877B] border-none outline-none ring-0 focus:outline-none focus:ring-0 focus:border-none shadow-none focus:shadow-none z-10 m-0 p-0"
+            style={{ border: "none", outline: "none", boxShadow: "none" }}
             autoComplete="off"
             spellCheck="false"
           />
