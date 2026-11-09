@@ -120,27 +120,22 @@ export default function GlobalSidebar() {
   };
 
   // User display metadata
-  const rawName = user?.fullName || "Imthiyas";
-  let displayName = rawName;
-  if (/maya|chen/i.test(displayName)) {
-    displayName = "Imthiyas";
-  } else {
-    displayName = displayName.replace(/\s*\([^)]*\)/g, "").trim() || "Imthiyas";
-  }
+  const rawName = user?.fullName || user?.name || user?.username || "Scholar";
+  const displayName = rawName.replace(/\s*\([^)]*\)/g, "").trim() || "Scholar";
   const displaySubtitle = user?.role
     ? `${user.role} · ${user.institution || "Cambium Research"}`
-    : user?.institution && !/maya|chen/i.test(user.institution)
+    : user?.institution
     ? user.institution
-    : user?.email && !/maya|chen/i.test(user.email)
+    : user?.email
     ? user.email
-    : "MIT CSAIL · Postdoc";
+    : "Verified Scholar";
   const initials = displayName
     .split(" ")
     .map((n) => n[0])
     .filter(Boolean)
     .slice(0, 2)
     .join("")
-    .toUpperCase() || "IM";
+    .toUpperCase() || "SC";
 
   return (
     <aside

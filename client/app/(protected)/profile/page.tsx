@@ -281,9 +281,14 @@ export default function ProfileCalibrationPage() {
       if (user) {
         setUser({
           ...user,
+          fullName: profile.name,
           name: profile.name,
           institution: profile.institution,
           interests: profile.interests,
+          headline: profile.headline,
+          bio: profile.bio,
+          department: profile.department,
+          orcid: profile.links.ORCID,
         });
       }
 

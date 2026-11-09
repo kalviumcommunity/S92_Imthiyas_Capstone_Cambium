@@ -8,6 +8,7 @@ import { GrantsGovCrawler } from './crawlers/grants-gov.crawler';
 import { OpenAlexCrawler } from './crawlers/openalex.crawler';
 import { ArxivCrawler } from './crawlers/arxiv.crawler';
 import { CrossrefCrawler } from './crawlers/crossref.crawler';
+import { DoajCrawler } from './crawlers/doaj.crawler';
 import { IngestionService } from './ingestion.service';
 import { IngestionController } from './ingestion.controller';
 
@@ -23,6 +24,7 @@ import { IngestionController } from './ingestion.controller';
     OpenAlexCrawler,
     ArxivCrawler,
     CrossrefCrawler,
+    DoajCrawler,
     IngestionService,
   ],
   exports: [IngestionService],

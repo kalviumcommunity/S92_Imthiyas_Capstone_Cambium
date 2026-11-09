@@ -386,6 +386,21 @@ function TopBar() {
   const router = useRouter();
   const [dashboardQuery, setDashboardQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const user = useAuthStore((state) => state.user);
+
+  const displayName = user?.fullName || user?.name || user?.username || "Scholar";
+  const userInitials = displayName
+    .split(" ")
+    .map((w: string) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase() || "SC";
+  const displaySubtitle = user?.role
+    ? `${user.role} · ${user.institution || "Cambium Research"}`
+    : user?.institution
+    ? user.institution
+    : "Verified Scholar";
 
   const handleSearchSubmit = (e?: React.FormEvent, customQuery?: string) => {
     if (e) e.preventDefault();
@@ -534,11 +549,11 @@ function TopBar() {
           className="flex items-center gap-2.5 p-1 rounded-xl hover:bg-[#F2EBDD] transition-colors no-underline"
         >
           <div className="w-8 h-8 rounded-full bg-[#DCE6D7] text-[#3E6248] font-bold text-xs flex items-center justify-center border border-[#66866A]/40">
-            IM
+            {userInitials}
           </div>
           <div className="hidden sm:block text-left">
-            <span className="block text-xs font-semibold text-[#202920] leading-none">Imthiyas</span>
-            <span className="block text-[10px] text-[#85877B] leading-none mt-1 font-sans">MIT CSAIL · Postdoc</span>
+            <span className="block text-xs font-semibold text-[#202920] leading-none">{displayName}</span>
+            <span className="block text-[10px] text-[#85877B] leading-none mt-1 font-sans truncate max-w-[140px]">{displaySubtitle}</span>
           </div>
         </Link>
       </div>
