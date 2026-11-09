@@ -12,12 +12,12 @@ export class IngestionController {
 
   @Post('trigger')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Trigger automated academic crawler for Grants.gov & OpenAlex' })
+  @ApiOperation({ summary: 'Trigger automated academic crawler for Grants.gov, OpenAlex, arXiv, Crossref, & DOAJ' })
   @ApiResponse({ status: 200, description: 'Crawler execution finished or enqueued' })
   async triggerCrawl(
     @Body()
     body: {
-      source?: 'grants_gov' | 'openalex' | 'all';
+      source?: 'grants_gov' | 'openalex' | 'arxiv' | 'crossref' | 'doaj' | 'all';
       limit?: number;
       async?: boolean;
     },

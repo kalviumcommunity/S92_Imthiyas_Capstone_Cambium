@@ -14,7 +14,7 @@ export const JOB_NAMES = {
 } as const;
 
 export interface IngestionJobData {
-  source: 'grants_gov' | 'openalex' | 'all';
+  source: 'grants_gov' | 'openalex' | 'arxiv' | 'crossref' | 'doaj' | 'all';
   limit?: number;
   triggeredBy?: string;
   timestamp: string;

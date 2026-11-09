@@ -6,6 +6,9 @@ import { AiModule } from '../ai/ai.module';
 import { QueuesModule } from '../../common/queues/queues.module';
 import { GrantsGovCrawler } from './crawlers/grants-gov.crawler';
 import { OpenAlexCrawler } from './crawlers/openalex.crawler';
+import { ArxivCrawler } from './crawlers/arxiv.crawler';
+import { CrossrefCrawler } from './crawlers/crossref.crawler';
+import { DoajCrawler } from './crawlers/doaj.crawler';
 import { IngestionService } from './ingestion.service';
 import { IngestionController } from './ingestion.controller';
 
@@ -19,6 +22,9 @@ import { IngestionController } from './ingestion.controller';
   providers: [
     GrantsGovCrawler,
     OpenAlexCrawler,
+    ArxivCrawler,
+    CrossrefCrawler,
+    DoajCrawler,
     IngestionService,
   ],
   exports: [IngestionService],

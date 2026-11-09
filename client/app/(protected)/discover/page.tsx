@@ -33,6 +33,7 @@ import {
   ScholarlyAuthor,
   ScholarlyTopic,
 } from "@/lib/scholarly-api";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 
 // ─── Design tokens (SSOT: Cambium Master Living Materials System) ─────────────
 const C = {
@@ -1240,23 +1241,29 @@ function RightRail({
   followed: Set<string>;
   onFollow: (id: string) => void;
 }) {
+  const user = useAuthStore((state) => state.user);
+  const userInterests = user?.interests && user.interests.length > 0 ? user.interests : MY_INTERESTS;
+
   return (
     <div className="space-y-8">
       {/* Research Interests */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-serif text-[15px] font-semibold text-[#202920] m-0">
+          <h3 className="font-serif text-[15px] font-semibold text-[#202920] dark:text-[#EDEAE2] m-0">
             Your Research Core
           </h3>
-          <button className="text-[11px] font-mono text-[#3E6248] hover:underline cursor-pointer border-0 bg-transparent">
+          <Link
+            href="/profile"
+            className="text-[11px] font-mono text-[#3E6248] dark:text-[#4ADE80] hover:underline cursor-pointer border-0 bg-transparent no-underline"
+          >
             Edit
-          </button>
+          </Link>
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {MY_INTERESTS.map((interest) => (
+          {userInterests.map((interest) => (
             <span
               key={interest}
-              className="px-2.5 py-1 rounded-full text-[11.5px] font-sans bg-[#F2EBDD] text-[#202920] border border-[#E4DCCB] hover:border-[#3E6248] transition-colors cursor-default"
+              className="px-2.5 py-1 rounded-full text-[11.5px] font-sans bg-[#F2EBDD] dark:bg-[#18231B] text-[#202920] dark:text-[#EDEAE2] border border-[#E4DCCB] dark:border-[#28382C] hover:border-[#3E6248] transition-colors cursor-default"
             >
               {interest}
             </span>
@@ -1490,7 +1497,9 @@ export default function DiscoverPage() {
   const [followedItems, setFollowedItems] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState({ message: "", visible: false });
 
-  // Live Scholarly Data State (OpenAlex & Europe PMC)
+  const user = useAuthStore((state) => state.user);
+
+  // Live Scholarly Data State (OpenAlex, Europe PMC, arXiv, Crossref, & DOAJ)
   const [livePapers, setLivePapers] = useState<ScholarlyWork[]>([]);
   const [liveResearchers, setLiveResearchers] = useState<ScholarlyAuthor[]>([]);
   const [liveTopics, setLiveTopics] = useState<ScholarlyTopic[]>([]);
@@ -1507,7 +1516,8 @@ export default function DiscoverPage() {
     const loadScholarlyData = async () => {
       setIsSearchingLive(true);
       try {
-        const queryToUse = activeQuery || activeArea || "artificial intelligence";
+        const defaultUserTopic = user?.interests && user.interests.length > 0 ? user.interests[0] : "artificial intelligence";
+        const queryToUse = activeQuery || activeArea || defaultUserTopic;
         const sortType =
           activeSort === "Most cited"
             ? "cited"
@@ -1534,7 +1544,7 @@ export default function DiscoverPage() {
     return () => {
       isCancelled = true;
     };
-  }, [activeQuery, activeArea, activeSort]);
+  }, [activeQuery, activeArea, activeSort, user?.interests]);
   const handleSave = useCallback(
     (id: string) => {
       setSavedItems((prev) => {

@@ -3272,14 +3272,8 @@ function Footer() {
         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr repeat(4, 1fr)', gap: 48, marginBottom: 56 }}>
           {/* Brand */}
           <div>
-            <div className="font-brand font-bold text-base tracking-[-0.03em] text-[#202920] dark:text-[#EDEAE2] flex items-center gap-2.5 mb-3">
-              <div className="w-7 h-7 rounded-full bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] p-0.5 flex items-center justify-center overflow-hidden">
-                <img src="/public_logo/cambium-logo-light.svg" alt="CAMBIUM Research Logo" className="w-full h-full object-contain block dark:hidden scale-[1.3] transition-transform" />
-                <img src="/public_logo/cambium-logo-dark.svg" alt="CAMBIUM Research Logo" className="w-full h-full object-contain hidden dark:block scale-[1.3] transition-transform" />
-              </div>
-              <span className="uppercase">
-                CAMBIUM <span className="font-light text-[#3E6248] dark:text-[#4ADE80]">RESEARCH</span>
-              </span>
+            <div className="mb-3">
+              <CambiumLogo size="md" href="/" />
             </div>
             <p className="text-xs text-[#62685E] dark:text-[#A3B899] leading-relaxed max-w-[200px]">The Research Operating System.</p>
           </div>

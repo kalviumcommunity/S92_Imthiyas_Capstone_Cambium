@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import CambiumLogo from "@/components/CambiumLogo";
 
 function TrustSection() {
   const categories = [
@@ -97,14 +98,8 @@ function ProblemSection() {
               Connected
             </p>
             <div className="p-8 bg-background border border-primary/20 border-t-2 border-t-primary rounded-lg shadow-[0_4px_24px_rgba(92,122,94,0.08)]">
-              <div className="flex items-center gap-2.5 mb-5">
-                <div className="w-6 h-6 rounded-full bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
-                  <img src="/public_logo/cambium-logo-light.svg" alt="CAMBIUM Research Logo" className="w-full h-full object-contain block dark:hidden scale-[1.3] transition-transform" />
-                  <img src="/public_logo/cambium-logo-dark.svg" alt="CAMBIUM Research Logo" className="w-full h-full object-contain hidden dark:block scale-[1.3] transition-transform" />
-                </div>
-                <span className="font-bold text-sm tracking-tight text-foreground uppercase">
-                  CAMBIUM <span className="font-light text-primary">RESEARCH</span>
-                </span>
+              <div className="mb-5">
+                <CambiumLogo size="sm" href={null} />
               </div>
               <div className="flex flex-wrap gap-2">
                 {sources.map((s) => (
