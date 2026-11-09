@@ -162,31 +162,7 @@ export default function GlobalSidebar() {
           {isOpen ? (
             <CambiumLogo size="sm" href="/dashboard" />
           ) : (
-            <Link
-              href="/dashboard"
-              prefetch={true}
-              onMouseEnter={() => {
-                try {
-                  router.prefetch("/dashboard");
-                } catch {}
-              }}
-              title="CAMBIUM RESEARCH Dashboard"
-              style={{ width: 36, height: 36, minWidth: 36, minHeight: 36 }}
-              className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] p-0.5 flex items-center justify-center shadow-xs transition-transform hover:scale-105 shrink-0 overflow-hidden"
-            >
-              <img
-                src="/public_logo/cambium-logo-light.svg"
-                alt="CAMBIUM RESEARCH"
-                style={{ width: "100%", height: "100%", maxWidth: 30, maxHeight: 30 }}
-                className="w-full h-full object-contain max-w-full max-h-full block dark:hidden scale-[1.3] transition-transform"
-              />
-              <img
-                src="/public_logo/cambium-logo-dark.svg"
-                alt="CAMBIUM RESEARCH"
-                style={{ width: "100%", height: "100%", maxWidth: 30, maxHeight: 30 }}
-                className="w-full h-full object-contain max-w-full max-h-full hidden dark:block scale-[1.3] transition-transform"
-              />
-            </Link>
+            <CambiumLogo size="lg" showWordmark={false} href="/dashboard" />
           )}
 
           {/* Pin Toggle Button (Visible when open) */}

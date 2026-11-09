@@ -12,8 +12,8 @@ export interface CambiumLogoProps {
 }
 
 const SIZE_MAP = {
-  xs: { icon: 16, container: "w-5 h-5 p-0", textCambium: "text-[12px]", textResearch: "text-[12px]", gap: "gap-2" },
-  sm: { icon: 20, container: "w-6 h-6 p-0.5", textCambium: "text-[13.5px]", textResearch: "text-[13.5px]", gap: "gap-2.5" },
+  xs: { icon: 16, container: "w-5 h-5 p-0.5", textCambium: "text-[12px]", textResearch: "text-[12px]", gap: "gap-2" },
+  sm: { icon: 20, container: "w-6 h-6 p-0.5", textCambium: "text-[13.5px]", textResearch: "text-[13.5px]", gap: "gap-2" },
   md: { icon: 26, container: "w-7 h-7 p-0.5", textCambium: "text-[16px]", textResearch: "text-[16px]", gap: "gap-2.5" },
   lg: { icon: 32, container: "w-9 h-9 p-0.5", textCambium: "text-[18px]", textResearch: "text-[18px]", gap: "gap-3" },
   xl: { icon: 40, container: "w-11 h-11 p-1", textCambium: "text-[22px]", textResearch: "text-[22px]", gap: "gap-3.5" },
@@ -45,25 +45,25 @@ export function CambiumMark({
         <img
           src="/public_logo/cambium-logo-dark.svg"
           alt="CAMBIUM RESEARCH Mark"
-          className="w-full h-full object-contain max-w-full max-h-full block scale-[1.3] transition-transform"
+          className="w-full h-full object-contain max-w-full max-h-full block transition-transform"
         />
       ) : isForcedLight ? (
         <img
           src="/public_logo/cambium-logo-light.svg"
           alt="CAMBIUM RESEARCH Mark"
-          className="w-full h-full object-contain max-w-full max-h-full block scale-[1.3] transition-transform"
+          className="w-full h-full object-contain max-w-full max-h-full block transition-transform"
         />
       ) : (
         <>
           <img
             src="/public_logo/cambium-logo-light.svg"
             alt="CAMBIUM RESEARCH Mark"
-            className="w-full h-full object-contain max-w-full max-h-full block dark:hidden scale-[1.3] transition-transform"
+            className="w-full h-full object-contain max-w-full max-h-full block dark:hidden transition-transform"
           />
           <img
             src="/public_logo/cambium-logo-dark.svg"
             alt="CAMBIUM RESEARCH Mark"
-            className="w-full h-full object-contain max-w-full max-h-full hidden dark:block scale-[1.3] transition-transform"
+            className="w-full h-full object-contain max-w-full max-h-full hidden dark:block transition-transform"
           />
         </>
       )}
@@ -127,25 +127,25 @@ export default function CambiumLogo({
             <img
               src="/public_logo/cambium-logo-dark.svg"
               alt="CAMBIUM RESEARCH Emblem"
-              className="w-full h-full object-contain max-w-full max-h-full block scale-[1.3] transition-transform"
+              className="w-full h-full object-contain max-w-full max-h-full block transition-transform"
             />
           ) : isForcedLight ? (
             <img
               src="/public_logo/cambium-logo-light.svg"
               alt="CAMBIUM RESEARCH Emblem"
-              className="w-full h-full object-contain max-w-full max-h-full block scale-[1.3] transition-transform"
+              className="w-full h-full object-contain max-w-full max-h-full block transition-transform"
             />
           ) : (
             <>
               <img
                 src="/public_logo/cambium-logo-light.svg"
                 alt="CAMBIUM RESEARCH Emblem"
-                className="w-full h-full object-contain max-w-full max-h-full block dark:hidden scale-[1.3] transition-transform"
+                className="w-full h-full object-contain max-w-full max-h-full block dark:hidden transition-transform"
               />
               <img
                 src="/public_logo/cambium-logo-dark.svg"
                 alt="CAMBIUM RESEARCH Emblem"
-                className="w-full h-full object-contain max-w-full max-h-full hidden dark:block scale-[1.3] transition-transform"
+                className="w-full h-full object-contain max-w-full max-h-full hidden dark:block transition-transform"
               />
             </>
           )}

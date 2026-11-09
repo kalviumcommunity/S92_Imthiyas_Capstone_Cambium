@@ -190,7 +190,7 @@ export default function ProfileCalibrationPage() {
     if (user) {
       setProfile((prev) => ({
         ...prev,
-        name: user.name || prev.name,
+        name: user.fullName || user.name || prev.name,
         institution: user.institution || prev.institution,
         interests: user.interests && user.interests.length > 0 ? user.interests : prev.interests,
       }));

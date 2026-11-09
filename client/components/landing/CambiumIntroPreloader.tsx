@@ -575,7 +575,7 @@ export function CambiumIntroPreloader({
       <div className="relative z-10 flex items-center justify-between w-full max-w-6xl mx-auto">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 rounded-full bg-[#1B231D] border border-[#3E6248]/50 flex items-center justify-center p-0.5 shadow-xs overflow-hidden">
-            <img src="/public_logo/cambium-logo-dark.svg" alt="CAMBIUM Mark" className="w-full h-full object-contain scale-[1.3] transition-transform" />
+            <img src="/public_logo/cambium-logo-dark.svg" alt="CAMBIUM Mark" className="w-full h-full object-contain transition-transform" />
           </div>
           <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#85877B]">
             Cambium Runtime · Kernel 2.4
@@ -599,7 +599,7 @@ export function CambiumIntroPreloader({
             <img
               src="/public_logo/cambium-logo-dark.svg"
               alt="CAMBIUM Logo"
-              className="w-full h-full object-contain scale-[1.3] transition-transform"
+              className="w-full h-full object-contain transition-transform"
             />
           </div>
         </div>
