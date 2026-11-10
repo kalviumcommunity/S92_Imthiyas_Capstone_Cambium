@@ -2,10 +2,11 @@ import type { NextConfig } from "next";
 import path from "path";
 import fs from "fs";
 
-// Resilient tracing root: If monorepo parent package.json exists, use parent; inside standalone container context use __dirname
-const tracingRoot = fs.existsSync(path.join(__dirname, "..", "package.json"))
-  ? path.join(__dirname, "..")
-  : __dirname;
+// Resilient tracing root: If monorepo parent package.json exists, use parent; inside standalone container context use cwd
+const cwd = process.cwd();
+const tracingRoot = fs.existsSync(path.join(cwd, "..", "package.json"))
+  ? path.resolve(cwd, "..")
+  : cwd;
 
 const nextConfig: NextConfig = {
   output: "standalone",
