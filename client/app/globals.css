@@ -708,6 +708,20 @@
   background: #FFFFFF;
 }
 
+.dark .auth-input {
+  background: #18231B;
+  border-color: #233327;
+  color: #EDEAE2;
+}
+.dark .auth-input::placeholder {
+  color: #7E8B7B;
+}
+.dark .auth-input:focus {
+  background: #18231B;
+  border-color: #4ADE80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2);
+}
+
 /* ── Auth OAuth button ─────────────────────────────────────────────────── */
 .auth-oauth-btn {
   display: flex;
@@ -736,6 +750,18 @@
   transform: scale(0.995);
 }
 
+.dark .auth-oauth-btn {
+  background: #18231B;
+  border-color: #233327;
+  color: #EDEAE2;
+}
+.dark .auth-oauth-btn:hover {
+  background: #1F2E23;
+  border-color: #4ADE80;
+  color: #EDEAE2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
 /* ── Auth submit button ────────────────────────────────────────────────── */
 .auth-submit-btn {
   height: 44px;
@@ -758,6 +784,17 @@
 }
 .auth-submit-btn:active {
   transform: scale(0.995);
+}
+
+.dark .auth-submit-btn {
+  background: #4ADE80;
+  color: #0E140F;
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  box-shadow: 0 2px 8px rgba(74, 222, 128, 0.25);
+}
+.dark .auth-submit-btn:hover {
+  background: #22C55E;
+  box-shadow: 0 4px 14px rgba(74, 222, 128, 0.4);
 }
 
 /* ── Academic Identity Profile — Step Animation ────────────────────────── */
@@ -832,6 +869,24 @@
 .profile-select:focus {
   border-color: #2E5E1E;
   box-shadow: 0 0 0 2px rgba(46,94,30,0.10);
+}
+
+.dark .profile-input,
+.dark .profile-textarea,
+.dark .profile-select {
+  background: #18231B;
+  border-color: #233327;
+  color: #EDEAE2;
+}
+.dark .profile-input::placeholder,
+.dark .profile-textarea::placeholder {
+  color: #7E8B7B;
+}
+.dark .profile-input:focus,
+.dark .profile-textarea:focus,
+.dark .profile-select:focus {
+  border-color: #4ADE80;
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
 }
 
 .profile-chip {

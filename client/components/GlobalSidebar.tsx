@@ -36,7 +36,7 @@ import CambiumLogo from "@/components/CambiumLogo";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
-interface NavItem {
+export interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string; size?: number }>;
@@ -45,7 +45,7 @@ interface NavItem {
   i18nKey?: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
+export const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: Home, i18nKey: "nav.dashboard" },
   { label: "Discover", href: "/discover", icon: Compass },
   { label: "Constellation Graph", href: "/graph", icon: Network, badge: "2D", i18nKey: "nav.graph" },
@@ -141,7 +141,7 @@ export default function GlobalSidebar() {
     <aside
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative h-[calc(100vh-20px)] my-2.5 ml-2.5 flex flex-col justify-between select-none z-30 flex-shrink-0 bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] rounded-[26px] shadow-[0_4px_24px_rgba(32,41,32,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      className={`relative h-[calc(100vh-20px)] my-2.5 ml-2.5 hidden md:flex flex-col justify-between select-none z-30 flex-shrink-0 bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] rounded-[26px] shadow-[0_4px_24px_rgba(32,41,32,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         isOpen ? "w-[250px]" : "w-[68px]"
       }`}
       aria-label="Enterprise Scholarly Navigation"

@@ -29,9 +29,13 @@ import {
   fetchScholarlyWorks,
   fetchScholarlyResearchers,
   fetchTrendingTopics,
+  fetchOpenAccessBooks,
+  fetchResearchArtifacts,
   ScholarlyWork,
   ScholarlyAuthor,
   ScholarlyTopic,
+  ScholarlyBook,
+  ResearchArtifact,
 } from "@/lib/scholarly-api";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 
@@ -107,18 +111,27 @@ interface LabCard {
   recentPublications: number;
 }
 
-type AnyCard = ScholarlyWork | PaperCard | ResearcherCard | TopicCard | LabCard;
+type AnyCard =
+  | ScholarlyWork
+  | PaperCard
+  | ResearcherCard
+  | TopicCard
+  | LabCard
+  | ScholarlyBook
+  | ResearchArtifact
+  | ScholarlyAuthor
+  | ScholarlyTopic;
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 
 const CONTENT_TYPES = [
   "All",
   "Papers",
+  "Books",
+  "Datasets & Code",
   "Researchers",
-  "Projects",
   "Topics",
   "Labs",
-  "Datasets",
 ];
 const TIME_FILTERS = ["Any time", "Past week", "Past month", "Past year"];
 const RESEARCH_AREAS = [
@@ -321,12 +334,14 @@ function Tag({
   variant = "default",
 }: {
   label: string;
-  variant?: "default" | "green" | "sand";
+  variant?: "default" | "green" | "sand" | "amber" | "blue";
 }) {
   const styles = {
-    default: "bg-[#F2EBDD] text-[#62685E] border border-[#E4DCCB]",
-    green: "bg-[#DCE6D7] text-[#202920] border border-[#66866A]/30 font-semibold",
-    sand: "bg-[#FAF7F0] text-[#805B43] border border-[#E4DCCB]",
+    default: "bg-[#F2EBDD] dark:bg-[#1F2E23] text-[#62685E] dark:text-[#A4B3A2] border border-[#E4DCCB] dark:border-[#233327]",
+    green: "bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#202920] dark:text-[#4ADE80] border border-[#66866A]/30 dark:border-[#4ADE80]/30 font-semibold",
+    sand: "bg-[#FAF7F0] dark:bg-[#18231B] text-[#805B43] dark:text-[#E2C898] border border-[#E4DCCB] dark:border-[#233327]",
+    amber: "bg-[#FBF5E8] dark:bg-[#2B2313] text-[#7E5812] dark:text-[#F3C472] border border-[#E2C898] dark:border-[#5C451D]",
+    blue: "bg-[#E8F1F5] dark:bg-[#142633] text-[#1D5E7E] dark:text-[#76C2E8] border border-[#B8D8E8] dark:border-[#234B63]",
   }[variant];
 
   return (
@@ -340,8 +355,8 @@ function Tag({
 
 function ReasonChip({ text }: { text: string }) {
   return (
-    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#DCE6D7]/60 border border-[#66866A]/30 text-[#293E30] text-[11.5px] font-sans">
-      <span className="text-[#3E6248] text-xs">✦</span>
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#DCE6D7]/60 dark:bg-[#1F2E23]/60 border border-[#66866A]/30 dark:border-[#4ADE80]/30 text-[#293E30] dark:text-[#EDEAE2] text-[11.5px] font-sans">
+      <span className="text-[#3E6248] dark:text-[#4ADE80] text-xs">✦</span>
       <span className="leading-snug">{text}</span>
     </div>
   );
@@ -665,14 +680,14 @@ function FilterDropdown({
     <div ref={ref} className="relative inline-block">
       <button
         onClick={() => setOpen(!open)}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E4DCCB] bg-[#FAF7F0] text-[12px] font-sans font-medium text-[#62685E] hover:text-[#202920] hover:border-[#3E6248] transition-colors cursor-pointer"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#131C15] text-[12px] font-sans font-medium text-[#62685E] dark:text-[#A4B3A2] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:border-[#3E6248] dark:hover:border-[#4ADE80] transition-colors cursor-pointer"
       >
         <span>{label}</span>
-        <ChevronDown className="w-3 h-3 text-[#85877B]" />
+        <ChevronDown className="w-3 h-3 text-[#85877B] dark:text-[#7A8C78]" />
       </button>
 
       {open && (
-        <div className="absolute top-[calc(100%+6px)] left-0 z-30 min-w-[170px] bg-white border border-[#E4DCCB] rounded-xl p-1 shadow-lg animate-in fade-in duration-150">
+        <div className="absolute top-[calc(100%+6px)] left-0 z-30 min-w-[170px] bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-xl p-1 shadow-lg animate-in fade-in duration-150">
           {options.map((opt) => (
             <button
               key={opt}
@@ -682,12 +697,12 @@ function FilterDropdown({
               }}
               className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-sans text-left transition-colors border-0 cursor-pointer ${
                 value === opt
-                  ? "bg-[#DCE6D7] text-[#202920] font-semibold"
-                  : "text-[#62685E] hover:text-[#202920] hover:bg-[#F2EBDD]"
+                  ? "bg-[#DCE6D7] dark:bg-[#233327] text-[#202920] dark:text-[#4ADE80] font-semibold"
+                  : "text-[#62685E] dark:text-[#A4B3A2] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#1F2E23]"
               }`}
             >
               <span>{opt}</span>
-              {value === opt && <Check className="w-3 h-3 text-[#3E6248]" />}
+              {value === opt && <Check className="w-3 h-3 text-[#3E6248] dark:text-[#4ADE80]" />}
             </button>
           ))}
         </div>
@@ -732,8 +747,8 @@ function FilterBar({
             onClick={() => setActiveType(t)}
             className={`px-3 py-1.5 rounded-full text-[12px] font-sans font-medium transition-all duration-150 cursor-pointer border ${
               activeType === t
-                ? "bg-[#3E6248] text-[#FAF7F0] border-[#3E6248] font-semibold shadow-xs"
-                : "bg-[#FAF7F0] text-[#62685E] border-[#E4DCCB] hover:border-[#3E6248] hover:text-[#202920]"
+                ? "bg-[#3E6248] dark:bg-[#4ADE80] text-[#FAF7F0] dark:text-[#0E140F] border-[#3E6248] dark:border-[#4ADE80] font-semibold shadow-xs"
+                : "bg-[#FAF7F0] dark:bg-[#131C15] text-[#62685E] dark:text-[#A4B3A2] border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2]"
             }`}
           >
             {t}
@@ -742,7 +757,7 @@ function FilterBar({
 
         <Link
           href="/opportunities"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-sans font-semibold bg-[#DCE6D7] text-[#3E6248] border border-[#66866A]/30 hover:bg-[#3E6248] hover:text-[#FAF7F0] transition-colors no-underline"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-sans font-semibold bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] border border-[#66866A]/30 dark:border-[#4ADE80]/30 hover:bg-[#3E6248] dark:hover:bg-[#4ADE80] hover:text-[#FAF7F0] dark:hover:text-[#0E140F] transition-colors no-underline"
         >
           <Sparkles className="w-3 h-3" />
           <span>Opportunities</span>
@@ -797,12 +812,12 @@ function PaperCardComponent({
   return (
     <article
       onClick={() => onOpen(data)}
-      className="p-5 rounded-2xl bg-white border border-[#E4DCCB] hover:border-[#66866A] shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer group flex flex-col gap-3 relative"
+      className="p-5 rounded-2xl bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] hover:border-[#66866A] dark:hover:border-[#4ADE80]/50 shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer group flex flex-col gap-3 relative"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Tag label="Paper" variant="green" />
-          <span className="font-mono text-[11px] text-[#85877B]">
+          <span className="font-mono text-[11px] text-[#85877B] dark:text-[#7A8C78]">
             {data.venue} · {data.date}
           </span>
         </div>
@@ -813,11 +828,11 @@ function PaperCardComponent({
             title={saved ? "Saved in Reading List" : "Save paper"}
             className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
               saved
-                ? "bg-[#DCE6D7] border-[#66866A]/50 text-[#3E6248]"
-                : "border-[#E4DCCB] text-[#85877B] hover:text-[#202920] hover:bg-[#F2EBDD]"
+                ? "bg-[#DCE6D7] dark:bg-[#1F2E23] border-[#66866A]/50 text-[#3E6248] dark:text-[#4ADE80]"
+                : "border-[#E4DCCB] dark:border-[#233327] text-[#85877B] dark:text-[#7A8C78] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#1F2E23]"
             }`}
           >
-            <Bookmark className={`w-3.5 h-3.5 ${saved ? "fill-[#3E6248]" : ""}`} />
+            <Bookmark className={`w-3.5 h-3.5 ${saved ? "fill-[#3E6248] dark:fill-[#4ADE80]" : ""}`} />
           </button>
           <button
             onClick={() => {
@@ -829,7 +844,7 @@ function PaperCardComponent({
               onShare?.();
             }}
             title="Share citation & link"
-            className="p-1.5 rounded-lg border border-[#E4DCCB] text-[#85877B] hover:text-[#202920] hover:bg-[#F2EBDD] transition-colors cursor-pointer bg-white"
+            className="p-1.5 rounded-lg border border-[#E4DCCB] dark:border-[#233327] text-[#85877B] dark:text-[#7A8C78] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#1F2E23] transition-colors cursor-pointer bg-white dark:bg-[#18231B]"
           >
             <Share2 className="w-3.5 h-3.5" />
           </button>
@@ -837,15 +852,15 @@ function PaperCardComponent({
       </div>
 
       <div>
-        <h3 className="font-serif text-[18px] font-semibold text-[#202920] leading-snug group-hover:text-[#3E6248] transition-colors m-0">
+        <h3 className="font-serif text-[18px] font-semibold text-[#202920] dark:text-[#EDEAE2] leading-snug group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors m-0">
           {data.title}
         </h3>
-        <p className="text-[13px] text-[#62685E] font-sans mt-1 mb-0">
+        <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans mt-1 mb-0">
           {Array.isArray(data.authors) ? data.authors.join(", ") : "Contributing Scholars"}
         </p>
       </div>
 
-      <p className="text-[13px] text-[#62685E] font-sans leading-relaxed line-clamp-2 m-0">
+      <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans leading-relaxed line-clamp-2 m-0">
         {data.abstract}
       </p>
 
@@ -855,9 +870,9 @@ function PaperCardComponent({
         ))}
       </div>
 
-      <div className="pt-2 border-t border-[#E4DCCB]/60 flex items-center justify-between">
+      <div className="pt-2 border-t border-[#E4DCCB]/60 dark:border-[#233327] flex items-center justify-between">
         <ReasonChip text={data.reason || "Semantic relevance match"} />
-        <span className="font-mono text-[11px] text-[#85877B]">
+        <span className="font-mono text-[11px] text-[#85877B] dark:text-[#7A8C78]">
           {citations.toLocaleString()} citations
         </span>
       </div>
@@ -873,27 +888,38 @@ function ResearcherCardComponent({
   followed,
   onFollow,
 }: {
-  data: ResearcherCard;
+  data: ResearcherCard | ScholarlyAuthor;
   onOpen: (d: AnyCard) => void;
   followed: boolean;
   onFollow: (id: string) => void;
 }) {
+  const initials = data.name
+    ? data.name
+        .split(" ")
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "SC";
+  const paperCount = (data as any).recentPapers ?? (data as any).worksCount ?? 12;
+
   return (
     <article
       onClick={() => onOpen(data)}
-      className="p-5 rounded-2xl bg-white border border-[#E4DCCB] hover:border-[#66866A] shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between gap-3 group"
+      className="p-5 rounded-2xl bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] hover:border-[#66866A] dark:hover:border-[#4ADE80]/50 shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between gap-3 group"
     >
       <div>
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#DCE6D7] border border-[#66866A]/40 flex items-center justify-center text-[#3E6248] font-bold text-sm">
-              ER
+            <div className="w-10 h-10 rounded-full bg-[#DCE6D7] dark:bg-[#1F2E23] border border-[#66866A]/40 dark:border-[#4ADE80]/40 flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80] font-bold text-sm">
+              {initials}
             </div>
             <div>
-              <h4 className="font-serif text-[16px] font-semibold text-[#202920] group-hover:text-[#3E6248] transition-colors m-0">
+              <h4 className="font-serif text-[16px] font-semibold text-[#202920] dark:text-[#EDEAE2] group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors m-0">
                 {data.name}
               </h4>
-              <p className="text-[12px] text-[#85877B] font-sans m-0">
+              <p className="text-[12px] text-[#85877B] dark:text-[#7A8C78] font-sans m-0">
                 {data.institution}
               </p>
             </div>
@@ -901,27 +927,27 @@ function ResearcherCardComponent({
           <Tag label="Scholar" variant="green" />
         </div>
 
-        <p className="text-[12.5px] italic text-[#62685E] font-sans leading-relaxed m-0">
+        <p className="text-[12.5px] italic text-[#62685E] dark:text-[#A4B3A2] font-sans leading-relaxed m-0">
           &ldquo;{data.focus}&rdquo;
         </p>
 
         <div className="flex flex-wrap gap-1 mt-3">
-          {data.sharedInterests.map((i) => (
+          {(data.sharedInterests || []).map((i) => (
             <Tag key={i} label={i} />
           ))}
         </div>
       </div>
 
-      <div className="pt-3 border-t border-[#E4DCCB]/60 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
-        <div className="font-mono text-[11px] text-[#85877B]">
-          {data.recentPapers} papers · h-index {data.hIndex}
+      <div className="pt-3 border-t border-[#E4DCCB]/60 dark:border-[#233327] flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
+        <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7A8C78]">
+          {paperCount} papers · h-index {data.hIndex}
         </div>
         <button
           onClick={() => onFollow(data.id)}
           className={`px-3 py-1 rounded-full text-xs font-sans font-medium transition-colors cursor-pointer border ${
             followed
-              ? "bg-[#DCE6D7] text-[#3E6248] border-[#66866A]/40"
-              : "bg-white text-[#202920] border-[#E4DCCB] hover:border-[#3E6248]"
+              ? "bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] border-[#66866A]/40 dark:border-[#4ADE80]/40"
+              : "bg-white dark:bg-[#18231B] text-[#202920] dark:text-[#EDEAE2] border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80]"
           }`}
         >
           {followed ? "✓ Following" : "+ Follow"}
@@ -939,7 +965,7 @@ function TopicCardComponent({
   followed,
   onFollow,
 }: {
-  data: TopicCard;
+  data: TopicCard | ScholarlyTopic;
   onOpen: (d: AnyCard) => void;
   followed: boolean;
   onFollow: (id: string) => void;
@@ -947,33 +973,33 @@ function TopicCardComponent({
   return (
     <article
       onClick={() => onOpen(data)}
-      className="p-5 rounded-2xl bg-white border border-[#E4DCCB] hover:border-[#66866A] shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between gap-3 group"
+      className="p-5 rounded-2xl bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] hover:border-[#66866A] dark:hover:border-[#4ADE80]/50 shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between gap-3 group"
     >
       <div>
         <div className="flex items-center justify-between mb-2">
           <Tag label="Emerging Topic" variant="green" />
-          <span className="font-mono text-[11px] text-[#3E6248] font-semibold flex items-center gap-1">
+          <span className="font-mono text-[11px] text-[#3E6248] dark:text-[#4ADE80] font-semibold flex items-center gap-1">
             <TrendingUp className="w-3 h-3" /> Trending
           </span>
         </div>
-        <h4 className="font-serif text-[17px] font-semibold text-[#202920] group-hover:text-[#3E6248] transition-colors m-0">
+        <h4 className="font-serif text-[17px] font-semibold text-[#202920] dark:text-[#EDEAE2] group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors m-0">
           {data.name}
         </h4>
-        <p className="text-[12.5px] text-[#62685E] font-sans leading-relaxed mt-2 m-0">
+        <p className="text-[12.5px] text-[#62685E] dark:text-[#A4B3A2] font-sans leading-relaxed mt-2 m-0">
           {data.description}
         </p>
       </div>
 
-      <div className="pt-3 border-t border-[#E4DCCB]/60 flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
-        <span className="font-mono text-[11px] text-[#85877B]">
-          {data.relatedPapers} papers · {data.researchers} scholars
+      <div className="pt-3 border-t border-[#E4DCCB]/60 dark:border-[#233327] flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
+        <span className="font-mono text-[11px] text-[#85877B] dark:text-[#7A8C78]">
+          {data.relatedPapers.toLocaleString()} papers · {data.researchers.toLocaleString()} scholars
         </span>
         <button
           onClick={() => onFollow(data.id)}
           className={`px-3 py-1 rounded-full text-xs font-sans font-medium transition-colors cursor-pointer border ${
             followed
-              ? "bg-[#DCE6D7] text-[#3E6248] border-[#66866A]/40"
-              : "bg-white text-[#202920] border-[#E4DCCB] hover:border-[#3E6248]"
+              ? "bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] border-[#66866A]/40 dark:border-[#4ADE80]/40"
+              : "bg-white dark:bg-[#18231B] text-[#202920] dark:text-[#EDEAE2] border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80]"
           }`}
         >
           {followed ? "✓ Following" : "+ Follow"}
@@ -995,20 +1021,20 @@ function LabCardComponent({
   return (
     <article
       onClick={() => onOpen(data)}
-      className="p-5 rounded-2xl bg-white border border-[#E4DCCB] hover:border-[#66866A] shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer flex items-center justify-between gap-4 group"
+      className="p-5 rounded-2xl bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] hover:border-[#66866A] dark:hover:border-[#4ADE80]/50 shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer flex items-center justify-between gap-4 group"
     >
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-[#F2EBDD] border border-[#E4DCCB] flex items-center justify-center text-[#3E6248] font-mono text-xs font-bold shrink-0">
+        <div className="w-12 h-12 rounded-xl bg-[#F2EBDD] dark:bg-[#1F2E23] border border-[#E4DCCB] dark:border-[#233327] flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80] font-mono text-xs font-bold shrink-0">
           LAB
         </div>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-serif text-[16px] font-semibold text-[#202920] group-hover:text-[#3E6248] transition-colors m-0">
+            <h4 className="font-serif text-[16px] font-semibold text-[#202920] dark:text-[#EDEAE2] group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors m-0">
               {data.name}
             </h4>
             <Tag label="Institutional Node" variant="sand" />
           </div>
-          <p className="text-[12px] text-[#85877B] font-sans m-0">
+          <p className="text-[12px] text-[#85877B] dark:text-[#7A8C78] font-sans m-0">
             {data.institution} · {data.researcherCount} active researchers · {data.recentPublications} recent publications
           </p>
         </div>
@@ -1016,11 +1042,214 @@ function LabCardComponent({
 
       <Link
         href="/lab"
-        className="inline-flex items-center gap-1 text-xs font-sans font-semibold text-[#3E6248] bg-[#DCE6D7] hover:bg-[#3E6248] hover:text-[#FAF7F0] px-3.5 py-1.5 rounded-full transition-colors border border-[#66866A]/30 shrink-0 no-underline"
+        className="inline-flex items-center gap-1 text-xs font-sans font-semibold text-[#3E6248] dark:text-[#4ADE80] bg-[#DCE6D7] dark:bg-[#1F2E23] hover:bg-[#3E6248] hover:text-[#FAF7F0] dark:hover:bg-[#4ADE80] dark:hover:text-[#0E140F] px-3.5 py-1.5 rounded-full transition-colors border border-[#66866A]/30 dark:border-[#4ADE80]/30 shrink-0 no-underline"
       >
         <span>Explore Lab</span>
         <ArrowUpRight className="w-3 h-3" />
       </Link>
+    </article>
+  );
+}
+
+// ─── Open Book Card Component ─────────────────────────────────────────────────
+
+function BookCardComponent({
+  data,
+  onOpen,
+  onSave,
+  onShare,
+  saved,
+}: {
+  data: ScholarlyBook;
+  onOpen: (d: AnyCard) => void;
+  onSave: (id: string) => void;
+  onShare?: () => void;
+  saved: boolean;
+}) {
+  return (
+    <article
+      onClick={() => onOpen(data)}
+      className="p-5 rounded-2xl bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] hover:border-[#66866A] dark:hover:border-[#4ADE80]/50 shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer group flex flex-col md:flex-row gap-4 relative"
+    >
+      {data.coverUrl ? (
+        <div className="w-20 h-28 rounded-lg overflow-hidden shrink-0 border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#18231B] flex items-center justify-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={data.coverUrl}
+            alt={data.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      ) : (
+        <div className="w-20 h-28 rounded-lg shrink-0 border border-[#E4DCCB] dark:border-[#233327] bg-[#F2EBDD] dark:bg-[#1F2E23] flex flex-col items-center justify-center p-2 text-center text-[#3E6248] dark:text-[#4ADE80]">
+          <BookOpen className="w-6 h-6 mb-1 opacity-70" />
+          <span className="text-[10px] font-mono leading-tight">Monograph</span>
+        </div>
+      )}
+
+      <div className="flex-1 flex flex-col justify-between gap-2.5">
+        <div>
+          <div className="flex items-center justify-between gap-3 mb-1.5">
+            <div className="flex items-center gap-2">
+              <Tag label="Open Book" variant="amber" />
+              <span className="font-mono text-[11px] text-[#85877B] dark:text-[#7A8C78]">
+                {data.publisher || "Academic Press"} · {data.year}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => onSave(data.id)}
+                title={saved ? "Saved in Reading List" : "Save book"}
+                className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+                  saved
+                    ? "bg-[#DCE6D7] dark:bg-[#1F2E23] border-[#66866A]/50 text-[#3E6248] dark:text-[#4ADE80]"
+                    : "border-[#E4DCCB] dark:border-[#233327] text-[#85877B] dark:text-[#7A8C78] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#1F2E23]"
+                }`}
+              >
+                <Bookmark className={`w-3.5 h-3.5 ${saved ? "fill-[#3E6248] dark:fill-[#4ADE80]" : ""}`} />
+              </button>
+              <button
+                onClick={() => {
+                  if (navigator.clipboard) {
+                    navigator.clipboard.writeText(`${data.title} — ${data.openUrl}`);
+                  }
+                  onShare?.();
+                }}
+                title="Share link"
+                className="p-1.5 rounded-lg border border-[#E4DCCB] dark:border-[#233327] text-[#85877B] dark:text-[#7A8C78] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#1F2E23] transition-colors cursor-pointer bg-white dark:bg-[#18231B]"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <h3 className="font-serif text-[18px] font-semibold text-[#202920] dark:text-[#EDEAE2] leading-snug group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors m-0">
+            {data.title}
+          </h3>
+          <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans mt-1 mb-0">
+            {data.authors.join(", ")}
+          </p>
+        </div>
+
+        <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans leading-relaxed line-clamp-2 m-0">
+          {data.abstract}
+        </p>
+
+        <div className="pt-2 border-t border-[#E4DCCB]/60 dark:border-[#233327] flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-1">
+            {data.subjects.slice(0, 3).map((s) => (
+              <Tag key={s} label={s} />
+            ))}
+          </div>
+
+          <a
+            href={data.openUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 text-[11.5px] font-mono text-[#3E6248] dark:text-[#4ADE80] hover:underline"
+          >
+            <span>Open in Catalog</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+// ─── Research Artifact / Dataset / Software Card Component ────────────────────
+
+function ArtifactCardComponent({
+  data,
+  onOpen,
+  onSave,
+  onShare,
+  saved,
+}: {
+  data: ResearchArtifact;
+  onOpen: (d: AnyCard) => void;
+  onSave: (id: string) => void;
+  onShare?: () => void;
+  saved: boolean;
+}) {
+  return (
+    <article
+      onClick={() => onOpen(data)}
+      className="p-5 rounded-2xl bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] hover:border-[#66866A] dark:hover:border-[#4ADE80]/50 shadow-2xs hover:shadow-md transition-all duration-200 cursor-pointer group flex flex-col gap-3 relative"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Tag
+            label={data.resourceType || "Dataset"}
+            variant={data.type === "software" ? "green" : "blue"}
+          />
+          <span className="font-mono text-[11px] text-[#85877B] dark:text-[#7A8C78]">
+            Zenodo (CERN) · {data.publicationDate}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={() => onSave(data.id)}
+            title={saved ? "Saved in Reading List" : "Save artifact"}
+            className={`p-1.5 rounded-lg border transition-colors cursor-pointer ${
+              saved
+                ? "bg-[#DCE6D7] dark:bg-[#1F2E23] border-[#66866A]/50 text-[#3E6248] dark:text-[#4ADE80]"
+                : "border-[#E4DCCB] dark:border-[#233327] text-[#85877B] dark:text-[#7A8C78] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#1F2E23]"
+            }`}
+          >
+            <Bookmark className={`w-3.5 h-3.5 ${saved ? "fill-[#3E6248] dark:fill-[#4ADE80]" : ""}`} />
+          </button>
+          <button
+            onClick={() => {
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(`${data.title} — ${data.doiUrl}`);
+              }
+              onShare?.();
+            }}
+            title="Share DOI & link"
+            className="p-1.5 rounded-lg border border-[#E4DCCB] dark:border-[#233327] text-[#85877B] dark:text-[#7A8C78] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#1F2E23] transition-colors cursor-pointer bg-white dark:bg-[#18231B]"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="font-serif text-[18px] font-semibold text-[#202920] dark:text-[#EDEAE2] leading-snug group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors m-0">
+          {data.title}
+        </h3>
+        <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans mt-1 mb-0">
+          {data.creators.join(", ")}
+        </p>
+      </div>
+
+      <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans leading-relaxed line-clamp-2 m-0">
+        {data.description}
+      </p>
+
+      <div className="flex flex-wrap items-center gap-1.5">
+        {(data.keywords || []).slice(0, 4).map((k) => (
+          <Tag key={k} label={k} />
+        ))}
+      </div>
+
+      <div className="pt-2 border-t border-[#E4DCCB]/60 dark:border-[#233327] flex items-center justify-between">
+        <ReasonChip text={data.reason || "Open Access scientific deposit"} />
+        <a
+          href={data.doiUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex items-center gap-1 font-mono text-[11px] text-[#3E6248] dark:text-[#4ADE80] hover:underline"
+        >
+          <span>DOI: {data.doi}</span>
+          <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
     </article>
   );
 }
@@ -1049,26 +1278,26 @@ function MomentumSection({
         </p>
       </div>
 
-      <div className="divide-y divide-[#E4DCCB] bg-white rounded-2xl border border-[#E4DCCB] shadow-2xs overflow-hidden">
+      <div className="divide-y divide-[#E4DCCB] dark:divide-[#233327] bg-white dark:bg-[#131C15] rounded-2xl border border-[#E4DCCB] dark:border-[#233327] shadow-2xs overflow-hidden">
         {MOMENTUM_TOPICS.map((topic, idx) => (
           <div
             key={topic.id}
-            className="p-4 flex items-center justify-between gap-4 hover:bg-[#FAF7F0] transition-colors"
+            className="p-4 flex items-center justify-between gap-4 hover:bg-[#FAF7F0] dark:hover:bg-[#18231B] transition-colors"
           >
             <div className="flex items-center gap-4 min-w-0">
-              <span className="font-mono text-xs font-semibold text-[#85877B] w-6 shrink-0">
+              <span className="font-mono text-xs font-semibold text-[#85877B] dark:text-[#7A8C78] w-6 shrink-0">
                 {String(idx + 1).padStart(2, "0")}
               </span>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-sans font-semibold text-[14px] text-[#202920] truncate">
+                  <span className="font-sans font-semibold text-[14px] text-[#202920] dark:text-[#EDEAE2] truncate">
                     {topic.name}
                   </span>
-                  <span className="font-mono text-[10px] text-[#3E6248] bg-[#DCE6D7] px-2 py-0.5 rounded-full font-bold">
+                  <span className="font-mono text-[10px] text-[#3E6248] dark:text-[#4ADE80] bg-[#DCE6D7] dark:bg-[#1F2E23] px-2 py-0.5 rounded-full font-bold">
                     {topic.growth}
                   </span>
                 </div>
-                <p className="text-[12px] text-[#62685E] truncate m-0 mt-0.5">
+                <p className="text-[12px] text-[#62685E] dark:text-[#A4B3A2] truncate m-0 mt-0.5">
                   {topic.reason}
                 </p>
               </div>
@@ -1078,8 +1307,8 @@ function MomentumSection({
               onClick={() => onFollow(topic.id)}
               className={`px-3 py-1 rounded-full text-xs font-sans font-medium transition-colors cursor-pointer shrink-0 border ${
                 followed.has(topic.id)
-                  ? "bg-[#DCE6D7] text-[#3E6248] border-[#66866A]/40"
-                  : "bg-white text-[#202920] border-[#E4DCCB] hover:border-[#3E6248]"
+                  ? "bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] border-[#66866A]/40 dark:border-[#4ADE80]/40"
+                  : "bg-white dark:bg-[#18231B] text-[#202920] dark:text-[#EDEAE2] border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80]"
               }`}
             >
               {followed.has(topic.id) ? "✓ Following" : "+ Track"}
@@ -1098,15 +1327,15 @@ function ConnectionsViz() {
   const activeNode = CONNECTION_CHAIN.find((n) => n.id === active)!;
 
   return (
-    <section className="p-6 rounded-2xl bg-white border border-[#E4DCCB] shadow-2xs space-y-5">
+    <section className="p-6 rounded-2xl bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] shadow-2xs space-y-5">
       <div>
-        <div className="font-mono text-xs text-[#3E6248] font-bold uppercase tracking-wider mb-1">
+        <div className="font-mono text-xs text-[#3E6248] dark:text-[#4ADE80] font-bold uppercase tracking-wider mb-1">
           03 / Scholarly Relational Topology
         </div>
-        <h2 className="font-serif text-[22px] font-normal text-[#202920] tracking-tight m-0">
+        <h2 className="font-serif text-[22px] font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight m-0">
           Cross-disciplinary research pathways
         </h2>
-        <p className="text-[13px] text-[#62685E] font-sans m-0 mt-0.5">
+        <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans m-0 mt-0.5">
           Trace how your core questions link organically to emerging methodologies.
         </p>
       </div>
@@ -1120,29 +1349,29 @@ function ConnectionsViz() {
               onClick={() => setActive(node.id)}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all cursor-pointer ${
                 active === node.id
-                  ? "bg-[#DCE6D7]/80 border-[#3E6248] shadow-xs"
-                  : "bg-[#FAF7F0] border-[#E4DCCB] hover:border-[#66866A]/60"
+                  ? "bg-[#DCE6D7]/80 dark:bg-[#1F2E23] border-[#3E6248] dark:border-[#4ADE80] shadow-xs"
+                  : "bg-[#FAF7F0] dark:bg-[#18231B] border-[#E4DCCB] dark:border-[#233327] hover:border-[#66866A]/60 dark:hover:border-[#4ADE80]/50"
               }`}
             >
               <div className="flex items-center gap-3">
                 <span
                   className={`w-2.5 h-2.5 rounded-full transition-transform ${
                     active === node.id
-                      ? "bg-[#3E6248] scale-125"
-                      : "bg-[#85877B]"
+                      ? "bg-[#3E6248] dark:bg-[#4ADE80] scale-125"
+                      : "bg-[#85877B] dark:text-[#7A8C78]"
                   }`}
                 />
                 <span
                   className={`font-sans text-[14px] ${
                     active === node.id
-                      ? "font-bold text-[#202920]"
-                      : "font-medium text-[#62685E]"
+                      ? "font-bold text-[#202920] dark:text-[#EDEAE2]"
+                      : "font-medium text-[#62685E] dark:text-[#A4B3A2]"
                   }`}
                 >
                   {node.name}
                 </span>
               </div>
-              <span className="font-mono text-[11px] text-[#85877B]">
+              <span className="font-mono text-[11px] text-[#85877B] dark:text-[#7A8C78]">
                 {node.papers} papers · {node.researchers} scholars
               </span>
             </button>
@@ -1150,31 +1379,31 @@ function ConnectionsViz() {
         </div>
 
         {/* Selected Node Card */}
-        <div className="md:col-span-4 p-5 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB] flex flex-col justify-between gap-4">
+        <div className="md:col-span-4 p-5 rounded-xl bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] flex flex-col justify-between gap-4">
           <div>
-            <div className="font-mono text-[10px] text-[#85877B] uppercase tracking-wider font-semibold mb-1">
+            <div className="font-mono text-[10px] text-[#85877B] dark:text-[#7A8C78] uppercase tracking-wider font-semibold mb-1">
               Field Focus
             </div>
-            <h4 className="font-serif text-[18px] font-bold text-[#202920] m-0">
+            <h4 className="font-serif text-[18px] font-bold text-[#202920] dark:text-[#EDEAE2] m-0">
               {activeNode.name}
             </h4>
-            <p className="text-[12px] text-[#62685E] font-sans mt-2 mb-0">
+            <p className="text-[12px] text-[#62685E] dark:text-[#A4B3A2] font-sans mt-2 mb-0">
               High cross-citation density connecting computational vision algorithms with clinical diagnostic trials.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[#E4DCCB]">
-            <div className="p-2.5 rounded-lg bg-white border border-[#E4DCCB]">
-              <div className="font-serif text-[16px] font-bold text-[#202920]">
+          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[#E4DCCB] dark:border-[#233327]">
+            <div className="p-2.5 rounded-lg bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327]">
+              <div className="font-serif text-[16px] font-bold text-[#202920] dark:text-[#EDEAE2]">
                 {activeNode.papers}
               </div>
-              <div className="font-sans text-[10px] text-[#85877B] uppercase">Papers</div>
+              <div className="font-sans text-[10px] text-[#85877B] dark:text-[#7A8C78] uppercase">Papers</div>
             </div>
-            <div className="p-2.5 rounded-lg bg-white border border-[#E4DCCB]">
-              <div className="font-serif text-[16px] font-bold text-[#202920]">
+            <div className="p-2.5 rounded-lg bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327]">
+              <div className="font-serif text-[16px] font-bold text-[#202920] dark:text-[#EDEAE2]">
                 {activeNode.researchers}
               </div>
-              <div className="font-sans text-[10px] text-[#85877B] uppercase">Scholars</div>
+              <div className="font-sans text-[10px] text-[#85877B] dark:text-[#7A8C78] uppercase">Scholars</div>
             </div>
           </div>
         </div>
@@ -1189,13 +1418,13 @@ function UnexpectedSection() {
   return (
     <section className="space-y-4">
       <div>
-        <div className="font-mono text-xs text-[#3E6248] font-bold uppercase tracking-wider mb-1">
+        <div className="font-mono text-xs text-[#3E6248] dark:text-[#4ADE80] font-bold uppercase tracking-wider mb-1">
           04 / Serendipity Engine
         </div>
-        <h2 className="font-serif text-[22px] font-normal text-[#202920] tracking-tight m-0">
+        <h2 className="font-serif text-[22px] font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight m-0">
           Unexpected cross-domain intersections
         </h2>
-        <p className="text-[13px] text-[#62685E] font-sans m-0 mt-0.5">
+        <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans m-0 mt-0.5">
           Discover how external disciplines solve identical algorithmic constraints.
         </p>
       </div>
@@ -1204,24 +1433,24 @@ function UnexpectedSection() {
         {UNEXPECTED_CONNECTIONS.map((uc) => (
           <div
             key={uc.id}
-            className="p-5 rounded-2xl bg-white border border-[#E4DCCB] hover:border-[#66866A] shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
+            className="p-5 rounded-2xl bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] hover:border-[#66866A] dark:hover:border-[#4ADE80]/50 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-4"
           >
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Tag label={uc.yourInterest} variant="sand" />
-                <span className="text-[#85877B] text-xs">→</span>
+                <span className="text-[#85877B] dark:text-[#7A8C78] text-xs">→</span>
                 <Tag label={uc.connectedField} variant="green" />
               </div>
-              <p className="text-[13px] text-[#62685E] font-sans leading-relaxed m-0">
+              <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans leading-relaxed m-0">
                 {uc.reason}
               </p>
             </div>
 
-            <div className="p-3 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB] text-[12px] space-y-1">
-              <div className="font-semibold text-[#202920] truncate">
+            <div className="p-3 rounded-xl bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] text-[12px] space-y-1">
+              <div className="font-semibold text-[#202920] dark:text-[#EDEAE2] truncate">
                 {uc.relatedPaper}
               </div>
-              <div className="text-[#85877B] font-mono text-[11px]">
+              <div className="text-[#85877B] dark:text-[#7A8C78] font-mono text-[11px]">
                 {uc.researcher} · {uc.topic}
               </div>
             </div>
@@ -1271,15 +1500,15 @@ function RightRail({
         </div>
       </div>
 
-      <div className="h-[1px] bg-[#E4DCCB]" />
+      <div className="h-[1px] bg-[#E4DCCB] dark:bg-[#233327]" />
 
       {/* Suggested Researchers to explore */}
       <div>
         <div className="mb-3">
-          <h3 className="font-serif text-[15px] font-semibold text-[#202920] m-0">
+          <h3 className="font-serif text-[15px] font-semibold text-[#202920] dark:text-[#EDEAE2] m-0">
             Scholars to Explore
           </h3>
-          <p className="text-[11px] text-[#85877B] font-sans m-0 mt-0.5">
+          <p className="text-[11px] text-[#85877B] dark:text-[#7A8C78] font-sans m-0 mt-0.5">
             Matching your citation network
           </p>
         </div>
@@ -1288,17 +1517,17 @@ function RightRail({
           {SUGGESTED_RESEARCHERS.map((r) => (
             <div
               key={r.id}
-              className="p-3 rounded-xl bg-white border border-[#E4DCCB] flex items-center justify-between gap-3 hover:border-[#66866A]/60 transition-colors"
+              className="p-3 rounded-xl bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between gap-3 hover:border-[#66866A]/60 dark:hover:border-[#4ADE80]/50 transition-colors"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full bg-[#DCE6D7] border border-[#66866A]/30 flex items-center justify-center text-[#3E6248] text-xs font-bold shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[#DCE6D7] dark:bg-[#1F2E23] border border-[#66866A]/30 dark:border-[#4ADE80]/30 flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80] text-xs font-bold shrink-0">
                   {r.initials}
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[13px] font-semibold text-[#202920] truncate font-sans">
+                  <div className="text-[13px] font-semibold text-[#202920] dark:text-[#EDEAE2] truncate font-sans">
                     {r.name}
                   </div>
-                  <div className="text-[11px] text-[#85877B] truncate font-sans">
+                  <div className="text-[11px] text-[#85877B] dark:text-[#7A8C78] truncate font-sans">
                     {r.area}
                   </div>
                 </div>
@@ -1308,12 +1537,12 @@ function RightRail({
                 onClick={() => onFollow(r.id)}
                 className={`p-1.5 rounded-lg text-xs font-sans font-medium transition-colors cursor-pointer shrink-0 border ${
                   followed.has(r.id)
-                    ? "bg-[#DCE6D7] text-[#3E6248] border-[#66866A]/40"
-                    : "bg-[#FAF7F0] text-[#62685E] border-[#E4DCCB] hover:text-[#202920]"
+                    ? "bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] border-[#66866A]/40 dark:border-[#4ADE80]/40"
+                    : "bg-[#FAF7F0] dark:bg-[#131C15] text-[#62685E] dark:text-[#A4B3A2] border-[#E4DCCB] dark:border-[#233327] hover:text-[#202920] dark:hover:text-[#EDEAE2]"
                 }`}
               >
                 {followed.has(r.id) ? (
-                  <Check className="w-3.5 h-3.5 text-[#3E6248]" />
+                  <Check className="w-3.5 h-3.5 text-[#3E6248] dark:text-[#4ADE80]" />
                 ) : (
                   <span className="text-xs px-1">+</span>
                 )}
@@ -1323,25 +1552,25 @@ function RightRail({
         </div>
       </div>
 
-      <div className="h-[1px] bg-[#E4DCCB]" />
+      <div className="h-[1px] bg-[#E4DCCB] dark:bg-[#233327]" />
 
       {/* Recently Viewed */}
       <div>
-        <h3 className="font-serif text-[15px] font-semibold text-[#202920] mb-3 m-0">
+        <h3 className="font-serif text-[15px] font-semibold text-[#202920] dark:text-[#EDEAE2] mb-3 m-0">
           Recently Inspected
         </h3>
         <div className="space-y-2">
           {RECENTLY_VIEWED.map((item) => (
             <div
               key={item.id}
-              className="p-2.5 rounded-lg hover:bg-white border border-transparent hover:border-[#E4DCCB] transition-all cursor-pointer group"
+              className="p-2.5 rounded-lg hover:bg-white dark:hover:bg-[#18231B] border border-transparent hover:border-[#E4DCCB] dark:hover:border-[#233327] transition-all cursor-pointer group"
             >
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-[#DCE6D7] text-[#3E6248] font-bold">
+                <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] font-bold">
                   {item.type}
                 </span>
               </div>
-              <div className="text-[12.5px] text-[#62685E] group-hover:text-[#202920] font-sans leading-snug line-clamp-2">
+              <div className="text-[12.5px] text-[#62685E] dark:text-[#A4B3A2] group-hover:text-[#202920] dark:group-hover:text-[#EDEAE2] font-sans leading-snug line-clamp-2">
                 {item.title}
               </div>
             </div>
@@ -1377,83 +1606,154 @@ function DetailPanel({
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  const itemType = (item as any).type || ((item as any).worksCount !== undefined ? "researcher" : (item as any).growth !== undefined ? "topic" : "item");
+
   const title =
-    item.type === "paper"
-      ? (item as PaperCard).title
-      : item.type === "researcher"
-      ? (item as ResearcherCard).name
-      : item.type === "topic"
-      ? (item as TopicCard).name
-      : (item as LabCard).name;
+    itemType === "paper"
+      ? (item as any).title
+      : itemType === "researcher"
+      ? (item as any).name
+      : itemType === "topic"
+      ? (item as any).name
+      : itemType === "book"
+      ? (item as ScholarlyBook).title
+      : itemType === "dataset" || itemType === "software"
+      ? (item as ResearchArtifact).title
+      : (item as any).name || (item as any).title || "Research Item";
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[#202920]/30 backdrop-blur-xs flex justify-end"
+      className="fixed inset-0 z-50 bg-[#202920]/40 dark:bg-black/60 backdrop-blur-xs flex justify-end"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-[#FAF7F0] h-full shadow-2xl border-l border-[#E4DCCB] flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200"
+        className="w-full max-w-lg bg-[#FAF7F0] dark:bg-[#131C15] h-full shadow-2xl border-l border-[#E4DCCB] dark:border-[#233327] flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 space-y-6">
-          <div className="flex items-center justify-between border-b border-[#E4DCCB] pb-4">
-            <Tag label={item.type.toUpperCase()} variant="green" />
+          <div className="flex items-center justify-between border-b border-[#E4DCCB] dark:border-[#233327] pb-4">
+            <Tag
+              label={itemType.toUpperCase()}
+              variant={
+                itemType === "book"
+                  ? "amber"
+                  : itemType === "dataset" || itemType === "software"
+                  ? "blue"
+                  : "green"
+              }
+            />
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg border border-[#E4DCCB] text-[#85877B] hover:text-[#202920] hover:bg-[#F2EBDD] cursor-pointer bg-transparent"
+              className="p-1.5 rounded-lg border border-[#E4DCCB] dark:border-[#233327] text-[#85877B] dark:text-[#7A8C78] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#1F2E23] cursor-pointer bg-transparent"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           <div>
-            <h2 className="font-serif text-[24px] font-semibold text-[#202920] leading-snug m-0">
+            <h2 className="font-serif text-[24px] font-semibold text-[#202920] dark:text-[#EDEAE2] leading-snug m-0">
               {title}
             </h2>
-            {item.type === "paper" && (
-              <p className="text-[13px] text-[#62685E] font-sans mt-2">
-                {(item as PaperCard).authors.join(", ")} · {(item as PaperCard).venue}
+            {itemType === "paper" && (
+              <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans mt-2">
+                {((item as any).authors || []).join(", ")} · {(item as any).venue || "Scholarly Index"}
+              </p>
+            )}
+            {itemType === "book" && (
+              <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans mt-2">
+                {((item as any).authors || []).join(", ")} · {(item as any).publisher || "Academic Press"} ({(item as any).year})
+              </p>
+            )}
+            {(itemType === "dataset" || itemType === "software") && (
+              <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans mt-2">
+                {((item as any).creators || []).join(", ")} · Zenodo ({(item as any).publicationDate})
+              </p>
+            )}
+            {itemType === "researcher" && (
+              <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans mt-2">
+                {(item as any).institution} · {(item as any).role || "Researcher"}
               </p>
             )}
           </div>
 
-          {item.type === "paper" && (
-            <div className="p-4 rounded-xl bg-white border border-[#E4DCCB] space-y-2">
-              <div className="font-mono text-[10px] text-[#85877B] uppercase tracking-wider font-semibold">
+          {itemType === "paper" && (
+            <div className="p-4 rounded-xl bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] space-y-2">
+              <div className="font-mono text-[10px] text-[#85877B] dark:text-[#7A8C78] uppercase tracking-wider font-semibold">
                 Abstract
               </div>
-              <p className="text-[13px] text-[#62685E] font-sans leading-relaxed m-0">
-                {(item as PaperCard).abstract}
+              <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans leading-relaxed m-0">
+                {(item as any).abstract}
               </p>
+            </div>
+          )}
+
+          {itemType === "book" && (
+            <div className="p-4 rounded-xl bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] space-y-2">
+              <div className="font-mono text-[10px] text-[#85877B] dark:text-[#7A8C78] uppercase tracking-wider font-semibold">
+                Monograph Overview
+              </div>
+              <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans leading-relaxed m-0">
+                {(item as any).abstract}
+              </p>
+              {(item as any).isbn && (
+                <div className="pt-2 font-mono text-xs text-[#85877B] dark:text-[#7A8C78]">
+                  ISBN: {(item as any).isbn}
+                </div>
+              )}
+            </div>
+          )}
+
+          {(itemType === "dataset" || itemType === "software") && (
+            <div className="p-4 rounded-xl bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] space-y-2">
+              <div className="font-mono text-[10px] text-[#85877B] dark:text-[#7A8C78] uppercase tracking-wider font-semibold">
+                Artifact Documentation
+              </div>
+              <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans leading-relaxed m-0">
+                {(item as any).description}
+              </p>
+              <div className="pt-2 font-mono text-xs text-[#3E6248] dark:text-[#4ADE80]">
+                Citable DOI: {(item as any).doi}
+              </div>
             </div>
           )}
         </div>
 
-        <div className="p-6 border-t border-[#E4DCCB] bg-white flex flex-wrap items-center justify-between gap-3">
-          {item.type === "paper" ? (
+        <div className="p-6 border-t border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] flex flex-wrap items-center justify-between gap-3">
+          {itemType === "paper" || itemType === "book" || itemType === "dataset" || itemType === "software" ? (
             <button
               onClick={() => onSave(item.id)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#3E6248] text-[#FAF7F0] text-sm font-semibold hover:bg-[#293E30] transition-colors border-0 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#3E6248] dark:bg-[#2D583B] text-[#FAF7F0] text-sm font-semibold hover:bg-[#293E30] dark:hover:bg-[#386D49] transition-colors border-0 cursor-pointer"
             >
               <Bookmark className="w-4 h-4" />
-              <span>{saved ? "Saved in Reading List" : "Save Paper"}</span>
+              <span>{saved ? "Saved in Reading List" : "Save to Canvas"}</span>
             </button>
           ) : (
             <button
               onClick={() => onFollow(item.id)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#3E6248] text-[#FAF7F0] text-sm font-semibold hover:bg-[#293E30] transition-colors border-0 cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#3E6248] dark:bg-[#2D583B] text-[#FAF7F0] text-sm font-semibold hover:bg-[#293E30] dark:hover:bg-[#386D49] transition-colors border-0 cursor-pointer"
             >
               <span>{followed ? "Following" : "Follow"}</span>
             </button>
           )}
 
           <div className="flex items-center gap-2.5">
+            {(item as any).openUrl && (
+              <a
+                href={(item as any).openUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#62685E] dark:text-[#A4B3A2] hover:text-[#202920] dark:hover:text-[#EDEAE2] px-3 py-2 rounded-xl border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#131C15] no-underline"
+              >
+                <span>Open Catalog</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
             {(item as any).doiUrl && (
               <a
                 href={(item as any).doiUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#62685E] hover:text-[#202920] px-3 py-2 rounded-xl border border-[#E4DCCB] bg-[#FAF7F0] no-underline"
+                className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#62685E] dark:text-[#A4B3A2] hover:text-[#202920] dark:hover:text-[#EDEAE2] px-3 py-2 rounded-xl border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#131C15] no-underline"
               >
                 <span>View DOI</span>
                 <ExternalLink className="w-3 h-3" />
@@ -1461,7 +1761,7 @@ function DetailPanel({
             )}
             <Link
               href={`/agent-reader?title=${encodeURIComponent(title)}&doi=${encodeURIComponent((item as any).doi || "")}`}
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#FAF7F0] bg-[#3E6248] hover:bg-[#293E30] px-4 py-2 rounded-xl transition-colors no-underline shadow-xs"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-[#FAF7F0] bg-[#3E6248] dark:bg-[#2D583B] hover:bg-[#293E30] dark:hover:bg-[#386D49] px-4 py-2 rounded-xl transition-colors no-underline shadow-xs"
             >
               <span>Analyze in Reader</span>
               <ArrowUpRight className="w-4 h-4" />
@@ -1499,10 +1799,12 @@ export default function DiscoverPage() {
 
   const user = useAuthStore((state) => state.user);
 
-  // Live Scholarly Data State (OpenAlex, Europe PMC, arXiv, Crossref, & DOAJ)
+  // Live Scholarly Data State (OpenAlex, Europe PMC, arXiv, Crossref, DOAJ, Open Library, Zenodo)
   const [livePapers, setLivePapers] = useState<ScholarlyWork[]>([]);
   const [liveResearchers, setLiveResearchers] = useState<ScholarlyAuthor[]>([]);
   const [liveTopics, setLiveTopics] = useState<ScholarlyTopic[]>([]);
+  const [liveBooks, setLiveBooks] = useState<ScholarlyBook[]>([]);
+  const [liveArtifacts, setLiveArtifacts] = useState<ResearchArtifact[]>([]);
   const [activeQuery, setActiveQuery] = useState("");
   const [isSearchingLive, setIsSearchingLive] = useState(false);
 
@@ -1524,15 +1826,19 @@ export default function DiscoverPage() {
             : activeSort === "Newest"
             ? "newest"
             : "relevance";
-        const [works, authors, topics] = await Promise.all([
+        const [works, authors, topics, books, artifacts] = await Promise.all([
           fetchScholarlyWorks({ query: queryToUse, sort: sortType, limit: 8 }),
           fetchScholarlyResearchers(queryToUse, 4),
           fetchTrendingTopics(),
+          fetchOpenAccessBooks(queryToUse, 4),
+          fetchResearchArtifacts(queryToUse, 4),
         ]);
         if (!isCancelled) {
           setLivePapers(works);
           setLiveResearchers(authors);
           setLiveTopics(topics);
+          setLiveBooks(books);
+          setLiveArtifacts(artifacts);
         }
       } catch {
         // Fallback handled in scholarly-api
@@ -1592,7 +1898,7 @@ export default function DiscoverPage() {
   }, []);
 
   return (
-    <div className="flex flex-1 h-screen overflow-hidden bg-[#FAF7F0] font-sans">
+    <div className="flex flex-1 h-screen overflow-hidden bg-[#FAF7F0] dark:bg-[#0E140F] font-sans">
       {/* Center content stream (Expands to fill all available space, properly responsive) */}
       <main
         id="main-content"
@@ -1602,11 +1908,11 @@ export default function DiscoverPage() {
         <div className="max-w-4xl mx-auto space-y-10">
           {/* Header */}
           <header className="space-y-3">
-            <h1 className="font-serif text-[32px] md:text-[38px] font-normal leading-[1.14] tracking-[-0.02em] text-[#202920] m-0">
+            <h1 className="font-serif text-[32px] md:text-[38px] font-normal leading-[1.14] tracking-[-0.02em] text-[#202920] dark:text-[#EDEAE2] m-0">
               Explore what&apos;s happening in research.
             </h1>
-            <p className="text-[15px] text-[#62685E] font-sans leading-relaxed max-w-2xl m-0">
-              Find papers, researchers, ideas and emerging topics connected to your research canvas across 120M+ indexed publications.
+            <p className="text-[15px] text-[#62685E] dark:text-[#A4B3A2] font-sans leading-relaxed max-w-2xl m-0">
+              Find papers, open-access books, software artifacts, researchers, and emerging topics connected to your research canvas across 250M+ open scholarly records.
             </p>
 
             <div className="pt-2 space-y-3">
@@ -1650,57 +1956,92 @@ export default function DiscoverPage() {
               <div>
                 <h2
                   id="recommended-heading"
-                  className="font-serif text-[22px] font-normal text-[#202920] tracking-tight m-0"
+                  className="font-serif text-[22px] font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight m-0"
                 >
                   Recommended for you
                 </h2>
-                <p className="text-[13px] text-[#62685E] font-sans m-0 mt-0.5">
-                  Live scholarly catalog from 250M+ open scientific publications (OpenAlex & Europe PMC).
+                <p className="text-[13px] text-[#62685E] dark:text-[#A4B3A2] font-sans m-0 mt-0.5">
+                  Live scholarly catalog from OpenAlex, Europe PMC, Open Library, and CERN Zenodo.
                 </p>
               </div>
               {isSearchingLive && (
-                <span className="text-xs font-mono text-[#3E6248] animate-pulse bg-[#DCE6D7] px-2.5 py-1 rounded-full border border-[#66866A]/30">
+                <span className="text-xs font-mono text-[#3E6248] dark:text-[#4ADE80] animate-pulse bg-[#DCE6D7] dark:bg-[#1F2E23] px-2.5 py-1 rounded-full border border-[#66866A]/30 dark:border-[#4ADE80]/30">
                   Syncing live catalog...
                 </span>
               )}
             </div>
 
             <div className="space-y-4">
-              {(livePapers.length > 0 ? livePapers : PAPER_CARDS).map((p) => (
-                <PaperCardComponent
-                  key={p.id}
-                  data={p}
-                  onOpen={setDetailItem}
-                  onSave={handleSave}
-                  onShare={() => showToast("Citation and link copied to clipboard")}
-                  saved={savedItems.has(p.id)}
-                />
-              ))}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {RESEARCHER_CARDS.map((r) => (
-                  <ResearcherCardComponent
-                    key={r.id}
-                    data={r}
+              {/* Papers (Shown in "All" and "Papers") */}
+              {(activeType === "All" || activeType === "Papers") &&
+                (livePapers.length > 0 ? livePapers : PAPER_CARDS).map((p) => (
+                  <PaperCardComponent
+                    key={p.id}
+                    data={p}
                     onOpen={setDetailItem}
-                    followed={followedItems.has(r.id)}
-                    onFollow={handleFollow}
+                    onSave={handleSave}
+                    onShare={() => showToast("Citation and link copied to clipboard")}
+                    saved={savedItems.has(p.id)}
                   />
                 ))}
-                {TOPIC_CARDS.map((t) => (
-                  <TopicCardComponent
-                    key={t.id}
-                    data={t}
+
+              {/* Books (Shown in "All" and "Books") */}
+              {(activeType === "All" || activeType === "Books") &&
+                liveBooks.map((b) => (
+                  <BookCardComponent
+                    key={b.id}
+                    data={b}
                     onOpen={setDetailItem}
-                    followed={followedItems.has(t.id)}
-                    onFollow={handleFollow}
+                    onSave={handleSave}
+                    onShare={() => showToast("Book title and open catalog link copied")}
+                    saved={savedItems.has(b.id)}
                   />
                 ))}
-              </div>
 
-              {LAB_CARDS.map((l) => (
-                <LabCardComponent key={l.id} data={l} onOpen={setDetailItem} />
-              ))}
+              {/* Research Data & Code Artifacts (Shown in "All" and "Datasets & Code") */}
+              {(activeType === "All" || activeType === "Datasets & Code") &&
+                liveArtifacts.map((a) => (
+                  <ArtifactCardComponent
+                    key={a.id}
+                    data={a}
+                    onOpen={setDetailItem}
+                    onSave={handleSave}
+                    onShare={() => showToast("Artifact DOI copied to clipboard")}
+                    saved={savedItems.has(a.id)}
+                  />
+                ))}
+
+              {/* Researchers & Topics (Shown in "All", "Researchers", "Topics") */}
+              {(activeType === "All" || activeType === "Researchers" || activeType === "Topics") && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(activeType === "All" || activeType === "Researchers") &&
+                    (liveResearchers.length > 0 ? liveResearchers : RESEARCHER_CARDS).map((r) => (
+                      <ResearcherCardComponent
+                        key={r.id}
+                        data={r}
+                        onOpen={setDetailItem}
+                        followed={followedItems.has(r.id)}
+                        onFollow={handleFollow}
+                      />
+                    ))}
+                  {(activeType === "All" || activeType === "Topics") &&
+                    (liveTopics.length > 0 ? liveTopics : TOPIC_CARDS).map((t) => (
+                      <TopicCardComponent
+                        key={t.id}
+                        data={t}
+                        onOpen={setDetailItem}
+                        followed={followedItems.has(t.id)}
+                        onFollow={handleFollow}
+                      />
+                    ))}
+                </div>
+              )}
+
+              {/* Labs (Shown in "All" and "Labs") */}
+              {(activeType === "All" || activeType === "Labs") &&
+                LAB_CARDS.map((l) => (
+                  <LabCardComponent key={l.id} data={l} onOpen={setDetailItem} />
+                ))}
             </div>
           </section>
 
@@ -1717,7 +2058,7 @@ export default function DiscoverPage() {
 
       {/* Right Rail (Right Shifted, utilizing empty screen real estate without squeezing center) */}
       <aside
-        className="w-[320px] xl:w-[350px] shrink-0 h-screen overflow-y-auto border-l border-[#E4DCCB] bg-[#FAF7F0] p-6 hidden lg:block"
+        className="w-[320px] xl:w-[350px] shrink-0 h-screen overflow-y-auto border-l border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#131C15] p-6 hidden lg:block"
         aria-label="Research context & interests"
       >
         <RightRail followed={followedItems} onFollow={handleFollow} />

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ReactNode } from "react";
 import CambiumLogo from "@/components/CambiumLogo";
 import { ArrowLeft } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const NODES = [
   { label: "Scientific ML", x: "15%", y: "16%", dot: "#66866A" },
@@ -54,7 +55,7 @@ function NetworkGraph() {
           className="absolute z-10 select-none cursor-default transition-transform duration-200 hover:scale-105"
           style={{ left: node.x, top: node.y, transform: "translate(-50%,-50%)" }}
         >
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-sans font-medium whitespace-nowrap bg-[#FAF7F0] border border-[#E4DCCB] text-[#202920] shadow-[0_2px_8px_rgba(32,41,32,0.08)] hover:border-[#66866A] hover:shadow-[0_4px_14px_rgba(32,41,32,0.12)] transition-all">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-sans font-medium whitespace-nowrap bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] shadow-[0_2px_8px_rgba(32,41,32,0.08)] hover:border-[#66866A] dark:hover:border-[#4ADE80] transition-all">
             <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: node.dot }} />
             {node.label}
           </div>
@@ -66,9 +67,9 @@ function NetworkGraph() {
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 overflow-hidden bg-[#FAF7F0] font-sans text-[#202920]">
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 overflow-hidden bg-[#FAF7F0] dark:bg-[#0E140F] font-sans text-[#202920] dark:text-[#EDEAE2] transition-colors duration-200">
       {/* Left Column — Mineral Sand foundation */}
-      <div className="hidden md:flex flex-col justify-between h-full bg-[#F2EBDD] border-r border-[#E4DCCB] px-8 lg:px-14 py-12 overflow-y-auto relative">
+      <div className="hidden md:flex flex-col justify-between h-full bg-[#F2EBDD] dark:bg-[#131C15] border-r border-[#E4DCCB] dark:border-[#233327] px-8 lg:px-14 py-12 overflow-y-auto relative">
         {/* Subtle radial ambient accent */}
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_30%_20%,rgba(102,134,106,0.08)_0%,transparent_60%)]" />
 
@@ -78,36 +79,36 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
         <div className="flex flex-col justify-center gap-8 w-full max-w-[500px] ml-auto mr-4 lg:mr-8 xl:mr-12 my-auto py-6 relative z-10">
           <div>
-
-            <h1 className="text-3xl lg:text-4xl xl:text-[44px] text-[#202920] mb-4 font-serif font-normal leading-[1.14] tracking-[-0.02em]">
+            <h1 className="text-3xl lg:text-4xl xl:text-[44px] text-[#202920] dark:text-[#EDEAE2] mb-4 font-serif font-normal leading-[1.14] tracking-[-0.02em]">
               Your research world,{" "}
-              <em className="italic text-[#3E6248] font-serif">
+              <em className="italic text-[#3E6248] dark:text-[#4ADE80] font-serif">
                 finally
               </em>{" "}
               connected.
             </h1>
-            <p className="text-[16px] text-[#62685E] font-sans leading-relaxed">
+            <p className="text-[16px] text-[#62685E] dark:text-[#A3B899] font-sans leading-relaxed">
               Build your verified scholarly identity, organize your literature, discover grants and fellowships, and collaborate with researchers worldwide.
             </p>
           </div>
 
           <NetworkGraph />
         </div>
-
-
       </div>
 
       {/* Right Column (Auth Forms) — Parchment canvas */}
-      <div className="flex flex-col justify-center min-h-screen px-6 sm:px-10 lg:px-14 py-12 overflow-y-auto bg-[#FAF7F0]">
+      <div className="flex flex-col justify-center min-h-screen px-6 sm:px-10 lg:px-14 py-12 overflow-y-auto bg-[#FAF7F0] dark:bg-[#0E140F] relative">
+        <div className="absolute top-6 right-6 z-20">
+          <ThemeToggle variant="minimal" />
+        </div>
         <div className="md:hidden mb-6 w-full max-w-[420px] mx-auto">
           <CambiumLogo size="md" href="/" />
         </div>
         <div className="w-full max-w-[420px] mx-auto md:mx-0 md:mr-auto md:ml-4 lg:md:ml-8 xl:md:ml-12 mb-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#62685E] hover:text-[#202920] uppercase tracking-wider transition-colors no-underline group"
+            className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] uppercase tracking-wider transition-colors no-underline group"
           >
-            <ArrowLeft size={13} className="text-[#3E6248] transition-transform group-hover:-translate-x-0.5" />
+            <ArrowLeft size={13} className="text-[#3E6248] dark:text-[#4ADE80] transition-transform group-hover:-translate-x-0.5" />
             <span>Back to CAMBIUM RESEARCH</span>
           </Link>
         </div>

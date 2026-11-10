@@ -95,6 +95,7 @@ const config: Config = {
           50: "var(--color-moss-050)",
           "050": "var(--color-moss-050)",
           100: "var(--color-moss-100)",
+          200: "var(--color-moss-200)",
           300: "var(--color-moss-300)",
           500: "var(--color-moss-500)",
           600: "var(--color-moss-600)",

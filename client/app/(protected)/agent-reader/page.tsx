@@ -310,23 +310,23 @@ export default function AgenticReaderPage() {
   };
 
   return (
-    <div className="flex-1 min-w-0 h-screen overflow-hidden flex flex-col bg-[#FAF7F0] text-[#202920] font-sans selection:bg-[#3E6248]/20 selection:text-[#173F35]">
+    <div className="flex-1 min-w-0 h-screen overflow-hidden flex flex-col bg-[#FAF7F0] dark:bg-[#0E140F] text-[#202920] dark:text-[#EDEAE2] font-sans selection:bg-[#3E6248]/20 selection:text-[#173F35] transition-colors">
       {/* Top Header */}
-      <div className="px-6 py-3.5 border-b border-[#E4DCCB] bg-[#FAF7F0] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
+      <div className="px-4 sm:px-6 py-3.5 border-b border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#0E140F] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-[#DCE6D7] border border-[#66866A]/30 text-[#3E6248]">
+          <div className="p-2 rounded-xl bg-[#DCE6D7] dark:bg-[#1F2E23] border border-[#66866A]/30 dark:border-[#4ADE80]/30 text-[#3E6248] dark:text-[#4ADE80]">
             <BrainCircuit size={20} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-serif text-xl sm:text-2xl font-normal text-[#202920] tracking-tight m-0">
+              <h1 className="font-serif text-xl sm:text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight m-0">
                 Agentic RAG Paper Synthesis Studio
               </h1>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[#3E6248]/10 text-[#3E6248] border border-[#3E6248]/20">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[#3E6248]/10 dark:bg-[#4ADE80]/15 text-[#3E6248] dark:text-[#4ADE80] border border-[#3E6248]/20 dark:border-[#4ADE80]/30">
                 Dual-Pane Active
               </span>
             </div>
-            <p className="text-xs text-[#62685E] font-mono mt-0.5">
+            <p className="text-xs text-[#62685E] dark:text-[#A3B899] font-mono mt-0.5 truncate max-w-xl">
               Manuscript: {manuscript.title} · {manuscript.doi} · {manuscript.pages} Pages Indexed
             </p>
           </div>
@@ -341,61 +341,61 @@ export default function AgenticReaderPage() {
           onChange={handleManuscriptUpload}
         />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="px-3 py-1.5 rounded-lg border border-[#3E6248] bg-[#DCE6D7] hover:bg-[#c9ddc1] text-xs font-mono text-[#3E6248] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-lg border border-[#3E6248] dark:border-[#4ADE80] bg-[#DCE6D7] dark:bg-[#1F2E23] hover:bg-[#c9ddc1] dark:hover:bg-[#25392b] text-xs font-mono text-[#3E6248] dark:text-[#4ADE80] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <UploadCloud size={13} />
             {isUploading ? "Ingesting..." : "Upload Manuscript"}
           </button>
           <button
             onClick={() => setShowLiveFetchModal(true)}
-            className="px-3 py-1.5 rounded-lg border border-[#3E6248]/50 bg-white hover:bg-[#FAF7F0] text-xs font-mono text-[#3E6248] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+            className="px-3 py-1.5 rounded-lg border border-[#3E6248]/50 dark:border-[#4ADE80]/40 bg-white dark:bg-[#18231B] hover:bg-[#FAF7F0] dark:hover:bg-[#1F2E23] text-xs font-mono text-[#3E6248] dark:text-[#4ADE80] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
           >
             <Globe size={13} />
             Fetch Live Paper (DOI / OpenAlex)
           </button>
           <button
             onClick={handleExportSynthesis}
-            className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] bg-white text-xs font-mono text-[#202920] hover:bg-[#FAF7F0] flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] text-xs font-mono text-[#202920] dark:text-[#EDEAE2] hover:bg-[#FAF7F0] dark:hover:bg-[#1F2E23] flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Download size={13} />
-            Export Synthesis Markdown
+            Export Markdown
           </button>
           <Link
             href="/peer-review"
-            className="px-3.5 py-1.5 rounded-lg bg-[#3E6248] hover:bg-[#173F35] text-white text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
+            className="px-3.5 py-1.5 rounded-lg bg-[#3E6248] dark:bg-[#4ADE80] hover:bg-[#173F35] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
           >
             <ShieldCheck size={13} />
-            File Review Dossier
+            Review Dossier
           </Link>
         </div>
       </div>
 
       {/* Live Fetch Modal Dialog */}
       {showLiveFetchModal && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-[#E4DCCB] shadow-2xl max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E4DCCB]">
+        <div className="fixed inset-0 z-50 bg-black/50 dark:bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#131C15] rounded-2xl border border-[#E4DCCB] dark:border-[#233327] shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E4DCCB] dark:border-[#233327]">
               <div className="flex items-center gap-2">
-                <Globe size={18} className="text-[#3E6248]" />
-                <h3 className="font-serif text-lg font-medium text-[#202920]">Fetch Live Scientific Manuscript</h3>
+                <Globe size={18} className="text-[#3E6248] dark:text-[#4ADE80]" />
+                <h3 className="font-serif text-lg font-medium text-[#202920] dark:text-[#EDEAE2] m-0">Fetch Live Scientific Manuscript</h3>
               </div>
               <button
                 onClick={() => setShowLiveFetchModal(false)}
-                className="p-1 rounded-lg text-[#85877B] hover:text-[#202920] cursor-pointer"
+                className="p-1 rounded-lg text-[#85877B] dark:text-[#7E8B7B] hover:text-[#202920] dark:hover:text-[#EDEAE2] cursor-pointer border-0 bg-transparent"
               >
                 <X size={16} />
               </button>
             </div>
-            <p className="text-xs text-[#62685E] leading-relaxed">
+            <p className="text-xs text-[#62685E] dark:text-[#A3B899] leading-relaxed m-0">
               Connect directly to OpenAlex (250M+ open scientific works) or Europe PMC. Enter a DOI, PubMed ID, or paper title to stream full metadata and abstract into your multi-agent audit desk.
             </p>
             <form onSubmit={handleLiveFetch} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-mono uppercase text-[#62685E] font-bold mb-1">
+                <label className="block text-[11px] font-mono uppercase text-[#62685E] dark:text-[#A3B899] font-bold mb-1">
                   DOI, PMID, or Research Title
                 </label>
                 <input
@@ -403,7 +403,7 @@ export default function AgenticReaderPage() {
                   value={liveDoiInput}
                   onChange={(e) => setLiveDoiInput(e.target.value)}
                   placeholder="e.g. 10.1016/j.cels.2025.04.002 or Attention Is All You Need"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4DCCB] text-xs font-mono text-[#202920] focus:outline-none focus:border-[#3E6248]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] text-xs font-mono text-[#202920] dark:text-[#EDEAE2] focus:outline-none focus:border-[#3E6248] dark:focus:border-[#4ADE80]"
                   autoFocus
                 />
               </div>
@@ -411,14 +411,14 @@ export default function AgenticReaderPage() {
                 <button
                   type="button"
                   onClick={() => setShowLiveFetchModal(false)}
-                  className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] text-xs font-mono text-[#62685E] hover:bg-[#FAF7F0] cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] dark:border-[#233327] text-xs font-mono text-[#62685E] dark:text-[#A3B899] hover:bg-[#FAF7F0] dark:hover:bg-[#18231B] cursor-pointer bg-transparent"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isLiveFetching || !liveDoiInput.trim()}
-                  className="px-4 py-1.5 rounded-lg bg-[#3E6248] hover:bg-[#202920] text-white text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                  className="px-4 py-1.5 rounded-lg bg-[#3E6248] dark:bg-[#4ADE80] hover:bg-[#202920] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 border-0"
                 >
                   {isLiveFetching ? <Sparkles size={13} className="animate-spin" /> : <Globe size={13} />}
                   {isLiveFetching ? "Streaming Manuscript..." : "Fetch & Ground Manuscript"}
@@ -429,56 +429,56 @@ export default function AgenticReaderPage() {
         </div>
       )}
 
-      {/* Split-Screen Workspace */}
-      <div className="flex-1 flex min-h-0 divide-x divide-[#E4DCCB]">
+      {/* Split-Screen Workspace (Responsive: flex-col on mobile, flex-row on desktop) */}
+      <div className="flex-1 flex flex-col md:flex-row min-h-0 divide-y md:divide-y-0 md:divide-x divide-[#E4DCCB] dark:divide-[#233327]">
         {/* Left Pane: Academic Manuscript Viewport */}
-        <div className="flex-1 flex flex-col bg-[#FAF7F0] overflow-hidden min-w-[380px]">
+        <div className="flex-1 flex flex-col bg-[#FAF7F0] dark:bg-[#0E140F] overflow-hidden min-w-0">
           {/* Document Toolbar */}
-          <div className="px-6 py-2.5 bg-white border-b border-[#E4DCCB] flex items-center justify-between text-xs font-mono text-[#62685E] shrink-0">
+          <div className="px-4 sm:px-6 py-2.5 bg-white dark:bg-[#18231B] border-b border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between text-xs font-mono text-[#62685E] dark:text-[#A3B899] shrink-0">
             <div className="flex items-center gap-3">
-              <span className="font-semibold text-[#202920]">Page 1 of {manuscript.pages}</span>
+              <span className="font-semibold text-[#202920] dark:text-[#EDEAE2]">Page 1 of {manuscript.pages}</span>
               <span>·</span>
-              <span className="text-[#3E6248] max-w-[220px] truncate">{manuscript.title}</span>
+              <span className="text-[#3E6248] dark:text-[#4ADE80] max-w-[220px] truncate">{manuscript.title}</span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="px-2 py-0.5 bg-white hover:bg-[#FAF7F0] border border-[#E4DCCB] text-[#3E6248] rounded text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
+                className="px-2 py-0.5 bg-white dark:bg-[#131C15] hover:bg-[#FAF7F0] dark:hover:bg-[#1F2E23] border border-[#E4DCCB] dark:border-[#233327] text-[#3E6248] dark:text-[#4ADE80] rounded text-[11px] flex items-center gap-1 cursor-pointer transition-colors"
               >
                 <UploadCloud size={11} />
                 Switch PDF
               </button>
-              <span className="px-2 py-0.5 bg-[#FAF7F0] border border-[#E4DCCB] rounded text-[11px]">
+              <span className="px-2 py-0.5 bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] text-[#62685E] dark:text-[#A3B899] rounded text-[11px]">
                 Zoom: 100%
               </span>
-              <span className="px-2 py-0.5 bg-[#DCE6D7]/60 text-[#3E6248] border border-[#66866A]/20 rounded text-[11px]">
+              <span className="px-2 py-0.5 bg-[#DCE6D7]/60 dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] border border-[#66866A]/20 dark:border-[#4ADE80]/30 rounded text-[11px]">
                 OCR Grounded
               </span>
             </div>
           </div>
 
           {/* Manuscript Render Engine */}
-          <div className="flex-1 overflow-y-auto p-8 sm:p-12 space-y-8 bg-[#FAF7F0]">
-            <div className="max-w-2xl mx-auto bg-white p-10 sm:p-14 rounded-2xl shadow-sm border border-[#E4DCCB] space-y-6">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 lg:p-12 space-y-8 bg-[#FAF7F0] dark:bg-[#0E140F]">
+            <div className="max-w-2xl mx-auto bg-white dark:bg-[#18231B] p-6 sm:p-10 lg:p-14 rounded-2xl shadow-sm border border-[#E4DCCB] dark:border-[#233327] space-y-6">
               {/* Paper Header */}
-              <div className="border-b border-[#E4DCCB] pb-6 space-y-2">
-                <div className="text-[11px] font-mono uppercase tracking-widest text-[#62685E]">
+              <div className="border-b border-[#E4DCCB] dark:border-[#233327] pb-6 space-y-2">
+                <div className="text-[11px] font-mono uppercase tracking-widest text-[#62685E] dark:text-[#A3B899]">
                   {manuscript.journal}
                 </div>
-                <h2 className="font-serif text-2xl sm:text-3xl text-[#202920] leading-snug font-normal">
+                <h2 className="font-serif text-2xl sm:text-3xl text-[#202920] dark:text-[#EDEAE2] leading-snug font-normal">
                   {manuscript.title}
                 </h2>
-                <div className="text-xs text-[#3E6248] font-mono font-medium">
+                <div className="text-xs text-[#3E6248] dark:text-[#4ADE80] font-mono font-medium">
                   {manuscript.authors}
                 </div>
-                <div className="text-[11px] text-[#62685E] font-serif italic">
+                <div className="text-[11px] text-[#62685E] dark:text-[#A3B899] font-serif italic">
                   {manuscript.affiliations}
                 </div>
               </div>
 
               {/* Section 3.1 & 3.2 */}
-              <div className="space-y-4 text-xs sm:text-sm text-[#202920] font-serif leading-relaxed">
-                <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-[#62685E] pt-2">
+              <div className="space-y-4 text-xs sm:text-sm text-[#202920] dark:text-[#EDEAE2] font-serif leading-relaxed">
+                <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-[#62685E] dark:text-[#A3B899] pt-2">
                   3.2 Horn-Clause Treewidth Bounds and Tractable Projection
                 </h3>
 
@@ -490,18 +490,18 @@ export default function AgenticReaderPage() {
                 <div
                   className={`p-4 rounded-xl border transition-all ${
                     activeHighlightLine === "L142-148"
-                      ? "bg-[#DCE6D7]/50 border-[#3E6248] ring-2 ring-[#3E6248]/30"
-                      : "bg-[#FAF7F0] border-[#E4DCCB]"
+                      ? "bg-[#DCE6D7]/50 dark:bg-[#1F2E23]/60 border-[#3E6248] dark:border-[#4ADE80] ring-2 ring-[#3E6248]/30 dark:ring-[#4ADE80]/30"
+                      : "bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327]"
                   }`}
                 >
-                  <div className="flex items-center justify-between text-[10px] font-mono text-[#3E6248] mb-1 font-semibold">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[#3E6248] dark:text-[#4ADE80] mb-1 font-semibold">
                     <span>THEOREM 2 // L142-148</span>
                     <span>GROUNDED BY AGENTIC RAG</span>
                   </div>
-                  <div className="font-mono text-xs bg-white p-3 rounded border border-[#E4DCCB] text-[#173F35] overflow-x-auto">
+                  <div className="font-mono text-xs bg-white dark:bg-[#18231B] p-3 rounded border border-[#E4DCCB] dark:border-[#233327] text-[#173F35] dark:text-[#4ADE80] overflow-x-auto">
                     {"Π_{K}(x) = argmin_{y ∈ Form(K)} ||x - y||_2^2 s.t. tw(G_K) ≤ 3"}
                   </div>
-                  <p className="text-xs text-[#202920] mt-2 font-serif italic">
+                  <p className="text-xs text-[#202920] dark:text-[#EDEAE2] mt-2 font-serif italic">
                     Theorem 2 (Bounded Treewidth Invariance): For all Horn theories with treewidth tw(G) ≤ 3, the projection operator Π converges in polynomial steps O(N log N) without combinatorial explosion.
                   </p>
                 </div>
@@ -510,7 +510,7 @@ export default function AgenticReaderPage() {
                   By ensuring bounded treewidth, the projection step can be interleaved with each reverse diffusion step without expanding runtime beyond conventional stochastic gradient estimation. As established in Appendix C.4, when stereocenters exceed $|C| &gt; 4$, our implementation smoothly switches to loopy belief propagation.
                 </p>
 
-                <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-[#62685E] pt-4">
+                <h3 className="font-sans font-bold text-xs uppercase tracking-wider text-[#62685E] dark:text-[#A3B899] pt-4">
                   4.1 Empirical Ablation and Chemical Validations
                 </h3>
 
@@ -523,14 +523,14 @@ export default function AgenticReaderPage() {
         </div>
 
         {/* Right Pane: Multi-Agent RAG Synthesis Studio */}
-        <div className="w-[480px] flex flex-col bg-white shrink-0 overflow-hidden">
+        <div className="w-full md:w-[440px] lg:w-[480px] flex flex-col bg-white dark:bg-[#131C15] border-t md:border-t-0 md:border-l border-[#E4DCCB] dark:border-[#233327] shrink-0 overflow-hidden">
           {/* Agent Persona Selector */}
-          <div className="p-4 border-b border-[#E4DCCB] bg-[#FAF7F0]/60 space-y-3 shrink-0">
+          <div className="p-4 border-b border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0]/60 dark:bg-[#18231B]/60 space-y-3 shrink-0">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-[#62685E] font-semibold">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#62685E] dark:text-[#A3B899] font-semibold">
                 Active Reasoning Agent
               </span>
-              <span className="text-[10px] font-mono text-[#3E6248] bg-[#DCE6D7] px-2 py-0.5 rounded-full border border-[#66866A]/20">
+              <span className="text-[10px] font-mono text-[#3E6248] dark:text-[#4ADE80] bg-[#DCE6D7] dark:bg-[#1F2E23] px-2 py-0.5 rounded-full border border-[#66866A]/20 dark:border-[#4ADE80]/30 font-semibold">
                 Temperature: 0.1 · Verified
               </span>
             </div>
@@ -549,18 +549,18 @@ export default function AgenticReaderPage() {
                   onClick={() => setSelectedAgent(role)}
                   className={`p-2 rounded-lg text-left text-xs font-mono transition-all cursor-pointer border ${
                     selectedAgent === role
-                      ? "bg-[#3E6248] text-white border-[#3E6248] shadow-xs"
-                      : "bg-white text-[#62685E] border-[#E4DCCB] hover:text-[#202920] hover:bg-[#FAF7F0]"
+                      ? "bg-[#3E6248] dark:bg-[#4ADE80] text-white dark:text-[#0E140F] border-[#3E6248] dark:border-[#4ADE80] shadow-xs font-semibold"
+                      : "bg-white dark:bg-[#18231B] text-[#62685E] dark:text-[#A3B899] border-[#E4DCCB] dark:border-[#233327] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#FAF7F0] dark:hover:bg-[#1F2E23]"
                   }`}
                 >
-                  <div className="font-semibold truncate">{role}</div>
+                  <div className="truncate">{role}</div>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Quick-Prompt Pills */}
-          <div className="px-4 py-2 bg-white border-b border-[#E4DCCB] flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+          <div className="px-4 py-2 bg-white dark:bg-[#18231B] border-b border-[#E4DCCB] dark:border-[#233327] flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
             {[
               "Audit p-hacking risks",
               "Verify Horn clause bounds",
@@ -570,7 +570,7 @@ export default function AgenticReaderPage() {
               <button
                 key={pill}
                 onClick={() => setInputQuery(pill)}
-                className="px-2.5 py-1 rounded-full bg-[#FAF7F0] hover:bg-[#E4DCCB] text-[11px] font-mono text-[#202920] border border-[#E4DCCB] shrink-0 transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-full bg-[#FAF7F0] dark:bg-[#131C15] hover:bg-[#E4DCCB] dark:hover:bg-[#233327] text-[11px] font-mono text-[#202920] dark:text-[#EDEAE2] border border-[#E4DCCB] dark:border-[#233327] shrink-0 transition-colors cursor-pointer"
               >
                 {pill}
               </button>
@@ -578,7 +578,7 @@ export default function AgenticReaderPage() {
           </div>
 
           {/* Conversation Stream */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white dark:bg-[#131C15]">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -588,12 +588,12 @@ export default function AgenticReaderPage() {
               >
                 <div className="flex items-center gap-2 mb-1">
                   {msg.sender === "agent" && (
-                    <div className="flex items-center gap-1 text-[11px] font-mono text-[#3E6248] font-semibold">
+                    <div className="flex items-center gap-1 text-[11px] font-mono text-[#3E6248] dark:text-[#4ADE80] font-semibold">
                       <Bot size={13} />
                       <span>{msg.agentRole}</span>
                     </div>
                   )}
-                  <span className="text-[10px] font-mono text-[#62685E]">
+                  <span className="text-[10px] font-mono text-[#62685E] dark:text-[#7E8B7B]">
                     {msg.timestamp}
                   </span>
                 </div>
@@ -601,33 +601,33 @@ export default function AgenticReaderPage() {
                 <div
                   className={`max-w-[90%] p-4 rounded-xl text-xs sm:text-sm leading-relaxed ${
                     msg.sender === "user"
-                      ? "bg-[#202920] text-white rounded-tr-none font-sans"
-                      : "bg-[#FAF7F0] text-[#202920] border border-[#E4DCCB] rounded-tl-none font-sans"
+                      ? "bg-[#202920] dark:bg-[#4ADE80] text-white dark:text-[#0E140F] rounded-tr-none font-sans font-medium"
+                      : "bg-[#FAF7F0] dark:bg-[#18231B] text-[#202920] dark:text-[#EDEAE2] border border-[#E4DCCB] dark:border-[#233327] rounded-tl-none font-sans"
                   }`}
                 >
                   <div className="whitespace-pre-line">{msg.content}</div>
 
                   {/* Grounded Citation Badges */}
                   {msg.citations && msg.citations.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-[#E4DCCB] space-y-1.5">
-                      <div className="text-[10px] font-mono uppercase tracking-wider text-[#62685E] font-semibold">
+                    <div className="mt-3 pt-3 border-t border-[#E4DCCB] dark:border-[#233327] space-y-1.5">
+                      <div className="text-[10px] font-mono uppercase tracking-wider text-[#62685E] dark:text-[#A3B899] font-semibold">
                         Grounded Evidence In Manuscript:
                       </div>
                       {msg.citations.map((cite, i) => (
                         <div
                           key={i}
                           onClick={() => setActiveHighlightLine(cite.line)}
-                          className="p-2 rounded bg-white border border-[#E4DCCB] hover:border-[#3E6248] transition-all cursor-pointer group"
+                          className="p-2 rounded bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80] transition-all cursor-pointer group"
                         >
-                          <div className="flex items-center justify-between text-[11px] font-mono text-[#3E6248] font-semibold">
+                          <div className="flex items-center justify-between text-[11px] font-mono text-[#3E6248] dark:text-[#4ADE80] font-semibold">
                             <span>
                               Page {cite.page} · {cite.section} ({cite.line})
                             </span>
-                            <span className="text-[10px] text-[#62685E] group-hover:text-[#3E6248]">
+                            <span className="text-[10px] text-[#62685E] dark:text-[#7E8B7B] group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80]">
                               Highlight ↗
                             </span>
                           </div>
-                          <p className="text-[11px] font-serif text-[#62685E] italic mt-1 line-clamp-2">
+                          <p className="text-[11px] font-serif text-[#62685E] dark:text-[#A3B899] italic mt-1 line-clamp-2">
                             "{cite.snippet}"
                           </p>
                         </div>
@@ -641,14 +641,14 @@ export default function AgenticReaderPage() {
             {isThinking && (
               <div className="flex flex-col items-start animate-fade-in">
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#3E6248] font-semibold">
-                    <Sparkles size={13} className="animate-spin text-[#3E6248]" />
+                  <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#3E6248] dark:text-[#4ADE80] font-semibold">
+                    <Sparkles size={13} className="animate-spin text-[#3E6248] dark:text-[#4ADE80]" />
                     <span>Gemini 2.0 Flash · {selectedAgent}</span>
                   </div>
-                  <span className="text-[10px] font-mono text-[#62685E]">Auditing...</span>
+                  <span className="text-[10px] font-mono text-[#62685E] dark:text-[#7E8B7B]">Auditing...</span>
                 </div>
-                <div className="p-3.5 rounded-xl rounded-tl-none bg-[#F2EBDD] border border-[#E4DCCB] text-xs font-mono text-[#3E6248] flex items-center gap-2.5">
-                  <span className="w-2 h-2 rounded-full bg-[#3E6248] animate-ping" />
+                <div className="p-3.5 rounded-xl rounded-tl-none bg-[#F2EBDD] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] text-xs font-mono text-[#3E6248] dark:text-[#4ADE80] flex items-center gap-2.5">
+                  <span className="w-2 h-2 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-ping" />
                   <span>Synthesizing proofs and grounded manuscript citations...</span>
                 </div>
               </div>
@@ -658,7 +658,7 @@ export default function AgenticReaderPage() {
           {/* Prompt Input Form */}
           <form
             onSubmit={handleSendMessage}
-            className="p-4 border-t border-[#E4DCCB] bg-[#FAF7F0] shrink-0"
+            className="p-4 border-t border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#18231B] shrink-0"
           >
             <div className="relative">
               <textarea
@@ -666,7 +666,7 @@ export default function AgenticReaderPage() {
                 onChange={(e) => setInputQuery(e.target.value)}
                 placeholder={`Ask ${selectedAgent} about methodologies, proofs, or claims...`}
                 rows={2}
-                className="w-full pl-3.5 pr-12 py-2.5 rounded-xl border border-[#E4DCCB] bg-white text-xs font-sans text-[#202920] placeholder-[#62685E] focus:outline-none focus:border-[#3E6248] focus:ring-1 focus:ring-[#3E6248] resize-none shadow-xs"
+                className="w-full pl-3.5 pr-12 py-2.5 rounded-xl border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#131C15] text-xs font-sans text-[#202920] dark:text-[#EDEAE2] placeholder-[#62685E] dark:placeholder-[#7E8B7B] focus:outline-none focus:border-[#3E6248] dark:focus:border-[#4ADE80] focus:ring-1 focus:ring-[#3E6248] dark:focus:ring-[#4ADE80] resize-none shadow-xs"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -679,14 +679,14 @@ export default function AgenticReaderPage() {
                 disabled={!inputQuery.trim()}
                 aria-label="Send query to research auditor"
                 title="Send query"
-                className="absolute right-2.5 bottom-2.5 p-2 rounded-lg bg-[#3E6248] hover:bg-[#173F35] disabled:bg-[#E4DCCB] text-white disabled:text-[#62685E] transition-colors cursor-pointer"
+                className="absolute right-2.5 bottom-2.5 p-2 rounded-lg bg-[#3E6248] hover:bg-[#173F35] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] disabled:bg-[#E4DCCB] dark:disabled:bg-[#233327] text-white dark:text-[#0E140F] disabled:text-[#62685E] dark:disabled:text-[#7E8B7B] transition-colors cursor-pointer border-0"
               >
                 <Send size={14} />
               </button>
             </div>
-            <div className="flex items-center justify-between text-[10px] font-mono text-[#62685E] mt-2">
+            <div className="flex items-center justify-between text-[10px] font-mono text-[#62685E] dark:text-[#7E8B7B] mt-2">
               <span>Shift+Enter for newline · Press Enter to query</span>
-              <span className="text-[#3E6248]">Zero-Hallucination Guardrails ON</span>
+              <span className="text-[#3E6248] dark:text-[#4ADE80] font-medium">Zero-Hallucination Guardrails ON</span>
             </div>
           </form>
         </div>
