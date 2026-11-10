@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
 export const alt = "CAMBIUM RESEARCH — The Enterprise Research Operating System";
 export const size = {
   width: 1200,
