@@ -44,6 +44,8 @@
 | :--- | :--- | :--- |
 | **[`code-style.md`](code-style.md)** | Code Quality Standards | Strict TypeScript standards, Next.js App Router rules, React 19 conventions, NestJS dependency injection, and Anti-AI-slop rules. |
 | **[`engineering/standards.md`](engineering/standards.md)** | Repository Conventions | Conventional Commits, branch naming discipline, DTO validation, and token adherence. |
+| **[`engineering/branching-strategy.md`](engineering/branching-strategy.md)** | Branching Strategy | GitHub Flow specification, semantic branch naming (`feat/`, `fix/`, `docs/`), PR lifecycle, and merge standards. |
+| **[`engineering/git-branch-audit.md`](engineering/git-branch-audit.md)** | Branch Audit Report | Full audit of 58 remote branches, merge verification, 5 active PRs, and safe cleanup ledger. |
 | **[`engineering/repository-audit.md`](engineering/repository-audit.md)** | Master Monorepo Audit | Architectural evaluation, structural classification, and monorepo governance findings. |
 | **[`engineering/pull-request-review.md`](engineering/pull-request-review.md)** | Branch & PR Governance | Complete Git branch classification, merge traceability, and safe pruning protocol. |
 | **[`database.md`](database.md)** | PostgreSQL & pgvector Schema | Complete ERD with all 17 TypeORM entities, 1536-dim vector indexing (HNSW), transactional outbox pattern, and migrations. |
