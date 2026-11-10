@@ -35,16 +35,26 @@ S92_Imthiyas_Capstone_Cambium/
 │   └── src/                    # Modular domain architecture (auth, opportunities, users, etc.)
 ├── tokens/                     # W3C DTCG Living Materials Design Tokens
 │   └── cambium.tokens.json     # Single Source of Truth for colors, spacing, and typography
-├── docs/                       # Authoritative Project Specifications
-│   ├── security.md             # Security policy, threat model & cryptographic audit ledger
-│   ├── code-style.md           # Engineering code style, strict TypeScript & Anti-AI-slop rules
-│   ├── database.md             # PostgreSQL 16 schema, TypeORM entities & pgvector HNSW
-│   ├── api-guide.md            # REST API reference, DTO schemas & Bruno collections
-│   ├── architecture.md         # C4 system diagrams, frontend/backend tiers & crawler mesh
-│   ├── testing.md              # Automated testing guide (117 Vitest tests + Playwright)
-│   ├── deployment.md           # Multi-container Docker & cloud runbooks (Render/Vercel)
+├── docs/                       # Authoritative Project Specifications & Governance
+│   ├── architecture/           # C4 system diagrams, ADRs, and technical strategy
+│   ├── decisions/              # Michael Nygard Architecture Decision Records index
+│   ├── engineering/            # Repository audit, branch review, standards, code style
+│   ├── operations/             # Release process, deployment runbooks, disaster recovery
+│   ├── product/                # PRD specifications, requirements overview, user personas
+│   ├── security/               # STRIDE threat model, RBAC matrix, audit ledgers
+│   ├── testing/                # Test pyramid strategy, coverage policies, smoke harnesses
 │   ├── templates/              # PRD.md, ARCHITECTURE.md, DESIGN_SYSTEM.md, SECURITY.md
-│   └── IMPLEMENTATION_PLAN.md  # Milestones, task IDs, and verification gates
+│   └── README.md               # Master documentation index catalog
+├── tests/                      # Monorepo test suites
+│   ├── unit/                   # 9 Jest suites (82 tests): tokens, AST parser, RAG, citations
+│   └── e2e/                    # 6 Playwright suites: auth, discovery, graph, Axe WCAG AA
+├── scripts/                    # Operational tooling and CLI verifications
+│   ├── development/            # Development-only tools (logo calibration)
+│   ├── cron/                   # Automated cron backup jobs
+│   └── systemd/                # Linux systemd service definitions
+├── backups/                    # Database dumps and metadata manifests (gitkeep only)
+├── bruno/                      # Declarative Bruno API collection (38 requests)
+├── nginx/                      # Edge reverse proxy Dockerfile and configuration
 ├── SECURITY.md                 # Root security policy and vulnerability disclosure notice
 └── AGENTS.md                   # THIS FILE — Enforced AI Agent Rules & Verification Protocols
 ```
@@ -124,12 +134,20 @@ Before marking any task as complete, agents **MUST** execute and report on the f
 
 ### 6.1 TypeScript & Type Safety
 ```bash
-npm --prefix client run build # or type-check
-npm --prefix server run build
+npm --prefix client run build
+cd server && npm run build
 ```
 - **Requirement**: Zero TypeScript errors (`tsc` exit code 0).
 
-### 6.2 Linting & Formatting
+### 6.2 Automated Unit & Integration Testing
+```bash
+npm run test:jest            # 82 Jest unit tests across tokens, AST, RAG, citations
+npm --prefix server run test # 117 Vitest unit tests across NestJS API modules
+npm run test:e2e             # Playwright E2E browser smoke harness
+```
+- **Requirement**: 100% test pass rate (199 passing unit tests).
+
+### 6.3 Linting & Formatting
 ```bash
 npm --prefix client run lint
 npm --prefix server run lint

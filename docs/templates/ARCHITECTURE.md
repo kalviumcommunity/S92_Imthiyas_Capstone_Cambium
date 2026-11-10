@@ -63,7 +63,7 @@ C4Container
 
   Container(spa, "Web Application", "Next.js 15, React 19, TypeScript, Tailwind CSS", "Provides living botanical UI, interactive 2D graph, agent reader desk, and personal OS.")
   Container(api, "Core Enterprise API", "NestJS 10, TypeScript, TypeORM", "Handles authentication, RBAC, opportunity matching, lab management, and audit logging.")
-  Container(ai_svc, "AI Intelligence Service", "Python 3.11, FastAPI, Pydantic", "Extracts PDF vector chunks, manages multi-agent synthesis, and calculates semantic bridges.")
+  Container(ai_svc, "AI Intelligence Service", "TypeScript, NestJS 10, TypeORM, Gemini Embedding", "Extracts PDF vector chunks, manages multi-agent synthesis, and calculates semantic bridges.")
   
   ContainerDb(pg, "Primary Database", "PostgreSQL 16 + pgvector", "Stores relational entities, user profiles, opportunities, and 1536-dim semantic embeddings.")
   ContainerDb(redis, "Cache & Job Broker", "Redis 7 + BullMQ", "Provides sub-millisecond query caching, rate limiting, and manages background ingestion queues.")
