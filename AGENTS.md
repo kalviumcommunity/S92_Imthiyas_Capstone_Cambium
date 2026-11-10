@@ -36,8 +36,16 @@ S92_Imthiyas_Capstone_Cambium/
 ├── tokens/                     # W3C DTCG Living Materials Design Tokens
 │   └── cambium.tokens.json     # Single Source of Truth for colors, spacing, and typography
 ├── docs/                       # Authoritative Project Specifications
+│   ├── security.md             # Security policy, threat model & cryptographic audit ledger
+│   ├── code-style.md           # Engineering code style, strict TypeScript & Anti-AI-slop rules
+│   ├── database.md             # PostgreSQL 16 schema, TypeORM entities & pgvector HNSW
+│   ├── api-guide.md            # REST API reference, DTO schemas & Bruno collections
+│   ├── architecture.md         # C4 system diagrams, frontend/backend tiers & crawler mesh
+│   ├── testing.md              # Automated testing guide (117 Vitest tests + Playwright)
+│   ├── deployment.md           # Multi-container Docker & cloud runbooks (Render/Vercel)
 │   ├── templates/              # PRD.md, ARCHITECTURE.md, DESIGN_SYSTEM.md, SECURITY.md
 │   └── IMPLEMENTATION_PLAN.md  # Milestones, task IDs, and verification gates
+├── SECURITY.md                 # Root security policy and vulnerability disclosure notice
 └── AGENTS.md                   # THIS FILE — Enforced AI Agent Rules & Verification Protocols
 ```
 
