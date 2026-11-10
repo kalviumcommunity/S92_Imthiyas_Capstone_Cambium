@@ -35,7 +35,7 @@
 
 <br />
 
-[Explore Live Workspace](http://localhost:3000) • [Product Specifications](docs/templates/PRD.md) • [System Architecture](docs/templates/ARCHITECTURE.md) • [Design System](docs/templates/DESIGN_SYSTEM.md) • [Security & Audit](docs/templates/SECURITY.md) • [Disaster Recovery](docs/DISASTER_RECOVERY_PLAYBOOK.md) • [Production Checklist](docs/ENTERPRISE_PRODUCTION_CHECKLIST.md)
+[Explore Live Workspace](http://localhost:3000) • [Product Specs](docs/templates/PRD.md) • [Architecture](docs/architecture.md) • [API Guide](docs/api-guide.md) • [Database](docs/database.md) • [Security Policy](docs/security.md) • [Code Style](docs/code-style.md) • [Testing](docs/testing.md) • [Deployment](docs/deployment.md) • [Disaster Recovery](docs/DISASTER_RECOVERY_PLAYBOOK.md)
 
 <br />
 <br />
@@ -437,6 +437,13 @@ S92_Imthiyas_Capstone_Cambium/
 │   ├── lib/                            # Zustand stores, TanStack Query hooks & offline cache
 │   └── README.md                       # Dedicated frontend architecture documentation
 ├── docs/                               # Authoritative Specifications, Audits & Playbooks
+│   ├── security.md                     # OWASP ASVS Level 2, STRIDE model & cryptographic ledger
+│   ├── code-style.md                   # Strict TypeScript, React 19, NestJS & Anti-AI-slop rules
+│   ├── database.md                     # PostgreSQL 16 schema, TypeORM entities & pgvector HNSW
+│   ├── api-guide.md                    # REST API reference, DTO schemas & Bruno collection guide
+│   ├── architecture.md                 # C4 system diagrams, frontend/backend tiers & crawler mesh
+│   ├── testing.md                      # Automated testing guide (117 Vitest tests + Playwright)
+│   ├── deployment.md                   # Multi-container Docker & cloud runbooks (Render/Vercel)
 │   ├── templates/                      # Master specifications (PRD, ARCHITECTURE, DESIGN_SYSTEM, SECURITY)
 │   ├── audit/                          # 18-part technical defense, traceability matrix & test reports
 │   ├── DISASTER_RECOVERY_PLAYBOOK.md   # RTO (<30m), RPO (<15m) & PITR restoration procedures

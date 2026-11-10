@@ -12,6 +12,7 @@ import { AiAutocompleteCopilotStudio } from "@/components/ai/AiAutocompleteCopil
 import { useToast } from "@/components/ui/toast";
 import CambiumLogo from "@/components/CambiumLogo";
 import { uploadArtifact, getLocalArtifacts, UploadedArtifact } from "@/lib/api";
+import { useUnsavedChanges } from "@/lib/hooks/useUnsavedChanges";
 
 // ─── Design Tokens (SSOT from 01_Design Systems) ───────────────────────────
 
@@ -2673,6 +2674,12 @@ export default function WorkspacePage() {
   const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; item: any } | null>(null);
 
   const { toast } = useToast();
+
+  // Defensively warn on tab close / reload if workspace edits are currently syncing
+  useUnsavedChanges(
+    syncStatus === "saving",
+    "Your research workspace edits are still synchronizing. Leaving now may discard recent edits."
+  );
 
   // Periodic simulated auto-save & sync
   useEffect(() => {
