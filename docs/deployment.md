@@ -24,7 +24,7 @@ flowchart TD
     DNS["Cloudflare DNS / Edge Network<br>SSL Termination & DDoS Mitigation"]
     Vercel["Frontend Edge Tier (Vercel)<br>Next.js 15 App Router + React 19<br>Living Materials Design Tokens"]
     Render["Backend API Tier (Render / Fly.io)<br>NestJS 10 Modular Enterprise API<br>BullMQ Crawler Queue Processors"]
-    
+
     Supabase[("Primary Relational + Vector Tier (Supabase / RDS)<br>PostgreSQL 16 + pgvector (1536d HNSW Index)")]
     Upstash[("Distributed Cache & Queue (Upstash / Redis 7)<br>Redlock Mutex & BullMQ Ingestion Jobs")]
 
@@ -111,3 +111,4 @@ curl -f https://api.cambium.research/api/telemetry/metrics
 # 3. Run Playwright automated smoke suite against production URL
 TARGET_URL=https://cambium.research npm run test:e2e
 ```
+

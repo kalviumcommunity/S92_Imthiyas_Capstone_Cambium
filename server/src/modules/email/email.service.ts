@@ -23,10 +23,23 @@ export class EmailService {
   }
 
   /**
+   * Strips HTML markup to generate a clean plain-text multipart fallback
+   */
+  private stripHtml(html: string): string {
+    return html
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /**
    * Generic mail sender integrating Resend with graceful console fallback
    */
   async sendMail(to: string, subject: string, html: string): Promise<EmailSendResult> {
     const apiKey = this.getApiKey();
+    const textFallback = this.stripHtml(html);
 
     if (apiKey && apiKey !== 'your_resend_api_key_here' && apiKey.startsWith('re_')) {
       try {
@@ -41,6 +54,7 @@ export class EmailService {
             to,
             subject,
             html,
+            text: textFallback,
           }),
         });
 

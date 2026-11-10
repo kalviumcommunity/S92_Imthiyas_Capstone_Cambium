@@ -188,3 +188,4 @@ The repository includes a ready-to-use **Bruno API Collection** under [`bruno/`]
 2. Click **Open Collection** and select the [`bruno/`](file:///d:/01_PROJECTS/ACTIVE/S92_Imthiyas_Capstone_Cambium/bruno/) folder in the repository root.
 3. Select the `Local Development` environment (`baseUrl: http://localhost:5000/api`).
 4. Execute the `Auth / Login` request to auto-populate the bearer token across all subsequent requests.
+

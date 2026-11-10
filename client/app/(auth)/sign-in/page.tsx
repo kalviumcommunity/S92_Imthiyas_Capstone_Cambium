@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useGoogleLogin } from "@react-oauth/google";
 import { GraduationCap } from "lucide-react";
 import { GoogleIcon, MicrosoftIcon, OrcidIcon } from "@/components/auth/AuthIcons";
@@ -46,6 +46,9 @@ function EyeIcon({ open }: { open: boolean }) {
 
 export default function SignInPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const destination = searchParams.get("redirect") || searchParams.get("returnTo") || "/dashboard";
+
   const setAuth = useAuthStore((state) => state.setAuth);
   const [showPassword, setShowPassword] = useState(false);
   const [showSsoModal, setShowSsoModal] = useState(false);
@@ -64,18 +67,18 @@ export default function SignInPage() {
         });
         if (res.data.success) {
           setAuth(res.data.user, res.data.token);
-          router.push("/dashboard");
+          router.push(destination);
         }
       } catch (err: any) {
         const demoUser = {
           id: "google-user-1",
           username: "scholar_google",
-          email: "scholar@cambium.edu",
-          fullName: "Imthiyas",
-          institution: "MIT CSAIL",
+          email: "scholar@cambium.research",
+          fullName: "Verified Scholar",
+          institution: "Institute of Science",
         };
         setAuth(demoUser, "demo-google-token-" + Date.now());
-        router.push("/dashboard");
+        router.push(destination);
       } finally {
         setLoading(false);
       }
@@ -84,12 +87,12 @@ export default function SignInPage() {
       const demoUser = {
         id: "google-user-1",
         username: "scholar_google",
-        email: "scholar@cambium.edu",
-        fullName: "Imthiyas",
-        institution: "MIT CSAIL",
+        email: "scholar@cambium.research",
+        fullName: "Verified Scholar",
+        institution: "Institute of Science",
       };
       setAuth(demoUser, "demo-google-token-" + Date.now());
-      router.push("/dashboard");
+      router.push(destination);
     },
   });
 
@@ -100,12 +103,12 @@ export default function SignInPage() {
       const demoUser = {
         id: "google-user-1",
         username: "scholar_google",
-        email: "scholar@cambium.edu",
-        fullName: "Imthiyas",
-        institution: "MIT CSAIL",
+        email: "scholar@cambium.research",
+        fullName: "Verified Scholar",
+        institution: "Institute of Science",
       };
       setAuth(demoUser, "demo-google-token-" + Date.now());
-      router.push("/dashboard");
+      router.push(destination);
     }
   };
 
@@ -118,19 +121,19 @@ export default function SignInPage() {
       institution: "Microsoft Research",
     };
     setAuth(demoUser, "demo-ms-token-" + Date.now());
-    router.push("/dashboard");
+    router.push(destination);
   };
 
   const handleOrcidClick = () => {
     const demoUser = {
       id: "orcid-0000-0002-1825-0097",
       username: "orcid_scholar",
-      email: "imthiyas@orcid.org",
-      fullName: "Imthiyas",
-      institution: "MIT CSAIL",
+      email: "scholar@orcid.org",
+      fullName: "Verified Scholar",
+      institution: "Academic Lab",
     };
     setAuth(demoUser, "demo-orcid-token-" + Date.now());
-    router.push("/dashboard");
+    router.push(destination);
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -146,7 +149,7 @@ export default function SignInPage() {
       const data = await loginUser({ usernameOrEmail: email, password });
       if (data.token && data.user) {
         setAuth(data.user, data.token);
-        router.push("/dashboard");
+        router.push(destination);
       }
     } catch (err: any) {
       // Demo mode: if backend is unreachable, allow access for UI exploration
@@ -156,10 +159,10 @@ export default function SignInPage() {
           username: email.split("@")[0],
           email,
           fullName: email.split("@")[0].replace(/\./g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-          institution: "Demo Institution",
+          institution: "Research Institute",
         };
         setAuth(demoUser, "demo-token-" + Date.now());
-        router.push("/dashboard");
+        router.push(destination);
         return;
       }
       setError(err.message || "Sign-in failed. Please try again.");

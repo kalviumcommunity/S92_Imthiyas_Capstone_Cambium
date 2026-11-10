@@ -1,0 +1,58 @@
+<svg width="1000" height="460" viewBox="0 0 1000 460" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1000" height="460" fill="#FAF7F0"/>
+  <rect x="1" y="1" width="998" height="458" stroke="#E4DCCB" stroke-width="2"/>
+  
+  <!-- Document Split View Container -->
+  <rect x="120" y="50" width="760" height="360" rx="16" fill="#FFFFFF" stroke="#E4DCCB" stroke-width="2" filter="drop-shadow(0 20px 30px rgba(32,41,32,0.08))"/>
+  
+  <!-- Left Side: Paper Reading Canvas -->
+  <rect x="120" y="50" width="460" height="360" rx="16" fill="#FFFFFF"/>
+  <line x1="580" y1="50" x2="580" y2="410" stroke="#E4DCCB" stroke-width="2"/>
+
+  <!-- Paper Title & Metadata -->
+  <text x="150" y="90" font-family="serif" font-size="18" fill="#202920" font-weight="bold">Targeted Nanoparticle Delivery in Neural Tissue</text>
+  <text x="150" y="110" font-family="monospace" font-size="10" fill="#62685E">DOI: 10.1038/s41586-026-0428-1 · Section 3.2 Methodology</text>
+
+  <!-- Highlighted Text Body -->
+  <rect x="150" y="130" width="380" height="12" rx="3" fill="#E4DCCB" opacity="0.6"/>
+  <rect x="150" y="150" width="350" height="12" rx="3" fill="#E4DCCB" opacity="0.6"/>
+  
+  <!-- Highlighted Region -->
+  <rect x="150" y="172" width="390" height="44" rx="6" fill="#DCE6D7" stroke="#3E6248" stroke-dasharray="4 4"/>
+  <text x="160" y="190" font-family="serif" font-size="12" fill="#202920" font-style="italic">"Lipid vesicle encapsulation demonstrated a 4.2-fold increase in blood-brain</text>
+  <text x="160" y="206" font-family="serif" font-size="12" fill="#202920" font-style="italic">barrier penetration across murine models compared to unfunctionalized vectors."</text>
+
+  <rect x="150" y="230" width="360" height="12" rx="3" fill="#E4DCCB" opacity="0.6"/>
+  <rect x="150" y="250" width="380" height="12" rx="3" fill="#E4DCCB" opacity="0.6"/>
+  <rect x="150" y="270" width="320" height="12" rx="3" fill="#E4DCCB" opacity="0.6"/>
+  <rect x="150" y="290" width="340" height="12" rx="3" fill="#E4DCCB" opacity="0.6"/>
+  <rect x="150" y="310" width="280" height="12" rx="3" fill="#E4DCCB" opacity="0.6"/>
+
+  <!-- Right Side: Threaded Annotation Sidebar -->
+  <rect x="581" y="50" width="298" height="360" rx="16" fill="#FAF7F0"/>
+  <text x="605" y="85" font-family="sans-serif" font-size="13" fill="#202920" font-weight="bold">Scholar Annotation Thread (2)</text>
+  
+  <!-- Comment 1 -->
+  <rect x="600" y="105" width="260" height="100" rx="10" fill="#FFFFFF" stroke="#E4DCCB"/>
+  <circle cx="620" cy="125" r="10" fill="#3E6248"/>
+  <text x="616" y="129" font-family="sans-serif" font-size="10" fill="#FFFFFF" font-weight="bold">E</text>
+  <text x="636" y="125" font-family="sans-serif" font-size="11" fill="#202920" font-weight="600">Dr. Elena Rodriguez</text>
+  <text x="636" y="137" font-family="monospace" font-size="9" fill="#85877B">Postdoc · 2h ago</text>
+  <text x="612" y="158" font-family="sans-serif" font-size="11" fill="#4A5246">Can we replicate this with our lab's</text>
+  <text x="612" y="172" font-family="sans-serif" font-size="11" fill="#4A5246">PEGylated conjugate protocol?</text>
+  <rect x="612" y="182" width="60" height="16" rx="4" fill="#DCE6D7"/>
+  <text x="618" y="194" font-family="monospace" font-size="9" fill="#3E6248">CRediT: Meth</text>
+
+  <!-- Comment 2 -->
+  <rect x="600" y="220" width="260" height="88" rx="10" fill="#FFFFFF" stroke="#E4DCCB"/>
+  <circle cx="620" cy="240" r="10" fill="#233527"/>
+  <text x="616" y="244" font-family="sans-serif" font-size="10" fill="#4ADE80" font-weight="bold">A</text>
+  <text x="636" y="240" font-family="sans-serif" font-size="11" fill="#202920" font-weight="600">Prof. Aris Thorne</text>
+  <text x="636" y="252" font-family="monospace" font-size="9" fill="#85877B">PI · 45m ago</text>
+  <text x="612" y="272" font-family="sans-serif" font-size="11" fill="#4A5246">Yes — I've attached the IRB amendment</text>
+  <text x="612" y="286" font-family="sans-serif" font-size="11" fill="#4A5246">to our project canvas #42.</text>
+
+  <!-- Add Comment Bar -->
+  <rect x="600" y="324" width="260" height="34" rx="8" fill="#FFFFFF" stroke="#3E6248"/>
+  <text x="614" y="346" font-family="sans-serif" font-size="11" fill="#85877B">Reply to thread (⌘↵ to send)...</text>
+</svg>

@@ -165,8 +165,8 @@ CREATE EXTENSION IF NOT EXISTS vector;
 ### 4.2 High-Speed HNSW Indexing
 For sub-50ms approximate nearest neighbor (ANN) retrieval over large opportunity callsets, Cambium utilizes an **HNSW** (Hierarchical Navigable Small World) index:
 ```sql
-CREATE INDEX IF NOT EXISTS idx_opportunities_embedding_hnsw 
-ON research_opportunities 
+CREATE INDEX IF NOT EXISTS idx_opportunities_embedding_hnsw
+ON research_opportunities
 USING hnsw (embedding vector_cosine_ops)
 WITH (m = 16, ef_construction = 64);
 ```
@@ -174,10 +174,10 @@ WITH (m = 16, ef_construction = 64);
 ### 4.3 Semantic Similarity Querying
 ```sql
 -- Retrieve top 10 opportunities matching user research vector
-SELECT 
-    id, 
-    title, 
-    funder, 
+SELECT
+    id,
+    title,
+    funder,
     deadline,
     1 - (embedding <=> :targetEmbedding) AS similarity_score
 FROM research_opportunities
@@ -200,3 +200,4 @@ npm --prefix server run seed
 # 3. Create fresh schema migration from entities
 npm --prefix server run typeorm:migration:generate -- -n InitialSchema
 ```
+

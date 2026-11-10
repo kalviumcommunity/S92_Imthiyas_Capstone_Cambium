@@ -91,3 +91,4 @@ All pull requests trigger the GitHub Actions workflow [`.github/workflows/ci.yml
 2. `npm --prefix client run build` (Ensures zero Next.js type or prerender errors)
 3. `npm --prefix server run build` (Ensures zero TypeScript compilation errors)
 4. `npm --prefix server test` (Ensures all 117 unit tests pass with exit code 0)
+

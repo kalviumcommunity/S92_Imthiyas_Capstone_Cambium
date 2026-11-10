@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Manrope, Plus_Jakarta_Sans, Newsreader, JetBrains_Mono } from "next/font/google";
 import { QueryProvider } from "@/lib/query-provider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { UniversalThemeGearbox } from "@/components/ui/theme-toggle";
 import OfflineSyncBanner from "@/components/OfflineSyncBanner";
+import { CookieConsent } from "@/components/CookieConsent";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -37,10 +38,69 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cambium.research";
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FAF7F0" },
+    { media: "(prefers-color-scheme: dark)", color: "#141E16" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
-  title: "CAMBIUM RESEARCH — The Enterprise Research Operating System",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "CAMBIUM RESEARCH — The Enterprise Research Operating System",
+    template: "%s — Cambium Research",
+  },
   description:
-    "Discover ideas, build your academic identity, collaborate with researchers, explore opportunities, and organize the knowledge behind your work.",
+    "Discover research opportunities, build verified academic identity, synthesize cross-disciplinary literature, and organize the knowledge behind your scholarship.",
+  applicationName: "Cambium Research",
+  authors: [{ name: "Shaik Mohamed Imthiyas T", url: siteUrl }],
+  creator: "Shaik Mohamed Imthiyas T",
+  publisher: "Cambium Research",
+  keywords: [
+    "research opportunities",
+    "grant discovery",
+    "open science",
+    "scholarly communication",
+    "preprints",
+    "citation radar",
+    "academic identity",
+    "IRB compliance",
+    "CRediT taxonomy",
+    "knowledge graph",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteUrl,
+    siteName: "Cambium Research",
+    title: "CAMBIUM RESEARCH — The Enterprise Research Operating System",
+    description:
+      "The Enterprise Research Operating System. Aggregating 250M+ open publications, funding calls, and verified scholar collaboration.",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Cambium Research — The Enterprise Research Operating System",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CAMBIUM RESEARCH — The Enterprise Research Operating System",
+    description:
+      "Discover research opportunities, build verified academic identity, and synthesize cross-disciplinary literature.",
+    images: ["/opengraph-image"],
+    creator: "@cambiumresearch",
+  },
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -51,6 +111,37 @@ export const metadata: Metadata = {
     shortcut: "/public_logo/favicon.svg",
     apple: "/public_logo/favicon-dark.svg",
   },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "Cambium Research",
+      url: siteUrl,
+      logo: `${siteUrl}/public_logo/cambium-logo-dark.svg`,
+      description: "AI-Powered Research Opportunity Discovery and Intelligence Platform for Global Scholarship.",
+      founder: {
+        "@type": "Person",
+        name: "Shaik Mohamed Imthiyas T",
+      },
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${siteUrl}/#application`,
+      name: "Cambium Research Platform",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      description: "The Enterprise Operating System for Modern Scholarship.",
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -65,7 +156,6 @@ export default function RootLayout({
       className={`${manrope.variable} ${plusJakartaSans.variable} ${newsreader.variable} ${jetbrainsMono.variable}`}
     >
       <head>
-        <title>CAMBIUM RESEARCH — The Enterprise Research Operating System</title>
         {/* Anti-FOUC inline script for instant zero-flash theme rendering */}
         <script
           dangerouslySetInnerHTML={{
@@ -88,6 +178,11 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body suppressHydrationWarning className="min-h-screen bg-canvas text-ink-primary font-sans antialiased transition-colors duration-200">
         <QueryProvider>
@@ -97,6 +192,7 @@ export default function RootLayout({
                 {children}
                 <UniversalThemeGearbox />
                 <OfflineSyncBanner />
+                <CookieConsent />
               </GoogleOAuthProvider>
             </ThemeProvider>
           </LanguageProvider>

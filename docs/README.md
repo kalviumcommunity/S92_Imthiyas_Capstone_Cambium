@@ -72,3 +72,4 @@ npm --prefix server test
 # Execute Playwright E2E smoke tests
 npm run test:e2e
 ```
+

@@ -1,0 +1,8 @@
+Contact: mailto:security@cambium.research
+Contact: mailto:shaik.imthiyas.t@gmail.com
+Expires: 2027-11-10T09:00:00.000Z
+Preferred-Languages: en
+Canonical: https://cambium.research/.well-known/security.txt
+Policy: https://github.com/kalviumcommunity/S92_Imthiyas_Capstone_Cambium/blob/main/docs/security.md
+Acknowledgments: https://github.com/kalviumcommunity/S92_Imthiyas_Capstone_Cambium/blob/main/README.md
+Hiring: https://cambium.research/careers

@@ -29,7 +29,7 @@ Our security architecture enforces **Defense-in-Depth** across every tier:
 flowchart TD
     User["Scholar / Client Application"] -->|HTTPS / TLS 1.3| Gateway["Next.js Edge Proxy & Middleware"]
     Gateway -->|Forward Headers + CSP| NestAPI["NestJS 10 API Gateway (Port 5000)"]
-    
+
     subgraph NestAPI["NestJS 10 Security Layer"]
         Helmet["Helmet (CSP, HSTS, X-Frame-Options)"]
         Throttler["Throttler Rate Limiter (Redis / Memory)"]
@@ -134,3 +134,4 @@ If you discover a potential security vulnerability in Cambium, please adhere to 
    - Security Team: `security@cambium.research`
    - Author / Lead Architect: Shaik Mohamed Imthiyas T (`shaik.imthiyas.t@gmail.com`)
 3. The security team will acknowledge receipt within 24 hours and issue a patched release branch.
+

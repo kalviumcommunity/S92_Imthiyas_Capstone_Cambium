@@ -1,0 +1,25 @@
+# Cambium Research Platform
+> The Enterprise Research Operating System for Modern Scholarship
+
+## Overview
+Cambium is an AI-powered Research Opportunity Discovery and Intelligence Platform. It aggregates global research funding (grants, fellowships, conferences, calls for papers) and indexes 250M+ open scientific publications across OpenAlex, Cornell arXiv, Crossref, and DOAJ.
+
+## Core Capabilities
+- **Opportunity Discovery**: Real-time aggregation of active RFPs from NSF, NIH, Horizon Europe, and foundations, paired with 1536-dimensional semantic similarity vector search.
+- **AI Autocomplete Engine**: Sub-20ms real-time ghost text and query completion using local RAG caching and Gemini 1.5 Flash.
+- **Academic Social & Community**: Scholar-to-scholar connections, hypothesis discussions, and preprint review feeds.
+- **Research Workspace**: Integrated literature synthesis, citation management, BibTeX/RIS export, and project collaboration.
+- **Institutional Compliance & Audit**: Cryptographic SHA-256 audit ledger, CRediT contributor taxonomy tracking, and SAML 2.0 Single Sign-On.
+
+## Architecture
+- **Frontend**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, W3C DTCG Living Materials tokens.
+- **Backend**: NestJS 10 Enterprise API, TypeORM, BullMQ, Redis 7.
+- **Database**: PostgreSQL 16 + pgvector (1536-dim HNSW cosine indexing).
+
+## Key Public URLs
+- Primary Platform: https://cambium.research
+- Live Scholarly Discovery: https://cambium.research/discover
+- Research Opportunities: https://cambium.research/opportunities
+- Publications & Literature: https://cambium.research/publications
+- Technical Documentation & Specifications: https://github.com/kalviumcommunity/S92_Imthiyas_Capstone_Cambium/tree/main/docs
+- Security & Vulnerability Disclosure: https://cambium.research/.well-known/security.txt

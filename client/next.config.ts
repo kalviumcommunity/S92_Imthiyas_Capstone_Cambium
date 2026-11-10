@@ -10,6 +10,7 @@ const tracingRoot = fs.existsSync(path.join(__dirname, "..", "package.json"))
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
+  trailingSlash: false,
   outputFileTracingRoot: tracingRoot,
   eslint: {
     ignoreDuringBuilds: true,

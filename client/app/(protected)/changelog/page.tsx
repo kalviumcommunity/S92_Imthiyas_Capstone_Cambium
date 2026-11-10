@@ -44,7 +44,7 @@ const releases: ReleaseItem[] = [
     latest: true,
     category: "Major",
     image: {
-      src: "https://images.unsplash.com/photo-1555421689-491a97ff2040?w=1000&h=460&fit=crop&auto=format",
+      src: "/changelog/command-palette-preview.svg",
       alt: "Global search interface showing universal command palette in Cambium",
     },
     tags: [
@@ -95,7 +95,7 @@ const releases: ReleaseItem[] = [
     latest: false,
     category: "Major",
     image: {
-      src: "https://images.unsplash.com/photo-1517842645767-c639042777db?w=1000&h=460&fit=crop&auto=format",
+      src: "/changelog/annotation-preview.svg",
       alt: "Collaborative annotation view showing highlighted text with team comments",
     },
     tags: [

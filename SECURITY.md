@@ -21,3 +21,4 @@ Please do not disclose security vulnerabilities publicly through issues or discu
    - **Security Team**: `security@cambium.research`
 2. You will receive an acknowledgment within 24 hours.
 3. Fixes are deployed via emergency hotfix branches with zero regression verification.
+

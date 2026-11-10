@@ -32,7 +32,7 @@ flowchart TB
     ClientApp["Next.js 15 Client App (React 19 + TypeScript)<br>Living Materials Design Tokens<br>Port 3000"]
     EdgeProxy["Next.js Edge Proxy & Middleware<br>Route Protection & Security Headers"]
     NestServer["NestJS 10 Enterprise API Server<br>Modular Domain Controllers & Services<br>Port 5000"]
-    
+
     PostgreSQL[("PostgreSQL 16 + pgvector<br>Relational Entities + 1536d Embeddings<br>Port 5432")]
     RedisQueue[("Redis 7 + BullMQ<br>Crawler Queues & Rate Limits<br>Port 6379")]
     ExternalMesh["Federated Open Scholarly Mesh<br>• OpenAlex (250M+ Works)<br>• Cornell arXiv (Preprints)<br>• Crossref (150M+ DOIs)<br>• DOAJ (Open Access)<br>• Grants.gov (Federal RFPs)"]
@@ -86,3 +86,4 @@ flowchart TB
 3. Server evaluates query against Gemini 1.5 Flash / RAG catalog.
 4. Returns sub-20ms completion: `{ ghostText, suggestions, source, latencyMs }`.
 5. User hits `Tab` to accept ghost text or `Enter` to select from suggestions.
+
