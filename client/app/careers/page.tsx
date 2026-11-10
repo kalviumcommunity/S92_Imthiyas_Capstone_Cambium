@@ -357,7 +357,7 @@ export default function CareersPage() {
                     },
                     {
                       role: "Full-Stack Scholar OS Engineer",
-                      desc: "Building low-latency Next.js and FastAPI services, offline-first scholar notebook sync, and real-time collaboration engines.",
+                      desc: "Building low-latency Next.js and NestJS enterprise services, offline-first scholar notebook sync, and real-time collaboration engines.",
                     },
                     {
                       role: "Scholarly Data Ethics & Verification Fellow",
