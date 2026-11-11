@@ -314,34 +314,34 @@ export default function ScholarMessagesPage() {
   );
 
   return (
-    <div className="flex-1 min-w-0 h-screen overflow-hidden bg-[#FAF7F0] text-[#202920] font-sans flex flex-col">
+    <div className="flex-1 min-w-0 h-screen overflow-hidden bg-[#FAF7F0] dark:bg-[#0E140F] text-[#202920] dark:text-[#EDEAE2] font-sans flex flex-col">
       {/* Top Header */}
-      <div className="px-6 py-4 border-b border-[#E4DCCB] bg-[#FAF7F0]/95 backdrop-blur-md flex items-center justify-between shrink-0">
+      <div className="px-6 py-4 border-b border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0]/95 dark:bg-[#0E140F]/95 backdrop-blur-md flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-[#DCE6D7] border border-[#66866A]/30 text-[#3E6248]">
+          <div className="p-2.5 rounded-xl bg-[#DCE6D7] dark:bg-[#1F2E23] border border-[#66866A]/30 dark:border-[#4ADE80]/30 text-[#3E6248] dark:text-[#4ADE80]">
             <MessageSquare size={20} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-serif text-xl font-normal text-[#202920] tracking-tight m-0">
+              <h1 className="font-serif text-xl font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight m-0">
                 Scholar Direct Messaging Desk
               </h1>
               <span
                 className={`px-2 py-0.5 rounded-full text-[10.5px] font-mono font-medium border flex items-center gap-1.5 ${
                   isSocketConnected
-                    ? "bg-[#DCE6D7] text-[#3E6248] border-[#66866A]/30"
-                    : "bg-[#F2EBDD] text-[#85877B] border-[#E4DCCB]"
+                    ? "bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] border-[#66866A]/30 dark:border-[#4ADE80]/30"
+                    : "bg-[#F2EBDD] dark:bg-[#18231B] text-[#85877B] dark:text-[#7A8C78] border-[#E4DCCB] dark:border-[#233327]"
                 }`}
               >
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${
-                    isSocketConnected ? "bg-[#3E6248] animate-pulse" : "bg-[#85877B]"
+                    isSocketConnected ? "bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" : "bg-[#85877B] dark:text-[#7A8C78]"
                   }`}
                 />
                 {isSocketConnected ? "Encrypted WebSocket Mesh Active" : "In-Memory Session"}
               </span>
             </div>
-            <p className="text-xs text-[#62685E] font-sans mt-0.5">
+            <p className="text-xs text-[#62685E] dark:text-[#A4B3A2] font-sans mt-0.5">
               1-on-1 confidential scholar communication with line-level paper grounding & grant co-authorship.
             </p>
           </div>
@@ -350,13 +350,13 @@ export default function ScholarMessagesPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/community"
-            className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] bg-white text-xs font-mono font-medium text-[#202920] hover:bg-[#FAF7F0] transition-colors"
+            className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] text-xs font-mono font-medium text-[#202920] dark:text-[#EDEAE2] hover:bg-[#FAF7F0] dark:hover:bg-[#1F2E23] transition-colors"
           >
             ← Community Feed
           </Link>
           <Link
             href="/workspace"
-            className="px-3 py-1.5 rounded-lg bg-[#3E6248] hover:bg-[#202920] text-white text-xs font-mono font-medium transition-colors"
+            className="px-3 py-1.5 rounded-lg bg-[#3E6248] dark:bg-[#2D583B] hover:bg-[#202920] dark:hover:bg-[#386D49] text-white text-xs font-mono font-medium transition-colors"
           >
             Project Workspaces ↗
           </Link>
@@ -366,11 +366,11 @@ export default function ScholarMessagesPage() {
       {/* Main 3-Column Layout */}
       <div className="flex-1 min-h-0 flex overflow-hidden">
         {/* Left Column: Conversations Roster */}
-        <div className="w-80 md:w-88 border-r border-[#E4DCCB] bg-white flex flex-col shrink-0">
-          <div className="p-3.5 border-b border-[#E4DCCB] space-y-2.5">
+        <div className="w-80 md:w-88 border-r border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#131C15] flex flex-col shrink-0">
+          <div className="p-3.5 border-b border-[#E4DCCB] dark:border-[#233327] space-y-2.5">
             <div className="relative">
               <Search
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#85877B]"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#85877B] dark:text-[#7A8C78]"
                 size={14}
               />
               <input
@@ -378,26 +378,26 @@ export default function ScholarMessagesPage() {
                 placeholder="Search connected scholars, topics..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-8 py-2 rounded-full border border-[#E4DCCB] bg-[#FAF7F0] text-xs font-sans text-[#202920] focus:outline-none focus:border-[#3E6248] shadow-xs hover:shadow-sm transition-all"
+                className="w-full pl-9 pr-8 py-2 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#18231B] text-xs font-sans text-[#202920] dark:text-[#EDEAE2] focus:outline-none focus:border-[#3E6248] dark:focus:border-[#4ADE80] shadow-xs hover:shadow-sm transition-all"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#85877B] hover:text-[#202920] p-0.5"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#85877B] dark:text-[#7A8C78] hover:text-[#202920] dark:hover:text-[#EDEAE2] p-0.5"
                   title="Clear search"
                 >
                   ✕
                 </button>
               )}
             </div>
-            <div className="flex items-center justify-between text-[11px] font-mono text-[#62685E]">
+            <div className="flex items-center justify-between text-[11px] font-mono text-[#62685E] dark:text-[#A4B3A2]">
               <span>Mutual Scholars ({scholars.length})</span>
-              <span className="text-[#3E6248] font-semibold">2-Way Verified</span>
+              <span className="text-[#3E6248] dark:text-[#4ADE80] font-semibold">2-Way Verified</span>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto divide-y divide-[#E4DCCB]/50">
+          <div className="flex-1 overflow-y-auto divide-y divide-[#E4DCCB]/50 dark:divide-[#233327]/50">
             {filteredScholars.map((scholar) => {
               const isSelected = scholar.id === activeScholarId;
               return (
@@ -411,7 +411,9 @@ export default function ScholarMessagesPage() {
                     );
                   }}
                   className={`w-full p-3.5 text-left transition-colors flex items-start gap-3 cursor-pointer ${
-                    isSelected ? "bg-[#FAF7F0] border-l-4 border-l-[#3E6248]" : "hover:bg-[#FAF7F0]/60"
+                    isSelected
+                      ? "bg-[#FAF7F0] dark:bg-[#18231B] border-l-4 border-l-[#3E6248] dark:border-l-[#4ADE80]"
+                      : "hover:bg-[#FAF7F0]/60 dark:hover:bg-[#18231B]/60"
                   }`}
                 >
                   <div className="relative shrink-0">
@@ -422,29 +424,29 @@ export default function ScholarMessagesPage() {
                       {scholar.initials}
                     </div>
                     {scholar.isOnline && (
-                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#4ADE80] border-2 border-white" />
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#4ADE80] border-2 border-white dark:border-[#131C15]" />
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-xs font-bold text-[#202920] truncate">
+                      <span className="text-xs font-bold text-[#202920] dark:text-[#EDEAE2] truncate">
                         {scholar.name}
                       </span>
-                      <span className="text-[10px] font-mono text-[#85877B] shrink-0 ml-1">
+                      <span className="text-[10px] font-mono text-[#85877B] dark:text-[#7A8C78] shrink-0 ml-1">
                         {scholar.lastMessageTime}
                       </span>
                     </div>
-                    <p className="text-[11px] text-[#62685E] truncate mb-1">
+                    <p className="text-[11px] text-[#62685E] dark:text-[#A4B3A2] truncate mb-1">
                       {scholar.institution}
                     </p>
-                    <p className="text-xs text-[#202920] truncate font-sans">
+                    <p className="text-xs text-[#202920] dark:text-[#EDEAE2] truncate font-sans">
                       {scholar.lastMessage}
                     </p>
                   </div>
 
                   {scholar.unreadCount > 0 && (
-                    <span className="px-1.5 py-0.5 rounded-full bg-[#3E6248] text-white text-[10px] font-mono font-bold shrink-0">
+                    <span className="px-1.5 py-0.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] text-white dark:text-[#0E140F] text-[10px] font-mono font-bold shrink-0">
                       {scholar.unreadCount}
                     </span>
                   )}
@@ -455,9 +457,9 @@ export default function ScholarMessagesPage() {
         </div>
 
         {/* Center Column: Active Conversation */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#FAF7F0]">
+        <div className="flex-1 flex flex-col min-w-0 bg-[#FAF7F0] dark:bg-[#0E140F]">
           {/* Conversation Header */}
-          <div className="px-6 py-3 border-b border-[#E4DCCB] bg-white flex items-center justify-between shrink-0 shadow-2xs">
+          <div className="px-6 py-3 border-b border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#131C15] flex items-center justify-between shrink-0 shadow-2xs">
             <div className="flex items-center gap-3">
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs text-white"
@@ -467,26 +469,26 @@ export default function ScholarMessagesPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-[#202920]">
+                  <span className="text-sm font-bold text-[#202920] dark:text-[#EDEAE2]">
                     {activeScholar.name}
                   </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#DCE6D7] text-[#3E6248] border border-[#66866A]/20">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] border border-[#66866A]/20 dark:border-[#4ADE80]/20">
                     ORCID: {activeScholar.orcid}
                   </span>
                 </div>
-                <p className="text-xs text-[#62685E]">
+                <p className="text-xs text-[#62685E] dark:text-[#A4B3A2]">
                   {activeScholar.role} · {activeScholar.institution}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono text-[#62685E] hidden sm:inline">
-                h-index: <strong className="text-[#202920]">{activeScholar.hIndex}</strong>
+              <span className="text-[11px] font-mono text-[#62685E] dark:text-[#A4B3A2] hidden sm:inline">
+                h-index: <strong className="text-[#202920] dark:text-[#EDEAE2]">{activeScholar.hIndex}</strong>
               </span>
               <button
                 onClick={() => triggerToast(`Profile dossier exported for ${activeScholar.name}`)}
-                className="p-1.5 rounded-lg border border-[#E4DCCB] hover:bg-[#FAF7F0] text-[#62685E] cursor-pointer"
+                className="p-1.5 rounded-lg border border-[#E4DCCB] dark:border-[#233327] hover:bg-[#FAF7F0] dark:hover:bg-[#1F2E23] text-[#62685E] dark:text-[#A4B3A2] cursor-pointer"
                 title="Options"
               >
                 <MoreVertical size={15} />
@@ -497,7 +499,7 @@ export default function ScholarMessagesPage() {
           {/* Messages Scroll Area */}
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
             <div className="text-center my-2">
-              <span className="px-3 py-1 rounded-full text-[10px] font-mono text-[#85877B] bg-[#F2EBDD] border border-[#E4DCCB]">
+              <span className="px-3 py-1 rounded-full text-[10px] font-mono text-[#85877B] dark:text-[#7A8C78] bg-[#F2EBDD] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327]">
                 Academic Encryption Active · CRediT Verified Connection
               </span>
             </div>
@@ -510,8 +512,8 @@ export default function ScholarMessagesPage() {
                 <div
                   className={`max-w-[78%] md:max-w-[65%] rounded-2xl p-4 text-xs font-sans shadow-xs ${
                     msg.isMe
-                      ? "bg-[#3E6248] text-white rounded-br-xs"
-                      : "bg-white text-[#202920] border border-[#E4DCCB] rounded-bl-xs"
+                      ? "bg-[#3E6248] dark:bg-[#2D583B] text-white rounded-br-xs"
+                      : "bg-white dark:bg-[#18231B] text-[#202920] dark:text-[#EDEAE2] border border-[#E4DCCB] dark:border-[#233327] rounded-bl-xs"
                   }`}
                 >
                   <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
@@ -522,7 +524,7 @@ export default function ScholarMessagesPage() {
                       className={`mt-3 p-3 rounded-xl border transition-all ${
                         msg.isMe
                           ? "bg-[#2A4633] border-white/20 text-white"
-                          : "bg-[#FAF7F0] border-[#E4DCCB] text-[#202920]"
+                          : "bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2]"
                       }`}
                     >
                       <div className="flex items-center gap-1.5 mb-1.5">
@@ -579,7 +581,7 @@ export default function ScholarMessagesPage() {
           </div>
 
           {/* Message Composer Dock */}
-          <div className="p-4 bg-white border-t border-[#E4DCCB] shrink-0 relative">
+          <div className="p-4 bg-white dark:bg-[#131C15] border-t border-[#E4DCCB] dark:border-[#233327] shrink-0 relative">
             <form onSubmit={handleSendMessage} className="flex items-center gap-2.5 relative">
               <div className="relative">
                 <button
@@ -588,7 +590,7 @@ export default function ScholarMessagesPage() {
                   className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
                     showAttachmentMenu
                       ? "bg-[#3E6248] text-white border-[#3E6248] shadow-xs"
-                      : "border-[#E4DCCB] text-[#62685E] hover:bg-[#FAF7F0] hover:text-[#202920]"
+                      : "border-[#E4DCCB] dark:border-[#233327] text-[#62685E] dark:text-[#A4B3A2] hover:bg-[#FAF7F0] dark:hover:bg-[#18231B] hover:text-[#202920] dark:hover:text-[#EDEAE2]"
                   }`}
                   title="Attach academic paper, grant, or project invite"
                 >
@@ -602,8 +604,8 @@ export default function ScholarMessagesPage() {
                       className="fixed inset-0 z-40 cursor-default"
                       onClick={() => setShowAttachmentMenu(false)}
                     />
-                    <div className="absolute bottom-full mb-3 left-0 z-50 bg-white border border-[#E4DCCB] rounded-2xl shadow-2xl p-2.5 w-80 max-h-[calc(100vh-140px)] overflow-y-auto space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-150">
-                      <div className="text-[10px] font-mono font-bold text-[#85877B] px-2.5 py-1 uppercase tracking-wider border-b border-[#E4DCCB]/50 pb-1.5 mb-1">
+                    <div className="absolute bottom-full mb-3 left-0 z-50 bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl shadow-2xl p-2.5 w-80 max-h-[calc(100vh-140px)] overflow-y-auto space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-150">
+                      <div className="text-[10px] font-mono font-bold text-[#85877B] dark:text-[#7A8C78] px-2.5 py-1 uppercase tracking-wider border-b border-[#E4DCCB]/50 dark:border-[#233327] pb-1.5 mb-1">
                         Attach Academic Artifact
                       </div>
                       <button
@@ -612,14 +614,14 @@ export default function ScholarMessagesPage() {
                           handleAttachPaper();
                           setShowAttachmentMenu(false);
                         }}
-                        className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-[#FAF7F0] flex items-center gap-2.5 text-xs text-[#202920] cursor-pointer transition-colors"
+                        className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-[#FAF7F0] dark:hover:bg-[#233327] flex items-center gap-2.5 text-xs text-[#202920] dark:text-[#EDEAE2] cursor-pointer transition-colors"
                       >
-                        <div className="w-7 h-7 rounded-lg bg-[#DCE6D7] flex items-center justify-center shrink-0">
-                          <BookOpen size={14} className="text-[#3E6248]" />
+                        <div className="w-7 h-7 rounded-lg bg-[#DCE6D7] dark:bg-[#1F2E23] flex items-center justify-center shrink-0">
+                          <BookOpen size={14} className="text-[#3E6248] dark:text-[#4ADE80]" />
                         </div>
                         <div>
-                          <div className="font-semibold text-[#202920]">Research Preprint / Paper</div>
-                          <div className="text-[10px] text-[#62685E]">Send verified DOI with abstract</div>
+                          <div className="font-semibold text-[#202920] dark:text-[#EDEAE2]">Research Preprint / Paper</div>
+                          <div className="text-[10px] text-[#62685E] dark:text-[#A4B3A2]">Send verified DOI with abstract</div>
                         </div>
                       </button>
                       <button
@@ -628,14 +630,14 @@ export default function ScholarMessagesPage() {
                           handleAttachOpportunity();
                           setShowAttachmentMenu(false);
                         }}
-                        className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-[#FAF7F0] flex items-center gap-2.5 text-xs text-[#202920] cursor-pointer transition-colors"
+                        className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-[#FAF7F0] dark:hover:bg-[#233327] flex items-center gap-2.5 text-xs text-[#202920] dark:text-[#EDEAE2] cursor-pointer transition-colors"
                       >
-                        <div className="w-7 h-7 rounded-lg bg-[#FEF3C7] flex items-center justify-center shrink-0">
-                          <DollarSign size={14} className="text-[#D97706]" />
+                        <div className="w-7 h-7 rounded-lg bg-[#FEF3C7] dark:bg-[#2B2313] flex items-center justify-center shrink-0">
+                          <DollarSign size={14} className="text-[#D97706] dark:text-[#F3C472]" />
                         </div>
                         <div>
-                          <div className="font-semibold text-[#202920]">Grant / CFP Opportunity</div>
-                          <div className="text-[10px] text-[#62685E]">Propose multi-PI co-application</div>
+                          <div className="font-semibold text-[#202920] dark:text-[#EDEAE2]">Grant / CFP Opportunity</div>
+                          <div className="text-[10px] text-[#62685E] dark:text-[#A4B3A2]">Propose multi-PI co-application</div>
                         </div>
                       </button>
                       <button
@@ -644,14 +646,14 @@ export default function ScholarMessagesPage() {
                           handleAttachProjectInvite();
                           setShowAttachmentMenu(false);
                         }}
-                        className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-[#FAF7F0] flex items-center gap-2.5 text-xs text-[#202920] cursor-pointer transition-colors"
+                        className="w-full text-left px-2.5 py-2 rounded-xl hover:bg-[#FAF7F0] dark:hover:bg-[#233327] flex items-center gap-2.5 text-xs text-[#202920] dark:text-[#EDEAE2] cursor-pointer transition-colors"
                       >
-                        <div className="w-7 h-7 rounded-lg bg-[#DBEAFE] flex items-center justify-center shrink-0">
-                          <Layers size={14} className="text-[#2563EB]" />
+                        <div className="w-7 h-7 rounded-lg bg-[#DBEAFE] dark:bg-[#142633] flex items-center justify-center shrink-0">
+                          <Layers size={14} className="text-[#2563EB] dark:text-[#76C2E8]" />
                         </div>
                         <div>
-                          <div className="font-semibold text-[#202920]">Collaborative Workspace Invite</div>
-                          <div className="text-[10px] text-[#62685E]">Assign CRediT authorship role</div>
+                          <div className="font-semibold text-[#202920] dark:text-[#EDEAE2]">Collaborative Workspace Invite</div>
+                          <div className="text-[10px] text-[#62685E] dark:text-[#A4B3A2]">Assign CRediT authorship role</div>
                         </div>
                       </button>
                     </div>
@@ -664,13 +666,13 @@ export default function ScholarMessagesPage() {
                 placeholder={`Message ${activeScholar.name} with paper grounding or proposal questions...`}
                 value={inputContent}
                 onChange={(e) => setInputContent(e.target.value)}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-[#E4DCCB] bg-[#FAF7F0] text-xs font-sans text-[#202920] focus:outline-none focus:border-[#3E6248] shadow-2xs"
+                className="flex-1 px-4 py-2.5 rounded-xl border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#18231B] text-xs font-sans text-[#202920] dark:text-[#EDEAE2] focus:outline-none focus:border-[#3E6248] dark:focus:border-[#4ADE80] shadow-2xs"
               />
 
               <button
                 type="submit"
                 disabled={!inputContent.trim()}
-                className="px-4 py-2.5 rounded-xl bg-[#3E6248] hover:bg-[#202920] disabled:opacity-40 text-white text-xs font-mono font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                className="px-4 py-2.5 rounded-xl bg-[#3E6248] dark:bg-[#2D583B] hover:bg-[#202920] dark:hover:bg-[#386D49] disabled:opacity-40 text-white text-xs font-mono font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
               >
                 <Send size={13} />
                 <span>Send</span>
@@ -680,7 +682,7 @@ export default function ScholarMessagesPage() {
         </div>
 
         {/* Right Column: Scholar Context Dossier */}
-        <div className="w-72 border-l border-[#E4DCCB] bg-white hidden xl:flex flex-col p-5 shrink-0 overflow-y-auto space-y-5">
+        <div className="w-72 border-l border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#131C15] hidden xl:flex flex-col p-5 shrink-0 overflow-y-auto space-y-5">
           <div className="text-center">
             <div
               className="w-16 h-16 rounded-full mx-auto flex items-center justify-center font-bold text-lg text-white shadow-sm mb-2.5"
@@ -688,28 +690,28 @@ export default function ScholarMessagesPage() {
             >
               {activeScholar.initials}
             </div>
-            <h3 className="font-bold text-sm text-[#202920]">{activeScholar.name}</h3>
-            <p className="text-xs text-[#62685E] mt-0.5">{activeScholar.role}</p>
-            <p className="text-xs font-semibold text-[#3E6248] mt-0.5">
+            <h3 className="font-bold text-sm text-[#202920] dark:text-[#EDEAE2]">{activeScholar.name}</h3>
+            <p className="text-xs text-[#62685E] dark:text-[#A4B3A2] mt-0.5">{activeScholar.role}</p>
+            <p className="text-xs font-semibold text-[#3E6248] dark:text-[#4ADE80] mt-0.5">
               {activeScholar.institution}
             </p>
           </div>
 
-          <div className="p-3 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB] space-y-2 text-xs">
+          <div className="p-3 rounded-xl bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] space-y-2 text-xs">
             <div className="flex items-center justify-between">
-              <span className="text-[#62685E]">Verified ORCID:</span>
-              <span className="font-mono font-semibold text-[#202920]">
+              <span className="text-[#62685E] dark:text-[#A4B3A2]">Verified ORCID:</span>
+              <span className="font-mono font-semibold text-[#202920] dark:text-[#EDEAE2]">
                 {activeScholar.orcid}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#62685E]">Citation H-Index:</span>
-              <span className="font-mono font-bold text-[#3E6248]">
+              <span className="text-[#62685E] dark:text-[#A4B3A2]">Citation H-Index:</span>
+              <span className="font-mono font-bold text-[#3E6248] dark:text-[#4ADE80]">
                 {activeScholar.hIndex}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#62685E]">Network Status:</span>
+              <span className="text-[#62685E] dark:text-[#A4B3A2]">Network Status:</span>
               <span className="font-mono text-[#4ADE80] font-semibold flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80]" />
                 Connected
@@ -718,15 +720,15 @@ export default function ScholarMessagesPage() {
           </div>
 
           <div>
-            <h4 className="text-xs font-bold text-[#202920] mb-2 flex items-center gap-1.5">
-              <GraduationCap size={14} className="text-[#3E6248]" />
+            <h4 className="text-xs font-bold text-[#202920] dark:text-[#EDEAE2] mb-2 flex items-center gap-1.5">
+              <GraduationCap size={14} className="text-[#3E6248] dark:text-[#4ADE80]" />
               Shared Research Domains
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {activeScholar.sharedInterests.map((interest) => (
                 <span
                   key={interest}
-                  className="px-2 py-0.5 rounded-md text-[11px] font-mono bg-[#DCE6D7]/60 text-[#3E6248] border border-[#66866A]/20"
+                  className="px-2 py-0.5 rounded-md text-[11px] font-mono bg-[#DCE6D7]/60 dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] border border-[#66866A]/20 dark:border-[#4ADE80]/20"
                 >
                   {interest}
                 </span>
@@ -734,10 +736,10 @@ export default function ScholarMessagesPage() {
             </div>
           </div>
 
-          <div className="pt-2 border-t border-[#E4DCCB]">
+          <div className="pt-2 border-t border-[#E4DCCB] dark:border-[#233327]">
             <Link
               href="/portfolio"
-              className="w-full py-2 rounded-lg border border-[#E4DCCB] hover:bg-[#FAF7F0] text-xs font-mono font-medium text-[#202920] flex items-center justify-center gap-1.5 transition-colors no-underline"
+              className="w-full py-2 rounded-lg border border-[#E4DCCB] dark:border-[#233327] hover:bg-[#FAF7F0] dark:hover:bg-[#1F2E23] text-xs font-mono font-medium text-[#202920] dark:text-[#EDEAE2] flex items-center justify-center gap-1.5 transition-colors no-underline"
             >
               <ExternalLink size={12} />
               View Verified Academic CV

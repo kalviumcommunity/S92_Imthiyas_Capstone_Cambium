@@ -643,33 +643,42 @@ function KnowledgeGraphSection() {
 
 // ─── Trust Section ────────────────────────────────────────────────────────────
 function TrustSection() {
-  const categories = [
+  const firstRow = [
     { icon: '○', label: 'Undergraduate Researchers' },
     { icon: '◎', label: 'Graduate Researchers' },
-    { icon: '●', label: 'PhD Scholars' },
-    { icon: '◈', label: 'Faculty' },
+    { icon: '●', label: 'Doctoral Researchers' },
+    { icon: '◈', label: 'Faculty & PIs' },
     { icon: '◉', label: 'Research Labs' },
-    { icon: '◻', label: 'Academic Institutions' },
-    { icon: '◆', label: 'R&D Teams' },
+    { icon: '◻', label: 'Universities & Institutions' },
+  ]
+  const secondRow = [
+    { icon: '◇', label: 'Research Offices' },
+    { icon: '◆', label: 'Grantmakers' },
+    { icon: '◌', label: 'Research Networks' },
+    { icon: '⬡', label: 'R&D Teams' },
   ]
 
   return (
     <section className="bg-[#F2EBDD] dark:bg-[#131C15] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-16 px-6 md:px-16 transition-colors duration-200">
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <div className="text-center mb-12">
-          <p className="text-xs font-semibold tracking-wider text-[#85877B] dark:text-[#7E8B7B] uppercase mb-4">Built for</p>
+        <div className="text-center mb-9">
+          <p className="text-xs font-semibold tracking-wider text-[#85877B] dark:text-[#7E8B7B] uppercase mb-3">Built for</p>
           <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-4xl font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight">
             The people moving research forward.
           </h2>
         </div>
-        <div className="flex flex-wrap gap-3 justify-center">
-          {categories.map(({ icon, label }) => (
-            <div
-              key={label}
-              className="flex items-center gap-2.5 px-5 py-3 border border-[#E4DCCB] dark:border-[#233327] rounded-full text-sm font-medium text-[#62685E] dark:text-[#A3B899] bg-white dark:bg-[#18231B] transition-colors cursor-default hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2]"
-            >
-              <span className="text-[#3E6248] dark:text-[#4ADE80] text-xs">{icon}</span>
-              <span>{label}</span>
+        <div className="space-y-2.5">
+          {[firstRow, secondRow].map((row, rowIndex) => (
+            <div key={rowIndex} className="flex flex-wrap gap-2.5 justify-center">
+              {row.map(({ icon, label }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-2 px-4 py-2.5 border border-[#E4DCCB] dark:border-[#233327] rounded-full text-[13px] font-medium text-[#62685E] dark:text-[#A3B899] bg-white dark:bg-[#18231B] transition-colors cursor-default hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2]"
+                >
+                  <span className="text-[#3E6248] dark:text-[#4ADE80] text-xs">{icon}</span>
+                  <span>{label}</span>
+                </div>
+              ))}
             </div>
           ))}
         </div>
@@ -3340,33 +3349,29 @@ function StructuralSystem() {
   }
 
   return (
-    <div className="fixed bottom-[74px] right-6 z-40 flex flex-col items-end max-w-sm select-none print:hidden">
-      <div className="bg-[#FAF7F0]/95 dark:bg-[#18231B]/95 text-[#202920] dark:text-[#EDEAE2] rounded-2xl p-3.5 shadow-xl border border-[#E4DCCB] dark:border-[#28382C] flex items-center justify-between gap-3.5 w-full backdrop-blur-md transition-all duration-200 hover:shadow-2xl hover:border-[#3E6248]/40 dark:hover:border-[#4ADE80]/40">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-[#E4DCCB]/50 dark:bg-[#202D23] rounded-xl text-[#3E6248] dark:text-[#4ADE80] border border-[#3E6248]/20 dark:border-[#4ADE80]/20 shadow-2xs">
+    <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end w-[min(20rem,calc(100vw-2.5rem))] select-none print:hidden">
+      <div className="bg-[#FAF7F0]/95 dark:bg-[#18231B]/95 text-[#202920] dark:text-[#EDEAE2] rounded-xl p-2.5 shadow-lg border border-[#E4DCCB] dark:border-[#28382C] flex items-center justify-between gap-2.5 w-full backdrop-blur-md transition-all duration-200 hover:border-[#3E6248]/40 dark:hover:border-[#4ADE80]/40">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 shrink-0 flex items-center justify-center bg-[#E4DCCB]/50 dark:bg-[#202D23] rounded-lg text-[#3E6248] dark:text-[#4ADE80] border border-[#3E6248]/20 dark:border-[#4ADE80]/20">
             <User className="w-3.5 h-3.5" />
           </div>
-          <div className="flex flex-col">
-            <span className="font-mono text-[11px] font-bold tracking-wider uppercase text-[#3E6248] dark:text-[#4ADE80]">
-              Identity System Active
+          <div className="flex flex-col min-w-0">
+            <span className="font-sans text-[10px] font-semibold tracking-[0.08em] uppercase text-[#3E6248] dark:text-[#4ADE80]">
+              Research tools
             </span>
-            <span className="font-sans text-[10.5px] text-[#62685E] dark:text-[#A3B899]">
-              Verifiable citations, open access metadata, and collaborative workspaces
+            <span className="font-sans text-[11px] leading-4 text-[#62685E] dark:text-[#A3B899]">
+              Profiles, publications, and collaboration.
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="inline-flex items-center gap-1.5 bg-[#DCE6D7] dark:bg-[#1A281E] border border-[#3E6248]/30 dark:border-[#4ADE80]/30 px-2.5 py-0.5 rounded-full text-[#3E6248] dark:text-[#4ADE80] shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
-            <span className="font-mono text-[9.5px] font-bold tracking-tight">ACTIVE</span>
-          </div>
+        <div className="flex items-center shrink-0">
           <button
             suppressHydrationWarning
             onClick={() => setOpen(false)}
-            className="text-[#85877B] hover:text-[#202920] dark:hover:text-[#FAF7F0] p-1 rounded-full hover:bg-[#E4DCCB]/40 dark:hover:bg-[#202D23] transition-colors cursor-pointer"
+            className="text-[#85877B] hover:text-[#202920] dark:hover:text-[#FAF7F0] p-1.5 rounded-full hover:bg-[#E4DCCB]/40 dark:hover:bg-[#202D23] transition-colors cursor-pointer"
             title="Dismiss"
-            aria-label="Dismiss Identity System notice"
+            aria-label="Dismiss research tools notice"
           >
             ✕
           </button>

@@ -17,27 +17,27 @@ import { useUnsavedChanges } from "@/lib/hooks/useUnsavedChanges";
 // ─── Design Tokens (SSOT from 01_Design Systems) ───────────────────────────
 
 const W = {
-  bg: "#FAF7F0",           // Parchment canvas
-  surface: "#FFFFFF",      // Surface raised
-  surface2: "#F2EBDD",     // Mineral sand foundation
-  border: "#E4DCCB",       // Limestone hairline
-  borderSubtle: "#E4DCCB",
-  text1: "#202920",        // Forest ink primary
-  text2: "#62685E",        // Bark grey secondary
-  text3: "#85877B",        // Quiet stone metadata
-  green: "#3E6248",        // Canopy green
-  greenDim: "#66866A",     // Living algae
-  greenBg: "#DCE6D7",      // Sage mist highlight
-  greenBorder: "#E4DCCB",
-  blue: "#365F8D",
-  blueBg: "#DCE6D7",
-  blueBorder: "#E4DCCB",
-  amber: "#8A5A12",
-  amberBg: "#F2EBDD",
-  purple: "#3E6248",
-  purpleBg: "#DCE6D7",
-  redBg: "#FBF2F0",
-  red: "#B33D35",
+  bg: "var(--color-parchment, #FAF7F0)",           // Parchment canvas / Abyssal pine in dark
+  surface: "var(--card, #FFFFFF)",                 // Surface raised / Conifer moss in dark
+  surface2: "var(--color-mineral-sand, #F2EBDD)",   // Mineral sand foundation / Deep peat in dark
+  border: "var(--border, #E4DCCB)",                // Limestone hairline / Pine bark in dark
+  borderSubtle: "var(--color-limestone, #E4DCCB)",
+  text1: "var(--color-forest-ink, #202920)",       // Forest ink primary / Luminescent bone in dark
+  text2: "var(--color-bark-grey, #62685E)",        // Bark grey secondary / Silvery sage in dark
+  text3: "var(--color-quiet-stone, #85877B)",      // Quiet stone metadata / Shadow lichen in dark
+  green: "var(--color-canopy, #3E6248)",           // Canopy green / Radiant emerald in dark
+  greenDim: "var(--color-living-algae, #66866A)",  // Living algae
+  greenBg: "var(--color-sage-mist, #DCE6D7)",      // Sage mist highlight
+  greenBorder: "var(--border, #E4DCCB)",
+  blue: "var(--color-status-info, #365F8D)",
+  blueBg: "var(--color-sage-mist, #DCE6D7)",
+  blueBorder: "var(--border, #E4DCCB)",
+  amber: "var(--color-status-warning, #8A5A12)",
+  amberBg: "var(--color-mineral-sand, #F2EBDD)",
+  purple: "var(--color-canopy, #3E6248)",
+  purpleBg: "var(--color-sage-mist, #DCE6D7)",
+  redBg: "var(--color-mineral-sand, #FBF2F0)",
+  red: "var(--color-status-error, #B33D35)",
 } as const;
 
 // ─── Icons (Inline SVG) ─────────────────────────────────────────────────────

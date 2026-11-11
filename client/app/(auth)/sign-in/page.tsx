@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useGoogleLogin } from "@react-oauth/google";
 import { GraduationCap } from "lucide-react";
-import { GoogleIcon, MicrosoftIcon, OrcidIcon } from "@/components/auth/AuthIcons";
+import { GoogleIcon, OrcidIcon } from "@/components/auth/AuthIcons";
 import { InstitutionalSsoModal } from "@/components/auth/InstitutionalSsoModal";
+import { OrcidLoginModal } from "@/components/auth/OrcidLoginModal";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import api from "@/lib/api";
 
@@ -52,6 +53,7 @@ export default function SignInPage() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const [showPassword, setShowPassword] = useState(false);
   const [showSsoModal, setShowSsoModal] = useState(false);
+  const [showOrcidModal, setShowOrcidModal] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -112,28 +114,8 @@ export default function SignInPage() {
     }
   };
 
-  const handleMicrosoftClick = () => {
-    const demoUser = {
-      id: "ms-user-1",
-      username: "ms_researcher",
-      email: "elena@microsoft.com",
-      fullName: "Dr. Elena Rodriguez",
-      institution: "Microsoft Research",
-    };
-    setAuth(demoUser, "demo-ms-token-" + Date.now());
-    router.push(destination);
-  };
-
   const handleOrcidClick = () => {
-    const demoUser = {
-      id: "orcid-0000-0002-1825-0097",
-      username: "orcid_scholar",
-      email: "scholar@orcid.org",
-      fullName: "Verified Scholar",
-      institution: "Academic Lab",
-    };
-    setAuth(demoUser, "demo-orcid-token-" + Date.now());
-    router.push(destination);
+    setShowOrcidModal(true);
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -172,20 +154,19 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans">
+    <div className="flex flex-col gap-4 font-sans">
       {/* Heading */}
       <div className="flex flex-col gap-1.5">
-
-        <h2 className="font-serif text-[32px] font-normal leading-[1.14] tracking-[-0.02em] text-[#202920] m-0">
+        <h2 className="font-serif text-[32px] font-normal leading-[1.14] tracking-[-0.02em] text-[#202920] dark:text-[#EDEAE2] m-0">
           Sign in to your account
         </h2>
-        <p className="text-[14px] text-[#62685E] font-sans m-0">
+        <p className="text-[14px] text-[#62685E] dark:text-[#A3B899] font-sans m-0">
           Welcome back to your research workspace.
         </p>
       </div>
 
       {/* OAuth Buttons */}
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-2">
         {/* Google */}
         <button
           type="button"
@@ -197,67 +178,56 @@ export default function SignInPage() {
           <span>Sign in with Google</span>
         </button>
 
-        {/* Microsoft */}
-        <button
-          type="button"
-          onClick={handleMicrosoftClick}
-          className="auth-oauth-btn"
-          aria-label="Continue with Microsoft"
-        >
-          <MicrosoftIcon />
-          <span>Continue with Microsoft</span>
-        </button>
-
         {/* ORCID */}
         <button
           type="button"
           onClick={handleOrcidClick}
-          className="auth-oauth-btn"
+          className="auth-oauth-btn hover:border-[#A6CE39] dark:hover:border-[#A6CE39]"
           aria-label="Continue with ORCID"
         >
           <OrcidIcon />
-          <span>Continue with ORCID</span>
+          <span>Continue with ORCID iD</span>
         </button>
 
         {/* Institutional SSO */}
         <button
           type="button"
           onClick={() => setShowSsoModal(true)}
-          className="auth-oauth-btn border-[#3E6248]/30 hover:border-[#3E6248] hover:bg-[#DCE6D7]/30 transition-all text-[#202920]"
+          className="auth-oauth-btn border-[#3E6248]/30 dark:border-[#4ADE80]/30 hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:bg-[#DCE6D7]/30 dark:hover:bg-[#1F2E23]/40 transition-all text-[#202920] dark:text-[#EDEAE2]"
           aria-label="Sign in with Institutional SSO"
         >
-          <GraduationCap className="w-4 h-4 text-[#3E6248]" />
+          <GraduationCap className="w-4 h-4 text-[#3E6248] dark:text-[#4ADE80]" />
           <span className="font-medium">Sign in with University Portal (SSO / SAML)</span>
         </button>
       </div>
 
       {/* Error message */}
       {error && (
-        <div className="text-[13px] font-sans text-[#B33D35] text-center m-0 p-3 bg-[#FBF1F0] rounded-lg border border-[#B33D35]/30">
+        <div className="text-[13px] font-sans text-[#B33D35] dark:text-[#F87171] text-center m-0 p-3 bg-[#FBF1F0] dark:bg-[#2B1B1A] rounded-lg border border-[#B33D35]/30">
           {error}
         </div>
       )}
 
       {/* Divider */}
       <div className="relative flex items-center gap-3 my-0.5">
-        <div className="flex-1 h-px bg-[#E4DCCB]" />
-        <span className="text-[12px] font-sans text-[#85877B] bg-[#FAF7F0] px-3 shrink-0">
+        <div className="flex-1 h-px bg-[#E4DCCB] dark:bg-[#233327]" />
+        <span className="text-[12px] font-sans text-[#85877B] dark:text-[#7E8B7B] bg-[#FAF7F0] dark:bg-[#0E140F] px-3 shrink-0">
           or continue with email
         </span>
-        <div className="flex-1 h-px bg-[#E4DCCB]" />
+        <div className="flex-1 h-px bg-[#E4DCCB] dark:bg-[#233327]" />
       </div>
 
       {/* Email / Password Form */}
       <form
         onSubmit={handleEmailSubmit}
         noValidate
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-3"
       >
         {/* Email field */}
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="sign-in-email"
-            className="text-[13px] font-sans font-medium text-[#202920]"
+            className="text-[13px] font-sans font-medium text-[#202920] dark:text-[#EDEAE2]"
           >
             Email address
           </label>
@@ -294,16 +264,16 @@ export default function SignInPage() {
 
           {/* Fluid Auth Gateway Expansion */}
           {/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && (
-            <div className="p-3 rounded-xl bg-[#FAF7F0] border border-[#3E6248]/40 shadow-xs flex items-center justify-between gap-3 text-[11.5px] animate-in fade-in slide-in-from-top-1.5 duration-150">
+            <div className="p-3 rounded-xl bg-[#FAF7F0] dark:bg-[#18231B] border border-[#3E6248]/40 dark:border-[#4ADE80]/40 shadow-xs flex items-center justify-between gap-3 text-[11.5px] animate-in fade-in slide-in-from-top-1.5 duration-150">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="w-2 h-2 rounded-full bg-[#3E6248] animate-pulse shrink-0" />
+                <span className="w-2 h-2 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse shrink-0" />
                 <div className="truncate">
-                  <span className="font-semibold text-[#202920] block font-sans">
+                  <span className="font-semibold text-[#202920] dark:text-[#EDEAE2] block font-sans">
                     {email.includes(".edu") || email.includes(".ac.uk") || email.includes("stanford") || email.includes("mit") || email.includes("ox") || email.includes("harvard")
                       ? "Institutional Identity Provider Verified"
                       : "Standard Research Email Recognized"}
                   </span>
-                  <span className="text-[10.5px] font-mono text-[#62685E]">
+                  <span className="text-[10.5px] font-mono text-[#62685E] dark:text-[#A3B899]">
                     {email.includes(".edu") || email.includes(".ac.uk")
                       ? "InCommon / EduGAIN SAML 2.0 Trust Mesh"
                       : "Ready for Password or Magic Link Auth"}
@@ -313,7 +283,7 @@ export default function SignInPage() {
               <button
                 type="button"
                 onClick={() => setShowSsoModal(true)}
-                className="px-3 py-1.5 rounded-lg bg-[#3E6248] hover:bg-[#293E30] text-white text-[11px] font-mono uppercase tracking-wider font-semibold transition-all shrink-0 cursor-pointer border-0 shadow-2xs"
+                className="px-3 py-1.5 rounded-lg bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] text-[11px] font-mono uppercase tracking-wider font-semibold transition-all shrink-0 cursor-pointer border-0 shadow-2xs"
               >
                 Launch SSO →
               </button>
@@ -326,13 +296,13 @@ export default function SignInPage() {
           <div className="flex justify-between items-center">
             <label
               htmlFor="sign-in-password"
-              className="text-[13px] font-sans font-medium text-[#202920]"
+              className="text-[13px] font-sans font-medium text-[#202920] dark:text-[#EDEAE2]"
             >
               Password
             </label>
             <Link
               href="/forgot-password"
-              className="text-[12px] font-sans font-medium text-[#3E6248] hover:text-[#293E30] underline underline-offset-2 transition-colors"
+              className="text-[12px] font-sans font-medium text-[#3E6248] dark:text-[#4ADE80] hover:text-[#293E30] dark:hover:text-[#22C55E] underline underline-offset-2 transition-colors"
             >
               Forgot password?
             </Link>
@@ -352,7 +322,7 @@ export default function SignInPage() {
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-0 cursor-pointer text-[#62685E] hover:text-[#202920] p-0 flex items-center transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-0 cursor-pointer text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] p-0 flex items-center transition-colors"
             >
               <EyeIcon open={showPassword} />
             </button>
@@ -372,17 +342,24 @@ export default function SignInPage() {
       </form>
 
       {/* Footer links */}
-      <div className="flex flex-col gap-2 pt-2 border-t border-[#E4DCCB]/60">
-        <p className="text-[13px] text-center text-[#62685E] m-0 font-sans">
+      <div className="flex flex-col gap-2 pt-2 border-t border-[#E4DCCB]/60 dark:border-[#233327]/60">
+        <p className="text-[13px] text-center text-[#62685E] dark:text-[#A3B899] m-0 font-sans">
           Don&apos;t have an account?{" "}
           <Link
             href="/sign-up"
-            className="font-medium text-[#3E6248] hover:text-[#293E30] underline underline-offset-2 transition-colors"
+            className="font-medium text-[#3E6248] dark:text-[#4ADE80] hover:text-[#293E30] dark:hover:text-[#22C55E] underline underline-offset-2 transition-colors"
           >
             Create account
           </Link>
         </p>
       </div>
+
+      {/* ORCID Researcher Login Modal */}
+      <OrcidLoginModal
+        isOpen={showOrcidModal}
+        onClose={() => setShowOrcidModal(false)}
+        destination={destination}
+      />
 
       {/* Institutional SSO Modal */}
       <InstitutionalSsoModal

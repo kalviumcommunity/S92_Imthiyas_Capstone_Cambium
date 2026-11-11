@@ -4,7 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useGoogleLogin } from "@react-oauth/google";
-import { GoogleIcon, MicrosoftIcon, OrcidIcon, ShieldIcon } from "@/components/auth/AuthIcons";
+import { GraduationCap } from "lucide-react";
+import { GoogleIcon, OrcidIcon, ShieldIcon } from "@/components/auth/AuthIcons";
+import { OrcidLoginModal } from "@/components/auth/OrcidLoginModal";
+import { InstitutionalSsoModal } from "@/components/auth/InstitutionalSsoModal";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import api from "@/lib/api";
 
@@ -46,6 +49,8 @@ export default function SignUpPage() {
   const router = useRouter();
   const setAuth = useAuthStore((state) => state.setAuth);
   const [showPassword, setShowPassword] = useState(false);
+  const [showOrcidModal, setShowOrcidModal] = useState(false);
+  const [showSsoModal, setShowSsoModal] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +73,7 @@ export default function SignUpPage() {
           id: "google-user-1",
           username: "scholar_google",
           email: "scholar@cambium.edu",
-          fullName: "Imthiyas",
+          fullName: "Verified Scholar",
           institution: "MIT CSAIL",
         };
         setAuth(demoUser, "demo-google-token-" + Date.now());
@@ -82,7 +87,7 @@ export default function SignUpPage() {
         id: "google-user-1",
         username: "scholar_google",
         email: "scholar@cambium.edu",
-        fullName: "Imthiyas",
+        fullName: "Verified Scholar",
         institution: "MIT CSAIL",
       };
       setAuth(demoUser, "demo-google-token-" + Date.now());
@@ -98,7 +103,7 @@ export default function SignUpPage() {
         id: "google-user-1",
         username: "scholar_google",
         email: "scholar@cambium.edu",
-        fullName: "Imthiyas",
+        fullName: "Verified Scholar",
         institution: "MIT CSAIL",
       };
       setAuth(demoUser, "demo-google-token-" + Date.now());
@@ -106,28 +111,8 @@ export default function SignUpPage() {
     }
   };
 
-  const handleMicrosoftClick = () => {
-    const demoUser = {
-      id: "ms-user-1",
-      username: "ms_researcher",
-      email: "elena@microsoft.com",
-      fullName: "Dr. Elena Rodriguez",
-      institution: "Microsoft Research",
-    };
-    setAuth(demoUser, "demo-ms-token-" + Date.now());
-    router.push("/welcome");
-  };
-
   const handleOrcidClick = () => {
-    const demoUser = {
-      id: "orcid-0000-0002-1825-0097",
-      username: "orcid_scholar",
-      email: "imthiyas@orcid.org",
-      fullName: "Imthiyas",
-      institution: "MIT CSAIL",
-    };
-    setAuth(demoUser, "demo-orcid-token-" + Date.now());
-    router.push("/welcome");
+    setShowOrcidModal(true);
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -176,20 +161,19 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans">
+    <div className="flex flex-col gap-4 font-sans">
       {/* Heading */}
       <div className="flex flex-col gap-1.5">
-
-        <h2 className="font-serif text-[32px] font-normal leading-[1.14] tracking-[-0.02em] text-[#202920] m-0">
+        <h2 className="font-serif text-[32px] font-normal leading-[1.14] tracking-[-0.02em] text-[#202920] dark:text-[#EDEAE2] m-0">
           Create your Cambium account
         </h2>
-        <p className="text-[14px] text-[#62685E] font-sans m-0">
+        <p className="text-[14px] text-[#62685E] dark:text-[#A3B899] font-sans m-0">
           Your verified research identity starts here.
         </p>
       </div>
 
       {/* OAuth Buttons */}
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-2">
         {/* Google */}
         <button
           type="button"
@@ -201,56 +185,56 @@ export default function SignUpPage() {
           <span>Sign up with Google</span>
         </button>
 
-        {/* Microsoft */}
-        <button
-          type="button"
-          onClick={handleMicrosoftClick}
-          className="auth-oauth-btn"
-          aria-label="Continue with Microsoft"
-        >
-          <MicrosoftIcon />
-          <span>Continue with Microsoft</span>
-        </button>
-
         {/* ORCID */}
         <button
           type="button"
           onClick={handleOrcidClick}
-          className="auth-oauth-btn"
+          className="auth-oauth-btn hover:border-[#A6CE39] dark:hover:border-[#A6CE39]"
           aria-label="Continue with ORCID"
         >
           <OrcidIcon />
-          <span>Continue with ORCID</span>
+          <span>Register with ORCID iD</span>
+        </button>
+
+        {/* Institutional SSO */}
+        <button
+          type="button"
+          onClick={() => setShowSsoModal(true)}
+          className="auth-oauth-btn border-[#3E6248]/30 dark:border-[#4ADE80]/30 hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:bg-[#DCE6D7]/30 dark:hover:bg-[#1F2E23]/40 transition-all text-[#202920] dark:text-[#EDEAE2]"
+          aria-label="Sign up with University SSO"
+        >
+          <GraduationCap className="w-4 h-4 text-[#3E6248] dark:text-[#4ADE80]" />
+          <span className="font-medium">University Portal (EduGAIN / SAML)</span>
         </button>
       </div>
 
       {/* Error message */}
       {error && (
-        <div className="text-[13px] font-sans text-[#B33D35] text-center m-0 p-3 bg-[#FBF1F0] rounded-lg border border-[#B33D35]/30">
+        <div className="text-[13px] font-sans text-[#B33D35] dark:text-[#F87171] text-center m-0 p-3 bg-[#FBF1F0] dark:bg-[#2B1B1A] rounded-lg border border-[#B33D35]/30">
           {error}
         </div>
       )}
 
       {/* Divider */}
       <div className="relative flex items-center gap-3 my-0.5">
-        <div className="flex-1 h-px bg-[#E4DCCB]" />
-        <span className="text-[12px] font-sans text-[#85877B] bg-[#FAF7F0] px-3 shrink-0">
+        <div className="flex-1 h-px bg-[#E4DCCB] dark:bg-[#233327]" />
+        <span className="text-[12px] font-sans text-[#85877B] dark:text-[#7E8B7B] bg-[#FAF7F0] dark:bg-[#0E140F] px-3 shrink-0">
           or continue with email
         </span>
-        <div className="flex-1 h-px bg-[#E4DCCB]" />
+        <div className="flex-1 h-px bg-[#E4DCCB] dark:bg-[#233327]" />
       </div>
 
       {/* Email / Password Form */}
       <form
         onSubmit={handleEmailSubmit}
         noValidate
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-3"
       >
         {/* Email field */}
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="sign-up-email"
-            className="text-[13px] font-sans font-medium text-[#202920]"
+            className="text-[13px] font-sans font-medium text-[#202920] dark:text-[#EDEAE2]"
           >
             Email address
           </label>
@@ -270,7 +254,7 @@ export default function SignUpPage() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="sign-up-password"
-            className="text-[13px] font-sans font-medium text-[#202920]"
+            className="text-[13px] font-sans font-medium text-[#202920] dark:text-[#EDEAE2]"
           >
             Password
           </label>
@@ -289,12 +273,12 @@ export default function SignUpPage() {
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? "Hide password" : "Show password"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-0 cursor-pointer text-[#62685E] hover:text-[#202920] p-0 flex items-center transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-0 cursor-pointer text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] p-0 flex items-center transition-colors"
             >
               <EyeIcon open={showPassword} />
             </button>
           </div>
-          <p className="text-[11.5px] font-sans text-[#3E463C] mt-1 mb-0">
+          <p className="text-[11.5px] font-sans text-[#62685E] dark:text-[#A3B899] mt-1 mb-0">
             Must be at least 8 characters. Institutional email recommended.
           </p>
         </div>
@@ -312,32 +296,45 @@ export default function SignUpPage() {
       </form>
 
       {/* Footer */}
-      <div className="flex flex-col gap-2.5 pt-2 border-t border-[#E4DCCB]/60">
-        <p className="text-[13px] text-center text-[#62685E] m-0 font-sans">
+      <div className="flex flex-col gap-2.5 pt-2 border-t border-[#E4DCCB]/60 dark:border-[#233327]/60">
+        <p className="text-[13px] text-center text-[#62685E] dark:text-[#A3B899] m-0 font-sans">
           Already have an account?{" "}
           <Link
             href="/sign-in"
-            className="font-medium text-[#3E6248] hover:text-[#293E30] underline underline-offset-2 transition-colors"
+            className="font-medium text-[#3E6248] dark:text-[#4ADE80] hover:text-[#293E30] dark:hover:text-[#22C55E] underline underline-offset-2 transition-colors"
           >
             Sign in
           </Link>
         </p>
-        <p className="text-[12px] text-center flex items-center justify-center gap-1.5 text-[#85877B] m-0 font-sans">
+        <p className="text-[12px] text-center flex items-center justify-center gap-1.5 text-[#85877B] dark:text-[#7E8B7B] m-0 font-sans">
           <ShieldIcon />
           <span>Institutional data privacy & verified ORCID encryption</span>
         </p>
-        <p className="text-[11.5px] text-center leading-relaxed text-[#85877B] m-0 font-sans">
+        <p className="text-[11.5px] text-center leading-relaxed text-[#85877B] dark:text-[#7E8B7B] m-0 font-sans">
           By creating an account, you agree to Cambium&apos;s{" "}
-          <Link href="/terms" className="text-[#62685E] underline hover:text-[#202920]">
+          <Link href="/terms" className="text-[#62685E] dark:text-[#A3B899] underline hover:text-[#202920] dark:hover:text-[#EDEAE2]">
             Terms
           </Link>{" "}
           and{" "}
-          <Link href="/privacy" className="text-[#62685E] underline hover:text-[#202920]">
+          <Link href="/privacy" className="text-[#62685E] dark:text-[#A3B899] underline hover:text-[#202920] dark:hover:text-[#EDEAE2]">
             Privacy Policy
           </Link>
           .
         </p>
       </div>
+
+      {/* ORCID Researcher Registration Modal */}
+      <OrcidLoginModal
+        isOpen={showOrcidModal}
+        onClose={() => setShowOrcidModal(false)}
+        destination="/welcome"
+      />
+
+      {/* Institutional SSO Modal */}
+      <InstitutionalSsoModal
+        isOpen={showSsoModal}
+        onClose={() => setShowSsoModal(false)}
+      />
     </div>
   );
 }
