@@ -194,27 +194,27 @@ export default function ReaderPage() {
 
   const docContainerRef = useRef<HTMLDivElement>(null);
 
-  // Sync state when active frame changes from switcher
-  useEffect(() => {
-    if (activeFrame === "intelligence") {
+  const handleFrameChange = (frame: Frame) => {
+    setActiveFrame(frame);
+    if (frame === "intelligence") {
       setPanelOpen(true);
       setActiveTab("intelligence");
       setShowAiResponse(true);
       setSelectionActive(false);
-    } else if (activeFrame === "notes") {
+    } else if (frame === "notes") {
       setPanelOpen(true);
       setActiveTab("notes");
       setSelectionActive(false);
-    } else if (activeFrame === "selection") {
+    } else if (frame === "selection") {
       setSelectionActive(true);
       setSelectedText("attention mechanism to draw global dependencies between input and output");
-    } else if (activeFrame === "saved") {
+    } else if (frame === "saved") {
       setIsSaved(true);
       setSelectionActive(false);
-    } else if (activeFrame === "default") {
+    } else if (frame === "default") {
       setSelectionActive(false);
     }
-  }, [activeFrame]);
+  };
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -303,7 +303,7 @@ export default function ReaderPage() {
               <button
                 key={f.id}
                 onClick={() => {
-                  setActiveFrame(f.id);
+                  handleFrameChange(f.id);
                   setShowMobilePreview(false);
                 }}
                 className={`px-2.5 py-1 rounded transition-colors text-[11px] font-medium border ${
@@ -562,7 +562,7 @@ export default function ReaderPage() {
                 {isError ? (
                   <ErrorStateView
                     onRetry={() => {
-                      setActiveFrame("default");
+                      handleFrameChange("default");
                       showToast("Paper reloaded");
                     }}
                   />

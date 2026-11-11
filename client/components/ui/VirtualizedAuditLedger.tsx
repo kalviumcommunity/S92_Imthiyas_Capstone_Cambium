@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useRef, useMemo, useState } from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
 import {
   ShieldAlert,
   ShieldCheck,
@@ -94,6 +93,7 @@ export default function VirtualizedAuditLedger({
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [scrollTop, setScrollTop] = useState(0);
 
   const filteredEvents = useMemo(() => {
     if (!searchTerm.trim()) return events;
@@ -107,14 +107,24 @@ export default function VirtualizedAuditLedger({
     );
   }, [events, searchTerm]);
 
-  const rowVirtualizer = useVirtualizer({
-    count: filteredEvents.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 76, // Height of each row in px
-    overscan: 5,
-  });
-
-  const virtualItems = rowVirtualizer.getVirtualItems();
+  const rowHeight = 76;
+  const viewportHeight = 520;
+  const totalSize = filteredEvents.length * rowHeight;
+  const boundedScrollTop = Math.min(scrollTop, Math.max(0, totalSize - viewportHeight));
+  const firstVisibleIndex = Math.floor(boundedScrollTop / rowHeight);
+  const startIndex = Math.max(0, firstVisibleIndex - 5);
+  const endIndex = Math.min(
+    filteredEvents.length,
+    Math.ceil((boundedScrollTop + viewportHeight) / rowHeight) + 5
+  );
+  const virtualItems = useMemo(
+    () =>
+      Array.from({ length: endIndex - startIndex }, (_, offset) => {
+        const index = startIndex + offset;
+        return { index, start: index * rowHeight, size: rowHeight };
+      }),
+    [endIndex, rowHeight, startIndex]
+  );
 
   const handleCopy = (hash: string, id: string) => {
     navigator.clipboard.writeText(hash);
@@ -146,11 +156,12 @@ export default function VirtualizedAuditLedger({
       {/* Virtual Scroll Window Container */}
       <div
         ref={parentRef}
+        onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
         className="h-[520px] overflow-y-auto rounded-xl border border-[#E4DCCB] dark:border-slate-800 bg-[#FAF7F0] dark:bg-[#161c16] relative scroll-smooth shadow-inner"
       >
         <div
           style={{
-            height: `${rowVirtualizer.getTotalSize()}px`,
+            height: `${totalSize}px`,
             width: "100%",
             position: "relative",
           }}

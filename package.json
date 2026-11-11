@@ -2,6 +2,10 @@
   "name": "cambium-monorepo",
   "version": "2.0.0",
   "description": "Cambium — AI-Powered Research Opportunity Discovery & Intelligence Platform",
+  "engines": {
+    "node": ">=20.0.0 <25.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "server:dev": "npm --prefix server run dev",
     "server:build": "npm --prefix server run build",

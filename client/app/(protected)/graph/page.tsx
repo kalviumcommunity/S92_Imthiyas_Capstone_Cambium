@@ -541,7 +541,7 @@ export default function SemanticGraphPage() {
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [nodes, selectedNode, activeCategory, highlightBridgesOnly, searchQuery, zoomLevel, isPhysicsRunning]);
+  }, [nodes, links, selectedNode, activeCategory, highlightBridgesOnly, searchQuery, zoomLevel, isPhysicsRunning]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -587,7 +587,7 @@ export default function SemanticGraphPage() {
   };
 
   return (
-    <div className="flex-1 min-w-0 h-screen overflow-hidden flex flex-col bg-[#FAF7F0] text-[#202920] font-sans selection:bg-[#3E6248]/20 selection:text-[#173F35]">
+    <main className="flex-1 min-w-0 h-screen overflow-hidden flex flex-col bg-[#FAF7F0] text-[#202920] font-sans selection:bg-[#3E6248]/20 selection:text-[#173F35]">
       {/* Top Navigation & Subheader */}
       <div className="px-6 py-3.5 border-b border-[#E4DCCB] dark:border-[#28382C] bg-[#FAF7F0] dark:bg-[#131C15] shrink-0 space-y-3">
         {/* Tier 1: Title, Topography Badge & Mode Switcher */}
@@ -1038,6 +1038,6 @@ export default function SemanticGraphPage() {
         </div>
       </div>
       )}
-    </div>
+    </main>
   );
 }

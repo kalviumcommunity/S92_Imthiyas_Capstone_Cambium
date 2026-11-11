@@ -18,6 +18,7 @@ import {
 import { OrcidIcon } from "@/components/auth/AuthIcons";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import { useToast } from "@/components/ui/toast";
+import { useHydrated } from "@/lib/hooks/use-hydrated";
 import {
   fetchLiveOrcidScholar,
   normalizeOrcid,
@@ -65,11 +66,7 @@ export function OrcidLoginModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resolvedScholar, setResolvedScholar] = useState<OrcidScholarData | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHydrated();
 
   if (!isOpen || !mounted) return null;
 

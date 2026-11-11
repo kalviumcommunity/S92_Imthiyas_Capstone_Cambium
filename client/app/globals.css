@@ -285,29 +285,30 @@
     box-shadow: 0 0 0 2px #0E140F, 0 0 0 4px #4ADE80;
   }
 
-  /* Exclude seamless borderless inputs inside search bars/pills from raw boxy outline */
-  input.outline-none:focus-visible,
-  input.border-0:focus-visible,
-  input.border-none:focus-visible,
-  .search-pill input:focus-visible,
-  .search-bar input:focus-visible,
-  .search-box input:focus-visible,
-  .scholarly-search-pill input:focus-visible,
-  input[type="search"]:focus-visible {
-    box-shadow: none !important;
-    outline: none !important;
-  }
-  .dark input.outline-none:focus-visible,
-  .dark input.border-0:focus-visible,
-  .dark input.border-none:focus-visible,
-  .dark .search-pill input:focus-visible,
-  .dark .search-bar input:focus-visible,
-  .dark .search-box input:focus-visible,
-  .dark .scholarly-search-pill input:focus-visible,
-  .dark input[type="search"]:focus-visible {
-    box-shadow: none !important;
-    outline: none !important;
-  }
+}
+
+/* Exclude seamless borderless inputs inside search bars/pills from raw boxy outline */
+input.outline-none:focus-visible,
+input.border-0:focus-visible,
+input.border-none:focus-visible,
+.search-pill input:focus-visible,
+.search-bar input:focus-visible,
+.search-box input:focus-visible,
+.scholarly-search-pill input:focus-visible,
+input[type="search"]:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+}
+.dark input.outline-none:focus-visible,
+.dark input.border-0:focus-visible,
+.dark input.border-none:focus-visible,
+.dark .search-pill input:focus-visible,
+.dark .search-bar input:focus-visible,
+.dark .search-box input:focus-visible,
+.dark .scholarly-search-pill input:focus-visible,
+.dark input[type="search"]:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 /* Scholarly Google-Style Clean Search Pill Container */
@@ -958,6 +959,16 @@
   50% { filter: drop-shadow(0 0 12px rgba(46, 204, 113, 0.85)); opacity: 1; }
 }
 
+.cambium-spatial-transition {
+  animation: cambiumSpatialTransition 1.4s ease both;
+}
+
+@keyframes cambiumSpatialTransition {
+  0% { opacity: 0; }
+  12%, 78% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 .animate-drift-1 {
   animation: nodeDrift1 7s ease-in-out infinite;
   transform-box: fill-box;
@@ -1187,6 +1198,4 @@ html {
     color: #555555;
   }
 }
-
-
 

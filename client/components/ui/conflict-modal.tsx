@@ -91,7 +91,7 @@ export function ConflictModal({
                 <span className="text-[11px] font-mono text-[#85877B]">2m ago · Offline</span>
               </div>
               <div className="p-3 bg-[#FAF7F0] rounded-lg border border-[#E4DCCB] font-mono text-[11.5px] text-[#202920] space-y-1">
-                <div className="text-[#62685E]">// Methodological Hypothesis Formulation</div>
+                <div className="text-[#62685E]">{"// Methodological Hypothesis Formulation"}</div>
                 <div className="text-[#3E6248] bg-[#DCE6D7]/60 px-1 rounded">
                   + &quot;We hypothesize self-attention mechanisms outperform LSTMs in sparse medical EHR logs by 18.4%.&quot;
                 </div>
@@ -116,7 +116,7 @@ export function ConflictModal({
                 <span className="text-[11px] font-mono text-[#85877B]">4m ago · Synced</span>
               </div>
               <div className="p-3 bg-[#FAF7F0] rounded-lg border border-[#E4DCCB] font-mono text-[11.5px] text-[#202920] space-y-1">
-                <div className="text-[#62685E]">// Methodological Hypothesis Formulation</div>
+                <div className="text-[#62685E]">{"// Methodological Hypothesis Formulation"}</div>
                 <div className="text-[#365F8D] bg-[#DCE6D7]/30 px-1 rounded">
                   + &quot;Attention mechanisms offer O(1) sequential dependency reduction across multi-modal ICU telemetry.&quot;
                 </div>

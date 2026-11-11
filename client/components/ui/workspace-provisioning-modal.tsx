@@ -19,23 +19,20 @@ const PROVISIONING_STEPS = [
   { id: 5, label: "Dedicated workspace provisioned", icon: CheckCircle2 },
 ];
 
-export function WorkspaceProvisioningModal({
-  isOpen,
+export function WorkspaceProvisioningModal(props: WorkspaceProvisioningModalProps) {
+  return props.isOpen ? <WorkspaceProvisioningContent {...props} /> : null;
+}
+
+function WorkspaceProvisioningContent({
   onComplete,
   destinationUrl = "/dashboard",
   userName = "Scholar",
-}: WorkspaceProvisioningModalProps) {
+}: Omit<WorkspaceProvisioningModalProps, "isOpen">) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [percent, setPercent] = useState(12);
 
   useEffect(() => {
-    if (!isOpen) {
-      setCurrentStep(1);
-      setPercent(12);
-      return;
-    }
-
     const t1 = setTimeout(() => {
       setCurrentStep(2);
       setPercent(38);
@@ -71,9 +68,7 @@ export function WorkspaceProvisioningModal({
       clearTimeout(t4);
       clearTimeout(t5);
     };
-  }, [isOpen, onComplete, destinationUrl, router]);
-
-  if (!isOpen) return null;
+  }, [onComplete, destinationUrl, router]);
 
   // Ring circumference for r = 42: 2 * Math.PI * 42 = 263.89
   const circumference = 263.89;

@@ -3,10 +3,10 @@
 <img src="public_logo/cambium-logo-light.svg" width="56" height="56" alt="Cambium Client Logo" />
 
 # @cambium/client
-### Frontend Product Application · Next.js 15 App Router & React 19
+### Frontend Product Application · Next.js 16 App Router & React 19
 **Living Materials Design Tokens · 23 Protected Scholarly Routes · Real-Time Canvas**
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.2%20App%20Router-black?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.4%20App%20Router-black?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-202920?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7%20Strict-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
@@ -18,7 +18,7 @@
 
 ## 📌 Package Overview
 
-`@cambium/client` is the presentation tier of the **Cambium Enterprise Research Operating System**. Built on **Next.js 15 App Router** and **React 19**, it provides high-throughput discovery interfaces, interactive 2D citation graphs, multi-agent reader desks, and laboratory administration dashboards with sub-100ms client route transitions.
+`@cambium/client` is the presentation tier of the **Cambium Enterprise Research Operating System**. Built on **Next.js 16 App Router** and **React 19**, it provides discovery interfaces, interactive 2D citation graphs, multi-agent reader desks, and laboratory administration dashboards.
 
 All interfaces strictly adhere to the **Living Materials Design System** ([`tokens/cambium.tokens.json`](../tokens/cambium.tokens.json)), guaranteeing zero ocular fatigue during extended academic reading and 100% compliance with WCAG 2.2 Level AA and APCA perceptual readability standards.
 
@@ -28,7 +28,7 @@ All interfaces strictly adhere to the **Living Materials Design System** ([`toke
 
 ```
 client/
-├── app/                                # Next.js 15 App Router Root
+├── app/                                # Next.js 16 App Router Root
 │   ├── (auth)/                         # Public authentication views
 │   │   ├── sign-in/page.tsx            # Institutional login & SAML SSO
 │   │   └── sign-up/page.tsx            # Researcher onboarding

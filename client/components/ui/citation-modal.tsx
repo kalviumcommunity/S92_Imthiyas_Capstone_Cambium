@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Quote, Copy, Check, Download, RefreshCw, X, BookOpen, ExternalLink } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 
@@ -41,15 +41,11 @@ export function CitationModal({
   item = DEFAULT_CITATION,
 }: CitationModalProps) {
   const [style, setStyle] = useState<CitationStyle>("apa");
-  const [isCopied, setIsCopied] = useState(false);
+  const [copiedText, setCopiedText] = useState<string | null>(null);
   const [isResolving, setIsResolving] = useState(false);
   const [verifiedCrossref, setVerifiedCrossref] = useState(true);
 
   const { toast } = useToast();
-
-  useEffect(() => {
-    setIsCopied(false);
-  }, [style, item]);
 
   if (!isOpen) return null;
 
@@ -86,16 +82,17 @@ export function CitationModal({
   };
 
   const citationText = generateCitation(style);
+  const isCopied = copiedText === citationText;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(citationText);
-    setIsCopied(true);
+    setCopiedText(citationText);
     toast({
       title: "Citation Copied to Clipboard",
       description: `Formatted in ${style.toUpperCase()} specification.`,
       variant: "success",
     });
-    setTimeout(() => setIsCopied(false), 2400);
+    setTimeout(() => setCopiedText(null), 2400);
   };
 
   const handleDownloadBib = () => {

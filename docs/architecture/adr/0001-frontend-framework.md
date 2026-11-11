@@ -81,3 +81,7 @@ We selected **Next.js 15 (App Router)** paired with **React 19**, **TypeScript 5
 - Next.js 15 App Router Architecture: [https://nextjs.org/docs/app](https://nextjs.org/docs/app)
 - React 19 Server Components: [https://react.dev/reference/rsc/server-components](https://react.dev/reference/rsc/server-components)
 - W3C DTCG Living Materials Tokens: `tokens/cambium.tokens.json`
+
+## 9. Implementation Update — 2026-11-11
+
+The original framework decision above was evaluated and accepted against Next.js 15. During M1 security-readiness work, the implementation was upgraded to Next.js 16.4.6 while retaining the App Router, React 19, and standalone-container architecture. This version update does not change the framework decision or its trade-offs.

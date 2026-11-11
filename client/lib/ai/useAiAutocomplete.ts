@@ -40,6 +40,47 @@ export function useAiAutocomplete(options: UseAiAutocompleteOptions = {}) {
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  const generateClientFallback = useCallback(
+    (prefix: string, currentMode: "search" | "copilot" | "keywords", maxItems: number) => {
+      const defaults = [
+        `${prefix} in contemporary literature`,
+        `${prefix} empirical methodology and statistical validation`,
+        `${prefix} comparative benchmarks across state-of-the-art baselines`,
+        `${prefix} cross-institutional grant opportunities (NSF / NIH)`,
+        `${prefix} peer-reviewed preprint archives on arXiv`,
+      ];
+
+      if (currentMode === "copilot") {
+        const copilotCompletion =
+          " under rigorous experimental conditions with statistically validated significance.";
+        setGhostText(copilotCompletion);
+        setSuggestions([
+          `${prefix}${copilotCompletion}`,
+          `${prefix} as demonstrated across our empirical findings.`,
+        ]);
+      } else {
+        setGhostText(" in contemporary literature");
+        setSuggestions(defaults.slice(0, maxItems));
+      }
+      setSource("cambium-scholarly-rag");
+      setLatencyMs(4);
+      setIsOpen(true);
+    },
+    []
+  );
+
+  const updateValue = useCallback((nextValue: string) => {
+    setValue(nextValue);
+    if (nextValue.length < 2) {
+      abortControllerRef.current?.abort();
+      setGhostText("");
+      setSuggestions([]);
+      setIsOpen(false);
+      setIsLoading(false);
+      setSelectedIndex(-1);
+    }
+  }, []);
+
   const fetchCompletions = useCallback(
     async (prefixText: string) => {
       const clean = prefixText.trim();
@@ -99,45 +140,15 @@ export function useAiAutocomplete(options: UseAiAutocompleteOptions = {}) {
         setIsLoading(false);
       }
     },
-    [context, mode, limit]
+    [context, mode, limit, generateClientFallback]
   );
-
-  // Client-side deterministic fallback generator
-  const generateClientFallback = (prefix: string, currentMode: string, maxItems: number) => {
-    const lower = prefix.toLowerCase();
-    const defaults = [
-      `${prefix} in contemporary literature`,
-      `${prefix} empirical methodology and statistical validation`,
-      `${prefix} comparative benchmarks across state-of-the-art baselines`,
-      `${prefix} cross-institutional grant opportunities (NSF / NIH)`,
-      `${prefix} peer-reviewed preprint archives on arXiv`,
-    ];
-
-    if (currentMode === "copilot") {
-      const copilotCompletion =
-        " under rigorous experimental conditions with statistically validated significance.";
-      setGhostText(copilotCompletion);
-      setSuggestions([`${prefix}${copilotCompletion}`, `${prefix} as demonstrated across our empirical findings.`]);
-    } else {
-      setGhostText(" in contemporary literature");
-      setSuggestions(defaults.slice(0, maxItems));
-    }
-    setSource("cambium-scholarly-rag");
-    setLatencyMs(4);
-    setIsOpen(true);
-  };
 
   useEffect(() => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
 
-    if (!value || value.length < 2) {
-      setGhostText("");
-      setSuggestions([]);
-      setIsOpen(false);
-      return;
-    }
+    if (!value || value.length < 2) return;
 
     debounceTimerRef.current = setTimeout(() => {
       fetchCompletions(value);
@@ -154,24 +165,24 @@ export function useAiAutocomplete(options: UseAiAutocompleteOptions = {}) {
   const acceptGhostText = useCallback(() => {
     if (ghostText) {
       const full = value + ghostText;
-      setValue(full);
+      updateValue(full);
       setGhostText("");
       setIsOpen(false);
       return full;
     }
     return value;
-  }, [value, ghostText]);
+  }, [value, ghostText, updateValue]);
 
   // Select dropdown item
   const selectSuggestion = useCallback(
     (item: string) => {
-      setValue(item);
+      updateValue(item);
       setGhostText("");
       setSuggestions([]);
       setIsOpen(false);
       setSelectedIndex(-1);
     },
-    []
+    [updateValue]
   );
 
   // Keyboard navigation handler for inputs
@@ -201,7 +212,7 @@ export function useAiAutocomplete(options: UseAiAutocompleteOptions = {}) {
 
   return {
     value,
-    setValue,
+    setValue: updateValue,
     ghostText,
     suggestions,
     isLoading,

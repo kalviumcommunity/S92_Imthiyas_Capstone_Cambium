@@ -2,8 +2,10 @@
 ## Technical Evaluation & Production Readiness Verdict
 **Author & Lead Architect**: Shaik Mohamed Imthiyas T  
 **Evaluation Standard**: MERN Stack / Modern Enterprise Stack Curriculum & Senior Staff Engineering Criteria  
-**Date**: October 2026 | **Status**: Verified Production Grade (`AUDIT-VERDICT-PASS`)  
+**Date**: October 2026 | **Status**: Historical self-reported audit; not current release approval
 **Repository**: `kalviumcommunity/S92_Imthiyas_Capstone_Cambium`
+
+> This historical scorecard and its test/readiness claims were not rerun for the current release candidate. Follow the [Deployment Readiness Plan](PRODUCTION_READINESS_CHECKLIST.md) and attach current evidence before any production go/no-go decision.
 
 ---
 

@@ -550,7 +550,6 @@ export default function AboutPage() {
               {/* Left Column: Massive Round Portrait & Identity Card */}
               <div className="lg:col-span-4 flex flex-col items-center text-center">
                 <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-full p-2 bg-[#FAF7F0] border-2 border-[#E4DCCB] shadow-xl ring-4 ring-[#3E6248]/15 shrink-0 transition-transform duration-300 hover:scale-[1.02]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/Profile.png"
                     alt="Shaik Mohamed Imthiyas - Builder of Cambium"

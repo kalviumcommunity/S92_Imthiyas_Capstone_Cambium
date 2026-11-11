@@ -40,7 +40,7 @@ test.describe("01: Researcher Auth & Dashboard Navigation", () => {
     await expect(page).toHaveURL(/.*dashboard/);
 
     // Verify top sidebar navigation item is explicitly labeled "Dashboard"
-    const dashboardNav = page.locator("aside nav a[href='/dashboard'], aside a[href='/dashboard']").first();
+    const dashboardNav = page.locator("aside nav a[href='/dashboard']").first();
     await expect(dashboardNav).toBeVisible();
     await expect(dashboardNav).toHaveAttribute("title", /Dashboard/i);
 

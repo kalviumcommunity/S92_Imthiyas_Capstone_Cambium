@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, ReactElement } from "react";
+import React, { useState, useMemo, ReactElement } from "react";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -1471,7 +1471,7 @@ export default function WelcomeOnboardingPage() {
   const user = useAuthStore((state) => state.user);
   const updateUser = useAuthStore((state) => state.updateUser);
 
-  const [setupData, setSetupData] = useState<SetupData>({
+  const [setupDataState, setSetupData] = useState<SetupData>({
     orcidConnected: false,
     orcidName: "",
     orcidId: "",
@@ -1479,17 +1479,19 @@ export default function WelcomeOnboardingPage() {
     topics: [],
     publications: [],
   });
-
-  useEffect(() => {
-    if (user) {
-      setSetupData((prev) => ({
-        ...prev,
-        orcidName: prev.orcidName || user.fullName || user.name || "",
-        interests: prev.interests.length > 0 ? prev.interests : (user.interests || []),
-        topics: prev.topics.length > 0 ? prev.topics : (user.topics || []),
-      }));
-    }
-  }, [user]);
+  const setupData = useMemo(
+    () => ({
+      ...setupDataState,
+      orcidName: setupDataState.orcidName || user?.fullName || user?.name || "",
+      interests: setupDataState.interests.length > 0
+        ? setupDataState.interests
+        : user?.interests || [],
+      topics: setupDataState.topics.length > 0
+        ? setupDataState.topics
+        : user?.topics || [],
+    }),
+    [setupDataState, user]
+  );
 
   const handleFinishOnboarding = async () => {
     updateUser({

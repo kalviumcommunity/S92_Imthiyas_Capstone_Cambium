@@ -1415,7 +1415,7 @@ export default function OpportunityHub() {
     }
 
     return list;
-  }, [activeTab, searchQuery, activeFilters, activeSort]);
+  }, [activeTab, searchQuery, activeFilters, activeSort, exploreOppsIndex]);
 
   return (
     <div className="flex h-screen overflow-hidden bg-bg font-sans text-ink">

@@ -52,7 +52,7 @@ export function useRealtimeEvents(initialRoom: string = "general"): RealtimeStat
       type: "deadline",
       title: "NSF Quantum Information Science RFP",
       message: "Submission deadline closes in 14 days (Nov 15, 2026).",
-      timestamp: new Date(Date.now() - 1000 * 60 * 35).toISOString(),
+      timestamp: "2026-11-11T11:13:00.000Z",
       read: false,
       link: "/opportunities",
     },
@@ -61,7 +61,7 @@ export function useRealtimeEvents(initialRoom: string = "general"): RealtimeStat
       type: "ingestion",
       title: "arXiv Ingestion Complete",
       message: "42 new preprints indexed under cs.AI and quant-ph.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+      timestamp: "2026-11-11T09:48:00.000Z",
       read: false,
       link: "/discover",
     },
@@ -70,7 +70,7 @@ export function useRealtimeEvents(initialRoom: string = "general"): RealtimeStat
       type: "system",
       title: "Living Materials Engine v2.0 Active",
       message: "Dendrochronology cellular growth rings synced.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 240).toISOString(),
+      timestamp: "2026-11-11T07:48:00.000Z",
       read: true,
       link: "/changelog",
     },
@@ -85,7 +85,7 @@ export function useRealtimeEvents(initialRoom: string = "general"): RealtimeStat
         role: "Principal Investigator",
       },
       content: "Have you reviewed the quantum error correction deliverables for the Q3 NSF grant proposal?",
-      timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+      timestamp: "2026-11-11T11:33:00.000Z",
     },
     {
       id: "msg-2",
@@ -96,7 +96,7 @@ export function useRealtimeEvents(initialRoom: string = "general"): RealtimeStat
         role: "Lead Architect",
       },
       content: "Yes, currently indexing the citations in the Agentic Reader with line-level proof anchors.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 10).toISOString(),
+      timestamp: "2026-11-11T11:38:00.000Z",
     },
   ]);
 
@@ -138,9 +138,8 @@ export function useRealtimeEvents(initialRoom: string = "general"): RealtimeStat
       return () => {
         eventSource.close();
       };
-    } catch {
-      // Offline fallback
-      setIsSseConnected(false);
+    } catch (error) {
+      console.error("[RealtimeEvents] Failed to open SSE stream:", error);
     }
   }, []);
 
@@ -194,8 +193,8 @@ export function useRealtimeEvents(initialRoom: string = "general"): RealtimeStat
       return () => {
         socket.disconnect();
       };
-    } catch {
-      setIsSocketConnected(false);
+    } catch (error) {
+      console.error("[RealtimeEvents] Failed to initialize chat socket:", error);
     }
   }, [activeRoom]);
 

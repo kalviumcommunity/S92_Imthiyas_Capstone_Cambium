@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { ResearchOpportunity } from "@/lib/api";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import { useOptimisticBookmarks } from "@/lib/hooks/useOptimisticQueries";
+import { useCurrentTime } from "@/lib/hooks/use-current-time";
 import {
   Calendar,
   Building2,
@@ -29,6 +30,7 @@ export default function OpportunityCard({
 }: OpportunityCardProps) {
   const { isAuthenticated, user } = useAuthStore();
   const { isOpportunityBookmarked, toggleBookmark: optimisticToggle } = useOptimisticBookmarks();
+  const currentTime = useCurrentTime();
   const isBookmarked = isOpportunityBookmarked(opportunity.id) || initialBookmarked;
 
   const handleBookmarkToggle = () => {
@@ -53,9 +55,9 @@ export default function OpportunityCard({
   let deadlineText = "Rolling Deadline";
   let isUrgent = false;
 
-  if (opportunity.deadline) {
+  if (opportunity.deadline && currentTime !== null) {
     const deadlineDate = new Date(opportunity.deadline);
-    const diffDays = Math.ceil((deadlineDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil((deadlineDate.getTime() - currentTime) / (1000 * 60 * 60 * 24));
     if (diffDays < 0) {
       deadlineText = "Deadline Passed";
     } else if (diffDays === 0) {

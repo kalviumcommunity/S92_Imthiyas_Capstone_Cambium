@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { AlertTriangle, X, ShieldAlert } from "lucide-react";
 
 export interface DestructiveModalProps {
@@ -14,8 +14,11 @@ export interface DestructiveModalProps {
   cancelButtonText?: string;
 }
 
-export function DestructiveModal({
-  isOpen,
+export function DestructiveModal(props: DestructiveModalProps) {
+  return props.isOpen ? <DestructiveModalDialog {...props} /> : null;
+}
+
+function DestructiveModalDialog({
   onClose,
   onConfirm,
   title,
@@ -23,21 +26,12 @@ export function DestructiveModal({
   confirmTextTarget,
   confirmButtonText = "Delete Permanently",
   cancelButtonText = "Cancel",
-}: DestructiveModalProps) {
+}: Omit<DestructiveModalProps, "isOpen">) {
   const [confirmText, setConfirmText] = useState("");
-
-  // Reset confirm text when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setConfirmText("");
-    }
-  }, [isOpen]);
 
   const isConfirmed = confirmTextTarget
     ? confirmText.trim() === confirmTextTarget.trim()
     : true;
-
-  if (!isOpen) return null;
 
   return (
     <div
