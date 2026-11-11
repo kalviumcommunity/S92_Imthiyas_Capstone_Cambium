@@ -32,7 +32,7 @@ services:
       - key: DB_SSL
         value: "true"
       - key: DB_SYNCHRONIZE
-        value: "true"
+        value: "false"
       - key: CORS_ORIGIN
         value: "https://cambium-research.vercel.app,https://cambium.onrender.com,http://localhost:3000"
       - key: COOKIE_SAME_SITE
@@ -73,4 +73,3 @@ databases:
     databaseName: cambium
     user: cambium_admin
     postgresMajorVersion: "16"
-

@@ -11,7 +11,7 @@
     "seed": "npm --prefix server run seed",
     "client:dev": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
-    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "dev": "concurrently --kill-others-on-fail \"npm run server:dev\" \"npm run client:dev\"",
     "build": "npm run server:build && npm run client:build",
     "test": "npm --prefix server run test",
     "test:jest": "jest --runInBand",

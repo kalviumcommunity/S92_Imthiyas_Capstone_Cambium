@@ -35,6 +35,8 @@
 
 [Explore Live Workspace](http://localhost:3000) • [Product Specs](docs/templates/PRD.md) • [Architecture](docs/architecture.md) • [API Guide](docs/api-guide.md) • [Database](docs/database.md) • [Security Policy](docs/security.md) • [Code Style](docs/code-style.md) • [Testing](docs/testing.md) • [Deployment](docs/operations/deployment-runbook.md) • [Disaster Recovery](docs/DISASTER_RECOVERY_PLAYBOOK.md)
 
+For local development, run `npm run dev` once from the repository root to start the API and frontend together. The frontend keeps development output in `client/.next-dev`, separate from production build output; do not launch another client dev server on the same workspace.
+
 <br />
 
 <p align="center">

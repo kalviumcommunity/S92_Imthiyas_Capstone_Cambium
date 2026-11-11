@@ -78,10 +78,12 @@ Run all commands from the `client/` directory or use root npm scripts with `--pr
 
 | Script | Command | Purpose |
 | :--- | :--- | :--- |
-| `dev` | `npm run dev` | Starts Next.js development server on `http://localhost:3000` |
+| `dev` | `npm run dev` | Starts Next.js development server on `http://localhost:3000`, isolated in `.next-dev` so production builds cannot overwrite dev assets |
 | `build` | `npm run build` | Compiles optimized production bundle across all 49 pages |
 | `start` | `npm run start` | Boots production server on port 3000 |
 | `lint` | `npm run lint` | Runs static ESLint checks |
+
+Use the root `npm run dev` command to start both the API and frontend together. Do not start a second client dev server in parallel; Next.js may select another port when 3000 is already occupied.
 
 ---
 

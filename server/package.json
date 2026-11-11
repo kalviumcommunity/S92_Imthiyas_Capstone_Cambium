@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/src/main.js",
-    "dev": "tsx watch src/main.ts",
+    "dev": "node ../scripts/check-dev-port.mjs 5000 && tsx watch src/main.ts",
     "start:dev": "tsx watch src/main.ts",
     "start:prod": "node dist/src/main.js",
     "init:db": "node scripts/init-db.js",
