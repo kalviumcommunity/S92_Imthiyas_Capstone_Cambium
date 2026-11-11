@@ -53,6 +53,8 @@
 | **[`testing.md`](testing.md)** | Testing & Verification | Vitest test suite breakdown (24 files / 117 tests passed), Playwright E2E smoke harness, and CI/CD quality gates. |
 | **[`testing/test-strategy.md`](testing/test-strategy.md)** | Unified Test Pyramid | Jest unit tests (82 tests), Vitest backend tests (117 tests), and Playwright E2E specs. |
 | **[`deployment.md`](deployment.md)** | Production Deployment | Docker Compose multi-container stack, cloud deployment runbooks for Render, Vercel, and Supabase, and health checks. |
+| **[`audit/PRODUCTION_READINESS_CHECKLIST.md`](audit/PRODUCTION_READINESS_CHECKLIST.md)** | Deployment Readiness Plan | Canonical prioritized milestones, no-go gates, verification evidence, environment checks, and rollout sequence. This is a plan, not an approval. |
+| **[`deployment/RELEASE_CHECKLIST.md`](deployment/RELEASE_CHECKLIST.md)** | Release Execution Checklist | Per-release sign-off record; execute only after the canonical readiness plan passes. |
 | **[`operations/release-process.md`](operations/release-process.md)** | Release & Versioning | Semantic Versioning (SemVer), release gates, tagging protocol, and rollback runbooks. |
 | **[`operations/deployment-runbook.md`](operations/deployment-runbook.md)** | Operational Runbooks | Multi-environment deployment runbooks and orchestration blueprints. |
 | **[`DISASTER_RECOVERY_PLAYBOOK.md`](DISASTER_RECOVERY_PLAYBOOK.md)** | Reliability & Recovery | Continuous WAL archiving, failover procedures, cold-start recovery, and data integrity verification. |
@@ -83,4 +85,3 @@ npm --prefix server test
 # Execute Playwright E2E smoke tests
 npm run test:e2e
 ```
-

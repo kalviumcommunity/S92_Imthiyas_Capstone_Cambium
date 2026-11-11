@@ -1,7 +1,19 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import { ArrowRight } from "lucide-react";
+import { useHydrated } from "@/lib/hooks/use-hydrated";
+import { useBrowserStorageValue, writeBrowserStorageValue } from "@/lib/hooks/use-browser-storage";
+
+const INTRO_SEEN_KEY = "cambium_intro_seen";
+
+function markIntroSeen() {
+  try {
+    writeBrowserStorageValue("session", INTRO_SEEN_KEY, "true");
+  } catch {
+    // ignore
+  }
+}
 
 interface CambiumIntroPreloaderProps {
   onComplete?: () => void;
@@ -39,51 +51,28 @@ export function CambiumIntroPreloader({
   onComplete,
   forceShow = false,
 }: CambiumIntroPreloaderProps) {
-  const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
   const [progress, setProgress] = useState(0);
   const [step, setStep] = useState(0); // 0: Genesis spiral, 1: Connecting Nodes, 2: Typography Assembly, 3: Resolved
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const hydrated = useHydrated();
+  const seen = useBrowserStorageValue("session", INTRO_SEEN_KEY) === "true";
+  const visible = !dismissed && (forceShow || (hydrated && (!seen || fadingOut)));
 
   // Total duration: ~4.5 seconds on screen before silky fade-out
   const TOTAL_DURATION_MS = 4500;
   const FADE_OUT_DURATION_MS = 1000;
 
-  // On mount check session storage
-  useEffect(() => {
-    try {
-      const seen = sessionStorage.getItem("cambium_intro_seen");
-      if (forceShow || seen !== "true") {
-        setVisible(true);
-      }
-    } catch {
-      setVisible(true);
-    }
-  }, [forceShow]);
-
-  // Reset state when forceShow triggers
-  useEffect(() => {
-    if (forceShow) {
-      setVisible(true);
-      setFadingOut(false);
-      setProgress(0);
-      setStep(0);
-    }
-  }, [forceShow]);
-
   // Handle Skip (button or Escape key)
-  const handleSkip = () => {
-    try {
-      sessionStorage.setItem("cambium_intro_seen", "true");
-    } catch {
-      // ignore
-    }
+  const handleSkip = useCallback(() => {
+    markIntroSeen();
     setFadingOut(true);
     setTimeout(() => {
-      setVisible(false);
+      setDismissed(true);
       if (onComplete) onComplete();
     }, 200);
-  };
+  }, [onComplete]);
 
   // Keyboard shortcut listener for Esc key
   useEffect(() => {
@@ -94,7 +83,7 @@ export function CambiumIntroPreloader({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [handleSkip]);
 
   // Timer & progress stepper
   useEffect(() => {
@@ -118,14 +107,10 @@ export function CambiumIntroPreloader({
 
       if (elapsed >= TOTAL_DURATION_MS) {
         clearInterval(interval);
-        try {
-          sessionStorage.setItem("cambium_intro_seen", "true");
-        } catch {
-          // ignore
-        }
+        markIntroSeen();
         setFadingOut(true);
         setTimeout(() => {
-          setVisible(false);
+          setDismissed(true);
           if (onComplete) onComplete();
         }, FADE_OUT_DURATION_MS);
       }

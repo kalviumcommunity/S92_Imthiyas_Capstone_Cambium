@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Check, Sparkles, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ReactiveNullState } from "@/components/ui/reactive-null-state";
@@ -11,7 +11,7 @@ import { useRealtimeEvents } from "@/lib/realtime/useRealtimeEvents";
 type Tab = "All" | "Unread" | "Mentions" | "System";
 
 interface NotificationItem {
-  id: number;
+  id: number | string;
   read: boolean;
   type: "collaboration" | "system";
   title: string;
@@ -134,7 +134,7 @@ function NotificationCard({
 }: {
   notif: NotificationItem;
   onSelect: (notif: NotificationItem) => void;
-  onMarkRead: (e: React.MouseEvent, id: number) => void;
+  onMarkRead: (e: React.MouseEvent, id: number | string) => void;
 }) {
   return (
     <article
@@ -241,50 +241,42 @@ export default function NotificationsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [previewNullState, setPreviewNullState] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
+  const [realtimeReadOverrides, setRealtimeReadOverrides] = useState<Record<string, boolean>>({});
   const [selectedNotif, setSelectedNotif] = useState<NotificationItem | null>(null);
   const { toast } = useToast();
 
   // Connect to real-time distributed SSE & Socket bus
   const { alerts, isSseConnected } = useRealtimeEvents();
-
-  useEffect(() => {
-    if (alerts && alerts.length > 0) {
-      setNotifications((prev) => {
-        const existingIds = new Set(prev.map((n) => String(n.id)));
-        const newItems: NotificationItem[] = [];
-
-        alerts.forEach((alt, idx) => {
-          const pseudoId = 1000 + idx;
-          if (!existingIds.has(String(pseudoId)) && !existingIds.has(alt.id)) {
-            newItems.push({
-              id: pseudoId,
-              read: alt.read,
-              type: alt.type === "deadline" ? "system" : "collaboration",
-              category: alt.type.toUpperCase(),
-              title: alt.title,
-              sender: "Cambium Event Stream",
-              senderRole: "Distributed SSE Bus",
-              avatarInitials: "SSE",
-              avatarBg: "bg-[#DCE6D7] text-[#3E6248]",
-              icon: <SparkleIcon />,
-              summary: (
-                <span className="font-sans">
-                  <strong className="font-semibold text-[#202920]">{alt.title}</strong>
-                </span>
-              ),
-              timestamp: "Just now",
-              dateStr: "Live Delivery",
-              body: alt.message,
-              actionLabel: "Inspect Event",
-              actionHref: alt.link || "/dashboard",
-            });
-          }
-        });
-
-        return newItems.length > 0 ? [...newItems, ...prev] : prev;
-      });
-    }
-  }, [alerts]);
+  const realtimeNotifications = useMemo(
+    () =>
+      alerts.map((alert) => ({
+        id: `sse:${alert.id}`,
+        read: realtimeReadOverrides[alert.id] ?? alert.read,
+        type: alert.type === "deadline" ? "system" as const : "collaboration" as const,
+        category: alert.type.toUpperCase(),
+        title: alert.title,
+        sender: "Cambium Event Stream",
+        senderRole: "Distributed SSE Bus",
+        avatarInitials: "SSE",
+        avatarBg: "bg-[#DCE6D7] text-[#3E6248]",
+        icon: <SparkleIcon />,
+        summary: (
+          <span className="font-sans">
+            <strong className="font-semibold text-[#202920]">{alert.title}</strong>
+          </span>
+        ),
+        timestamp: "Just now",
+        dateStr: "Live Delivery",
+        body: alert.message,
+        actionLabel: "Inspect Event",
+        actionHref: alert.link || "/dashboard",
+      })),
+    [alerts, realtimeReadOverrides]
+  );
+  const allNotifications = useMemo(
+    () => [...realtimeNotifications, ...notifications],
+    [notifications, realtimeNotifications]
+  );
 
   const handleSimulateLiveEvent = () => {
     const mockEvents: NotificationItem[] = [
@@ -344,6 +336,10 @@ export default function NotificationsPage() {
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setRealtimeReadOverrides((prev) => ({
+      ...prev,
+      ...Object.fromEntries(alerts.map((alert) => [alert.id, true])),
+    }));
     toast({
       title: "All notifications marked as read",
       description: "Your inbox ledger has been synchronized.",
@@ -351,8 +347,16 @@ export default function NotificationsPage() {
     });
   };
 
-  const toggleMarkRead = (e: React.MouseEvent, id: number) => {
+  const toggleMarkRead = (e: React.MouseEvent, id: number | string) => {
     e.stopPropagation();
+    if (typeof id === "string" && id.startsWith("sse:")) {
+      const alertId = id.slice(4);
+      setRealtimeReadOverrides((prev) => ({
+        ...prev,
+        [alertId]: !(prev[alertId] ?? alerts.find((alert) => alert.id === alertId)?.read ?? false),
+      }));
+      return;
+    }
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n))
     );
@@ -360,13 +364,17 @@ export default function NotificationsPage() {
 
   const handleSelect = (notif: NotificationItem) => {
     // Automatically mark read when opened
+    if (typeof notif.id === "string" && notif.id.startsWith("sse:")) {
+      const alertId = notif.id.slice(4);
+      setRealtimeReadOverrides((prev) => ({ ...prev, [alertId]: true }));
+    }
     setNotifications((prev) =>
       prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
     );
     setSelectedNotif({ ...notif, read: true });
   };
 
-  const filtered = notifications.filter((n) => {
+  const filtered = allNotifications.filter((n) => {
     if (activeTab === "All") return true;
     if (activeTab === "Unread") return !n.read;
     if (activeTab === "Mentions") return n.type === "collaboration";
@@ -374,7 +382,7 @@ export default function NotificationsPage() {
     return true;
   });
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = allNotifications.filter((n) => !n.read).length;
 
   return (
     <div className="flex-1 min-h-screen overflow-y-auto bg-[#FAF7F0] dark:bg-[#0E140F] font-sans p-6 sm:p-10 pb-24">

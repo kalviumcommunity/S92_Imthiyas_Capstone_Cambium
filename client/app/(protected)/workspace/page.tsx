@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CitationModal, CitationItem } from "@/components/ui/citation-modal";
 import { AiProgressModal } from "@/components/ui/ai-progress-modal";
 import { ConflictModal } from "@/components/ui/conflict-modal";
@@ -11,8 +12,9 @@ import { CollaborativeProjectsDesk } from "@/components/workspace/CollaborativeP
 import { AiAutocompleteCopilotStudio } from "@/components/ai/AiAutocompleteCopilotStudio";
 import { useToast } from "@/components/ui/toast";
 import CambiumLogo from "@/components/CambiumLogo";
-import { uploadArtifact, getLocalArtifacts, UploadedArtifact } from "@/lib/api";
+import { uploadArtifact, type UploadedArtifact } from "@/lib/api";
 import { useUnsavedChanges } from "@/lib/hooks/useUnsavedChanges";
+import { useBrowserStorageValue } from "@/lib/hooks/use-browser-storage";
 
 // ─── Design Tokens (SSOT from 01_Design Systems) ───────────────────────────
 
@@ -116,6 +118,39 @@ const icons = {
   help: "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z",
 };
 
+function parseUploadedArtifacts(value: string | null): UploadedArtifact[] {
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (artifact): artifact is UploadedArtifact =>
+        typeof artifact === "object" &&
+        artifact !== null &&
+        "id" in artifact &&
+        typeof artifact.id === "string" &&
+        "originalName" in artifact &&
+        typeof artifact.originalName === "string" &&
+        "mimeType" in artifact &&
+        typeof artifact.mimeType === "string" &&
+        "sizeBytes" in artifact &&
+        typeof artifact.sizeBytes === "number" &&
+        "sizeFormatted" in artifact &&
+        typeof artifact.sizeFormatted === "string" &&
+        "sha256Hash" in artifact &&
+        typeof artifact.sha256Hash === "string" &&
+        "uploadedAt" in artifact &&
+        typeof artifact.uploadedAt === "string" &&
+        "status" in artifact &&
+        (artifact.status === "verified" ||
+          artifact.status === "processing" ||
+          artifact.status === "indexed")
+    );
+  } catch {
+    return [];
+  }
+}
+
 // ─── Utility Components ─────────────────────────────────────────────────────
 
 function Tooltip({ text, children }: { text: string; children: React.ReactNode }) {
@@ -197,19 +232,14 @@ function Sidebar({
   setActiveNav: (id: string) => void;
 }) {
   const [questionsOpen, setQuestionsOpen] = useState(true);
-  const [uploadedDocs, setUploadedDocs] = useState<UploadedArtifact[]>([]);
+  const storedArtifacts = useBrowserStorageValue("local", "cambium_workspace_artifacts");
+  const uploadedDocs = useMemo(
+    () => parseUploadedArtifacts(storedArtifacts),
+    [storedArtifacts]
+  );
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    setUploadedDocs(getLocalArtifacts());
-    const handleArtifactUploaded = () => {
-      setUploadedDocs(getLocalArtifacts());
-    };
-    window.addEventListener("cambium-artifact-uploaded", handleArtifactUploaded);
-    return () => window.removeEventListener("cambium-artifact-uploaded", handleArtifactUploaded);
-  }, []);
 
   const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -221,7 +251,6 @@ function Sidebar({
     });
     try {
       const art = await uploadArtifact(file);
-      setUploadedDocs((prev) => [art, ...prev.filter((d) => d.id !== art.id)]);
       toast({
         title: "Ingestion Complete",
         description: `${art.originalName} verified with SHA-256 air-gapped hash.`,
@@ -480,12 +509,18 @@ function Sidebar({
             {
               label: isUploading ? "Ingesting..." : "Import PDF",
               icon: icons.upload,
-              onClick: () => fileInputRef.current?.click(),
+              action: "import" as const,
             },
           ].map((action) => (
             <Tooltip key={action.label} text={action.label}>
               <button
-                onClick={action.onClick}
+                onClick={() => {
+                  if ("action" in action) {
+                    fileInputRef.current?.click();
+                  } else {
+                    action.onClick();
+                  }
+                }}
                 disabled={isUploading && action.label.includes("Ingest")}
                 style={{
                   width: "100%",
@@ -533,7 +568,7 @@ function Sidebar({
               },
               tip: "New Page",
             },
-            { ic: icons.upload, onClick: () => fileInputRef.current?.click(), tip: "Import PDF / Material" },
+            { ic: icons.upload, action: "import" as const, tip: "Import PDF / Material" },
           ].map((item, i) => (
             <Tooltip key={i} text={item.tip}>
               {item.href ? (
@@ -568,7 +603,13 @@ function Sidebar({
               ) : (
                 <button
                   key={i}
-                  onClick={item.onClick}
+                  onClick={() => {
+                    if ("action" in item) {
+                      fileInputRef.current?.click();
+                    } else {
+                      item.onClick?.();
+                    }
+                  }}
                   style={{
                     width: 36,
                     height: 36,
@@ -888,6 +929,8 @@ function Toolbar({
   onOpenShortcuts: () => void;
   onLockSession: () => void;
 }) {
+  const router = useRouter();
+
   return (
     <div
       style={{
@@ -1053,7 +1096,7 @@ function Toolbar({
           icon: icons.upload,
           label: "Upload & Ingest Materials",
           onClick: () => {
-            window.location.href = "/workspace/upload";
+            router.push("/workspace/upload");
           },
         },
         { icon: icons.share, label: "Share", onClick: () => {} },

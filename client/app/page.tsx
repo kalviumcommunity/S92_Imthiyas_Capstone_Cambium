@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import CambiumLogo from '@/components/CambiumLogo'
 import { ArrowUpRight, User, AlertCircle, Sparkles, Check, Flame, Bookmark, FileText, Compass, Search, ExternalLink, ShieldCheck, Bell, Calendar as CalendarIcon, Plus, LayoutGrid, Shield, Database, Building2, Key, BookOpen, MessageSquare, HelpCircle, Settings, Share2, Heart } from 'lucide-react'
 import { CambiumIntroPreloader } from '@/components/landing/CambiumIntroPreloader'
@@ -63,6 +64,20 @@ const C = {
   darkSurface: 'var(--card, #18231B)',
   darkBorder: 'var(--color-limestone, #233327)',
   crimson: 'var(--color-status-error, #B33D35)',
+}
+
+function subscribeToReplayQuery(onChange: () => void) {
+  window.addEventListener("popstate", onChange);
+  return () => window.removeEventListener("popstate", onChange);
+}
+
+function getReplayQuerySnapshot() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("intro") === "1" || params.get("splash") === "1";
+}
+
+function getServerReplayQuerySnapshot() {
+  return false;
 }
 
 // ─── Navigation (Mathematically Aligned Optical Grid & WCAG 2.2 Touch Targets) ───
@@ -1221,6 +1236,7 @@ function IdentitySection() {
 
 // ─── Research Discover & Literature Console (Photo 2 Live Research Desk) ─────
 function WorkspaceSection() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('')
   const [activeAction, setActiveAction] = useState<string | null>(null)
   const [savedCards, setSavedCards] = useState<Record<string, boolean>>({})
@@ -1332,7 +1348,7 @@ function WorkspaceSection() {
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (searchQuery.trim()) {
-                    window.location.href = `/discover?q=${encodeURIComponent(searchQuery.trim())}`;
+                    router.push(`/discover?q=${encodeURIComponent(searchQuery.trim())}`);
                   }
                 }}
                 className="flex-1 max-w-xl mx-auto flex items-center bg-white border border-[#E4DCCB] rounded-full px-4 py-2 shadow-xs hover:shadow-sm focus-within:border-[#3E6248] focus-within:ring-2 focus-within:ring-[#3E6248]/20 transition-all gap-2.5"
@@ -3349,7 +3365,7 @@ function StructuralSystem() {
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end w-[min(20rem,calc(100vw-2.5rem))] select-none print:hidden">
+    <div className="fixed bottom-24 right-6 z-40 flex flex-col items-end w-[min(20rem,calc(100vw-2.5rem))] select-none print:hidden">
       <div className="bg-[#FAF7F0]/95 dark:bg-[#18231B]/95 text-[#202920] dark:text-[#EDEAE2] rounded-xl p-2.5 shadow-lg border border-[#E4DCCB] dark:border-[#28382C] flex items-center justify-between gap-2.5 w-full backdrop-blur-md transition-all duration-200 hover:border-[#3E6248]/40 dark:hover:border-[#4ADE80]/40">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-8 h-8 shrink-0 flex items-center justify-center bg-[#E4DCCB]/50 dark:bg-[#202D23] rounded-lg text-[#3E6248] dark:text-[#4ADE80] border border-[#3E6248]/20 dark:border-[#4ADE80]/20">
@@ -3383,21 +3399,25 @@ function StructuralSystem() {
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [replayIntro, setReplayIntro] = useState(false);
+  const hasReplayQuery = useSyncExternalStore(
+    subscribeToReplayQuery,
+    getReplayQuerySnapshot,
+    getServerReplayQuerySnapshot
+  );
+  const [replayDismissed, setReplayDismissed] = useState(false);
+  const replayIntro = hasReplayQuery && !replayDismissed;
 
   useEffect(() => {
     document.title = "CAMBIUM RESEARCH — The Enterprise Research Operating System";
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("intro") === "1" || params.get("splash") === "1") {
-        setReplayIntro(true);
-      }
-    }
   }, []);
 
   return (
     <div className="min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] text-[#202920] dark:text-[#EDEAE2] transition-colors duration-200" style={{ fontFamily: "var(--font-sans), 'Instrument Sans', system-ui, sans-serif" }}>
-      <CambiumIntroPreloader key={replayIntro ? "intro-replay" : "intro-initial"} forceShow={replayIntro} onComplete={() => setReplayIntro(false)} />
+      <CambiumIntroPreloader
+        key={replayIntro ? "intro-replay" : "intro-initial"}
+        forceShow={replayIntro}
+        onComplete={() => setReplayDismissed(true)}
+      />
       <Nav />
       <Hero />
       <KnowledgeGraphSection />

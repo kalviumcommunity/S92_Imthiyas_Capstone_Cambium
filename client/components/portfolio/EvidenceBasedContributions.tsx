@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
   Calendar,
@@ -110,36 +110,51 @@ export function EvidenceBasedContributions({
   const [items, setItems] = useState<ResearchContributionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Modals state
   const [inspectedDate, setInspectedDate] = useState<string | null>(null);
   const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
 
   // Fetch real data on year or scholar change
-  const refreshData = async () => {
+  const refreshData = useCallback(() => {
     setLoading(true);
     setError(null);
-    try {
-      const [sumRes, itemsRes] = await Promise.all([
-        getContributionSummary({ actorId: scholarId, year: selectedYear, timezone: "UTC" }),
-        getContributions({ actorId: scholarId, year: selectedYear }),
-      ]);
-      setSummary(sumRes);
-      setItems(itemsRes);
-      if (onSummaryLoaded) {
-        onSummaryLoaded(sumRes);
-      }
-    } catch (err: any) {
-      setError(err?.message || "Failed to load attributable research ledger.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setRefreshKey((key) => key + 1);
+  }, []);
 
   useEffect(() => {
-    refreshData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedYear, scholarId]);
+    let active = true;
+    const loadData = async () => {
+      try {
+        const [sumRes, itemsRes] = await Promise.all([
+          getContributionSummary({ actorId: scholarId, year: selectedYear, timezone: "UTC" }),
+          getContributions({ actorId: scholarId, year: selectedYear }),
+        ]);
+        if (active) {
+          setSummary(sumRes);
+          setItems(itemsRes);
+          onSummaryLoaded?.(sumRes);
+        }
+      } catch (err: unknown) {
+        if (active) {
+          setError(err instanceof Error ? err.message : "Failed to load attributable research ledger.");
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    void loadData();
+    return () => {
+      active = false;
+    };
+  }, [onSummaryLoaded, refreshKey, scholarId, selectedYear]);
+
+  const handleYearChange = (year: number | undefined) => {
+    setLoading(true);
+    setError(null);
+    setSelectedYear(year);
+  };
 
   // Filter items for inspected date
   const inspectedItems = inspectedDate
@@ -207,7 +222,7 @@ export function EvidenceBasedContributions({
               return (
                 <button
                   key={label}
-                  onClick={() => setSelectedYear(yr)}
+                  onClick={() => handleYearChange(yr)}
                   className={`px-3 py-1 rounded-lg transition-colors cursor-pointer font-medium ${
                     active
                       ? "bg-white text-[#202920] shadow-2xs font-semibold"
@@ -820,4 +835,3 @@ function RecordMilestoneModal({
     </div>
   );
 }
-

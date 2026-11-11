@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback, useEffect, type ChangeEvent } from "react";
+import React, { useState, useRef, useCallback, useMemo, type ChangeEvent } from "react";
 import Link from "next/link";
 import {
   User,
@@ -146,7 +146,25 @@ export default function ProfileCalibrationPage() {
   const [step, setStep] = useState(0);
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
-  const [profile, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
+  const [profileState, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
+  const profile = useMemo(
+    () => ({
+      ...profileState,
+      name:
+        profileState.name === INITIAL_PROFILE.name
+          ? user?.fullName || user?.name || profileState.name
+          : profileState.name,
+      institution:
+        profileState.institution === INITIAL_PROFILE.institution
+          ? user?.institution || profileState.institution
+          : profileState.institution,
+      interests:
+        profileState.interests === INITIAL_PROFILE.interests && user?.interests?.length
+          ? user.interests
+          : profileState.interests,
+    }),
+    [profileState, user]
+  );
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set([0, 1]));
   const [isSaving, setIsSaving] = useState(false);
   const [isPhotoDragging, setIsPhotoDragging] = useState(false);
@@ -185,17 +203,6 @@ export default function ProfileCalibrationPage() {
       setIsSyncingOrcid(false);
     }
   };
-
-  useEffect(() => {
-    if (user) {
-      setProfile((prev) => ({
-        ...prev,
-        name: user.fullName || user.name || prev.name,
-        institution: user.institution || prev.institution,
-        interests: user.interests && user.interests.length > 0 ? user.interests : prev.interests,
-      }));
-    }
-  }, [user]);
 
   const update = useCallback((patch: Partial<ProfileData>) => {
     setProfile((prev) => ({ ...prev, ...patch }));

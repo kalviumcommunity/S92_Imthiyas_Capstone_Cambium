@@ -14,7 +14,7 @@ Cambium is an **AI-powered Research Opportunity Discovery and Intelligence SaaS 
 
 ```mermaid
 graph TD
-    Client["Client Presentation Layer (Next.js 15 + React 19 + Tailwind CSS)"]
+    Client["Client Presentation Layer (Next.js 16 + React 19 + Tailwind CSS)"]
     API["Enterprise Modular API (NestJS 10 / 12 + TypeScript)"]
     DB[("PostgreSQL 16 + pgvector (3NF Relational + 768-dim HNSW)")]
     Cache[("Redis 7 + BullMQ (Session / Cache / Ingestion Queue)")]

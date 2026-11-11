@@ -254,7 +254,7 @@ export default function EnterpriseAuditRbacPage() {
   };
 
   return (
-    <div className="flex-1 min-w-0 h-screen overflow-y-auto bg-[#FAF7F0] text-[#202920] font-sans p-6 sm:p-10 selection:bg-[#3E6248]/20 selection:text-[#173F35]">
+    <main className="flex-1 min-w-0 h-screen overflow-y-auto bg-[#FAF7F0] text-[#202920] font-sans p-6 sm:p-10 selection:bg-[#3E6248]/20 selection:text-[#173F35]">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Breadcrumb */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E4DCCB] pb-6">
@@ -535,6 +535,6 @@ export default function EnterpriseAuditRbacPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

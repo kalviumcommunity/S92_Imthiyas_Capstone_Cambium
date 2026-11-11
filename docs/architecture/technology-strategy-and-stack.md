@@ -9,6 +9,8 @@
 
 ---
 
+> **Implementation update:** The original Next.js 15 framework selection is recorded in ADR 0001. During M1 security-readiness work, the client was upgraded to Next.js 16.4.6; this is the current implementation baseline.
+
 ## 1. Executive Summary
 
 Cambium is an **AI-powered Research Opportunity Discovery and Intelligence SaaS platform** designed as the **"Enterprise Operating System for Modern Scholarship."** It unifies research funding discovery (grants, CFPs, fellowships), deep semantic literature synthesis, ethics governance (IRB protocols), FAIR data archiving, lab compute quota tracking, blind peer review, and verified academic identity into an authoritative, single-pane workspace.
@@ -16,7 +18,7 @@ Cambium is an **AI-powered Research Opportunity Discovery and Intelligence SaaS 
 This document serves as the **binding Single Source of Truth (SSOT)** for Cambium's technology strategy, architectural boundaries, technology selections, trade-off defenses, security baselines, deployment topologies, and long-term evolution roadmap.
 
 ### Core Architectural Decisions Summary:
-1. **Frontend**: **Next.js 15 (App Router)** + **React 19** + **Tailwind CSS** + **W3C DTCG Living Materials Tokens**. Hybrid SSR pre-renders public grant catalogs for SEO; dynamic Client Components power dense research tools (`/graph`, `/agent-reader`, `/os`).
+1. **Frontend**: **Next.js 16.4.6 (App Router)** + **React 19** + **Tailwind CSS** + **W3C DTCG Living Materials Tokens**. Hybrid SSR pre-renders public grant catalogs for SEO; dynamic Client Components power dense research tools (`/graph`, `/agent-reader`, `/os`).
 2. **Backend**: **NestJS 10 (NestJS 12 Enterprise Core)** modular monolith in **TypeScript**. Enforces strict dependency injection, DTO validation, dual-token JWT security, and WebSockets without the operational overhead of a polyglot microservice.
 3. **Database & Vectors**: **PostgreSQL 16 + pgvector** using **HNSW indexing** (`vector_cosine_ops`). Completely eliminates the "two-database split-brain problem" by unifying 3NF transactional entities and 768-dimensional vector embeddings in a single ACID store.
 4. **AI & RAG Engine**: **Deterministic in-engine RAG** with **Google Gemini embeddings** (`gemini-embedding-001`) and **SHA-256 mathematical fallbacks**. Mandates verifiable line-level citations (`[p. 14, L. 42-58]`) while rejecting unconstrained, hallucination-prone autonomous agent loops.
@@ -29,7 +31,7 @@ This document serves as the **binding Single Source of Truth (SSOT)** for Cambiu
 
 | Decision Domain | Status | Selected Technology | Primary ADR Reference |
 | :--- | :---: | :--- | :--- |
-| **Frontend Framework** | `CONFIRMED` | Next.js 15 (App Router) + React 19 | [`ADR 0001`](file:///d:/01_PROJECTS/ACTIVE/S92_Imthiyas_Capstone_Cambium/docs/architecture/adr/0001-frontend-framework.md) |
+| **Frontend Framework** | `CONFIRMED` | Next.js 16.4.6 (App Router) + React 19 | [`ADR 0001`](file:///d:/01_PROJECTS/ACTIVE/S92_Imthiyas_Capstone_Cambium/docs/architecture/adr/0001-frontend-framework.md) |
 | **Backend Framework** | `CONFIRMED` | NestJS 10 Modular Monolith (TypeScript) | [`ADR 0002`](file:///d:/01_PROJECTS/ACTIVE/S92_Imthiyas_Capstone_Cambium/docs/architecture/adr/0002-backend-architecture.md) |
 | **Primary Persistence** | `CONFIRMED` | PostgreSQL 16 (3NF Normalized Relational) | [`ADR 0003`](file:///d:/01_PROJECTS/ACTIVE/S92_Imthiyas_Capstone_Cambium/docs/architecture/adr/0003-primary-database-and-vector-retrieval.md) |
 | **Vector Search Engine** | `CONFIRMED` | `pgvector` HNSW (768-dim, Cosine Distance) | [`ADR 0003`](file:///d:/01_PROJECTS/ACTIVE/S92_Imthiyas_Capstone_Cambium/docs/architecture/adr/0003-primary-database-and-vector-retrieval.md) |
@@ -55,7 +57,7 @@ To eliminate ambiguity across engineering contributors and AI coding agents, Cam
 │ Product Category         │ Enterprise AI-Powered Research Intelligence & OS       │
 │ Application Type         │ Full-Stack Hybrid Web Application (SSR + Desktop SPA)   │
 │ Software Architecture    │ Modular Monolith with Decoupled Event & Worker Systems │
-│ Technology Stack         │ Unified TypeScript Stack (Next.js 15 + NestJS 10)       │
+│ Technology Stack         │ Unified TypeScript Stack (Next.js 16 + NestJS 10)       │
 │ Persistence Architecture │ Relational ACID Single Source of Truth + pgvector      │
 │ AI Architecture          │ In-Engine Deterministic RAG with Line-Level Grounding  │
 │ Deployment Architecture  │ Sovereign Multi-Stage Docker Mesh & GitHub Actions CI  │
@@ -66,7 +68,7 @@ To eliminate ambiguity across engineering contributors and AI coding agents, Cam
 It is an architectural error to describe Cambium as a "MERN" (MongoDB, Express, React, Node.js) application:
 1. **Database**: Cambium uses **PostgreSQL 16 with pgvector**, not MongoDB. Scholarship governance (IRB protocols, CRediT authorship, grant allocations) demands strict foreign keys, relational ACID transactions, and deterministic schema migrations.
 2. **Backend**: Cambium uses **NestJS 10**, an enterprise inversion-of-control container with TypeScript decorators, not unopinionated ad-hoc Express scripts.
-3. **Frontend**: Cambium uses **Next.js 15 (App Router)** with React Server Components, streaming SSR, and edge route caching, not a plain client-only React bundle.
+3. **Frontend**: Cambium uses **Next.js 16 (App Router)** with React Server Components, streaming SSR, and route caching, not a plain client-only React bundle.
 
 Cambium is accurately classified as a **Modular Full-Stack TypeScript Enterprise Research Operating System**.
 
@@ -167,7 +169,7 @@ C4Context
 C4Container
   title Runtime Container Architecture — Cambium Platform
 
-  Container(ui, "Client Presentation Layer", "Next.js 15, React 19, Tailwind", "Renders Living Materials UI, 2D knowledge graph, and desktop workspace.")
+  Container(ui, "Client Presentation Layer", "Next.js 16, React 19, Tailwind", "Renders Living Materials UI, 2D knowledge graph, and desktop workspace.")
   Container(api, "Enterprise API Server", "NestJS 10, TypeScript, Express 5", "Core business logic, RBAC, opportunity matching, audit logs, and WebSockets.")
 
   ContainerDb(pg, "Primary Database", "PostgreSQL 16 + pgvector", "3NF relational entities, user profiles, opportunities, and 768-dim HNSW vector index.")
@@ -183,7 +185,7 @@ C4Container
 sequenceDiagram
   autonumber
   actor Scholar as Academic Scholar
-  participant UI as Next.js 15 Client
+  participant UI as Next.js 16 Client
   participant API as NestJS Enterprise API
   participant Redis as BullMQ / Redis 7
   participant DB as PostgreSQL 16 + pgvector
@@ -223,7 +225,7 @@ graph TD
 
   subgraph Docker Host Mesh (Local or Sovereign VPS)
     subgraph Internal Network: cambium_mesh
-      ClientC["cambium_client Container (Next.js 15 Standalone, Port 3000)"]
+      ClientC["cambium_client Container (Next.js 16 Standalone, Port 3000)"]
       ServerC["cambium_server Container (NestJS 10 API, Port 5000)"]
       PostgresC[("cambium_postgres (pgvector/pgvector:pg16, Port 5432)")]
       RedisC[("cambium_redis (redis:7-alpine, Port 6379)")]
@@ -286,15 +288,15 @@ Eliminates context switching and interface duplication. A single schema change (
 ### Layer B: Frontend Presentation & UI System
 
 #### 1. Selection & Responsibility
-- **Next.js 15 (App Router)** + **React 19** + **Tailwind CSS 3.4** + **W3C Living Materials Tokens**.
+- **Next.js 16 (App Router)** + **React 19** + **Tailwind CSS 3.4** + **W3C Living Materials Tokens**.
 - Owns public catalog SEO, user authentication views, desktop research workspace, 2D force-directed knowledge graph, and accessible UI layout.
 
 #### 2. Why Appropriate for Cambium
-Next.js 15 delivers hybrid server rendering: pre-rendering thousands of grant notices and conference deadlines at build time for instant Google Scholar and web indexing, while hydrating client components for high-frequency interactive canvas work.
+Next.js 16 delivers hybrid server rendering: pre-rendering public grant notices and conference deadlines at build time for web indexing, while hydrating client components for interactive research tools.
 
 #### 3. Alternatives Considered & Rejected
 - **Vite SPA**: Rejected. Pure client-rendered SPAs deliver poor SEO for public grant listings, slow initial TTFB, and large client bundle payloads.
-- **Remix / React Router 7**: Highly capable, but Next.js 15 possesses superior enterprise ecosystem adoption, production standalone Docker bundling, and native font/image optimization.
+- **Remix / React Router 7**: Highly capable; the original Next.js selection favored its integrated server rendering, standalone Docker bundling, and native font/image optimization.
 
 #### 4. Real-World Precedents
 - **Notion**: Hybrid web/desktop workspace combining deep interactive document editors with pre-rendered public template galleries.
@@ -567,7 +569,7 @@ gantt
   section Phase 0: Baseline & Audit
   Repository Audit & ADR Documentation       :done, 2026-09, 2026-10
   section Phase 1: Reliable Foundation
-  Next.js 15 + NestJS 10 Monolith            :done, 2026-10, 2026-11
+  Next.js 16 + NestJS 10 Monolith            :done, 2026-10, 2026-11
   PostgreSQL 16 + pgvector HNSW Engine        :done, 2026-10, 2026-11
   Dual-Token JWT & 5-Tier RBAC               :done, 2026-10, 2026-11
   section Phase 2: Ingestion & Discovery
@@ -612,7 +614,7 @@ gantt
 ---
 
 ## 16. Authoritative Sources & Research Citations
-1. **Next.js 15 Documentation**: [https://nextjs.org/docs](https://nextjs.org/docs)
+1. **Next.js Documentation**: [https://nextjs.org/docs](https://nextjs.org/docs)
 2. **React 19 Server Components Specification**: [https://react.dev/reference/rsc/server-components](https://react.dev/reference/rsc/server-components)
 3. **NestJS Modular Architecture Guide**: [https://docs.nestjs.com/](https://docs.nestjs.com/)
 4. **PostgreSQL 16 Documentation**: [https://www.postgresql.org/docs/16/](https://www.postgresql.org/docs/16/)

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ShieldCheck, Lock, KeyRound, ArrowRight, LogOut, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 
@@ -12,26 +13,21 @@ export interface SessionLockModalProps {
   institution?: string;
 }
 
-export function SessionLockModal({
-  isOpen,
+export function SessionLockModal(props: SessionLockModalProps) {
+  return props.isOpen ? <SessionLockModalDialog {...props} /> : null;
+}
+
+function SessionLockModalDialog({
   onUnlock,
   userName = "Dr. Alex Rivera",
   userEmail = "a.rivera@stanford.edu",
   institution = "Stanford University · School of Medicine",
-}: SessionLockModalProps) {
+}: Omit<SessionLockModalProps, "isOpen">) {
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (isOpen) {
-      setPassword("");
-      setError(false);
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,9 +125,7 @@ export function SessionLockModal({
           <div className="mt-5 pt-4 border-t border-[#E4DCCB]/60 flex items-center justify-between text-[11.5px]">
             <span className="text-[#85877B]">Not {userName}?</span>
             <button
-              onClick={() => {
-                window.location.href = "/sign-in";
-              }}
+              onClick={() => router.push("/sign-in")}
               className="inline-flex items-center gap-1 text-[#62685E] hover:text-[#B33D35] transition-colors bg-transparent border-0 cursor-pointer p-0 font-medium"
             >
               <LogOut className="w-3.5 h-3.5" />

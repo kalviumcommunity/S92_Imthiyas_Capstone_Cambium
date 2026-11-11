@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
 import { SupportedLocale, SUPPORTED_LOCALES, TRANSLATIONS, LocaleMetadata } from "./translations";
+import { useBrowserStorageValue, writeBrowserStorageValue } from "@/lib/hooks/use-browser-storage";
 
 interface LanguageContextType {
   locale: SupportedLocale;
@@ -17,23 +18,29 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 const STORAGE_KEY = "cambium_scholarly_locale";
 
+function isSupportedLocale(value: string | null): value is SupportedLocale {
+  return value !== null && Object.prototype.hasOwnProperty.call(TRANSLATIONS, value);
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<SupportedLocale>("en");
-  const [mounted, setMounted] = useState(false);
+  const storedLocale = useBrowserStorageValue("local", STORAGE_KEY);
+  const [fallbackLocale, setFallbackLocale] = useState<SupportedLocale | null>(null);
+  const locale =
+    fallbackLocale ?? (isSupportedLocale(storedLocale) ? storedLocale : "en");
 
   useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem(STORAGE_KEY) as SupportedLocale | null;
-    if (saved && TRANSLATIONS[saved]) {
-      setLocaleState(saved);
-      document.documentElement.lang = saved;
-    }
-  }, []);
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   const setLocale = (newLocale: SupportedLocale) => {
-    setLocaleState(newLocale);
-    localStorage.setItem(STORAGE_KEY, newLocale);
     document.documentElement.lang = newLocale;
+    try {
+      writeBrowserStorageValue("local", STORAGE_KEY, newLocale);
+      setFallbackLocale(null);
+    } catch (error) {
+      console.error("[LanguageProvider] Unable to persist locale preference:", error);
+      setFallbackLocale(newLocale);
+    }
   };
 
   const metadata = useMemo(() => {

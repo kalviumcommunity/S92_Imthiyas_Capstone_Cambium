@@ -33,12 +33,12 @@ export default function MobileNavigation() {
   const logout = useAuthStore((state) => state.logout);
   const { t } = useLanguage();
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerPath, setDrawerPath] = useState<string | null>(null);
+  const drawerOpen = drawerPath === pathname;
 
-  // Close drawer on route change
-  useEffect(() => {
-    setDrawerOpen(false);
-  }, [pathname]);
+  const setDrawerOpen = (open: boolean) => {
+    setDrawerPath(open ? pathname : null);
+  };
 
   // Lock body scroll when drawer is open
   useEffect(() => {

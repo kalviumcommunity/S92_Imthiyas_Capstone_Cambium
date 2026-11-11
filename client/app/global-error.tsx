@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import Link from "next/link";
 
 export default function GlobalError({
   error,
@@ -151,12 +152,12 @@ export default function GlobalError({
             <button className="btn-primary" onClick={() => reset()}>
               Reload System Node
             </button>
-            <a className="btn-secondary" href="/dashboard">
+            <Link className="btn-secondary" href="/dashboard">
               Return to Dashboard
-            </a>
-            <a className="btn-secondary" href="/">
+            </Link>
+            <Link className="btn-secondary" href="/">
               Landing Page
-            </a>
+            </Link>
           </div>
           <div className="footer-note">
             CAMBIUM RESEARCH // ZERO-DATA-LOSS TELEMETRY // FAULT: RECOVERED
@@ -166,4 +167,3 @@ export default function GlobalError({
     </html>
   );
 }
-

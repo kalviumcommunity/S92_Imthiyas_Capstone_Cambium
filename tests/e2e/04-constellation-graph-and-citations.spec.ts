@@ -13,7 +13,7 @@ test.describe("04: Constellation Graph Physics & Academic Citation Export", () =
     await expect(structuralHolesBtn).toBeVisible({ timeout: 10000 });
 
     // Verify graph workspace is rendered
-    const graphWorkspace = page.locator("div.w-full.h-full, svg, canvas").first();
+    const graphWorkspace = page.locator("canvas, div.w-full.h-full").first();
     await expect(graphWorkspace).toBeVisible();
 
     // Toggle structural holes filter

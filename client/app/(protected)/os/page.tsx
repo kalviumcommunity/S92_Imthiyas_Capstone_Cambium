@@ -13,6 +13,7 @@ import {
   CalendarEventItem,
 } from "@/lib/calendar-export";
 import { useToast } from "@/components/ui/toast";
+import { useCurrentTime } from "@/lib/hooks/use-current-time";
 import {
   LayoutGrid,
   Search,
@@ -969,6 +970,7 @@ function ResearchActivityHeatmap() {
 // ─── Main Personal OS Page Component ──────────────────────────────────────────
 
 export default function PersonalResearchOSPage() {
+  const currentTime = useCurrentTime();
   const { toast } = useToast();
   const [calView, setCalView] = useState<CalendarView>("week");
   const [savedTab, setSavedTab] = useState<SavedTab>("all");
@@ -997,30 +999,30 @@ export default function PersonalResearchOSPage() {
         startDate: new Date(opp.deadline!),
         endDate: new Date(new Date(opp.deadline!).getTime() + 86400000),
         allDay: true,
-        category: "grant_deadline",
+        category: "grant_deadline" as const,
         url: opp.link || "/opportunities",
       };
     });
 
   const allCalendarEvents: CalendarEventItem[] = [
     ...liveBookmarkEvents,
-    {
+    ...(currentTime === null ? [] : [{
       id: "meet-1",
       title: "Cellular Topology Lab Meeting",
       description: "Weekly sync on neuro-symbolic validation and compute cluster allocations.",
-      startDate: new Date(Date.now() + 86400000 * 2),
-      endDate: new Date(Date.now() + 86400000 * 2 + 3600000),
-      category: "lab_meeting",
+      startDate: new Date(currentTime + 86400000 * 2),
+      endDate: new Date(currentTime + 86400000 * 2 + 3600000),
+      category: "lab_meeting" as const,
       location: "Room 32-G475 / Cambium Audio Space",
     },
     {
       id: "rev-1",
       title: "Preprint Peer Review Session",
       description: "Reviewing Foundation Models in Multi-Center MRI Volumetric Tomography.",
-      startDate: new Date(Date.now() + 86400000 * 4),
-      endDate: new Date(Date.now() + 86400000 * 4 + 7200000),
-      category: "peer_review",
-    },
+      startDate: new Date(currentTime + 86400000 * 4),
+      endDate: new Date(currentTime + 86400000 * 4 + 7200000),
+      category: "peer_review" as const,
+    }]),
   ];
 
   const handleExportIcs = () => {

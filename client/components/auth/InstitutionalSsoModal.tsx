@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import { useToast } from "@/components/ui/toast";
+import { useHydrated } from "@/lib/hooks/use-hydrated";
 
 export interface InstitutionalSsoModalProps {
   isOpen: boolean;
@@ -91,11 +92,7 @@ export function InstitutionalSsoModal({ isOpen, onClose }: InstitutionalSsoModal
   const [query, setQuery] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHydrated();
 
   if (!isOpen || !mounted) return null;
 

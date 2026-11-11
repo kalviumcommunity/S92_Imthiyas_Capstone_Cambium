@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Sparkles,
   Bot,
@@ -62,6 +62,7 @@ export function GlobalRagAssistant() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const handleSendRef = useRef<((customQuery?: string) => Promise<void>) | null>(null);
 
   useEffect(() => {
     if (isOpen && !isMinimized) {
@@ -80,7 +81,9 @@ export function GlobalRagAssistant() {
       }
       if (e.detail?.query) {
         setQuery(e.detail.query);
-        setTimeout(() => handleSend(e.detail.query), 50);
+        setTimeout(() => {
+          void handleSendRef.current?.(e.detail.query);
+        }, 50);
       }
     };
 
@@ -88,7 +91,7 @@ export function GlobalRagAssistant() {
     return () => window.removeEventListener("open-cambium-rag" as any, handleTrigger);
   }, []);
 
-  const handleSend = async (customQuery?: string) => {
+  const handleSend = useCallback(async (customQuery?: string) => {
     const q = (customQuery || query).trim();
     if (!q || isLoading) return;
 
@@ -136,7 +139,11 @@ export function GlobalRagAssistant() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [activePersona, isLoading, query]);
+
+  useEffect(() => {
+    handleSendRef.current = handleSend;
+  }, [handleSend]);
 
   return (
     <aside aria-label="Cambium Scholarly RAG Copilot">

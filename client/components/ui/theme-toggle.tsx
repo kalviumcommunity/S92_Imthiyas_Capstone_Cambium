@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Sun, Moon, Laptop, Settings, Check, Sparkles } from "lucide-react";
 import { useTheme, type Theme } from "@/lib/theme-provider";
 import Link from "next/link";
+import { useHydrated } from "@/lib/hooks/use-hydrated";
 
 interface ThemeToggleProps {
   variant?: "segmented" | "gearbox" | "minimal";
@@ -21,13 +22,9 @@ export function ThemeToggle({
   showLabels = false,
 }: ThemeToggleProps) {
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHydrated();
   const [isHovered, setIsHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const isExpanded = isHovered || isFocused;
 
@@ -160,13 +157,9 @@ export function ThemeToggle({
  */
 export function UniversalThemeGearbox() {
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useHydrated();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Close when clicked outside
   useEffect(() => {

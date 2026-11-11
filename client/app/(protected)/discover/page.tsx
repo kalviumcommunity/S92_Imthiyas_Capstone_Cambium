@@ -1073,7 +1073,6 @@ function BookCardComponent({
     >
       {data.coverUrl ? (
         <div className="w-20 h-28 rounded-lg overflow-hidden shrink-0 border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#18231B] flex items-center justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={data.coverUrl}
             alt={data.title}

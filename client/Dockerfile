@@ -1,6 +1,6 @@
 # ==============================================================================
 # CAMBIUM RESEARCH PLATFORM — CLIENT DOCKERFILE
-# Multi-stage production container for Next.js 15 App Router frontend
+# Multi-stage production container for Next.js 16 App Router frontend
 # ==============================================================================
 
 # Stage 1: Build & Dependencies

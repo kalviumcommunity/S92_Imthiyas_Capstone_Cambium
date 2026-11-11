@@ -38,12 +38,15 @@ const STEPS = [
   },
 ];
 
-export function AiProgressModal({
-  isOpen,
+export function AiProgressModal(props: AiProgressModalProps) {
+  return props.isOpen ? <AiProgressModalContent {...props} /> : null;
+}
+
+function AiProgressModalContent({
   onClose,
   title = "AI Literature Synthesis in Progress",
   artifactName = "Vaswani_Attention_NeurIPS2017.pdf (42 Pages)",
-}: AiProgressModalProps) {
+}: Omit<AiProgressModalProps, "isOpen">) {
   const [currentStep, setCurrentStep] = useState(1);
   const [progress, setProgress] = useState(15);
   const [isDone, setIsDone] = useState(false);
@@ -52,14 +55,6 @@ export function AiProgressModal({
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!isOpen) {
-      setCurrentStep(1);
-      setProgress(15);
-      setIsDone(false);
-      setIsAborted(false);
-      return;
-    }
-
     const t1 = setTimeout(() => {
       setCurrentStep(2);
       setProgress(45);
@@ -91,9 +86,7 @@ export function AiProgressModal({
       clearTimeout(t3);
       clearTimeout(t4);
     };
-  }, [isOpen, toast]);
-
-  if (!isOpen) return null;
+  }, [toast]);
 
   const handleAbort = () => {
     setIsAborted(true);

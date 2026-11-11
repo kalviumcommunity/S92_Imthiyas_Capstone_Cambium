@@ -35,6 +35,7 @@ import { useAuthStore } from "@/lib/store/useAuthStore";
 import CambiumLogo from "@/components/CambiumLogo";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useBrowserStorageValue, writeBrowserStorageValue } from "@/lib/hooks/use-browser-storage";
 
 export interface NavItem {
   label: string;
@@ -75,29 +76,20 @@ export default function GlobalSidebar() {
   const { t } = useLanguage();
 
   const [isHovered, setIsHovered] = useState(false);
-  const [isPinned, setIsPinned] = useState(false);
+  const [pinFallback, setPinFallback] = useState<boolean | null>(null);
+  const storedPin = useBrowserStorageValue("local", "cambium_sidebar_pinned");
+  const isPinned = pinFallback ?? storedPin === "true";
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize pinned state from localStorage
-  useEffect(() => {
-    try {
-      const savedPin = localStorage.getItem("cambium_sidebar_pinned");
-      if (savedPin === "true") setIsPinned(true);
-    } catch {
-      // ignore
-    }
-  }, []);
-
   const togglePin = () => {
-    setIsPinned((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem("cambium_sidebar_pinned", String(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
+    const next = !isPinned;
+    try {
+      writeBrowserStorageValue("local", "cambium_sidebar_pinned", String(next));
+      setPinFallback(null);
+    } catch (error) {
+      console.error("[GlobalSidebar] Unable to persist sidebar preference:", error);
+      setPinFallback(next);
+    }
   };
 
   const handleMouseEnter = () => {
@@ -223,7 +215,7 @@ export default function GlobalSidebar() {
                   router.prefetch(item.href);
                 } catch {}
               }}
-              title={!isOpen ? item.label : undefined}
+              title={item.label}
               className={`flex items-center rounded-xl text-[13.5px] transition-all duration-200 group no-underline relative ${
                 isOpen ? "px-3 py-2.5 justify-between" : "w-11 h-11 mx-auto justify-center"
               } ${

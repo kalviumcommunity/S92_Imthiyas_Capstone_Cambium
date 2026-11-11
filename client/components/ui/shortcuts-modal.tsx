@@ -54,8 +54,6 @@ const SHORTCUT_GROUPS: ShortcutGroup[] = [
 
 export function ShortcutsModal() {
   const [isOpen, setIsOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -89,15 +87,17 @@ export function ShortcutsModal() {
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 60);
-    } else {
-      setSearch("");
-    }
-  }, [isOpen]);
+  return isOpen ? <ShortcutsDialog onClose={() => setIsOpen(false)} /> : null;
+}
 
-  if (!isOpen) return null;
+function ShortcutsDialog({ onClose }: { onClose: () => void }) {
+  const [search, setSearch] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => inputRef.current?.focus(), 60);
+    return () => clearTimeout(timer);
+  }, []);
 
   const q = search.toLowerCase().trim();
   const filteredGroups = SHORTCUT_GROUPS.map((g) => ({
@@ -115,7 +115,7 @@ export function ShortcutsModal() {
       aria-modal="true"
       aria-labelledby="shortcuts-modal-title"
       className="fixed inset-0 z-[170] flex items-center justify-center p-4 bg-[#17201D]/60 backdrop-blur-md animate-in fade-in duration-150"
-      onClick={() => setIsOpen(false)}
+      onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -141,7 +141,7 @@ export function ShortcutsModal() {
           </div>
 
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={onClose}
             className="p-1.5 rounded-lg text-[#85877B] hover:text-[#202920] hover:bg-[#FAF7F0] transition-colors border-0 bg-transparent cursor-pointer"
             aria-label="Close shortcuts modal"
           >

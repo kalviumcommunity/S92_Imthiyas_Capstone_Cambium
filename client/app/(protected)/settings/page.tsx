@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import {
   User,
   Dna,
@@ -36,6 +36,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArtifactDropzone } from "@/components/ui/artifact-dropzone";
 import { useTheme } from "@/lib/theme-provider";
 import { useAuthStore } from "@/lib/store/useAuthStore";
@@ -286,6 +287,20 @@ const NAV: NavItem[] = [
   { id: "appearance", label: "Appearance", icon: <Sun size={15} /> },
 ];
 
+function subscribeToSettingsTab(onChange: () => void) {
+  window.addEventListener("popstate", onChange);
+  return () => window.removeEventListener("popstate", onChange);
+}
+
+function getSettingsTabSnapshot() {
+  const tab = new URLSearchParams(window.location.search).get("tab");
+  return tab && NAV.some((item) => item.id === tab) ? tab : "account";
+}
+
+function getServerSettingsTabSnapshot() {
+  return "account";
+}
+
 // ─── Logos (inline SVG) ───────────────────────────────────────────────────────
 const OrcidLogo = () => (
   <svg width="20" height="20" viewBox="0 0 256 256" fill="none">
@@ -319,18 +334,13 @@ const NotionLogo = () => (
 function AccountSection({ showToast }: { showToast: (m: string) => void }) {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
-  const [name, setName] = useState(user?.name || "Shaik Mohamed Imthiyas T");
-  const [email, setEmail] = useState(user?.email || "scholar@cambium.edu");
-  const [institution, setInstitution] = useState(user?.institution || "MIT CSAIL & Broad Institute");
+  const [nameOverride, setNameOverride] = useState<string | null>(null);
+  const [emailOverride, setEmailOverride] = useState<string | null>(null);
+  const [institutionOverride, setInstitutionOverride] = useState<string | null>(null);
+  const name = nameOverride ?? user?.name ?? "Shaik Mohamed Imthiyas T";
+  const email = emailOverride ?? user?.email ?? "scholar@cambium.edu";
+  const institution = institutionOverride ?? user?.institution ?? "MIT CSAIL & Broad Institute";
   const [isSaving, setIsSaving] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      if (user.name) setName(user.name);
-      if (user.email) setEmail(user.email);
-      if (user.institution) setInstitution(user.institution);
-    }
-  }, [user]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -365,19 +375,19 @@ function AccountSection({ showToast }: { showToast: (m: string) => void }) {
         subtitle="Manage your personal information and institutional affiliation."
       />
       <FieldRow label="Full Name">
-        <Input value={name} onChange={(e) => setName(e.target.value)} />
+        <Input value={name} onChange={(e) => setNameOverride(e.target.value)} />
       </FieldRow>
       <FieldRow label="Email Address">
         <Input
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => setEmailOverride(e.target.value)}
         />
       </FieldRow>
       <FieldRow label="Institution">
         <Input
           value={institution}
-          onChange={(e) => setInstitution(e.target.value)}
+          onChange={(e) => setInstitutionOverride(e.target.value)}
         />
       </FieldRow>
       <div className="flex justify-end mt-2">
@@ -593,6 +603,7 @@ function NotificationsSection({ showToast }: { showToast: (m: string) => void })
 
 // ─── Section: Privacy ─────────────────────────────────────────────────────────
 function PrivacySection({ showToast }: { showToast: (m: string) => void }) {
+  const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const [s, setS] = useState({
     profilePublic: true,
@@ -625,7 +636,7 @@ function PrivacySection({ showToast }: { showToast: (m: string) => void }) {
       localStorage.removeItem("cambium_token");
       localStorage.removeItem("cambium_bookmarks");
       localStorage.removeItem("cambium_workspace_artifacts");
-      window.location.href = "/sign-in?decommissioned=true";
+      router.replace("/sign-in?decommissioned=true");
     }
   };
 
@@ -1672,7 +1683,14 @@ function DataPortabilitySection({ showToast }: { showToast: (m: string) => void 
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function SettingsPage() {
-  const [active, setActive] = useState("account");
+  const requestedTab = useSyncExternalStore(
+    subscribeToSettingsTab,
+    getSettingsTabSnapshot,
+    getServerSettingsTabSnapshot
+  );
+  const [activeOverride, setActiveOverride] = useState<string | null>(null);
+  const active = activeOverride ?? requestedTab;
+  const setActive = setActiveOverride;
   const [toast, setToast] = useState({ visible: false, message: "" });
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -1682,16 +1700,6 @@ export default function SettingsPage() {
     handler(); // initial set
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const tab = params.get("tab");
-      if (tab && NAV.some((n) => n.id === tab)) {
-        setActive(tab);
-      }
-    }
   }, []);
 
   const showToast = useCallback((message: string) => {

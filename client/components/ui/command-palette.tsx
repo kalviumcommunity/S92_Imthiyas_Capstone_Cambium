@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
 import { queryRagEngine, RagResponse } from "@/lib/ai/rag-engine";
+import { useBrowserStorageValue, writeBrowserStorageValue } from "@/lib/hooks/use-browser-storage";
 
 export type PaletteCategory =
   | "all"
@@ -397,32 +398,49 @@ const ITEMS: PaletteItem[] = [
   },
 ];
 
+const DEFAULT_RECENT_SEARCHES = [
+  "Attention Is All You Need",
+  "Horizon Europe Quantum",
+  "Living Architecture Lab",
+];
+
+function parseRecentSearches(value: string | null): string[] {
+  if (!value) return DEFAULT_RECENT_SEARCHES;
+
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((term): term is string => typeof term === "string");
+    }
+  } catch (error) {
+    console.warn("[CommandPalette] Unable to read recent searches:", error);
+  }
+
+  return DEFAULT_RECENT_SEARCHES;
+}
+
 export function CommandPalette() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<PaletteCategory>("all");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [liveAnnouncement, setLiveAnnouncement] = useState<string>("");
-  const [recentSearches, setRecentSearches] = useState<string[]>([
-    "Attention Is All You Need",
-    "Horizon Europe Quantum",
-    "Living Architecture Lab",
-  ]);
+  const [recentSearchesOverride, setRecentSearchesOverride] = useState<string[] | null>(null);
+  const storedRecentSearches = useBrowserStorageValue("local", "cambium_recent_searches");
+  const recentSearches = recentSearchesOverride ?? parseRecentSearches(storedRecentSearches);
 
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Load recent searches from localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("cambium_recent_searches");
-      if (saved) {
-        setRecentSearches(JSON.parse(saved));
-      }
-    } catch {
-      // Ignore localStorage errors
-    }
+  const openPalette = useCallback(() => {
+    setSelectedIndex(0);
+    setIsOpen(true);
+  }, []);
+
+  const closePalette = useCallback(() => {
+    setIsOpen(false);
+    setQuery("");
+    setActiveCategory("all");
   }, []);
 
   // Global hotkey: Cmd+K / Ctrl+K and custom event
@@ -430,13 +448,15 @@ export function CommandPalette() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setIsOpen((prev) => !prev);
+        if (isOpen) {
+          closePalette();
+        } else {
+          openPalette();
+        }
       }
     };
 
-    const handleCustomOpen = () => {
-      setIsOpen(true);
-    };
+    const handleCustomOpen = openPalette;
 
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("open-command-palette", handleCustomOpen);
@@ -445,7 +465,7 @@ export function CommandPalette() {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("open-command-palette", handleCustomOpen);
     };
-  }, []);
+  }, [closePalette, isOpen, openPalette]);
 
   // Focus input when modal opens
   useEffect(() => {
@@ -453,11 +473,6 @@ export function CommandPalette() {
       setTimeout(() => {
         inputRef.current?.focus();
       }, 50);
-      setSelectedIndex(0);
-      setLiveAnnouncement("Command Palette opened. Type to search or press escape to close.");
-    } else {
-      setQuery("");
-      setActiveCategory("all");
     }
   }, [isOpen]);
 
@@ -522,35 +537,19 @@ export function CommandPalette() {
     return { filteredItems: list, matchScores: scoreMap };
   }, [query, activeCategory, invertedIndex]);
 
-  // Announce search result count to screen readers
-  useEffect(() => {
-    if (isOpen) {
-      setLiveAnnouncement(
-        `Found ${filteredItems.length} items. Use up and down arrow keys to navigate.`
-      );
-    }
-  }, [filteredItems.length, isOpen]);
-
-  // Announce currently selected item when navigating with arrow keys
-  useEffect(() => {
-    if (isOpen && filteredItems[selectedIndex]) {
-      const cur = filteredItems[selectedIndex];
-      setLiveAnnouncement(`${cur.title}, ${cur.subtitle}. Category ${cur.category}. Press enter to select.`);
-    }
-  }, [selectedIndex, isOpen]);
-
-  // Keep selected index in bounds
-  useEffect(() => {
-    if (selectedIndex >= filteredItems.length) {
-      setSelectedIndex(0);
-    }
-  }, [filteredItems.length, selectedIndex]);
+  const liveAnnouncement = useMemo(() => {
+    if (!isOpen) return "";
+    const selectedItem = filteredItems[selectedIndex];
+    return selectedItem
+      ? `${selectedItem.title}, ${selectedItem.subtitle}. Category ${selectedItem.category}. Press enter to select.`
+      : `Found ${filteredItems.length} items. Use up and down arrow keys to navigate.`;
+  }, [filteredItems, isOpen, selectedIndex]);
 
   // Keyboard navigation within the modal
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
       e.preventDefault();
-      setIsOpen(false);
+      closePalette();
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
       setSelectedIndex((prev) =>
@@ -592,11 +591,11 @@ export function CommandPalette() {
   const saveRecentSearch = (text: string) => {
     if (!text.trim()) return;
     const updated = [text.trim(), ...recentSearches.filter((s) => s !== text.trim())].slice(0, 5);
-    setRecentSearches(updated);
+    setRecentSearchesOverride(updated);
     try {
-      localStorage.setItem("cambium_recent_searches", JSON.stringify(updated));
-    } catch {
-      // Ignore
+      writeBrowserStorageValue("local", "cambium_recent_searches", JSON.stringify(updated));
+    } catch (error) {
+      console.error("[CommandPalette] Unable to persist recent searches:", error);
     }
   };
 
@@ -604,7 +603,7 @@ export function CommandPalette() {
     if (query.trim()) {
       saveRecentSearch(query.trim());
     }
-    setIsOpen(false);
+    closePalette();
 
     if (item.action) {
       item.action();
@@ -633,7 +632,7 @@ export function CommandPalette() {
   return (
     <div
       className="fixed inset-0 z-[150] flex items-start justify-center pt-16 sm:pt-24 px-4 bg-[#17201D]/55 backdrop-blur-md animate-in fade-in duration-150"
-      onClick={() => setIsOpen(false)}
+      onClick={closePalette}
     >
       <div
         role="dialog"
@@ -879,7 +878,7 @@ export function CommandPalette() {
                 </button>
                 <button
                   onClick={() => {
-                    setIsOpen(false);
+                    closePalette();
                     router.push(`/discover?q=${encodeURIComponent(query)}`);
                   }}
                   className="bg-white border border-[#E4DCCB] text-[#202920] px-4 py-1.5 rounded-full font-sans text-xs font-semibold inline-flex items-center gap-1.5 hover:border-[#3E6248] transition-colors cursor-pointer"
