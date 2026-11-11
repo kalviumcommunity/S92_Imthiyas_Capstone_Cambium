@@ -91,4 +91,8 @@ async function bootstrap() {
   console.log(`⚡ Distributed WebSockets (/chat) and SSE (/api/v1/events/stream) active`);
 }
 
-bootstrap();
+bootstrap().catch((error: unknown) => {
+  const message = error instanceof Error ? error.stack || error.message : String(error);
+  console.error('[Cambium API] Application startup failed:', message);
+  process.exit(1);
+});

@@ -109,9 +109,7 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
       ? true
       : (!isProd ? ['error', 'warn', 'migration', 'schema'] : false);
 
-  const shouldSynchronize =
-    process.env.DB_SYNCHRONIZE === 'true' ||
-    (!isProd && process.env.DB_SYNCHRONIZE !== 'false');
+  const shouldSynchronize = !isProd && process.env.DB_SYNCHRONIZE === 'true';
 
   // Master-Replica splitting when replica host is configured
   if (replicaHost && replicaHost !== masterHost) {
