@@ -67,9 +67,9 @@ function NetworkGraph() {
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 overflow-hidden bg-[#FAF7F0] dark:bg-[#0E140F] font-sans text-[#202920] dark:text-[#EDEAE2] transition-colors duration-200">
+    <div className="min-h-[100svh] grid grid-cols-1 md:h-[100svh] md:min-h-0 md:grid-cols-2 overflow-hidden bg-[#FAF7F0] dark:bg-[#0E140F] font-sans text-[#202920] dark:text-[#EDEAE2] transition-colors duration-200">
       {/* Left Column — Mineral Sand foundation */}
-      <div className="hidden md:flex flex-col justify-between h-full bg-[#F2EBDD] dark:bg-[#131C15] border-r border-[#E4DCCB] dark:border-[#233327] px-8 lg:px-14 py-12 overflow-y-auto relative">
+      <div className="hidden md:flex flex-col justify-between h-full bg-[#F2EBDD] dark:bg-[#131C15] border-r border-[#E4DCCB] dark:border-[#233327] px-8 lg:px-14 py-8 overflow-hidden relative">
         {/* Subtle radial ambient accent */}
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_30%_20%,rgba(102,134,106,0.08)_0%,transparent_60%)]" />
 
@@ -77,7 +77,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <CambiumLogo size="md" href="/" />
         </div>
 
-        <div className="flex flex-col justify-center gap-8 w-full max-w-[500px] ml-auto mr-4 lg:mr-8 xl:mr-12 my-auto py-6 relative z-10">
+        <div className="flex flex-col justify-center gap-6 w-full max-w-[500px] ml-auto mr-4 lg:mr-8 xl:mr-12 my-auto py-4 relative z-10">
           <div>
             <h1 className="text-3xl lg:text-4xl xl:text-[44px] text-[#202920] dark:text-[#EDEAE2] mb-4 font-serif font-normal leading-[1.14] tracking-[-0.02em]">
               Your research world,{" "}
@@ -96,14 +96,14 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       </div>
 
       {/* Right Column (Auth Forms) — Parchment canvas */}
-      <div className="flex flex-col justify-center min-h-screen px-6 sm:px-10 lg:px-14 py-12 overflow-y-auto bg-[#FAF7F0] dark:bg-[#0E140F] relative">
+      <div className="flex flex-col justify-center min-h-[100svh] md:h-full md:min-h-0 px-6 sm:px-10 lg:px-14 py-8 md:py-5 overflow-y-auto bg-[#FAF7F0] dark:bg-[#0E140F] relative">
         <div className="absolute top-6 right-6 z-20">
           <ThemeToggle variant="minimal" />
         </div>
-        <div className="md:hidden mb-6 w-full max-w-[420px] mx-auto">
+        <div className="md:hidden mb-5 w-full max-w-[420px] mx-auto">
           <CambiumLogo size="md" href="/" />
         </div>
-        <div className="w-full max-w-[420px] mx-auto md:mx-0 md:mr-auto md:ml-4 lg:md:ml-8 xl:md:ml-12 mb-4">
+        <div className="w-full max-w-[420px] mx-auto md:mx-0 md:mr-auto md:ml-4 lg:md:ml-8 xl:md:ml-12 mb-3">
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] uppercase tracking-wider transition-colors no-underline group"

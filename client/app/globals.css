@@ -689,7 +689,7 @@
 
 /* ── Auth form input — Cambium Living Materials precision ─────────────────── */
 .auth-input {
-  height: 42px;
+  height: 40px;
   border-radius: 8px;
   border: 1px solid var(--color-limestone, #E4DCCB);
   padding: 0 14px;
@@ -729,7 +729,7 @@
   justify-content: center;
   gap: 12px;
   width: 100%;
-  height: 42px;
+  height: 40px;
   border-radius: 8px;
   border: 1px solid var(--color-limestone, #E4DCCB);
   background: #FFFFFF;
@@ -764,7 +764,7 @@
 
 /* ── Auth submit button ────────────────────────────────────────────────── */
 .auth-submit-btn {
-  height: 44px;
+  height: 42px;
   border-radius: 8px;
   background: var(--color-canopy, #3E6248);
   color: var(--color-parchment, #FAF7F0);
@@ -1187,7 +1187,6 @@ html {
     color: #555555;
   }
 }
-
 
 
 

@@ -161,7 +161,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans">
+    <div className="flex flex-col gap-4 font-sans">
       {/* Heading */}
       <div className="flex flex-col gap-1.5">
         <h2 className="font-serif text-[32px] font-normal leading-[1.14] tracking-[-0.02em] text-[#202920] dark:text-[#EDEAE2] m-0">
@@ -173,7 +173,7 @@ export default function SignUpPage() {
       </div>
 
       {/* OAuth Buttons */}
-      <div className="flex flex-col gap-2.5">
+      <div className="flex flex-col gap-2">
         {/* Google */}
         <button
           type="button"
@@ -228,7 +228,7 @@ export default function SignUpPage() {
       <form
         onSubmit={handleEmailSubmit}
         noValidate
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-3"
       >
         {/* Email field */}
         <div className="flex flex-col gap-1.5">
