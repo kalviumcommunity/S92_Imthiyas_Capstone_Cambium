@@ -33,6 +33,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useSubscriptionStore } from "@/lib/store/useSubscriptionStore";
 import CambiumLogo from "@/components/CambiumLogo";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -75,6 +76,7 @@ export default function GlobalSidebar() {
   const pathname = usePathname() || "";
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const currentPlan = useSubscriptionStore((state) => state.currentPlan);
   const { t } = useLanguage();
 
   const [isHovered, setIsHovered] = useState(false);
@@ -320,6 +322,42 @@ export default function GlobalSidebar() {
         <div className={`transition-all ${isOpen ? "px-1.5 py-0.5" : "w-11 h-11 mx-auto flex items-center justify-center my-0.5"}`}>
           <LanguageSelector compact={!isOpen} dropdownAlign={!isOpen ? "flyout-right" : "auto"} />
         </div>
+
+        {/* Tier Status & Quota Pill */}
+        {isOpen ? (
+          <div className="px-2 py-1 flex items-center justify-between">
+            <Link
+              href="/billing"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider bg-[#DCE6D7] dark:bg-[#1A281E] text-[#3E6248] dark:text-[#4ADE80] border border-[#66866A]/20 dark:border-[#4ADE80]/30 hover:opacity-85 transition-opacity no-underline"
+              title="Compute Allowance & Billing"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+              <span>
+                {currentPlan === "free"
+                  ? "SCHOLAR FREE"
+                  : currentPlan === "pro"
+                  ? "SCHOLAR PRO"
+                  : currentPlan === "team"
+                  ? "LAB TEAM"
+                  : "CAMPUS ENT"}
+              </span>
+            </Link>
+            <Link
+              href="/billing"
+              className="text-[10px] font-mono text-[#85877B] dark:text-[#7E8B7B] hover:text-[#3E6248] dark:hover:text-[#4ADE80] transition-colors no-underline"
+            >
+              Quota →
+            </Link>
+          </div>
+        ) : (
+          <Link
+            href="/billing"
+            className="w-11 h-3 mx-auto flex items-center justify-center my-0.5 no-underline"
+            title={`Active Plan: ${currentPlan.toUpperCase()} (Click for Billing & Compute)`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
+          </Link>
+        )}
 
         {/* Divider above Profile */}
         <div className="h-[1px] bg-[#E4DCCB]/80 dark:bg-[#233327]/80 my-1 mx-1" />
