@@ -8,6 +8,7 @@ import { GraduationCap } from "lucide-react";
 import { GoogleIcon, OrcidIcon } from "@/components/auth/AuthIcons";
 import { InstitutionalSsoModal } from "@/components/auth/InstitutionalSsoModal";
 import { OrcidLoginModal } from "@/components/auth/OrcidLoginModal";
+import { GoogleLoginModal } from "@/components/auth/GoogleLoginModal";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import api from "@/lib/api";
 
@@ -54,6 +55,7 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showSsoModal, setShowSsoModal] = useState(false);
   const [showOrcidModal, setShowOrcidModal] = useState(false);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -99,19 +101,7 @@ export default function SignInPage() {
   });
 
   const handleGoogleClick = () => {
-    try {
-      loginWithGoogle();
-    } catch {
-      const demoUser = {
-        id: "google-user-1",
-        username: "scholar_google",
-        email: "scholar@cambium.research",
-        fullName: "Verified Scholar",
-        institution: "Institute of Science",
-      };
-      setAuth(demoUser, "demo-google-token-" + Date.now());
-      router.push(destination);
-    }
+    setShowGoogleModal(true);
   };
 
   const handleOrcidClick = () => {
@@ -365,6 +355,18 @@ export default function SignInPage() {
           </Link>
         </p>
       </div>
+
+      {/* Google Scholar Login Modal */}
+      <GoogleLoginModal
+        isOpen={showGoogleModal}
+        onClose={() => setShowGoogleModal(false)}
+        destination={destination}
+        onTryExternalOAuth={() => {
+          try {
+            loginWithGoogle();
+          } catch {}
+        }}
+      />
 
       {/* ORCID Researcher Login Modal */}
       <OrcidLoginModal
