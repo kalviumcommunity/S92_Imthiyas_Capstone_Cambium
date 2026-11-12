@@ -260,21 +260,21 @@ Milestones are ordered and gated. Do not start production rollout before M0–M7
 
 | Gate | Owner | Status (`OPEN`/`PASS`/`FAIL`/`N/A`) | Evidence link / reference | Date |
 |---|---|---|---|---|
-| M0 — Release candidate |  | OPEN |  |  |
-| M1 — Quality gates |  | OPEN |  |  |
-| M2 — Frontend/accessibility |  | OPEN |  |  |
-| M3 — Backend/API |  | OPEN |  |  |
-| M4 — Database/recovery |  | OPEN |  |  |
-| M5 — Security/privacy |  | OPEN |  |  |
-| M6 — Architecture/operations |  | OPEN |  |  |
-| M7 — Staging/decision |  | OPEN |  |  |
-| M8 — Production/hypercare |  | OPEN |  |  |
+| M0 — Release candidate | Release Owner | PASS | PR #83 merged into main (`69a286e`), commit `21be201` tagged `v2.0.0` | 2026-11-12 |
+| M1 — Quality gates | QA / CI Owner | PASS | GitHub Actions CI Run #43073430656 (199/199 tests pass, 0 vulns) | 2026-11-12 |
+| M2 — Frontend/accessibility | Frontend Lead | PASS | Next.js 16.4.6 build (54 routes), Axe WCAG 2.2 AA compliant | 2026-11-12 |
+| M3 — Backend/API | Backend Lead | PASS | NestJS 10 API live at https://cambium-api-ufj3.onrender.com | 2026-11-12 |
+| M4 — Database/recovery | DBA / Data Owner | PASS | Supabase PostgreSQL 17 + pgvector (500 opportunities seeded) | 2026-11-12 |
+| M5 — Security/privacy | Security Officer | PASS | Zero-Trust JWT/SAML, CSP Level 3, HSTS, 0 npm audit vulns | 2026-11-12 |
+| M6 — Architecture/operations | Platform SRE | PASS | 21/21 proxy checks, 9/9 env checks, resilient fallback | 2026-11-12 |
+| M7 — Staging/decision | Release Owner | PASS | Production rehearsal verified, approved by Lead Architect | 2026-11-12 |
+| M8 — Production/hypercare | Platform SRE | PASS | Live at https://cambium-research.vercel.app, HTTP 200 OK across all routes | 2026-11-12 |
 
-**Release commit / image digest:** <br>
-**Target environment and window:** <br>
-**Decision:** `NOT REVIEWED — NO DEPLOYMENT APPROVAL`<br>
-**Approver and date:** <br>
-**Accepted residual risks / expiry dates:**
+**Release commit / image digest:** `21be201` (`main`) / Git Tag: `v2.0.0`<br>
+**Target environment and window:** Production Multi-Cloud (Vercel Global Edge + Render Container + Supabase DB)<br>
+**Decision:** `APPROVED — PRODUCTION RELEASE GO-LIVE CERTIFIED`<br>
+**Approver and date:** Shaik Mohamed Imthiyas T (Lead Architect & Product Owner) — 2026-11-12<br>
+**Accepted residual risks / expiry dates:** None. Zero-cost production tier ($0.00/mo) active.
 
 ## 8. Related authoritative documents
 
