@@ -85,7 +85,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+    google:
+      process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ||
+      "8WczNCeJBLme0XokQUIsLUcB3ObTJg-E167D0HuR3sU",
   },
   openGraph: {
     type: "website",
