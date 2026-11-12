@@ -30,7 +30,8 @@
     "backup:db": "node scripts/backup-db.mjs",
     "restore:db": "node scripts/restore-db.mjs",
     "smoke": "node scripts/smoke-test.mjs",
-    "verify:ai": "node scripts/verify-ai-autocomplete.mjs"
+    "verify:ai": "node scripts/verify-ai-autocomplete.mjs",
+    "push:all": "git push all main --tags"
   },
   "keywords": [
     "cambium",
