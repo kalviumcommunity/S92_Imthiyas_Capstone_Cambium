@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS research_opportunities (
     deadline TIMESTAMPTZ,
     description TEXT,
     link VARCHAR(1000),
+    provenance VARCHAR(50) NOT NULL DEFAULT 'ORIGINAL_FUNDER',
     created_by_id UUID REFERENCES users(id) ON DELETE SET NULL,
     embedding vector(768), -- pgvector 768-dim normalized embedding (Google Gemini text-embedding-004)
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
