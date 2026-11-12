@@ -1,17 +1,23 @@
 <div align="center">
 
-<img src="client/public_logo/cambium-logo-light.svg" width="72" height="72" alt="Cambium Research Logo" />
+<a href="https://cambium-research.vercel.app">
+  <img src="docs/assets/cambium-brand-header.png" width="360" alt="Cambium Research Logo Banner" />
+</a>
+
+<br />
 
 # CAMBIUM RESEARCH
 ### The Enterprise Research Operating System
 **Autonomous Opportunity Discovery · Knowledge Topology · Scholarly Intelligence**
 
-[![Release](https://img.shields.io/badge/Release-v2.0.0--Enterprise%20Production-3E6248?style=for-the-badge&logo=rocket&logoColor=white)](https://github.com/kalviumcommunity/S92_Imthiyas_Capstone_Cambium)
-[![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-3%2F3%20Quality%20Gates%20Passing-202920?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/kalviumcommunity/S92_Imthiyas_Capstone_Cambium/actions)
+[![Release](https://img.shields.io/badge/Release-v2.0.0--Enterprise%20Production-3E6248?style=for-the-badge&logo=rocket&logoColor=white)](https://github.com/shaikimthiyas/cambium-research)
+[![Live App](https://img.shields.io/badge/Live%20Platform-cambium--research.vercel.app-4ADE80?style=for-the-badge&logo=vercel&logoColor=black)](https://cambium-research.vercel.app)
+[![API Status](https://img.shields.io/badge/API%20Gateway-cambium--api--ufj3.onrender.com-202920?style=for-the-badge&logo=render&logoColor=white)](https://cambium-api-ufj3.onrender.com/health)
+[![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-3%2F3%20Quality%20Gates%20Passing-202920?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/shaikimthiyas/cambium-research/actions)
 [![Next.js](https://img.shields.io/badge/Next.js-15.5%20App%20Router-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-202920?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![NestJS](https://img.shields.io/badge/NestJS-10.4-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20+%20pgvector-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://github.com/pgvector/pgvector)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17%20+%20pgvector-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://github.com/pgvector/pgvector)
 [![Live Scholarly APIs](https://img.shields.io/badge/Scholarly%20APIs-OpenAlex%20%7C%20arXiv%20%7C%20Crossref%20%7C%20DOAJ-FF8C00?style=for-the-badge&logo=book&logoColor=white)](https://openalex.org)
 [![Unit Tests](https://img.shields.io/badge/Unit%20Tests-199%2F199%20Passing-4ADE80?style=for-the-badge&logo=jest&logoColor=black)](tests/)
 [![WCAG](https://img.shields.io/badge/WCAG-2.2%20Level%20AA%20Pass-4ADE80?style=for-the-badge&logo=w3c&logoColor=black)](https://www.w3.org/WAI/WCAG22/quickref/)
@@ -33,17 +39,17 @@
 
 <br />
 
-[Explore Live Workspace](http://localhost:3000) • [Product Specs](docs/templates/PRD.md) • [Architecture](docs/architecture.md) • [API Guide](docs/api-guide.md) • [Database](docs/database.md) • [Security Policy](docs/security.md) • [Code Style](docs/code-style.md) • [Testing](docs/testing.md) • [Deployment](docs/operations/deployment-runbook.md) • [Disaster Recovery](docs/DISASTER_RECOVERY_PLAYBOOK.md)
+[Explore Live Production Platform](https://cambium-research.vercel.app) • [Product Specs](docs/templates/PRD.md) • [Architecture](docs/architecture.md) • [API Guide](docs/api-guide.md) • [Database](docs/database.md) • [Security Policy](docs/security.md) • [Code Style](docs/code-style.md) • [Testing](docs/testing.md) • [Deployment](docs/operations/deployment-runbook.md) • [Disaster Recovery](docs/DISASTER_RECOVERY_PLAYBOOK.md)
 
 For local development, run `npm run dev` once from the repository root to start the API and frontend together. The frontend keeps development output in `client/.next-dev`, separate from production build output; do not launch another client dev server on the same workspace.
 
 <br />
 
 <p align="center">
-  <img src="client/public/public_logo/cambium-logo-light.svg" alt="Cambium Research Interface" width="120" height="120" />
+  <img src="docs/assets/cambium-runtime-preloader.jpg" alt="Cambium Research Runtime Environment" width="100%" />
 </p>
 <p align="center">
-  <sub><strong>Figure 1:</strong> Cambium Research Platform — Living Materials design system, high-density humanist typography, real-time citation topology, cryptographic identity anchor, and live scholarly crawlers.</sub>
+  <sub><strong>Figure 1:</strong> Cambium Research Runtime Environment (Kernel 2.4) — Living Materials design system, autonomous opportunity discovery, high-density humanist typography, real-time citation topology, and live scholarly intelligence.</sub>
 </p>
 
 </div>
@@ -55,9 +61,9 @@ For local development, run `npm run dev` once from the repository root to start 
 | Resource | Environment | Endpoint / URL | Status |
 | :--- | :--- | :--- | :--- |
 | **Frontend Web Application** | Next.js 15 (App Router) | [cambium-research.vercel.app](https://cambium-research.vercel.app) | 🟢 Live / Operational |
-| **Backend REST & SSE API** | NestJS 10 + TypeORM | [cambium-api.onrender.com](https://cambium-api.onrender.com) | 🟢 Live / Operational |
-| **Interactive OpenAPI Docs** | Swagger / OpenAPI 3.0 | [cambium-api.onrender.com/api/docs](https://cambium-api.onrender.com/api/docs) | 🟢 Documented |
-| **System Health Check Probe** | Distributed Liveness | [cambium-api.onrender.com/health](https://cambium-api.onrender.com/health) | 🟢 200 OK |
+| **Backend REST & SSE API** | NestJS 10 + TypeORM | [cambium-api-ufj3.onrender.com](https://cambium-api-ufj3.onrender.com) | 🟢 Live / Operational |
+| **Interactive OpenAPI Docs** | Swagger / OpenAPI 3.0 | [cambium-api-ufj3.onrender.com/api/docs](https://cambium-api-ufj3.onrender.com/api/docs) | 🟢 Documented |
+| **System Health Check Probe** | Distributed Liveness | [cambium-api-ufj3.onrender.com/health](https://cambium-api-ufj3.onrender.com/health) | 🟢 200 OK |
 | **Live Scholarly Data Fabric** | OpenAlex, arXiv, Crossref, DOAJ | Ingestion Engine (`/api/ingestion`) | 🟢 Integrated |
 
 ---
