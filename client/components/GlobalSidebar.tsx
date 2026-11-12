@@ -30,6 +30,7 @@ import {
   Users,
   UploadCloud,
   MessageSquare,
+  LogOut,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import CambiumLogo from "@/components/CambiumLogo";
@@ -73,6 +74,7 @@ export default function GlobalSidebar() {
   const router = useRouter();
   const pathname = usePathname() || "";
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const { t } = useLanguage();
 
   const [isHovered, setIsHovered] = useState(false);
@@ -342,13 +344,13 @@ export default function GlobalSidebar() {
           }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            {/* Avatar Circle with /Profile.png */}
+            {/* Avatar Circle with user?.photo or fallback */}
             <div
               style={{ width: 32, height: 32, minWidth: 32, minHeight: 32, maxWidth: 32, maxHeight: 32 }}
               className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-full bg-[#DCE6D7] dark:bg-[#1A281E] border border-[#66866A]/40 dark:border-[#4ADE80]/40 overflow-hidden flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-2xs"
             >
               <img
-                src="/Profile.png"
+                src={user?.photo || "/Profile.png"}
                 alt={displayName}
                 style={{ width: 32, height: 32, maxWidth: 32, maxHeight: 32, borderRadius: "50%", objectFit: "cover" }}
                 className="w-full h-full object-cover max-w-full max-h-full block"
@@ -360,7 +362,7 @@ export default function GlobalSidebar() {
             </div>
 
             {isOpen && (
-              <div className="flex flex-col min-w-0">
+              <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-[13px] font-semibold text-[#202920] dark:text-[#EDEAE2] truncate leading-tight group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors">
                   {displayName}
                 </span>
@@ -372,10 +374,26 @@ export default function GlobalSidebar() {
           </div>
 
           {isOpen && (
-            <ChevronRight
-              size={14}
-              className="text-[#85877B] dark:text-[#7E8B7B] group-hover:text-[#202920] dark:group-hover:text-[#EDEAE2] transition-colors shrink-0"
-            />
+            <div className="flex items-center gap-1 shrink-0 ml-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  logout();
+                  router.push("/sign-in");
+                }}
+                title="Sign out of Cambium"
+                className="p-1 rounded-md text-[#85877B] hover:text-[#C84B31] dark:hover:text-[#F87171] hover:bg-[#FBEAE8] dark:hover:bg-[#2A1515] transition-colors cursor-pointer border-0 bg-transparent"
+                aria-label="Sign out"
+              >
+                <LogOut size={13} />
+              </button>
+              <ChevronRight
+                size={14}
+                className="text-[#85877B] dark:text-[#7E8B7B] group-hover:text-[#202920] dark:group-hover:text-[#EDEAE2] transition-colors shrink-0"
+              />
+            </div>
           )}
         </Link>
       </div>

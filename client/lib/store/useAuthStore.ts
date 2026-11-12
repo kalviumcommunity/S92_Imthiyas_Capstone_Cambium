@@ -12,6 +12,7 @@ export interface UserProfile {
   graduation?: string;
   headline?: string;
   bio?: string;
+  photo?: string | null;
   orcid?: string;
   researchInterests?: Array<{ id: string; name: string; slug: string }> | string[];
   interests?: string[];
@@ -29,19 +30,30 @@ interface AuthState {
   logout: () => void;
 }
 
+const SESSION_WINDOW_DAYS = 30; // 30-day enterprise remember me window
+
 export const useAuthStore = create<AuthState>((set) => {
-  // Initialize from localStorage if in browser
   let initialToken: string | null = null;
   let initialUser: UserProfile | null = null;
 
   if (typeof window !== "undefined") {
-    initialToken = localStorage.getItem("cambium_token");
-    const storedUser = localStorage.getItem("cambium_user");
-    if (storedUser) {
-      try {
-        initialUser = JSON.parse(storedUser);
-      } catch {
-        initialUser = null;
+    const expiry = localStorage.getItem("cambium_session_expiry");
+    const isExpired = expiry ? Date.now() > Number(expiry) : false;
+
+    if (isExpired) {
+      localStorage.removeItem("cambium_token");
+      localStorage.removeItem("cambium_user");
+      localStorage.removeItem("cambium_session_expiry");
+      document.cookie = "cambium_token=; path=/; max-age=0; SameSite=Lax";
+    } else {
+      initialToken = localStorage.getItem("cambium_token");
+      const storedUser = localStorage.getItem("cambium_user");
+      if (storedUser) {
+        try {
+          initialUser = JSON.parse(storedUser);
+        } catch {
+          initialUser = null;
+        }
       }
     }
   }
@@ -49,7 +61,7 @@ export const useAuthStore = create<AuthState>((set) => {
   return {
     user: initialUser,
     token: initialToken,
-    isAuthenticated: !!initialToken,
+    isAuthenticated: Boolean(initialToken),
     setAuth: (user, token) => {
       const sanitizedUser: UserProfile = user
         ? {
@@ -58,9 +70,13 @@ export const useAuthStore = create<AuthState>((set) => {
             name: user.name || user.fullName || user.username || "Scholar",
           }
         : ({} as UserProfile);
+
       if (typeof window !== "undefined") {
+        const maxAgeSeconds = SESSION_WINDOW_DAYS * 24 * 60 * 60;
         localStorage.setItem("cambium_token", token);
         localStorage.setItem("cambium_user", JSON.stringify(sanitizedUser));
+        localStorage.setItem("cambium_session_expiry", String(Date.now() + maxAgeSeconds * 1000));
+        document.cookie = `cambium_token=${token}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax`;
       }
       set({ user: sanitizedUser, token, isAuthenticated: true });
     },
@@ -72,10 +88,11 @@ export const useAuthStore = create<AuthState>((set) => {
             name: user.name || user.fullName || user.username || "Scholar",
           }
         : ({} as UserProfile);
+
       if (typeof window !== "undefined") {
         localStorage.setItem("cambium_user", JSON.stringify(sanitizedUser));
       }
-      set({ user: sanitizedUser, isAuthenticated: !!sanitizedUser });
+      set({ user: sanitizedUser, isAuthenticated: Boolean(sanitizedUser) });
     },
     updateUser: (patch) => {
       set((state) => {
@@ -91,7 +108,9 @@ export const useAuthStore = create<AuthState>((set) => {
       if (typeof window !== "undefined") {
         localStorage.removeItem("cambium_token");
         localStorage.removeItem("cambium_user");
+        localStorage.removeItem("cambium_session_expiry");
         localStorage.removeItem("cambium_onboarding_completed");
+        document.cookie = "cambium_token=; path=/; max-age=0; SameSite=Lax";
       }
       set({ user: null, token: null, isAuthenticated: false });
     },

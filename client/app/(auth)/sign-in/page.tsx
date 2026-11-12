@@ -155,6 +155,18 @@ export default function SignInPage() {
 
   return (
     <div className="flex flex-col gap-4 font-sans">
+      {/* Institutional Auth Required Notice */}
+      {searchParams.get("notice") === "auth_required" && (
+        <div className="p-3.5 rounded-xl border border-[#D97706]/40 bg-[#FEF3C7]/60 dark:bg-[#78350F]/20 text-[#8A5A12] dark:text-[#FDE68A] text-xs flex items-center gap-2.5 shadow-2xs">
+          <div className="w-5 h-5 rounded-full bg-[#D97706]/20 flex items-center justify-center flex-shrink-0 text-[11px]">
+            🔒
+          </div>
+          <span>
+            <strong>Institutional Authentication Required:</strong> Please sign in or register to access Cambium research workspaces.
+          </span>
+        </div>
+      )}
+
       {/* Heading */}
       <div className="flex flex-col gap-1.5">
         <h2 className="font-serif text-[32px] font-normal leading-[1.14] tracking-[-0.02em] text-[#202920] dark:text-[#EDEAE2] m-0">

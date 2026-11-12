@@ -1795,6 +1795,19 @@ export default function DiscoverPage() {
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
   const [followedItems, setFollowedItems] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState({ message: "", visible: false });
+  const [showProfileBanner, setShowProfileBanner] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const isDismissed = sessionStorage.getItem("cambium_dismiss_profile_prompt") === "true";
+        const isLocked = localStorage.getItem("cambium_profile_locked") === "true";
+        if (!isDismissed && !isLocked) {
+          setShowProfileBanner(true);
+        }
+      } catch {}
+    }
+  }, []);
 
   const user = useAuthStore((state) => state.user);
 
@@ -1907,6 +1920,45 @@ export default function DiscoverPage() {
         <div className="max-w-4xl mx-auto space-y-10">
           {/* Header */}
           <header className="space-y-3">
+            {showProfileBanner && (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-[#DCE6D7] to-[#FAF7F0] dark:from-[#1A281E] dark:to-[#121B14] border border-[#66866A]/40 dark:border-[#4ADE80]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-[#3E6248] dark:bg-[#4ADE80] text-white dark:text-[#0E140F] flex items-center justify-center shrink-0">
+                    <Sparkles size={16} />
+                  </div>
+                  <div>
+                    <span className="text-xs font-serif font-bold text-[#202920] dark:text-[#EDEAE2] block">
+                      Complete your Scholarly Identity
+                    </span>
+                    <span className="text-[11px] text-[#62685E] dark:text-[#A3B899] font-sans block mt-0.5">
+                      Calibrate your research vectors and ORCID to unlock personalized funding matches and peer discovery.
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                  <Link
+                    href="/profile"
+                    className="px-3 py-1 rounded-full bg-[#3E6248] hover:bg-[#2d4734] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] text-xs font-mono uppercase tracking-wider font-semibold transition-colors flex items-center gap-1 shadow-2xs no-underline"
+                  >
+                    <span>Complete Profile</span>
+                    <ArrowUpRight size={12} />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowProfileBanner(false);
+                      try {
+                        sessionStorage.setItem("cambium_dismiss_profile_prompt", "true");
+                      } catch {}
+                    }}
+                    className="p-1 rounded-lg text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] transition-colors cursor-pointer border-0 bg-transparent"
+                    aria-label="Dismiss banner"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
             <h1 className="font-serif text-[32px] md:text-[38px] font-normal leading-[1.14] tracking-[-0.02em] text-[#202920] dark:text-[#EDEAE2] m-0">
               Explore what&apos;s happening in research.
             </h1>
