@@ -44,7 +44,7 @@ const releases: ReleaseItem[] = [
     latest: true,
     category: "Major",
     image: {
-      src: "https://images.unsplash.com/photo-1555421689-491a97ff2040?w=1000&h=460&fit=crop&auto=format",
+      src: "/changelog/command-palette-preview.svg",
       alt: "Global search interface showing universal command palette in Cambium",
     },
     tags: [
@@ -76,7 +76,7 @@ const releases: ReleaseItem[] = [
       { label: "Virtual Grid 4× Speed", style: "improved" },
       { label: "Security & SAML", style: "improved" },
     ],
-    body: "Academic departments and research institutions on Cambium can now provision seamless access through their university identity providers — Okta, Azure AD, InCommon, and Google Workspace. In addition, dataset rendering for opportunity catalogs exceeding 50,000 entries has been rewritten with dynamic virtual scrolling, cutting initial memory footprint by 65%.",
+    body: "Academic departments and research institutions on Cambium can now configure Single Sign-On through their university identity providers: Okta, Azure AD, InCommon, or Google Workspace. In addition, catalog rendering for collections exceeding 50,000 entries has been upgraded with dynamic virtual scrolling, reducing initial memory usage by 65%.",
     highlights: [
       "SAML 2.0, EduGAIN, and OIDC institutional single sign-on support",
       "Automatic researcher role provisioning via SCIM directory sync",
@@ -95,7 +95,7 @@ const releases: ReleaseItem[] = [
     latest: false,
     category: "Major",
     image: {
-      src: "https://images.unsplash.com/photo-1517842645767-c639042777db?w=1000&h=460&fit=crop&auto=format",
+      src: "/changelog/annotation-preview.svg",
       alt: "Collaborative annotation view showing highlighted text with team comments",
     },
     tags: [

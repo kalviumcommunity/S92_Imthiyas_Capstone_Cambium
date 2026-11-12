@@ -41,7 +41,7 @@ test.describe('Workstream 7: Post-Deployment Smoke Probes', () => {
   test('Probe 5: Constellation Knowledge Graph (/graph)', async ({ page }) => {
     await page.goto('/graph');
     // Verify graph view container renders
-    const graphContainer = page.locator('main, div[class*="graph" i], canvas, svg').first();
+    const graphContainer = page.locator('main, canvas, div[class*="graph" i]').first();
     await expect(graphContainer).toBeVisible();
   });
 

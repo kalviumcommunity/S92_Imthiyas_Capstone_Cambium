@@ -2,18 +2,18 @@ import type { NextConfig } from "next";
 import path from "path";
 import fs from "fs";
 
-// Resilient tracing root: If monorepo parent package.json exists, use parent; inside standalone container context use __dirname
-const tracingRoot = fs.existsSync(path.join(__dirname, "..", "package.json"))
-  ? path.join(__dirname, "..")
-  : __dirname;
+// Resilient tracing root: If monorepo parent package.json exists, use parent; inside standalone container context use cwd
+const cwd = process.cwd();
+const tracingRoot = fs.existsSync(path.join(cwd, "..", "package.json"))
+  ? path.resolve(cwd, "..")
+  : cwd;
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  distDir: process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   reactStrictMode: true,
+  trailingSlash: false,
   outputFileTracingRoot: tracingRoot,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   images: {
     unoptimized: true,
   },
@@ -38,11 +38,12 @@ const nextConfig: NextConfig = {
 
     const cspHeader = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://accounts.google.com https://apis.google.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com blob:",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: https: blob:",
       connectSrc,
+      "frame-src 'self' https://accounts.google.com",
       "frame-ancestors 'none'",
     ].join("; ");
 

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import CambiumLogo from '@/components/CambiumLogo'
 import { ArrowUpRight, User, AlertCircle, Sparkles, Check, Flame, Bookmark, FileText, Compass, Search, ExternalLink, ShieldCheck, Bell, Calendar as CalendarIcon, Plus, LayoutGrid, Shield, Database, Building2, Key, BookOpen, MessageSquare, HelpCircle, Settings, Share2, Heart } from 'lucide-react'
 import { CambiumIntroPreloader } from '@/components/landing/CambiumIntroPreloader'
@@ -63,6 +64,20 @@ const C = {
   darkSurface: 'var(--card, #18231B)',
   darkBorder: 'var(--color-limestone, #233327)',
   crimson: 'var(--color-status-error, #B33D35)',
+}
+
+function subscribeToReplayQuery(onChange: () => void) {
+  window.addEventListener("popstate", onChange);
+  return () => window.removeEventListener("popstate", onChange);
+}
+
+function getReplayQuerySnapshot() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("intro") === "1" || params.get("splash") === "1";
+}
+
+function getServerReplayQuerySnapshot() {
+  return false;
 }
 
 // ─── Navigation (Mathematically Aligned Optical Grid & WCAG 2.2 Touch Targets) ───
@@ -504,10 +519,10 @@ function Hero() {
         {/* Scholarly Verification Ledger Strip (Stripe Press / Nature grade evidence metrics) */}
         <div className="mt-10 lg:mt-12 pt-6 border-t border-[#E4DCCB] dark:border-[#233327] grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">120M+</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">250M+</div>
             <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Indexed Publications</div>
             <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
-              <span>Crossref · PubMed · arXiv</span>
+              <span>OpenAlex · Europe PMC · Crossref</span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Verified Pipeline" />
             </div>
           </div>
@@ -520,19 +535,19 @@ function Hero() {
             </div>
           </div>
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">4.8M</div>
-            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Verified Researchers</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">100+</div>
+            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Research Disciplines</div>
             <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
-              <span>ORCID Anchor · Cryptographic</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Cryptographically Anchored" />
+              <span>ORCID 2.0 Integration</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Verified ORCID OAuth 2.0" />
             </div>
           </div>
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">100%</div>
-            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Evidence-Linked</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">Direct</div>
+            <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">DOI & Source Traceability</div>
             <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
-              <span>Inspectable Citations & DOIs</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Claim-Level Traceability" />
+              <span>Inspectable Primary Sources</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Direct Citation Links" />
             </div>
           </div>
         </div>
@@ -628,7 +643,7 @@ function KnowledgeGraphSection() {
             </div>
 
             <span className="font-mono text-xs text-[#62685E] hidden md:inline">
-              Active Nodes: 20 · Cross-domain connections: 28 · Live Neural Drift
+              Active Research Topics: 20 · Cross-Discipline Links: 28
             </span>
           </div>
 
@@ -643,33 +658,42 @@ function KnowledgeGraphSection() {
 
 // ─── Trust Section ────────────────────────────────────────────────────────────
 function TrustSection() {
-  const categories = [
+  const firstRow = [
     { icon: '○', label: 'Undergraduate Researchers' },
     { icon: '◎', label: 'Graduate Researchers' },
-    { icon: '●', label: 'PhD Scholars' },
-    { icon: '◈', label: 'Faculty' },
+    { icon: '●', label: 'Doctoral Researchers' },
+    { icon: '◈', label: 'Faculty & PIs' },
     { icon: '◉', label: 'Research Labs' },
-    { icon: '◻', label: 'Academic Institutions' },
-    { icon: '◆', label: 'R&D Teams' },
+    { icon: '◻', label: 'Universities & Institutions' },
+  ]
+  const secondRow = [
+    { icon: '◇', label: 'Research Offices' },
+    { icon: '◆', label: 'Grantmakers' },
+    { icon: '◌', label: 'Research Networks' },
+    { icon: '⬡', label: 'R&D Teams' },
   ]
 
   return (
     <section className="bg-[#F2EBDD] dark:bg-[#131C15] border-t border-b border-[#E4DCCB] dark:border-[#233327] py-16 px-6 md:px-16 transition-colors duration-200">
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <div className="text-center mb-12">
-          <p className="text-xs font-semibold tracking-wider text-[#85877B] dark:text-[#7E8B7B] uppercase mb-4">Built for</p>
+        <div className="text-center mb-9">
+          <p className="text-xs font-semibold tracking-wider text-[#85877B] dark:text-[#7E8B7B] uppercase mb-3">Built for</p>
           <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-4xl font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight">
             The people moving research forward.
           </h2>
         </div>
-        <div className="flex flex-wrap gap-3 justify-center">
-          {categories.map(({ icon, label }) => (
-            <div
-              key={label}
-              className="flex items-center gap-2.5 px-5 py-3 border border-[#E4DCCB] dark:border-[#233327] rounded-full text-sm font-medium text-[#62685E] dark:text-[#A3B899] bg-white dark:bg-[#18231B] transition-colors cursor-default hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2]"
-            >
-              <span className="text-[#3E6248] dark:text-[#4ADE80] text-xs">{icon}</span>
-              <span>{label}</span>
+        <div className="space-y-2.5">
+          {[firstRow, secondRow].map((row, rowIndex) => (
+            <div key={rowIndex} className="flex flex-wrap gap-2.5 justify-center">
+              {row.map(({ icon, label }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-2 px-4 py-2.5 border border-[#E4DCCB] dark:border-[#233327] rounded-full text-[13px] font-medium text-[#62685E] dark:text-[#A3B899] bg-white dark:bg-[#18231B] transition-colors cursor-default hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2]"
+                >
+                  <span className="text-[#3E6248] dark:text-[#4ADE80] text-xs">{icon}</span>
+                  <span>{label}</span>
+                </div>
+              ))}
             </div>
           ))}
         </div>
@@ -780,8 +804,8 @@ function LifecycleSection() {
     {
       name: 'Discover',
       tagline: 'Formulate questions & surface hidden connections',
-      desc: 'Explore literature with semantic neural synthesis, identify emerging frontier topics, and track citation cascades across 120M+ indexed research papers.',
-      metrics: ['120M+ Papers Indexed', 'Semantic Citation Synthesis', 'Daily Frontier Alerts'],
+      desc: 'Explore literature with semantic search, find emerging research topics, and trace citation connections across 250M+ indexed research papers.',
+      metrics: ['250M+ Papers Indexed', 'Semantic Citation Links', 'Daily Funding Alerts'],
       action: 'Query cross-disciplinary literature across Bio & AI',
       targetRoute: '/discover',
       targetLabel: 'Discover Console',
@@ -819,7 +843,7 @@ function LifecycleSection() {
     },
     {
       name: 'Publish',
-      tagline: 'Author camera-ready papers & preprints seamlessly',
+      tagline: 'Author camera-ready papers and preprints directly',
       desc: 'Prepare manuscripts with automated citation verification, institutional formatting templates, double-blind peer review desks, and camera-ready exports for top venues.',
       metrics: ['Automated Reference Formatting', 'Double-Blind Peer Review', 'IRB & Compliance Checks'],
       action: 'Compile camera-ready submission for NeurIPS or Nature',
@@ -996,7 +1020,7 @@ function IdentitySection() {
                 'GitHub-style 52-week research cadence & contribution ledger',
                 'Interactive pinned artifacts with code, preprints & licenses',
                 'Real-time citation velocity & institutional co-author graph',
-                'Tenure dossier export & cryptographic portfolio anchors',
+                'Tenure dossier export and verified portfolio activity',
               ].map((item) => (
                 <div key={item} className="flex items-center gap-3 text-sm text-[#62685E] dark:text-[#A3B899]">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
@@ -1147,41 +1171,6 @@ function IdentitySection() {
                     showCategories={true}
                     showDayLabels={false}
                   />
-                  <div style={{ display: 'none' }}>
-                    <div style={{ display: 'flex', gap: 3.5, minWidth: 460 }}>
-                      {Array.from({ length: weeks }).map((_, w) => (
-                        <div key={w} style={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
-                          {Array.from({ length: days }).map((_, d) => {
-                            const details = getScholarContributionDetails(w, d)
-                            return (
-                              <div
-                                key={d}
-                                title={`Week ${w + 1}, Day ${d + 1}: ${details.label}`}
-                                style={{
-                                  width: 9.5,
-                                  height: 9.5,
-                                  borderRadius: 2,
-                                  backgroundColor: levelColors[details.level],
-                                  border: `1px solid ${details.level === 0 ? '#E4DCCB' : levelColors[details.level]}`,
-                                }}
-                              />
-                            )
-                          })}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 10.5, color: '#85877B', marginTop: 10, paddingTop: 8, borderTop: '1px solid #E4DCCB' }}>
-                    <span>Cryptographic proof of continuous scientific inquiry</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 3.5 }}>
-                      <span>Less</span>
-                      {levelColors.map((c, i) => (
-                        <div key={i} style={{ width: 8, height: 8, borderRadius: 1.5, background: c, border: '1px solid #E4DCCB' }} />
-                      ))}
-                      <span>More</span>
-                    </div>
-                  </div>
                 </div>
               )}
 
@@ -1247,6 +1236,7 @@ function IdentitySection() {
 
 // ─── Research Discover & Literature Console (Photo 2 Live Research Desk) ─────
 function WorkspaceSection() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('')
   const [activeAction, setActiveAction] = useState<string | null>(null)
   const [savedCards, setSavedCards] = useState<Record<string, boolean>>({})
@@ -1269,7 +1259,7 @@ function WorkspaceSection() {
     { id: 'hypothesis', label: '+ New Hypothesis', note: 'Synthesizing novel hypothesis from Chapter 3 literature...' },
     { id: 'import', label: '↓ Import Literature', note: 'Importing literature batches from arXiv, bioRxiv & CrossRef...' },
     { id: 'refine', label: 'Refine Topics', note: 'Topic vectors recalibrated to Multimodal AI & Proteomics.' },
-    { id: 'ai', label: '✦ Ask Cambium AI', note: 'Cambium Neural Assistant initialized and ready for research query.' },
+    { id: 'ai', label: '✦ Ask Cambium AI', note: 'Cambium AI Assistant ready for research inquiries.' },
   ]
 
   const cards = [
@@ -1358,7 +1348,7 @@ function WorkspaceSection() {
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (searchQuery.trim()) {
-                    window.location.href = `/discover?q=${encodeURIComponent(searchQuery.trim())}`;
+                    router.push(`/discover?q=${encodeURIComponent(searchQuery.trim())}`);
                   }
                 }}
                 className="flex-1 max-w-xl mx-auto flex items-center bg-white border border-[#E4DCCB] rounded-full px-4 py-2 shadow-xs hover:shadow-sm focus-within:border-[#3E6248] focus-within:ring-2 focus-within:ring-[#3E6248]/20 transition-all gap-2.5"
@@ -1400,7 +1390,7 @@ function WorkspaceSection() {
                 <button
                   className="p-1.5 text-[#62685E] hover:text-[#202920] transition-colors cursor-pointer"
                   title="AI Copilot"
-                  onClick={() => setActiveAction('Cambium Neural AI Copilot active')}
+                  onClick={() => setActiveAction('Cambium AI Assistant active')}
                 >
                   <Sparkles size={16} />
                 </button>
@@ -2694,7 +2684,7 @@ function EcosystemMapSection() {
       <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center' }}>
         <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-5">
           <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80]" />
-          RESEARCH ECOSYSTEM · LIVING VASCULAR MERISTEM
+          KNOWLEDGE TOPOLOGY · INTERCONNECTED RESEARCH
         </div>
         <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-4xl md:text-6xl font-normal leading-[1.08] tracking-[-0.03em] text-[#F5F4F0] mb-4">
           Everything connects.
@@ -2997,22 +2987,22 @@ function TestimonialsSection() {
 
   const testimonials = [
     {
-      initials: 'I',
-      quote: 'Cambium gives my research a place to live — not just a list of papers.',
-      name: 'Imthiyas',
-      role: 'Computer Vision Researcher · MIT',
+      initials: 'PD',
+      quote: 'Keep track of expiring dissertation grants, monitor relevant arXiv preprints, and maintain an organized BibTeX library without manual spreadsheet upkeep.',
+      name: 'PhD Researchers & Postdocs',
+      role: 'Literature Reviews · Funding Alerts',
     },
     {
-      initials: 'AR',
-      quote: "The difference is that everything is connected to the work I'm actually doing.",
-      name: 'Arjun Rao',
-      role: 'PhD Researcher · IISc',
+      initials: 'PI',
+      quote: 'Coordinate multi-institution grant proposals, allocate computing credits, and maintain an audit log of student contributions and dataset versions.',
+      name: 'Principal Investigators',
+      role: 'Lab Administration · Post-Award Grant Management',
     },
     {
-      initials: 'DE',
-      quote: 'Finally, a research environment that understands how scholars actually work.',
-      name: 'Dr. Elena Park',
-      role: 'Computational Biology · Stanford University',
+      initials: 'IC',
+      quote: 'Bridge methodologies across computer vision, genomics, and climate modeling with interactive relational graphs and mutual scholar messaging.',
+      name: 'Interdisciplinary Teams',
+      role: 'Joint Publications · Collaborative Working Groups',
     },
   ]
 
@@ -3032,10 +3022,10 @@ function TestimonialsSection() {
         <div className="text-center max-w-2xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#3E6248] dark:text-[#4ADE80] mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
-            VOICES OF THE SCHOLARLY NETWORK
+            SCHOLAR WORKFLOWS
           </div>
           <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight leading-tight">
-            Built around the way research actually happens.
+            Built for every stage of modern research.
           </h2>
         </div>
 
@@ -3307,14 +3297,8 @@ function Footer() {
         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr repeat(4, 1fr)', gap: 48, marginBottom: 56 }}>
           {/* Brand */}
           <div>
-            <div className="font-brand font-bold text-base tracking-[-0.03em] text-[#202920] dark:text-[#EDEAE2] flex items-center gap-2.5 mb-3">
-              <div className="w-7 h-7 rounded-full bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] p-0.5 flex items-center justify-center overflow-hidden">
-                <img src="/public_logo/cambium-logo-light.svg" alt="CAMBIUM Research Logo" className="w-full h-full object-contain block dark:hidden scale-[1.3] transition-transform" />
-                <img src="/public_logo/cambium-logo-dark.svg" alt="CAMBIUM Research Logo" className="w-full h-full object-contain hidden dark:block scale-[1.3] transition-transform" />
-              </div>
-              <span className="uppercase">
-                CAMBIUM <span className="font-light text-[#3E6248] dark:text-[#4ADE80]">RESEARCH</span>
-              </span>
+            <div className="mb-3">
+              <CambiumLogo size="md" href="/" />
             </div>
             <p className="text-xs text-[#62685E] dark:text-[#A3B899] leading-relaxed max-w-[200px]">The Research Operating System.</p>
           </div>
@@ -3381,33 +3365,29 @@ function StructuralSystem() {
   }
 
   return (
-    <div className="fixed bottom-[74px] right-6 z-40 flex flex-col items-end max-w-sm select-none print:hidden">
-      <div className="bg-[#FAF7F0]/95 dark:bg-[#18231B]/95 text-[#202920] dark:text-[#EDEAE2] rounded-2xl p-3.5 shadow-xl border border-[#E4DCCB] dark:border-[#28382C] flex items-center justify-between gap-3.5 w-full backdrop-blur-md transition-all duration-200 hover:shadow-2xl hover:border-[#3E6248]/40 dark:hover:border-[#4ADE80]/40">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-[#E4DCCB]/50 dark:bg-[#202D23] rounded-xl text-[#3E6248] dark:text-[#4ADE80] border border-[#3E6248]/20 dark:border-[#4ADE80]/20 shadow-2xs">
+    <div className="fixed bottom-24 right-6 z-40 flex flex-col items-end w-[min(20rem,calc(100vw-2.5rem))] select-none print:hidden">
+      <div className="bg-[#FAF7F0]/95 dark:bg-[#18231B]/95 text-[#202920] dark:text-[#EDEAE2] rounded-xl p-2.5 shadow-lg border border-[#E4DCCB] dark:border-[#28382C] flex items-center justify-between gap-2.5 w-full backdrop-blur-md transition-all duration-200 hover:border-[#3E6248]/40 dark:hover:border-[#4ADE80]/40">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 shrink-0 flex items-center justify-center bg-[#E4DCCB]/50 dark:bg-[#202D23] rounded-lg text-[#3E6248] dark:text-[#4ADE80] border border-[#3E6248]/20 dark:border-[#4ADE80]/20">
             <User className="w-3.5 h-3.5" />
           </div>
-          <div className="flex flex-col">
-            <span className="font-mono text-[11px] font-bold tracking-wider uppercase text-[#3E6248] dark:text-[#4ADE80]">
-              Identity System Active
+          <div className="flex flex-col min-w-0">
+            <span className="font-sans text-[10px] font-semibold tracking-[0.08em] uppercase text-[#3E6248] dark:text-[#4ADE80]">
+              Research tools
             </span>
-            <span className="font-sans text-[10.5px] text-[#62685E] dark:text-[#A3B899]">
-              Verified cryptographic ledger anchor
+            <span className="font-sans text-[11px] leading-4 text-[#62685E] dark:text-[#A3B899]">
+              Profiles, publications, and collaboration.
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="inline-flex items-center gap-1.5 bg-[#DCE6D7] dark:bg-[#1A281E] border border-[#3E6248]/30 dark:border-[#4ADE80]/30 px-2.5 py-0.5 rounded-full text-[#3E6248] dark:text-[#4ADE80] shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
-            <span className="font-mono text-[9.5px] font-bold tracking-tight">ACTIVE</span>
-          </div>
+        <div className="flex items-center shrink-0">
           <button
             suppressHydrationWarning
             onClick={() => setOpen(false)}
-            className="text-[#85877B] hover:text-[#202920] dark:hover:text-[#FAF7F0] p-1 rounded-full hover:bg-[#E4DCCB]/40 dark:hover:bg-[#202D23] transition-colors cursor-pointer"
+            className="text-[#85877B] hover:text-[#202920] dark:hover:text-[#FAF7F0] p-1.5 rounded-full hover:bg-[#E4DCCB]/40 dark:hover:bg-[#202D23] transition-colors cursor-pointer"
             title="Dismiss"
-            aria-label="Dismiss Identity System notice"
+            aria-label="Dismiss research tools notice"
           >
             ✕
           </button>
@@ -3419,21 +3399,25 @@ function StructuralSystem() {
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [replayIntro, setReplayIntro] = useState(false);
+  const hasReplayQuery = useSyncExternalStore(
+    subscribeToReplayQuery,
+    getReplayQuerySnapshot,
+    getServerReplayQuerySnapshot
+  );
+  const [replayDismissed, setReplayDismissed] = useState(false);
+  const replayIntro = hasReplayQuery && !replayDismissed;
 
   useEffect(() => {
     document.title = "CAMBIUM RESEARCH — The Enterprise Research Operating System";
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("intro") === "1" || params.get("splash") === "1") {
-        setReplayIntro(true);
-      }
-    }
   }, []);
 
   return (
     <div className="min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] text-[#202920] dark:text-[#EDEAE2] transition-colors duration-200" style={{ fontFamily: "var(--font-sans), 'Instrument Sans', system-ui, sans-serif" }}>
-      <CambiumIntroPreloader key={replayIntro ? "intro-replay" : "intro-initial"} forceShow={replayIntro} onComplete={() => setReplayIntro(false)} />
+      <CambiumIntroPreloader
+        key={replayIntro ? "intro-replay" : "intro-initial"}
+        forceShow={replayIntro}
+        onComplete={() => setReplayDismissed(true)}
+      />
       <Nav />
       <Hero />
       <KnowledgeGraphSection />

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import { useToast } from "@/components/ui/toast";
+import { useHydrated } from "@/lib/hooks/use-hydrated";
 
 export interface InstitutionalSsoModalProps {
   isOpen: boolean;
@@ -91,11 +92,7 @@ export function InstitutionalSsoModal({ isOpen, onClose }: InstitutionalSsoModal
   const [query, setQuery] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useHydrated();
 
   if (!isOpen || !mounted) return null;
 
@@ -150,33 +147,34 @@ export function InstitutionalSsoModal({ isOpen, onClose }: InstitutionalSsoModal
   return createPortal(
     <div
       onClick={onClose}
-      className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 sm:p-6 bg-[#141A14]/75 backdrop-blur-md animate-in fade-in duration-150"
+      className="fixed inset-0 w-screen h-screen z-[9999] flex items-center justify-center p-4 sm:p-6 bg-[#141A14]/75 dark:bg-[#070B08]/85 backdrop-blur-md animate-in fade-in duration-150"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg bg-[#FAF7F0] border border-[#E4DCCB] rounded-2xl shadow-2xl overflow-hidden font-sans relative z-10"
+        className="w-full max-w-lg bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl shadow-2xl overflow-hidden font-sans relative z-10"
       >
         {/* Header */}
-        <div className="px-6 py-5 border-b border-[#E4DCCB] bg-[#F2EBDD]/40 flex items-center justify-between">
+        <div className="px-6 py-5 border-b border-[#E4DCCB] dark:border-[#233327] bg-[#F2EBDD]/40 dark:bg-[#18231B]/50 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#DCE6D7] border border-[#E4DCCB] text-[#3E6248] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-[#DCE6D7] dark:bg-[#1F2E23] border border-[#E4DCCB] dark:border-[#233327] text-[#3E6248] dark:text-[#4ADE80] flex items-center justify-center shrink-0">
               <GraduationCap className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10.5px] font-mono uppercase tracking-wider text-[#3E6248] font-semibold bg-[#DCE6D7] px-2 py-0.5 rounded border border-[#E4DCCB]">
+                <span className="text-[10.5px] font-mono uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold bg-[#DCE6D7] dark:bg-[#1F2E23] px-2 py-0.5 rounded border border-[#E4DCCB] dark:border-[#233327]">
                   EduGAIN · SAML 2.0
                 </span>
-                <span className="text-[11px] text-[#85877B] font-mono">Academic Trust Mesh</span>
+                <span className="text-[11px] text-[#85877B] dark:text-[#7E8B7B] font-mono">Academic Trust Mesh</span>
               </div>
-              <h2 className="font-serif text-[18px] font-semibold text-[#202920] m-0 mt-0.5">
+              <h2 className="font-serif text-[18px] font-semibold text-[#202920] dark:text-[#EDEAE2] m-0 mt-0.5">
                 {step === "search" ? "Institutional Single Sign-On" : "Two-Factor Verification (2FA)"}
               </h2>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg border border-[#E4DCCB] bg-white text-[#62685E] hover:text-[#202920] flex items-center justify-center transition-colors cursor-pointer"
+            aria-label="Close dialog"
+            className="w-8 h-8 rounded-lg border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -185,20 +183,20 @@ export function InstitutionalSsoModal({ isOpen, onClose }: InstitutionalSsoModal
         {/* Body */}
         {step === "search" ? (
           <div className="p-6">
-            <p className="text-[13px] text-[#62685E] m-0 mb-4 leading-relaxed">
+            <p className="text-[13px] text-[#62685E] dark:text-[#A3B899] m-0 mb-4 leading-relaxed">
               Authenticate using your university or research hospital identity provider with federated multi-factor authorization.
             </p>
 
             {/* Search Input */}
             <div className="relative mb-4">
-              <Search className="w-4 h-4 text-[#85877B] absolute left-3 top-3 pointer-events-none" />
+              <Search className="w-4 h-4 text-[#85877B] dark:text-[#7E8B7B] absolute left-3 top-3 pointer-events-none" />
               <input
                 type="text"
                 autoFocus
                 placeholder="Search by university name or domain (e.g. stanford.edu, mit.edu)..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 bg-white border border-[#E4DCCB] rounded-lg text-[13px] text-[#202920] placeholder-[#85877B] outline-none focus:border-[#3E6248] transition-colors"
+                className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-lg text-[13px] text-[#202920] dark:text-[#EDEAE2] placeholder-[#85877B] dark:placeholder-[#7E8B7B] outline-none focus:border-[#3E6248] dark:focus:border-[#4ADE80] transition-colors"
               />
             </div>
 
@@ -208,32 +206,32 @@ export function InstitutionalSsoModal({ isOpen, onClose }: InstitutionalSsoModal
                 <button
                   key={inst.id}
                   onClick={() => handleSelectInstitution(inst)}
-                  className="w-full flex items-center justify-between p-3 rounded-xl border border-[#E4DCCB] bg-white hover:border-[#3E6248] hover:bg-[#F2EBDD]/40 transition-all text-left cursor-pointer group"
+                  className="w-full flex items-center justify-between p-3 rounded-xl border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:bg-[#F2EBDD]/40 dark:hover:bg-[#1F2E23]/50 transition-all text-left cursor-pointer group"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <Building2 className="w-4 h-4 text-[#85877B] group-hover:text-[#3E6248] shrink-0" />
+                    <Building2 className="w-4 h-4 text-[#85877B] dark:text-[#7E8B7B] group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] shrink-0" />
                     <div className="min-w-0">
-                      <div className="text-[13px] font-semibold text-[#202920] group-hover:text-[#3E6248] truncate">
+                      <div className="text-[13px] font-semibold text-[#202920] dark:text-[#EDEAE2] group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] truncate">
                         {inst.name}
                       </div>
-                      <div className="text-[11px] text-[#85877B] font-mono">{inst.domain} · {inst.protocol}</div>
+                      <div className="text-[11px] text-[#85877B] dark:text-[#7E8B7B] font-mono">{inst.domain} · {inst.protocol}</div>
                     </div>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#FAF7F0] border border-[#E4DCCB] text-[#62685E] shrink-0">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] text-[#62685E] dark:text-[#A3B899] shrink-0">
                     {inst.badge}
                   </span>
                 </button>
               ))}
               {filtered.length === 0 && (
-                <div className="text-center py-6 text-[12.5px] text-[#85877B]">
+                <div className="text-center py-6 text-[12.5px] text-[#85877B] dark:text-[#7E8B7B]">
                   No matching university identity provider found. Contact your institution&apos;s Cambium administrator.
                 </div>
               )}
             </div>
 
-            <div className="mt-5 pt-4 border-t border-[#E4DCCB] flex items-center justify-between text-[11.5px] text-[#85877B]">
+            <div className="mt-5 pt-4 border-t border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between text-[11.5px] text-[#85877B] dark:text-[#7E8B7B]">
               <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#3E6248]" />
+                <ShieldCheck className="w-3.5 h-3.5 text-[#3E6248] dark:text-[#4ADE80]" />
                 <span>Protected by SAML 2.0 Web Browser SSO profile</span>
               </div>
               <span className="font-mono">InCommon Accredited</span>
@@ -242,34 +240,34 @@ export function InstitutionalSsoModal({ isOpen, onClose }: InstitutionalSsoModal
         ) : (
           /* Step 2: 2FA Screen */
           <div className="p-6">
-            <div className="p-3 bg-[#DCE6D7]/40 rounded-xl border border-[#E4DCCB] mb-5 flex items-center justify-between">
+            <div className="p-3 bg-[#DCE6D7]/40 dark:bg-[#1F2E23]/40 rounded-xl border border-[#E4DCCB] dark:border-[#233327] mb-5 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-white border border-[#E4DCCB] flex items-center justify-center font-bold text-xs text-[#3E6248]">
+                <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] flex items-center justify-center font-bold text-xs text-[#3E6248] dark:text-[#4ADE80]">
                   {selectedInst?.name[0]}
                 </div>
                 <div>
-                  <div className="text-[12.5px] font-semibold text-[#202920]">{selectedInst?.name}</div>
-                  <div className="text-[11px] text-[#62685E] font-mono">{selectedInst?.protocol} Handshake Verified</div>
+                  <div className="text-[12.5px] font-semibold text-[#202920] dark:text-[#EDEAE2]">{selectedInst?.name}</div>
+                  <div className="text-[11px] text-[#62685E] dark:text-[#A3B899] font-mono">{selectedInst?.protocol} Handshake Verified</div>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setStep("search")}
-                className="text-[11px] text-[#3E6248] hover:underline bg-transparent border-0 cursor-pointer p-0"
+                className="text-[11px] text-[#3E6248] dark:text-[#4ADE80] hover:underline bg-transparent border-0 cursor-pointer p-0"
               >
                 Change
               </button>
             </div>
 
             <div className="text-center mb-6">
-              <div className="w-12 h-12 rounded-full bg-[#FAF7F0] border border-[#E4DCCB] text-[#3E6248] flex items-center justify-center mx-auto mb-2.5 shadow-sm">
+              <div className="w-12 h-12 rounded-full bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] text-[#3E6248] dark:text-[#4ADE80] flex items-center justify-center mx-auto mb-2.5 shadow-sm">
                 <KeyRound className="w-5 h-5" />
               </div>
-              <h3 className="font-serif text-[17px] font-semibold text-[#202920] m-0">
+              <h3 className="font-serif text-[17px] font-semibold text-[#202920] dark:text-[#EDEAE2] m-0">
                 Enter Institutional 2FA Code
               </h3>
-              <p className="text-[12.5px] text-[#62685E] m-0 mt-1">
-                Enter the 6-digit verification code generated by your Duo Mobile or Microsoft Authenticator app.
+              <p className="text-[12.5px] text-[#62685E] dark:text-[#A3B899] m-0 mt-1">
+                Enter the 6-digit verification code generated by your Duo Mobile or institutional authenticator app.
               </p>
             </div>
 
@@ -284,7 +282,7 @@ export function InstitutionalSsoModal({ isOpen, onClose }: InstitutionalSsoModal
                     maxLength={1}
                     value={digit}
                     onChange={(e) => handleOtpChange(i, e.target.value)}
-                    className="w-11 h-12 text-center text-[18px] font-mono font-bold bg-white border border-[#E4DCCB] rounded-lg text-[#202920] focus:border-[#3E6248] focus:ring-2 focus:ring-[#3E6248]/20 outline-none transition-all"
+                    className="w-11 h-12 text-center text-[18px] font-mono font-bold bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-lg text-[#202920] dark:text-[#EDEAE2] focus:border-[#3E6248] dark:focus:border-[#4ADE80] focus:ring-2 focus:ring-[#3E6248]/20 dark:focus:ring-[#4ADE80]/20 outline-none transition-all"
                   />
                 ))}
               </div>
@@ -292,14 +290,14 @@ export function InstitutionalSsoModal({ isOpen, onClose }: InstitutionalSsoModal
               <button
                 type="submit"
                 disabled={isVerifying}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#3E6248] hover:bg-[#293E30] text-white font-medium text-[13px] rounded-lg transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] font-medium text-[13px] rounded-lg transition-colors shadow-sm cursor-pointer disabled:opacity-50"
               >
                 <span>{isVerifying ? "Validating SAML Assertion…" : "Verify & Complete SSO Login"}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
 
-            <div className="mt-5 pt-4 border-t border-[#E4DCCB] text-center">
+            <div className="mt-5 pt-4 border-t border-[#E4DCCB] dark:border-[#233327] text-center">
               <button
                 type="button"
                 onClick={() => {
@@ -309,7 +307,7 @@ export function InstitutionalSsoModal({ isOpen, onClose }: InstitutionalSsoModal
                     description: "Simulation code 123456 ready to submit.",
                   });
                 }}
-                className="text-[11.5px] text-[#3E6248] hover:underline bg-transparent border-0 cursor-pointer p-0"
+                className="text-[11.5px] text-[#3E6248] dark:text-[#4ADE80] hover:underline bg-transparent border-0 cursor-pointer p-0"
               >
                 Quick Demo: Auto-fill sample 2FA code
               </button>

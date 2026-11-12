@@ -3,32 +3,56 @@
 import { Card } from "@/components/ui/card";
 
 export function TestimonialsSection() {
-  const testimonials = [
-    { quote: "Cambium gives my research a place to live — not just a list of papers.", name: "Imthiyas", role: "Computer Vision Researcher", org: "MIT" },
-    { quote: "The difference is that everything is connected to the work I'm actually doing.", name: "Arjun Rao", role: "PhD Researcher", org: "IISc" },
-    { quote: "Finally, a research environment that understands how scholars actually work.", name: "Dr. Elena Park", role: "Computational Biology", org: "Stanford University" },
+  const workflows = [
+    {
+      badge: "EARLY-CAREER SCHOLARSHIP",
+      title: "PhD Researchers & Postdocs",
+      description: "Keep track of expiring dissertation grants, monitor relevant arXiv and bioRxiv preprints, and organize workspace references without manual spreadsheet upkeep.",
+      deliverable: "Preprint Tracking · BibTeX Exports",
+    },
+    {
+      badge: "RESEARCH LEADERSHIP",
+      title: "Principal Investigators",
+      description: "Coordinate multi-institution grant proposals, allocate compute credits, and maintain an audit log of student contributions and dataset versions.",
+      deliverable: "Lab Workspaces · Post-Award Management",
+    },
+    {
+      badge: "CROSS-DISCIPLINARY DISCOVERY",
+      title: "Interdisciplinary Teams",
+      description: "Bridge methodologies across computer vision, genomics, and climate modeling with interactive relational graphs and mutual scholar messaging.",
+      deliverable: "Citation Mapping · Joint Working Groups",
+    },
   ];
 
   return (
     <section className="bg-background border-t border-border py-20 lg:py-32 px-6 md:px-20">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-primary mb-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            SCHOLAR WORKFLOWS
+          </div>
           <h2 className="font-serif text-3xl md:text-[44px] font-normal tracking-tight text-foreground">
-            Built around the way research actually happens.
+            Built for every stage of modern research.
           </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonials.map(({ quote, name, role, org }) => (
-            <Card key={name} className="p-8 border-border">
-              <div className="text-4xl font-serif text-primary leading-none mb-4">"</div>
-              <p className="text-[17px] leading-[1.6] text-foreground mb-8">
-                {quote}
-              </p>
+          {workflows.map(({ badge, title, description, deliverable }) => (
+            <Card key={title} className="p-8 border-border flex flex-col justify-between">
               <div>
-                <div className="text-sm font-semibold text-foreground tracking-tight">{name}</div>
-                <div className="text-[13px] text-muted-foreground mt-1">{role}</div>
-                <div className="text-xs text-muted-foreground/70 mt-0.5">{org}</div>
+                <span className="font-mono text-[11px] font-semibold tracking-wider uppercase text-primary mb-3 block">
+                  {badge}
+                </span>
+                <h3 className="text-lg font-bold text-foreground mb-3 font-serif">
+                  {title}
+                </h3>
+                <p className="text-[15px] leading-[1.6] text-muted-foreground mb-6 font-sans">
+                  {description}
+                </p>
+              </div>
+              <div className="pt-4 border-t border-border text-xs font-mono text-muted-foreground/80">
+                {deliverable}
               </div>
             </Card>
           ))}
@@ -49,14 +73,9 @@ export function Footer() {
           </svg>
           <span className="font-bold text-sm tracking-tight text-foreground">CAMBIUM</span>
         </div>
-        <div className="flex gap-6 text-sm text-muted-foreground">
-          <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-          <a href="#" className="hover:text-foreground transition-colors">Terms</a>
-          <a href="#" className="hover:text-foreground transition-colors">Contact</a>
-        </div>
-        <div className="text-xs text-muted-foreground/70">
-          © 2026 Cambium. All rights reserved.
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Autonomous Research Opportunity Discovery & Scholarly Intelligence.
+        </p>
       </div>
     </footer>
   );

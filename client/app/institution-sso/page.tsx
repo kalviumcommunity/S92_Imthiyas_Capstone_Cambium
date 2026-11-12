@@ -136,7 +136,7 @@ export default function InstitutionalSsoPage() {
     }, 800);
 
     setTimeout(() => {
-      setHandshakeStep("Cryptographic Signature Verified. Issuing SCIM Scholar Token...");
+      setHandshakeStep("SAML Assertion Verified. Issuing Institutional Session Token...");
     }, 1800);
 
     setTimeout(() => {
@@ -183,7 +183,7 @@ export default function InstitutionalSsoPage() {
             <span className="italic text-[#3E6248]">Federated Identity</span>
           </h1>
           <p className="font-serif text-base sm:text-lg text-[#62685E] leading-relaxed">
-            Connect via your university, medical laboratory, or research commission identity provider. Authentication is cryptographically anchored via InCommon, EduGAIN, and official ROR registry metadata.
+            Connect via your university, hospital laboratory, or research foundation identity provider using SAML 2.0 through InCommon, EduGAIN, and ROR registry metadata.
           </p>
         </div>
 

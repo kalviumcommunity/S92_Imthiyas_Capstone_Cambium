@@ -131,20 +131,20 @@ export default function NotFound() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-[#E4DCCB] shadow-sm z-10 whitespace-nowrap">
             <span className="w-2 h-2 rounded-full bg-[#A33B32] animate-pulse" />
             <span className="font-mono text-[11px] sm:text-xs uppercase tracking-widest text-[#202920] font-semibold">
-              Index Registry // Missing Coordinates
+              HTTP 404 // Page Not Found
             </span>
           </div>
         </div>
 
         {/* Editorial Headline completely cleared of the number above */}
         <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl font-normal leading-[1.12] tracking-tight text-[#202920] mb-3 max-w-2xl">
-          Research artifact <br className="hidden sm:block" />
+          Page or research artifact <br className="hidden sm:block" />
           <span className="italic text-[#3E6248]">not found</span>.
         </h1>
 
         {/* Minimized Font Size Subtitle as requested */}
         <p className="font-serif text-sm sm:text-base text-[#62685E] leading-relaxed max-w-lg mx-auto mb-6">
-          The paper, dataset, hypothesis or scholar record you are looking for has departed this index or is yet to be discovered.
+          The document, grant opportunity, or researcher profile you are looking for does not exist, has moved, or is temporarily unavailable.
         </p>
 
         {/* Exactly 2 buttons: Return to Workspace and Home */}
@@ -180,7 +180,7 @@ export default function NotFound() {
             <line x1="8" y1="8" x2="14" y2="12" stroke="#3E6248" strokeWidth="0.8" />
           </svg>
           <span className="font-mono text-[11px] font-semibold text-[#85877B] tracking-wider uppercase">
-            CAMBIUM INDEX // ARTIFACT_404 // UNMAPPED_COORDINATES
+            CAMBIUM RESEARCH PLATFORM // HTTP 404
           </span>
         </div>
       </div>

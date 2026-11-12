@@ -12,9 +12,9 @@ export interface ReactiveNullStateProps {
 }
 
 export function ReactiveNullState({
-  title = "No active research artifacts indexed",
-  description = "This collection or folder is awaiting its first manuscript, dataset, or empirical hypothesis.",
-  actionLabel = "Create Research Artifact",
+  title = "No research materials found",
+  description = "This collection is empty. Add a paper, dataset, or research note to get started.",
+  actionLabel = "Add to Workspace",
   onAction,
   className = "",
 }: ReactiveNullStateProps) {

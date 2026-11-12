@@ -6,11 +6,14 @@ import { Tag } from '../opportunities/entities/tag.entity';
 import { GeminiEmbeddingService } from '../ai/gemini-embedding.service';
 import { GrantsGovCrawler, CrawledOpportunity } from './crawlers/grants-gov.crawler';
 import { OpenAlexCrawler } from './crawlers/openalex.crawler';
+import { ArxivCrawler } from './crawlers/arxiv.crawler';
+import { CrossrefCrawler } from './crawlers/crossref.crawler';
+import { DoajCrawler } from './crawlers/doaj.crawler';
 import { QueueService } from '../../common/queues/queue.service';
 import { QUEUE_NAMES, IngestionJobData } from '../../common/queues/queue.constants';
 
 export interface CrawlExecutionResult {
-  source: 'grants_gov' | 'openalex' | 'all';
+  source: 'grants_gov' | 'openalex' | 'arxiv' | 'crossref' | 'doaj' | 'all';
   totalDiscovered: number;
   newlyIngested: number;
   skippedDuplicates: number;
@@ -37,6 +40,12 @@ export class IngestionService implements OnModuleInit {
     private readonly grantsGovCrawler: GrantsGovCrawler,
     @Inject(OpenAlexCrawler)
     private readonly openAlexCrawler: OpenAlexCrawler,
+    @Inject(ArxivCrawler)
+    private readonly arxivCrawler: ArxivCrawler,
+    @Inject(CrossrefCrawler)
+    private readonly crossrefCrawler: CrossrefCrawler,
+    @Inject(DoajCrawler)
+    private readonly doajCrawler: DoajCrawler,
     @Inject(QueueService)
     private readonly queueService: QueueService,
   ) {}
@@ -54,7 +63,7 @@ export class IngestionService implements OnModuleInit {
    * Execute crawler, check for duplicates, generate Gemini 768-dim embeddings, and persist to PostgreSQL
    */
   async crawlAndIngest(
-    source: 'grants_gov' | 'openalex' | 'all' = 'all',
+    source: 'grants_gov' | 'openalex' | 'arxiv' | 'crossref' | 'doaj' | 'all' = 'all',
     limit = 10,
   ): Promise<CrawlExecutionResult> {
     const startTime = Date.now();
@@ -70,6 +79,21 @@ export class IngestionService implements OnModuleInit {
     if (source === 'openalex' || source === 'all') {
       const papers = await this.openAlexCrawler.crawl(limit);
       candidates.push(...papers);
+    }
+
+    if (source === 'arxiv' || source === 'all') {
+      const arxivPapers = await this.arxivCrawler.crawl(limit);
+      candidates.push(...arxivPapers);
+    }
+
+    if (source === 'crossref' || source === 'all') {
+      const crossrefPapers = await this.crossrefCrawler.crawl(limit);
+      candidates.push(...crossrefPapers);
+    }
+
+    if (source === 'doaj' || source === 'all') {
+      const doajPapers = await this.doajCrawler.crawl(limit);
+      candidates.push(...doajPapers);
     }
 
     let newlyIngested = 0;
@@ -156,7 +180,7 @@ export class IngestionService implements OnModuleInit {
   /**
    * Enqueue asynchronous crawler run via BullMQ
    */
-  async triggerAsyncCrawl(source: 'grants_gov' | 'openalex' | 'all' = 'all', limit = 10) {
+  async triggerAsyncCrawl(source: 'grants_gov' | 'openalex' | 'arxiv' | 'crossref' | 'doaj' | 'all' = 'all', limit = 10) {
     return this.queueService.addIngestionJob({
       source,
       limit,
@@ -181,6 +205,9 @@ export class IngestionService implements OnModuleInit {
       crawlers: [
         { name: 'GrantsGovCrawler', type: 'Federal Grants (NSF/NIH/DOE)', status: 'ready' },
         { name: 'OpenAlexCrawler', type: 'Scholarly Works & CFPs', status: 'ready' },
+        { name: 'ArxivCrawler', type: 'Cornell arXiv Computer Science & AI Preprints', status: 'ready' },
+        { name: 'CrossrefCrawler', type: 'Crossref Official DOI Metadata Registry', status: 'ready' },
+        { name: 'DoajCrawler', type: 'Directory of Open Access Journals (Peer-Reviewed)', status: 'ready' },
       ],
     };
   }

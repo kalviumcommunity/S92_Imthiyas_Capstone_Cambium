@@ -66,7 +66,7 @@ export default function FeatureZigZag() {
               <div className="w-5 h-5 rounded-full bg-accent/80 flex items-center justify-center text-primary">
                 <Check className="w-3.5 h-3.5" />
               </div>
-              <span>Verifiable cryptographic credentials from accredited universities</span>
+              <span>Verifiable institutional credentials from accredited universities</span>
             </li>
           </ul>
         </motion.div>

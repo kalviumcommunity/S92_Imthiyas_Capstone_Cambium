@@ -8,9 +8,10 @@ import {
   getCachedOpportunities,
 } from "./offlineStorage";
 import { toggleBookmark } from "@/lib/api";
+import { useOnlineStatus } from "@/lib/hooks/use-online-status";
 
 export function useOfflineSync() {
-  const [isOnline, setIsOnline] = useState<boolean>(true);
+  const isOnline = useOnlineStatus();
   const [outboxCount, setOutboxCount] = useState<number>(0);
   const [cachedCount, setCachedCount] = useState<number>(0);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -69,8 +70,21 @@ export function useOfflineSync() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    setIsOnline(navigator.onLine);
-    refreshCounts();
+    let active = true;
+    const loadCounts = async () => {
+      try {
+        const outbox = await getOutboxQueue();
+        const cached = await getCachedOpportunities();
+        if (active) {
+          setOutboxCount(outbox.length);
+          setCachedCount(cached.length);
+        }
+      } catch (error) {
+        console.error("[OfflineSync] Unable to load local queue counts:", error);
+      }
+    };
+
+    void loadCounts();
 
     // Register Service Worker
     if ("serviceWorker" in navigator && process.env.NODE_ENV !== "test") {
@@ -92,22 +106,16 @@ export function useOfflineSync() {
     }
 
     const handleOnline = () => {
-      setIsOnline(true);
       syncOutbox();
     };
 
-    const handleOffline = () => {
-      setIsOnline(false);
-    };
-
     window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
 
     return () => {
+      active = false;
       window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
     };
-  }, [refreshCounts, syncOutbox]);
+  }, [syncOutbox]);
 
   return {
     isOnline,

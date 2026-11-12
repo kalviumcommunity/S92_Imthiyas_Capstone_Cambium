@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { WifiOff, RefreshCw, CheckCircle2, Database, CloudOff } from "lucide-react";
 import { getOfflineOpportunities, getPendingSyncMutations, removeSyncMutation } from "@/lib/storage/offline-store";
+import { useOnlineStatus } from "@/lib/hooks/use-online-status";
 
 export default function OfflineSyncBanner() {
-  const [isOnline, setIsOnline] = useState<boolean>(true);
+  const isOnline = useOnlineStatus();
   const [cachedCount, setCachedCount] = useState<number>(0);
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -13,9 +14,6 @@ export default function OfflineSyncBanner() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    // Initial state
-    setIsOnline(navigator.onLine);
 
     const updateCounts = async () => {
       try {
@@ -31,7 +29,6 @@ export default function OfflineSyncBanner() {
     updateCounts();
 
     const handleOnline = async () => {
-      setIsOnline(true);
       setIsSyncing(true);
 
       try {
@@ -53,7 +50,6 @@ export default function OfflineSyncBanner() {
     };
 
     const handleOffline = () => {
-      setIsOnline(false);
       updateCounts();
     };
 

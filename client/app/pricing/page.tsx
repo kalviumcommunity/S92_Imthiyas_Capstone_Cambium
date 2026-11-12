@@ -42,8 +42,8 @@ export default function PricingPage() {
       buttonHref: "/billing",
       highlight: true,
       features: [
-        "10,000 Neural AI Reasoning Credits / month",
-        "Split-screen Agentic PDF Reader & RAG matrix",
+        "10,000 AI Assistant query credits / month",
+        "Split-screen PDF Reader with citation lookup",
         "Unlimited workspace projects & notebooks",
         "Multi-paper synthesis & literature matrix",
         "Shared GPU cluster priority inference",

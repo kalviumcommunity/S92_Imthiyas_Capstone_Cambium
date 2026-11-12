@@ -70,7 +70,7 @@ export function IdentitySection() {
           </h2>
           <p className="text-[17px] leading-relaxed text-muted-foreground mb-10">
             Your academic presence, publication record, research activity,
-            collaborations, and portfolio — unified in a living identity that grows
+            collaborations, and portfolio, organized in an academic profile that reflects
             with your work.
           </p>
           <div className="flex flex-col gap-4">

@@ -1,12 +1,19 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-
+import { DataSource } from 'typeorm';
 import { DatabaseDiagnosticService } from './database/database-diagnostic.service';
+import { RedisService } from './common/redis/redis.service';
 
 @ApiTags('System')
 @Controller()
 export class AppController {
-  constructor(private readonly diagnosticService: DatabaseDiagnosticService) {}
+  private readonly logger = new Logger(AppController.name);
+
+  constructor(
+    private readonly diagnosticService: DatabaseDiagnosticService,
+    private readonly dataSource: DataSource,
+    private readonly redisService: RedisService,
+  ) {}
 
   @Get('api/database/diagnostics')
   @ApiOperation({ summary: 'Inspect PostgreSQL 16 pgvector HNSW health, PgBouncer pool stats, and table metrics' })
@@ -18,7 +25,17 @@ export class AppController {
   @Get(['health', 'api/health', 'api/v1/health', 'status', 'api/status'])
   @ApiOperation({ summary: 'Enterprise Health Check & System Status Probe' })
   @ApiResponse({ status: 200, description: 'Liveness, readiness, and subsystem status metrics' })
-  getLivenessAndReadiness() {
+  async getLivenessAndReadiness() {
+    try {
+      await this.dataSource.query('SELECT 1');
+    } catch (error) {
+      const stack = error instanceof Error ? error.stack : undefined;
+      this.logger.error('Readiness check failed: PostgreSQL is unavailable', stack);
+      throw new ServiceUnavailableException('Database unavailable');
+    }
+
+    const redis = await this.redisService.getHealthInfo();
+
     return {
       status: 'ok',
       service: 'Cambium Core Platform API',
@@ -26,7 +43,7 @@ export class AppController {
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
       database: 'connected',
-      redis: 'connected',
+      redis: redis.status === 'CONNECTED' ? 'connected' : 'degraded',
       environment: process.env.NODE_ENV || 'production',
     };
   }

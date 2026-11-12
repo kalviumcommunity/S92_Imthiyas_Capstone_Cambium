@@ -285,29 +285,30 @@
     box-shadow: 0 0 0 2px #0E140F, 0 0 0 4px #4ADE80;
   }
 
-  /* Exclude seamless borderless inputs inside search bars/pills from raw boxy outline */
-  input.outline-none:focus-visible,
-  input.border-0:focus-visible,
-  input.border-none:focus-visible,
-  .search-pill input:focus-visible,
-  .search-bar input:focus-visible,
-  .search-box input:focus-visible,
-  .scholarly-search-pill input:focus-visible,
-  input[type="search"]:focus-visible {
-    box-shadow: none !important;
-    outline: none !important;
-  }
-  .dark input.outline-none:focus-visible,
-  .dark input.border-0:focus-visible,
-  .dark input.border-none:focus-visible,
-  .dark .search-pill input:focus-visible,
-  .dark .search-bar input:focus-visible,
-  .dark .search-box input:focus-visible,
-  .dark .scholarly-search-pill input:focus-visible,
-  .dark input[type="search"]:focus-visible {
-    box-shadow: none !important;
-    outline: none !important;
-  }
+}
+
+/* Exclude seamless borderless inputs inside search bars/pills from raw boxy outline */
+input.outline-none:focus-visible,
+input.border-0:focus-visible,
+input.border-none:focus-visible,
+.search-pill input:focus-visible,
+.search-bar input:focus-visible,
+.search-box input:focus-visible,
+.scholarly-search-pill input:focus-visible,
+input[type="search"]:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
+}
+.dark input.outline-none:focus-visible,
+.dark input.border-0:focus-visible,
+.dark input.border-none:focus-visible,
+.dark .search-pill input:focus-visible,
+.dark .search-bar input:focus-visible,
+.dark .search-box input:focus-visible,
+.dark .scholarly-search-pill input:focus-visible,
+.dark input[type="search"]:focus-visible {
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 /* Scholarly Google-Style Clean Search Pill Container */
@@ -689,7 +690,7 @@
 
 /* ── Auth form input — Cambium Living Materials precision ─────────────────── */
 .auth-input {
-  height: 42px;
+  height: 40px;
   border-radius: 8px;
   border: 1px solid var(--color-limestone, #E4DCCB);
   padding: 0 14px;
@@ -708,6 +709,20 @@
   background: #FFFFFF;
 }
 
+.dark .auth-input {
+  background: #18231B;
+  border-color: #233327;
+  color: #EDEAE2;
+}
+.dark .auth-input::placeholder {
+  color: #7E8B7B;
+}
+.dark .auth-input:focus {
+  background: #18231B;
+  border-color: #4ADE80;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2);
+}
+
 /* ── Auth OAuth button ─────────────────────────────────────────────────── */
 .auth-oauth-btn {
   display: flex;
@@ -715,7 +730,7 @@
   justify-content: center;
   gap: 12px;
   width: 100%;
-  height: 42px;
+  height: 40px;
   border-radius: 8px;
   border: 1px solid var(--color-limestone, #E4DCCB);
   background: #FFFFFF;
@@ -736,9 +751,21 @@
   transform: scale(0.995);
 }
 
+.dark .auth-oauth-btn {
+  background: #18231B;
+  border-color: #233327;
+  color: #EDEAE2;
+}
+.dark .auth-oauth-btn:hover {
+  background: #1F2E23;
+  border-color: #4ADE80;
+  color: #EDEAE2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
 /* ── Auth submit button ────────────────────────────────────────────────── */
 .auth-submit-btn {
-  height: 44px;
+  height: 42px;
   border-radius: 8px;
   background: var(--color-canopy, #3E6248);
   color: var(--color-parchment, #FAF7F0);
@@ -758,6 +785,17 @@
 }
 .auth-submit-btn:active {
   transform: scale(0.995);
+}
+
+.dark .auth-submit-btn {
+  background: #4ADE80;
+  color: #0E140F;
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  box-shadow: 0 2px 8px rgba(74, 222, 128, 0.25);
+}
+.dark .auth-submit-btn:hover {
+  background: #22C55E;
+  box-shadow: 0 4px 14px rgba(74, 222, 128, 0.4);
 }
 
 /* ── Academic Identity Profile — Step Animation ────────────────────────── */
@@ -834,6 +872,24 @@
   box-shadow: 0 0 0 2px rgba(46,94,30,0.10);
 }
 
+.dark .profile-input,
+.dark .profile-textarea,
+.dark .profile-select {
+  background: #18231B;
+  border-color: #233327;
+  color: #EDEAE2;
+}
+.dark .profile-input::placeholder,
+.dark .profile-textarea::placeholder {
+  color: #7E8B7B;
+}
+.dark .profile-input:focus,
+.dark .profile-textarea:focus,
+.dark .profile-select:focus {
+  border-color: #4ADE80;
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+}
+
 .profile-chip {
   padding: 6px 12px;
   border-radius: 3px;
@@ -901,6 +957,16 @@
 @keyframes pulseGlow {
   0%, 100% { filter: drop-shadow(0 0 2px rgba(46, 204, 113, 0.4)); opacity: 0.9; }
   50% { filter: drop-shadow(0 0 12px rgba(46, 204, 113, 0.85)); opacity: 1; }
+}
+
+.cambium-spatial-transition {
+  animation: cambiumSpatialTransition 1.4s ease both;
+}
+
+@keyframes cambiumSpatialTransition {
+  0% { opacity: 0; }
+  12%, 78% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 .animate-drift-1 {
@@ -1055,5 +1121,81 @@ html.dark:not(.light) img[src="/logo.svg"] {
   filter: drop-shadow(0 0 6px rgba(74, 222, 128, 0.4)) brightness(1.15);
 }
 
+/* ── Custom Text Selection (Living Materials Sage Mist Sovereignty) ──────── */
+::selection {
+  background-color: var(--color-sage-mist, #DCE6D7);
+  color: var(--color-forest-ink, #202920);
+}
 
+::-moz-selection {
+  background-color: var(--color-sage-mist, #DCE6D7);
+  color: var(--color-forest-ink, #202920);
+}
+
+html.dark ::selection {
+  background-color: #233527;
+  color: var(--color-emerald, #4ADE80);
+}
+
+html.dark ::-moz-selection {
+  background-color: #233527;
+  color: var(--color-emerald, #4ADE80);
+}
+
+/* ── Scrollbar Gutter Stability (Prevents modal/accordion reflow jitter) ───── */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* ── Print Stylesheet (Clean Scholarly Artifacts & Invoices) ──────────────── */
+@media print {
+  /* Hide interactive chrome and navigation */
+  aside,
+  nav,
+  header,
+  footer,
+  #universal-theme-gearbox,
+  #offline-banner,
+  .print\:hidden,
+  button:not([data-print-visible]),
+  input,
+  [role="dialog"] {
+    display: none !important;
+  }
+
+  /* Reset document canvas to pure white paper */
+  html,
+  body,
+  main,
+  #main-content {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+    overflow: visible !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Ensure headings and critical content do not break awkwardly */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+    color: #000000 !important;
+  }
+
+  table, figure, pre, blockquote, .card {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Expand all links to display reference target */
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #555555;
+  }
+}
 

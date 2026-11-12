@@ -295,7 +295,7 @@ export function PaperSection() {
             Follow ideas, not just citations.
           </h2>
           <p className="text-[17px] leading-relaxed text-muted-foreground mb-10">
-            Navigate the research landscape through semantic relationships — not just
+            Navigate the research landscape through conceptual relationships, tracing
             who cited whom. Discover papers through shared concepts, emerging themes,
             and the ideas that connect across fields.
           </p>

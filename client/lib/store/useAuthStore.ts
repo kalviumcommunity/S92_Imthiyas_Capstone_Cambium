@@ -8,8 +8,15 @@ export interface UserProfile {
   name?: string;
   role?: string;
   institution?: string;
+  department?: string;
+  graduation?: string;
+  headline?: string;
+  bio?: string;
+  orcid?: string;
   researchInterests?: Array<{ id: string; name: string; slug: string }> | string[];
   interests?: string[];
+  topics?: string[];
+  onboardingCompleted?: boolean;
 }
 
 interface AuthState {
@@ -33,15 +40,6 @@ export const useAuthStore = create<AuthState>((set) => {
     if (storedUser) {
       try {
         initialUser = JSON.parse(storedUser);
-        if (initialUser && initialUser.fullName) {
-          if (/maya|chen/i.test(initialUser.fullName) || /\(0000|\(google/i.test(initialUser.fullName)) {
-            initialUser.fullName = "Imthiyas";
-            if (initialUser.email && /maya/i.test(initialUser.email)) {
-              initialUser.email = "imthiyas@orcid.org";
-            }
-            localStorage.setItem("cambium_user", JSON.stringify(initialUser));
-          }
-        }
       } catch {
         initialUser = null;
       }
@@ -53,16 +51,13 @@ export const useAuthStore = create<AuthState>((set) => {
     token: initialToken,
     isAuthenticated: !!initialToken,
     setAuth: (user, token) => {
-      const sanitizedUser = user
+      const sanitizedUser: UserProfile = user
         ? {
             ...user,
-            fullName: user.fullName
-              ? (/maya|chen/i.test(user.fullName)
-                  ? "Imthiyas"
-                  : user.fullName.replace(/\s*\([^)]*\)/g, "").trim() || "Imthiyas")
-              : "Imthiyas",
+            fullName: user.fullName || user.name || user.username || "Scholar",
+            name: user.name || user.fullName || user.username || "Scholar",
           }
-        : user;
+        : ({} as UserProfile);
       if (typeof window !== "undefined") {
         localStorage.setItem("cambium_token", token);
         localStorage.setItem("cambium_user", JSON.stringify(sanitizedUser));
@@ -70,13 +65,13 @@ export const useAuthStore = create<AuthState>((set) => {
       set({ user: sanitizedUser, token, isAuthenticated: true });
     },
     setUser: (user) => {
-      const sanitizedUser = user
+      const sanitizedUser: UserProfile = user
         ? {
             ...user,
-            fullName: user.fullName || user.name || "Imthiyas",
-            name: user.name || user.fullName || "Imthiyas",
+            fullName: user.fullName || user.name || user.username || "Scholar",
+            name: user.name || user.fullName || user.username || "Scholar",
           }
-        : user;
+        : ({} as UserProfile);
       if (typeof window !== "undefined") {
         localStorage.setItem("cambium_user", JSON.stringify(sanitizedUser));
       }
@@ -85,7 +80,7 @@ export const useAuthStore = create<AuthState>((set) => {
     updateUser: (patch) => {
       set((state) => {
         if (!state.user) return state;
-        const updated = { ...state.user, ...patch };
+        const updated: UserProfile = { ...state.user, ...patch };
         if (typeof window !== "undefined") {
           localStorage.setItem("cambium_user", JSON.stringify(updated));
         }
@@ -96,6 +91,7 @@ export const useAuthStore = create<AuthState>((set) => {
       if (typeof window !== "undefined") {
         localStorage.removeItem("cambium_token");
         localStorage.removeItem("cambium_user");
+        localStorage.removeItem("cambium_onboarding_completed");
       }
       set({ user: null, token: null, isAuthenticated: false });
     },

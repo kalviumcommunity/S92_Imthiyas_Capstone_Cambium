@@ -9,11 +9,11 @@ export interface ColdStartSplashProps {
 }
 
 const BOOT_LOGS = [
-  { time: "0.012s", label: "HYDRATING_SCHOLAR_RUNTIME", status: "OK" },
-  { time: "0.042s", label: "COMPILING_FIBONACCI_TOPOLOGY", status: "MOUNTED" },
-  { time: "0.078s", label: "AIR_GAP_ENCRYPTED_ENCLAVE", status: "SECURED" },
-  { time: "0.115s", label: "SYNCHRONIZING_RELATIONAL_MESH", status: "100%" },
-  { time: "0.150s", label: "CAMBIUM_RESEARCH_OS", status: "READY" },
+  { time: "0.012s", label: "INITIALIZING_WORKSPACE_RUNTIME", status: "OK" },
+  { time: "0.042s", label: "CONNECTING_CITATION_INDEX", status: "MOUNTED" },
+  { time: "0.078s", label: "VERIFYING_LOCAL_WORKSPACE", status: "SECURED" },
+  { time: "0.115s", label: "INDEXING_RESEARCH_TOPOLOGY", status: "READY" },
+  { time: "0.150s", label: "CAMBIUM_RESEARCH_PLATFORM", status: "ACTIVE" },
 ];
 
 export function ColdStartSplash({ onComplete, minDurationMs = 1200 }: ColdStartSplashProps) {
@@ -55,7 +55,7 @@ export function ColdStartSplash({ onComplete, minDurationMs = 1200 }: ColdStartS
             <img
               src="/public_logo/cambium-logo-light.svg"
               alt="CAMBIUM Research Mark"
-              className="w-full h-full object-contain animate-spin-slow scale-[1.3] transition-transform"
+              className="w-full h-full object-contain animate-spin-slow transition-transform"
               style={{ animationDuration: "12s" }}
             />
           </div>

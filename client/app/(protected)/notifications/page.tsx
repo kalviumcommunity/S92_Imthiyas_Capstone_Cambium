@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Check, Sparkles, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ReactiveNullState } from "@/components/ui/reactive-null-state";
@@ -11,7 +11,7 @@ import { useRealtimeEvents } from "@/lib/realtime/useRealtimeEvents";
 type Tab = "All" | "Unread" | "Mentions" | "System";
 
 interface NotificationItem {
-  id: number;
+  id: number | string;
   read: boolean;
   type: "collaboration" | "system";
   title: string;
@@ -134,7 +134,7 @@ function NotificationCard({
 }: {
   notif: NotificationItem;
   onSelect: (notif: NotificationItem) => void;
-  onMarkRead: (e: React.MouseEvent, id: number) => void;
+  onMarkRead: (e: React.MouseEvent, id: number | string) => void;
 }) {
   return (
     <article
@@ -142,8 +142,8 @@ function NotificationCard({
       className={cn(
         "relative rounded-2xl p-6 sm:p-7 border transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-md group",
         notif.read
-          ? "bg-white border-[#E4DCCB] hover:border-[#66866A]"
-          : "bg-white border-[#66866A] ring-1 ring-[#3E6248]/15 border-l-[6px] border-l-[#3E6248]"
+          ? "bg-white dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] hover:border-[#66866A] dark:hover:border-[#4ADE80]/50"
+          : "bg-white dark:bg-[#18231B] border-[#66866A] dark:border-[#4ADE80] ring-1 ring-[#3E6248]/15 dark:ring-[#4ADE80]/20 border-l-[6px] border-l-[#3E6248] dark:border-l-[#4ADE80]"
       )}
     >
       {/* Top Header Row with Avatar, Sender, Category Pill, Timestamp & Mark Read Action */}
@@ -154,14 +154,14 @@ function NotificationCard({
             {notif.type === "collaboration" ? (
               <div
                 className={cn(
-                  "w-11 h-11 rounded-full flex items-center justify-center text-xs font-bold font-sans shadow-2xs border border-[#E4DCCB]",
+                  "w-11 h-11 rounded-full flex items-center justify-center text-xs font-bold font-sans shadow-2xs border border-[#E4DCCB] dark:border-[#233327]",
                   notif.avatarBg
                 )}
               >
                 {notif.avatarInitials}
               </div>
             ) : (
-              <div className="w-11 h-11 rounded-full bg-[#DCE6D7] border border-[#66866A]/30 flex items-center justify-center text-[#3E6248] shadow-2xs">
+              <div className="w-11 h-11 rounded-full bg-[#DCE6D7] dark:bg-[#1F2E23] border border-[#66866A]/30 dark:border-[#4ADE80]/30 flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80] shadow-2xs">
                 {notif.icon}
               </div>
             )}
@@ -170,20 +170,20 @@ function NotificationCard({
           {/* Sender & Role */}
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-sm sm:text-base text-[#202920] font-sans truncate">
+              <span className="font-semibold text-sm sm:text-base text-[#202920] dark:text-[#EDEAE2] font-sans truncate">
                 {notif.sender || "Cambium Research"}
               </span>
-              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#F2EBDD] text-[#3E6248] border border-[#E4DCCB] uppercase tracking-wider font-semibold">
+              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#F2EBDD] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] border border-[#E4DCCB] dark:border-[#233327] uppercase tracking-wider font-semibold">
                 {notif.category}
               </span>
               {!notif.read && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-[#3E6248] bg-[#DCE6D7] px-2 py-0.5 rounded-full border border-[#66866A]/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] animate-pulse" />
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] bg-[#DCE6D7] dark:bg-[#1F2E23] px-2 py-0.5 rounded-full border border-[#66866A]/30 dark:border-[#4ADE80]/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
                   New
                 </span>
               )}
             </div>
-            <div className="text-xs text-[#85877B] font-sans mt-0.5 truncate">
+            <div className="text-xs text-[#85877B] dark:text-[#7A8C78] font-sans mt-0.5 truncate">
               {notif.senderRole} · {notif.timestamp}
             </div>
           </div>
@@ -196,8 +196,8 @@ function NotificationCard({
             className={cn(
               "px-3 py-1.5 rounded-full text-xs font-sans font-medium transition-all flex items-center gap-1.5 cursor-pointer border",
               notif.read
-                ? "bg-[#FAF7F0] border-[#E4DCCB] text-[#62685E] hover:bg-[#DCE6D7] hover:text-[#3E6248]"
-                : "bg-[#DCE6D7] border-[#66866A]/40 text-[#3E6248] hover:bg-[#3E6248] hover:text-white"
+                ? "bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] text-[#62685E] dark:text-[#A4B3A2] hover:bg-[#DCE6D7] dark:hover:bg-[#1F2E23] hover:text-[#3E6248] dark:hover:text-[#4ADE80]"
+                : "bg-[#DCE6D7] dark:bg-[#1F2E23] border-[#66866A]/40 dark:border-[#4ADE80]/40 text-[#3E6248] dark:text-[#4ADE80] hover:bg-[#3E6248] dark:hover:bg-[#4ADE80] hover:text-white dark:hover:text-[#0E140F]"
             )}
             title={notif.read ? "Mark as unread" : "Mark as read"}
           >
@@ -208,23 +208,23 @@ function NotificationCard({
       </div>
 
       {/* Main Subject & Headline */}
-      <h3 className="font-serif text-lg sm:text-[19px] font-semibold text-[#202920] leading-snug mb-2 group-hover:text-[#3E6248] transition-colors">
+      <h3 className="font-serif text-lg sm:text-[19px] font-semibold text-[#202920] dark:text-[#EDEAE2] leading-snug mb-2 group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors">
         {notif.title}
       </h3>
 
       {/* Spacious Message Excerpt */}
-      <p className="text-sm text-[#62685E] font-sans leading-relaxed mb-4 line-clamp-2">
+      <p className="text-sm text-[#62685E] dark:text-[#A4B3A2] font-sans leading-relaxed mb-4 line-clamp-2">
         {notif.body}
       </p>
 
       {/* Card Footer with Direct Action and Timestamp Details */}
-      <div className="flex items-center justify-between pt-3.5 border-t border-[#E4DCCB]/60 text-xs text-[#85877B] font-sans flex-wrap gap-2">
+      <div className="flex items-center justify-between pt-3.5 border-t border-[#E4DCCB]/60 dark:border-[#233327] text-xs text-[#85877B] dark:text-[#7A8C78] font-sans flex-wrap gap-2">
         <div className="flex items-center gap-2 text-xs font-mono">
           <span>{notif.dateStr}</span>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-[#3E6248] font-semibold text-xs group-hover:underline flex items-center gap-1">
+          <span className="text-[#3E6248] dark:text-[#4ADE80] font-semibold text-xs group-hover:underline flex items-center gap-1">
             <span>Read full dispatch</span>
             <span>→</span>
           </span>
@@ -241,50 +241,42 @@ export default function NotificationsPage() {
   const [activeTab, setActiveTab] = useState<Tab>("All");
   const [previewNullState, setPreviewNullState] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
+  const [realtimeReadOverrides, setRealtimeReadOverrides] = useState<Record<string, boolean>>({});
   const [selectedNotif, setSelectedNotif] = useState<NotificationItem | null>(null);
   const { toast } = useToast();
 
   // Connect to real-time distributed SSE & Socket bus
   const { alerts, isSseConnected } = useRealtimeEvents();
-
-  useEffect(() => {
-    if (alerts && alerts.length > 0) {
-      setNotifications((prev) => {
-        const existingIds = new Set(prev.map((n) => String(n.id)));
-        const newItems: NotificationItem[] = [];
-
-        alerts.forEach((alt, idx) => {
-          const pseudoId = 1000 + idx;
-          if (!existingIds.has(String(pseudoId)) && !existingIds.has(alt.id)) {
-            newItems.push({
-              id: pseudoId,
-              read: alt.read,
-              type: alt.type === "deadline" ? "system" : "collaboration",
-              category: alt.type.toUpperCase(),
-              title: alt.title,
-              sender: "Cambium Event Stream",
-              senderRole: "Distributed SSE Bus",
-              avatarInitials: "SSE",
-              avatarBg: "bg-[#DCE6D7] text-[#3E6248]",
-              icon: <SparkleIcon />,
-              summary: (
-                <span className="font-sans">
-                  <strong className="font-semibold text-[#202920]">{alt.title}</strong>
-                </span>
-              ),
-              timestamp: "Just now",
-              dateStr: "Live Delivery",
-              body: alt.message,
-              actionLabel: "Inspect Event",
-              actionHref: alt.link || "/dashboard",
-            });
-          }
-        });
-
-        return newItems.length > 0 ? [...newItems, ...prev] : prev;
-      });
-    }
-  }, [alerts]);
+  const realtimeNotifications = useMemo(
+    () =>
+      alerts.map((alert) => ({
+        id: `sse:${alert.id}`,
+        read: realtimeReadOverrides[alert.id] ?? alert.read,
+        type: alert.type === "deadline" ? "system" as const : "collaboration" as const,
+        category: alert.type.toUpperCase(),
+        title: alert.title,
+        sender: "Cambium Event Stream",
+        senderRole: "Distributed SSE Bus",
+        avatarInitials: "SSE",
+        avatarBg: "bg-[#DCE6D7] text-[#3E6248]",
+        icon: <SparkleIcon />,
+        summary: (
+          <span className="font-sans">
+            <strong className="font-semibold text-[#202920]">{alert.title}</strong>
+          </span>
+        ),
+        timestamp: "Just now",
+        dateStr: "Live Delivery",
+        body: alert.message,
+        actionLabel: "Inspect Event",
+        actionHref: alert.link || "/dashboard",
+      })),
+    [alerts, realtimeReadOverrides]
+  );
+  const allNotifications = useMemo(
+    () => [...realtimeNotifications, ...notifications],
+    [notifications, realtimeNotifications]
+  );
 
   const handleSimulateLiveEvent = () => {
     const mockEvents: NotificationItem[] = [
@@ -344,6 +336,10 @@ export default function NotificationsPage() {
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setRealtimeReadOverrides((prev) => ({
+      ...prev,
+      ...Object.fromEntries(alerts.map((alert) => [alert.id, true])),
+    }));
     toast({
       title: "All notifications marked as read",
       description: "Your inbox ledger has been synchronized.",
@@ -351,8 +347,16 @@ export default function NotificationsPage() {
     });
   };
 
-  const toggleMarkRead = (e: React.MouseEvent, id: number) => {
+  const toggleMarkRead = (e: React.MouseEvent, id: number | string) => {
     e.stopPropagation();
+    if (typeof id === "string" && id.startsWith("sse:")) {
+      const alertId = id.slice(4);
+      setRealtimeReadOverrides((prev) => ({
+        ...prev,
+        [alertId]: !(prev[alertId] ?? alerts.find((alert) => alert.id === alertId)?.read ?? false),
+      }));
+      return;
+    }
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n))
     );
@@ -360,13 +364,17 @@ export default function NotificationsPage() {
 
   const handleSelect = (notif: NotificationItem) => {
     // Automatically mark read when opened
+    if (typeof notif.id === "string" && notif.id.startsWith("sse:")) {
+      const alertId = notif.id.slice(4);
+      setRealtimeReadOverrides((prev) => ({ ...prev, [alertId]: true }));
+    }
     setNotifications((prev) =>
       prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
     );
     setSelectedNotif({ ...notif, read: true });
   };
 
-  const filtered = notifications.filter((n) => {
+  const filtered = allNotifications.filter((n) => {
     if (activeTab === "All") return true;
     if (activeTab === "Unread") return !n.read;
     if (activeTab === "Mentions") return n.type === "collaboration";
@@ -374,37 +382,37 @@ export default function NotificationsPage() {
     return true;
   });
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = allNotifications.filter((n) => !n.read).length;
 
   return (
-    <div className="flex-1 min-h-screen overflow-y-auto bg-[#FAF7F0] font-sans p-6 sm:p-10 pb-24">
+    <div className="flex-1 min-h-screen overflow-y-auto bg-[#FAF7F0] dark:bg-[#0E140F] font-sans p-6 sm:p-10 pb-24">
       <div className="w-full max-w-4xl mx-auto space-y-7">
         {/* Header with Clear Purpose & Aligned Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 border-b border-[#E4DCCB]/60 pb-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-2 border-b border-[#E4DCCB]/60 dark:border-[#233327] pb-5">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="font-serif text-[32px] sm:text-[38px] font-normal tracking-[-0.02em] text-[#202920] m-0">
-                Research <span className="italic text-[#3E6248]">Inbox</span>
+              <h1 className="font-serif text-[32px] sm:text-[38px] font-normal tracking-[-0.02em] text-[#202920] dark:text-[#EDEAE2] m-0">
+                Research <span className="italic text-[#3E6248] dark:text-[#4ADE80]">Inbox</span>
               </h1>
               {unreadCount > 0 ? (
-                <span className="text-xs font-semibold bg-[#DCE6D7] text-[#3E6248] border border-[#66866A]/30 rounded-full px-2.5 py-0.5 leading-none font-mono">
+                <span className="text-xs font-semibold bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] border border-[#66866A]/30 dark:border-[#4ADE80]/30 rounded-full px-2.5 py-0.5 leading-none font-mono">
                   {unreadCount} new
                 </span>
               ) : (
-                <span className="text-[11px] font-medium text-[#85877B] bg-[#FAF7F0] border border-[#E4DCCB] rounded-full px-2.5 py-0.5 font-mono">
+                <span className="text-[11px] font-medium text-[#85877B] dark:text-[#7A8C78] bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] rounded-full px-2.5 py-0.5 font-mono">
                   All caught up
                 </span>
               )}
             </div>
-            <p className="text-xs sm:text-sm text-[#62685E] mt-1 m-0 font-sans">
+            <p className="text-xs sm:text-sm text-[#62685E] dark:text-[#A4B3A2] mt-1 m-0 font-sans">
               Real-time peer reviews, grant deadline alerts, and citation network dispatches.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2.5 flex-wrap">
             {/* Live SSE Status Indicator */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-[#E4DCCB] text-[11px] font-mono text-[#3E6248] shadow-2xs whitespace-nowrap">
-              <span className={`w-2 h-2 rounded-full ${isSseConnected ? "bg-[#3E6248] animate-pulse" : "bg-[#85877B]"}`} />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] text-[11px] font-mono text-[#3E6248] dark:text-[#4ADE80] shadow-2xs whitespace-nowrap">
+              <span className={`w-2 h-2 rounded-full ${isSseConnected ? "bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" : "bg-[#85877B] dark:text-[#7A8C78]"}`} />
               <span>{isSseConnected ? "Live SSE Active" : "SSE Standby"}</span>
             </div>
 
@@ -412,41 +420,42 @@ export default function NotificationsPage() {
             {unreadCount > 0 && (
               <button
                 onClick={markAllRead}
-                className="text-xs text-[#202920] hover:text-[#3E6248] transition-colors font-medium font-sans bg-white border border-[#E4DCCB] hover:bg-[#FAF7F0] px-3.5 py-1.5 rounded-full cursor-pointer shadow-2xs whitespace-nowrap flex items-center gap-1.5"
+                className="text-xs text-[#202920] dark:text-[#EDEAE2] hover:text-[#3E6248] dark:hover:text-[#4ADE80] transition-colors font-medium font-sans bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] hover:bg-[#FAF7F0] dark:hover:bg-[#1F2E23] px-3.5 py-1.5 rounded-full cursor-pointer shadow-2xs whitespace-nowrap flex items-center gap-1.5"
               >
-                <Check size={12} className="text-[#3E6248]" />
+                <Check size={12} className="text-[#3E6248] dark:text-[#4ADE80]" />
                 <span>Mark all read</span>
               </button>
             )}
 
-            {/* Evaluation & Simulation Controls */}
-            <div className="flex items-center gap-1.5 pl-1 border-l border-[#E4DCCB]">
+            {/* Visual Divider & Simulation Controls */}
+            <div className="h-5 w-px bg-[#E4DCCB] dark:bg-[#233327] hidden sm:block mx-0.5" />
+            <div className="inline-flex items-center gap-1.5 bg-[#F4EFE6]/70 dark:bg-[#1F2E23]/60 p-1 rounded-full border border-[#E4DCCB] dark:border-[#233327]">
               <button
                 onClick={handleSimulateLiveEvent}
-                className="text-[11px] px-3 py-1.5 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1.5 bg-[#FAF7F0] border-[#3E6248]/40 text-[#3E6248] hover:bg-[#DCE6D7] shadow-2xs whitespace-nowrap"
+                className="text-[11px] px-3 py-1 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1.5 bg-white dark:bg-[#18231B] border-[#3E6248]/30 dark:border-[#4ADE80]/30 text-[#3E6248] dark:text-[#4ADE80] hover:bg-[#DCE6D7] dark:hover:bg-[#28382C] shadow-2xs whitespace-nowrap"
                 title="Trigger a simulated real-time SSE notification event"
               >
-                <Sparkles size={11} className="text-[#3E6248]" />
-                <span className="hidden md:inline">Simulate Event</span>
+                <Sparkles size={11} className="text-[#3E6248] dark:text-[#4ADE80]" />
+                <span>Simulate Event</span>
               </button>
               <button
                 onClick={() => setPreviewNullState(!previewNullState)}
                 className={cn(
-                  "text-[11px] px-3 py-1.5 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1 shadow-2xs whitespace-nowrap",
+                  "text-[11px] px-3 py-1 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1 shadow-2xs whitespace-nowrap",
                   previewNullState
-                    ? "bg-[#3E6248] text-white border-[#3E6248]"
-                    : "bg-white text-[#62685E] border-[#E4DCCB] hover:bg-[#FAF7F0]"
+                    ? "bg-[#3E6248] dark:bg-[#4ADE80] text-white dark:text-[#0E140F] border-[#3E6248] dark:border-[#4ADE80]"
+                    : "bg-white dark:bg-[#18231B] text-[#62685E] dark:text-[#A4B3A2] border-[#E4DCCB] dark:border-[#233327] hover:bg-[#FAF7F0] dark:hover:bg-[#1F2E23]"
                 )}
                 title="Toggle preview of empty inbox state"
               >
-                <span>{previewNullState ? "Show Stream" : "Preview Null"}</span>
+                <span>{previewNullState ? "Show Stream" : "Preview Empty"}</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Filter Tabs Bar (Spacious) */}
-        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white border border-[#E4DCCB] shadow-2xs">
+        <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] shadow-2xs">
           {TABS.map((tab) => {
             const isActive = activeTab === tab;
             return (
@@ -456,8 +465,8 @@ export default function NotificationsPage() {
                 className={cn(
                   "px-4 py-2 text-xs font-medium transition-all font-sans rounded-xl cursor-pointer",
                   isActive
-                    ? "text-[#202920] font-semibold bg-[#FAF7F0] border border-[#E4DCCB] shadow-2xs text-[#3E6248]"
-                    : "text-[#85877B] hover:text-[#202920] hover:bg-[#FAF7F0]/60"
+                    ? "font-semibold bg-[#FAF7F0] dark:bg-[#1F2E23] border border-[#E4DCCB] dark:border-[#233327] shadow-2xs text-[#3E6248] dark:text-[#4ADE80]"
+                    : "text-[#85877B] dark:text-[#7A8C78] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#FAF7F0]/60 dark:hover:bg-[#18231B]"
                 )}
               >
                 {tab}
@@ -469,11 +478,11 @@ export default function NotificationsPage() {
         {/* Spacious Notification Card Boxes (Gap & Padding) */}
         <div className="space-y-4">
           {previewNullState || filtered.length === 0 ? (
-            <div className="bg-white border border-[#E4DCCB] rounded-3xl overflow-hidden p-3 shadow-xs">
+            <div className="bg-white dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] rounded-3xl overflow-hidden p-3 shadow-xs">
               <ReactiveNullState
-                title={previewNullState ? "Zero Active Notifications (Clean Stream)" : "No active notifications in this stream"}
-                description={previewNullState ? "You are experiencing the Cambium Reactive 3D Null State. Move your cursor across the card to engage perspective physics and specular light." : "All scholarly peer commentary, citation alerts, and grant milestones have been reviewed or cleared."}
-                actionLabel={previewNullState ? "Restore Active Stream" : "Explore Frontier Opportunities"}
+                title={previewNullState ? "All notifications cleared" : "No active notifications in this category"}
+                description={previewNullState ? "You have zero unread notifications. New citations, grant deadlines, and peer review dispatches will arrive here in real time." : "All scholarly peer commentary, citation alerts, and grant milestones for this filter have been reviewed."}
+                actionLabel={previewNullState ? "Show Notification Stream" : "Browse Research Opportunities"}
                 onAction={() => {
                   if (previewNullState) {
                     setPreviewNullState(false);
@@ -499,29 +508,29 @@ export default function NotificationsPage() {
       {/* ─── Scholarly Message Detail Modal (40% - 60% of Screen) ─── */}
       {selectedNotif && (
         <div
-          className="fixed inset-0 z-50 bg-[#202920]/45 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-[#202920]/45 dark:bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
           onClick={() => setSelectedNotif(null)}
         >
           <div
-            className="w-full max-w-[560px] md:max-w-[640px] bg-[#FAF7F0] border border-[#E4DCCB] rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-all"
+            className="w-full max-w-[560px] md:max-w-[640px] bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-all"
             style={{ width: "min(92vw, 620px)" }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#E4DCCB] bg-white">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B]">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#3E6248]" />
-                <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#3E6248]">
+                <span className="w-2 h-2 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
+                <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80]">
                   {selectedNotif.category}
                 </span>
-                <span className="text-[#85877B] text-xs">·</span>
-                <span className="font-mono text-xs text-[#85877B]">
+                <span className="text-[#85877B] dark:text-[#7A8C78] text-xs">·</span>
+                <span className="font-mono text-xs text-[#85877B] dark:text-[#7A8C78]">
                   {selectedNotif.dateStr}
                 </span>
               </div>
               <button
                 onClick={() => setSelectedNotif(null)}
-                className="w-8 h-8 rounded-full border border-[#E4DCCB] flex items-center justify-center text-[#62685E] hover:text-[#202920] hover:bg-[#F2EBDD] transition-colors cursor-pointer text-sm font-semibold"
+                className="w-8 h-8 rounded-full border border-[#E4DCCB] dark:border-[#233327] flex items-center justify-center text-[#62685E] dark:text-[#A4B3A2] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#1F2E23] transition-colors cursor-pointer text-sm font-semibold"
                 aria-label="Close dialog"
               >
                 ✕
@@ -531,21 +540,21 @@ export default function NotificationsPage() {
             {/* Modal Body */}
             <div className="p-6 sm:p-7 space-y-5 overflow-y-auto max-h-[70vh]">
               {/* Sender Block */}
-              <div className="flex items-center gap-3.5 pb-4 border-b border-[#E4DCCB]">
+              <div className="flex items-center gap-3.5 pb-4 border-b border-[#E4DCCB] dark:border-[#233327]">
                 {selectedNotif.type === "collaboration" ? (
                   <div className={cn("w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-sm font-bold font-sans", selectedNotif.avatarBg)}>
                     {selectedNotif.avatarInitials}
                   </div>
                 ) : (
-                  <div className="w-11 h-11 rounded-xl bg-[#DCE6D7] flex items-center justify-center shrink-0 text-[#3E6248]">
+                  <div className="w-11 h-11 rounded-xl bg-[#DCE6D7] dark:bg-[#1F2E23] flex items-center justify-center shrink-0 text-[#3E6248] dark:text-[#4ADE80]">
                     {selectedNotif.icon}
                   </div>
                 )}
                 <div>
-                  <h3 className="text-base font-semibold text-[#202920] font-sans">
+                  <h3 className="text-base font-semibold text-[#202920] dark:text-[#EDEAE2] font-sans">
                     {selectedNotif.sender || "System Dispatch"}
                   </h3>
-                  <p className="text-xs text-[#85877B] font-mono">
+                  <p className="text-xs text-[#85877B] dark:text-[#7A8C78] font-mono">
                     {selectedNotif.senderRole || "Cambium Research Operating System"}
                   </p>
                 </div>
@@ -553,34 +562,34 @@ export default function NotificationsPage() {
 
               {/* Message Title */}
               <div>
-                <h2 className="font-serif text-2xl font-normal text-[#202920] leading-snug">
+                <h2 className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] leading-snug">
                   {selectedNotif.title}
                 </h2>
               </div>
 
               {/* Message Body Content */}
-              <div className="bg-white rounded-xl p-5 border border-[#E4DCCB] shadow-2xs">
-                <p className="text-sm leading-relaxed text-[#202920] font-sans whitespace-pre-line">
+              <div className="bg-white dark:bg-[#18231B] rounded-xl p-5 border border-[#E4DCCB] dark:border-[#233327] shadow-2xs">
+                <p className="text-sm leading-relaxed text-[#202920] dark:text-[#EDEAE2] font-sans whitespace-pre-line">
                   {selectedNotif.body}
                 </p>
               </div>
 
               {/* Action Buttons */}
               <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
-                <span className="text-[11px] font-mono text-[#85877B]">
+                <span className="text-[11px] font-mono text-[#85877B] dark:text-[#7A8C78]">
                   Verified Record · Cambium SSOT
                 </span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setSelectedNotif(null)}
-                    className="px-4 py-2 text-xs font-medium text-[#62685E] hover:text-[#202920] bg-white border border-[#E4DCCB] hover:bg-[#F2EBDD] rounded-lg transition-colors cursor-pointer"
+                    className="px-4 py-2 text-xs font-medium text-[#62685E] dark:text-[#A4B3A2] hover:text-[#202920] dark:hover:text-[#EDEAE2] bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] hover:bg-[#F2EBDD] dark:hover:bg-[#1F2E23] rounded-lg transition-colors cursor-pointer"
                   >
                     Dismiss
                   </button>
                   {selectedNotif.actionHref && (
                     <a
                       href={selectedNotif.actionHref}
-                      className="px-4 py-2 text-xs font-semibold text-white bg-[#3E6248] hover:bg-[#202920] rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer no-underline"
+                      className="px-4 py-2 text-xs font-semibold text-white bg-[#3E6248] dark:bg-[#2D583B] hover:bg-[#202920] dark:hover:bg-[#386D49] rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer no-underline"
                     >
                       <span>{selectedNotif.actionLabel || "Open Record"}</span>
                       <span>→</span>

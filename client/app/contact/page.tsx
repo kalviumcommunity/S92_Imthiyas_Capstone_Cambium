@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { PublicHeader } from "@/components/PublicHeader";
@@ -35,8 +35,8 @@ function ContactContent() {
   const preselectedType = searchParams.get("type");
   const user = useAuthStore((s) => s.user);
 
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
+  const [fullNameInput, setFullNameInput] = useState<string | null>(null);
+  const [emailInput, setEmailInput] = useState<string | null>(null);
   const [inquiryType, setInquiryType] = useState(
     preselectedType === "careers"
       ? "Careers or contribution"
@@ -46,15 +46,10 @@ function ContactContent() {
   );
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
-  const [organization, setOrganization] = useState("");
-
-  useEffect(() => {
-    if (user) {
-      if (user.fullName && !fullName) setFullName(user.fullName);
-      if (user.email && !email) setEmail(user.email);
-      if (user.institution && !organization) setOrganization(user.institution);
-    }
-  }, [user]);
+  const [organizationInput, setOrganizationInput] = useState<string | null>(null);
+  const fullName = fullNameInput ?? user?.fullName ?? "";
+  const email = emailInput ?? user?.email ?? "";
+  const organization = organizationInput ?? user?.institution ?? "";
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -93,11 +88,11 @@ function ContactContent() {
   };
 
   const handleReset = () => {
-    setFullName("");
-    setEmail("");
+    setFullNameInput(null);
+    setEmailInput(null);
     setSubject("");
     setMessage("");
-    setOrganization("");
+    setOrganizationInput(null);
     setSubmittedMessageId(null);
     setErrors({});
   };
@@ -341,7 +336,7 @@ function ContactContent() {
                         type="text"
                         value={fullName}
                         onChange={(e) => {
-                          setFullName(e.target.value);
+                          setFullNameInput(e.target.value);
                           if (errors.fullName) setErrors({ ...errors, fullName: "" });
                         }}
                         placeholder="e.g. Dr. Miriam Osei"
@@ -363,7 +358,7 @@ function ContactContent() {
                         type="email"
                         value={email}
                         onChange={(e) => {
-                          setEmail(e.target.value);
+                          setEmailInput(e.target.value);
                           if (errors.email) setErrors({ ...errors, email: "" });
                         }}
                         placeholder="e.g. m.osei@princeton.edu"
@@ -402,7 +397,7 @@ function ContactContent() {
                       <input
                         type="text"
                         value={organization}
-                        onChange={(e) => setOrganization(e.target.value)}
+                        onChange={(e) => setOrganizationInput(e.target.value)}
                         placeholder="e.g. Stanford Bio-AI Lab"
                         className="w-full px-4 py-2.5 rounded-xl border border-[#E4DCCB] text-sm font-sans bg-[#FAF7F0]/60 text-[#202920] placeholder-[#85877B] focus:outline-none focus:ring-1 focus:ring-[#3E6248]"
                       />

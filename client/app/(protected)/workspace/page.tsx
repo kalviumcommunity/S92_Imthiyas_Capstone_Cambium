@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CitationModal, CitationItem } from "@/components/ui/citation-modal";
 import { AiProgressModal } from "@/components/ui/ai-progress-modal";
 import { ConflictModal } from "@/components/ui/conflict-modal";
@@ -11,32 +12,34 @@ import { CollaborativeProjectsDesk } from "@/components/workspace/CollaborativeP
 import { AiAutocompleteCopilotStudio } from "@/components/ai/AiAutocompleteCopilotStudio";
 import { useToast } from "@/components/ui/toast";
 import CambiumLogo from "@/components/CambiumLogo";
-import { uploadArtifact, getLocalArtifacts, UploadedArtifact } from "@/lib/api";
+import { uploadArtifact, type UploadedArtifact } from "@/lib/api";
+import { useUnsavedChanges } from "@/lib/hooks/useUnsavedChanges";
+import { useBrowserStorageValue } from "@/lib/hooks/use-browser-storage";
 
 // ─── Design Tokens (SSOT from 01_Design Systems) ───────────────────────────
 
 const W = {
-  bg: "#FAF7F0",           // Parchment canvas
-  surface: "#FFFFFF",      // Surface raised
-  surface2: "#F2EBDD",     // Mineral sand foundation
-  border: "#E4DCCB",       // Limestone hairline
-  borderSubtle: "#E4DCCB",
-  text1: "#202920",        // Forest ink primary
-  text2: "#62685E",        // Bark grey secondary
-  text3: "#85877B",        // Quiet stone metadata
-  green: "#3E6248",        // Canopy green
-  greenDim: "#66866A",     // Living algae
-  greenBg: "#DCE6D7",      // Sage mist highlight
-  greenBorder: "#E4DCCB",
-  blue: "#365F8D",
-  blueBg: "#DCE6D7",
-  blueBorder: "#E4DCCB",
-  amber: "#8A5A12",
-  amberBg: "#F2EBDD",
-  purple: "#3E6248",
-  purpleBg: "#DCE6D7",
-  redBg: "#FBF2F0",
-  red: "#B33D35",
+  bg: "var(--color-parchment, #FAF7F0)",           // Parchment canvas / Abyssal pine in dark
+  surface: "var(--card, #FFFFFF)",                 // Surface raised / Conifer moss in dark
+  surface2: "var(--color-mineral-sand, #F2EBDD)",   // Mineral sand foundation / Deep peat in dark
+  border: "var(--border, #E4DCCB)",                // Limestone hairline / Pine bark in dark
+  borderSubtle: "var(--color-limestone, #E4DCCB)",
+  text1: "var(--color-forest-ink, #202920)",       // Forest ink primary / Luminescent bone in dark
+  text2: "var(--color-bark-grey, #62685E)",        // Bark grey secondary / Silvery sage in dark
+  text3: "var(--color-quiet-stone, #85877B)",      // Quiet stone metadata / Shadow lichen in dark
+  green: "var(--color-canopy, #3E6248)",           // Canopy green / Radiant emerald in dark
+  greenDim: "var(--color-living-algae, #66866A)",  // Living algae
+  greenBg: "var(--color-sage-mist, #DCE6D7)",      // Sage mist highlight
+  greenBorder: "var(--border, #E4DCCB)",
+  blue: "var(--color-status-info, #365F8D)",
+  blueBg: "var(--color-sage-mist, #DCE6D7)",
+  blueBorder: "var(--border, #E4DCCB)",
+  amber: "var(--color-status-warning, #8A5A12)",
+  amberBg: "var(--color-mineral-sand, #F2EBDD)",
+  purple: "var(--color-canopy, #3E6248)",
+  purpleBg: "var(--color-sage-mist, #DCE6D7)",
+  redBg: "var(--color-mineral-sand, #FBF2F0)",
+  red: "var(--color-status-error, #B33D35)",
 } as const;
 
 // ─── Icons (Inline SVG) ─────────────────────────────────────────────────────
@@ -114,6 +117,39 @@ const icons = {
   lock: "M12 15v2m-6 4h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2zm10-10V7a4 4 0 0 0-8 0v4h8z",
   help: "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z",
 };
+
+function parseUploadedArtifacts(value: string | null): UploadedArtifact[] {
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (artifact): artifact is UploadedArtifact =>
+        typeof artifact === "object" &&
+        artifact !== null &&
+        "id" in artifact &&
+        typeof artifact.id === "string" &&
+        "originalName" in artifact &&
+        typeof artifact.originalName === "string" &&
+        "mimeType" in artifact &&
+        typeof artifact.mimeType === "string" &&
+        "sizeBytes" in artifact &&
+        typeof artifact.sizeBytes === "number" &&
+        "sizeFormatted" in artifact &&
+        typeof artifact.sizeFormatted === "string" &&
+        "sha256Hash" in artifact &&
+        typeof artifact.sha256Hash === "string" &&
+        "uploadedAt" in artifact &&
+        typeof artifact.uploadedAt === "string" &&
+        "status" in artifact &&
+        (artifact.status === "verified" ||
+          artifact.status === "processing" ||
+          artifact.status === "indexed")
+    );
+  } catch {
+    return [];
+  }
+}
 
 // ─── Utility Components ─────────────────────────────────────────────────────
 
@@ -196,19 +232,14 @@ function Sidebar({
   setActiveNav: (id: string) => void;
 }) {
   const [questionsOpen, setQuestionsOpen] = useState(true);
-  const [uploadedDocs, setUploadedDocs] = useState<UploadedArtifact[]>([]);
+  const storedArtifacts = useBrowserStorageValue("local", "cambium_workspace_artifacts");
+  const uploadedDocs = useMemo(
+    () => parseUploadedArtifacts(storedArtifacts),
+    [storedArtifacts]
+  );
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-
-  useEffect(() => {
-    setUploadedDocs(getLocalArtifacts());
-    const handleArtifactUploaded = () => {
-      setUploadedDocs(getLocalArtifacts());
-    };
-    window.addEventListener("cambium-artifact-uploaded", handleArtifactUploaded);
-    return () => window.removeEventListener("cambium-artifact-uploaded", handleArtifactUploaded);
-  }, []);
 
   const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -220,7 +251,6 @@ function Sidebar({
     });
     try {
       const art = await uploadArtifact(file);
-      setUploadedDocs((prev) => [art, ...prev.filter((d) => d.id !== art.id)]);
       toast({
         title: "Ingestion Complete",
         description: `${art.originalName} verified with SHA-256 air-gapped hash.`,
@@ -479,12 +509,18 @@ function Sidebar({
             {
               label: isUploading ? "Ingesting..." : "Import PDF",
               icon: icons.upload,
-              onClick: () => fileInputRef.current?.click(),
+              action: "import" as const,
             },
           ].map((action) => (
             <Tooltip key={action.label} text={action.label}>
               <button
-                onClick={action.onClick}
+                onClick={() => {
+                  if ("action" in action) {
+                    fileInputRef.current?.click();
+                  } else {
+                    action.onClick();
+                  }
+                }}
                 disabled={isUploading && action.label.includes("Ingest")}
                 style={{
                   width: "100%",
@@ -532,7 +568,7 @@ function Sidebar({
               },
               tip: "New Page",
             },
-            { ic: icons.upload, onClick: () => fileInputRef.current?.click(), tip: "Import PDF / Material" },
+            { ic: icons.upload, action: "import" as const, tip: "Import PDF / Material" },
           ].map((item, i) => (
             <Tooltip key={i} text={item.tip}>
               {item.href ? (
@@ -567,7 +603,13 @@ function Sidebar({
               ) : (
                 <button
                   key={i}
-                  onClick={item.onClick}
+                  onClick={() => {
+                    if ("action" in item) {
+                      fileInputRef.current?.click();
+                    } else {
+                      item.onClick?.();
+                    }
+                  }}
                   style={{
                     width: 36,
                     height: 36,
@@ -887,6 +929,8 @@ function Toolbar({
   onOpenShortcuts: () => void;
   onLockSession: () => void;
 }) {
+  const router = useRouter();
+
   return (
     <div
       style={{
@@ -1052,7 +1096,7 @@ function Toolbar({
           icon: icons.upload,
           label: "Upload & Ingest Materials",
           onClick: () => {
-            window.location.href = "/workspace/upload";
+            router.push("/workspace/upload");
           },
         },
         { icon: icons.share, label: "Share", onClick: () => {} },
@@ -2673,6 +2717,12 @@ export default function WorkspacePage() {
   const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; item: any } | null>(null);
 
   const { toast } = useToast();
+
+  // Defensively warn on tab close / reload if workspace edits are currently syncing
+  useUnsavedChanges(
+    syncStatus === "saving",
+    "Your research workspace edits are still synchronizing. Leaving now may discard recent edits."
+  );
 
   // Periodic simulated auto-save & sync
   useEffect(() => {

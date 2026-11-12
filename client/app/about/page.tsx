@@ -387,7 +387,7 @@ export default function AboutPage() {
                 In living systems, cambium is the growing tissue that enables a plant to develop. We chose the name as a metaphor for research: knowledge grows through connections, ideas develop through exchange, and meaningful progress emerges over time.
               </p>
               <p className="font-serif text-[17px] leading-relaxed text-[#202920]">
-                Cambium is being built around that principle—not simply as a directory of opportunities, but as a developing intelligence layer designed to help research possibilities connect and grow.
+                Cambium is built on that principle: connecting opportunities, publications, and researchers so scientific inquiry can compound over time.
               </p>
             </div>
           </div>
@@ -550,7 +550,6 @@ export default function AboutPage() {
               {/* Left Column: Massive Round Portrait & Identity Card */}
               <div className="lg:col-span-4 flex flex-col items-center text-center">
                 <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-full p-2 bg-[#FAF7F0] border-2 border-[#E4DCCB] shadow-xl ring-4 ring-[#3E6248]/15 shrink-0 transition-transform duration-300 hover:scale-[1.02]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/Profile.png"
                     alt="Shaik Mohamed Imthiyas - Builder of Cambium"

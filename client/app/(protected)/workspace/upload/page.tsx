@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -27,6 +27,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { uploadArtifactsBatch, getLocalArtifacts, UploadedArtifact } from "@/lib/api";
+import { useBrowserStorageValue, writeBrowserStorageValue } from "@/lib/hooks/use-browser-storage";
+import { useHydrated } from "@/lib/hooks/use-hydrated";
+import { useCurrentTime } from "@/lib/hooks/use-current-time";
 
 const SEED_ARTIFACTS: UploadedArtifact[] = [
   {
@@ -36,7 +39,7 @@ const SEED_ARTIFACTS: UploadedArtifact[] = [
     sizeBytes: 14889728,
     sizeFormatted: "14.2 MB",
     sha256Hash: "8a4d7c2b6f1e9a3d5c7b8a2e4f6d1c3b5a7e9f2d4c6b8a1e3f5d7c9b2a4e6f8a",
-    uploadedAt: new Date(Date.now() - 3600000 * 2.5).toISOString(),
+    uploadedAt: "2026-11-11T09:18:00.000Z",
     status: "verified",
   },
   {
@@ -72,6 +75,7 @@ const SEED_ARTIFACTS: UploadedArtifact[] = [
 ];
 
 export default function UploadPage() {
+  const currentTime = useCurrentTime();
   const router = useRouter();
   const [dragging, setDragging] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
@@ -81,26 +85,44 @@ export default function UploadPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Ingestion History & Ledger State
-  const [historyArtifacts, setHistoryArtifacts] = useState<UploadedArtifact[]>([]);
+  const storedHistory = useBrowserStorageValue("local", "cambium_workspace_artifacts");
+  const [historyFallback, setHistoryFallback] = useState<UploadedArtifact[] | null>(null);
+  const hydrated = useHydrated();
+  const historyArtifacts = useMemo(() => {
+    if (historyFallback) return historyFallback;
+    const stored = getLocalArtifacts();
+    return stored.length > 0 || storedHistory === "[]" ? stored : SEED_ARTIFACTS;
+  }, [historyFallback, storedHistory]);
   const [historySearch, setHistorySearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "pdf" | "data" | "bib">("all");
 
-  // Load and synchronize local historical artifacts
-  useEffect(() => {
+  const persistHistory = useCallback((artifacts: UploadedArtifact[]) => {
     try {
-      const stored = getLocalArtifacts();
-      if (stored && stored.length > 0) {
-        setHistoryArtifacts(stored);
-      } else {
-        setHistoryArtifacts(SEED_ARTIFACTS);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("cambium_workspace_artifacts", JSON.stringify(SEED_ARTIFACTS));
-        }
-      }
-    } catch {
-      setHistoryArtifacts(SEED_ARTIFACTS);
+      writeBrowserStorageValue(
+        "local",
+        "cambium_workspace_artifacts",
+        JSON.stringify(artifacts)
+      );
+      setHistoryFallback(null);
+    } catch (error) {
+      console.error("[WorkspaceUpload] Unable to persist artifact history:", error);
+      setHistoryFallback(artifacts);
     }
   }, []);
+
+  useEffect(() => {
+    if (hydrated && storedHistory === null) {
+      try {
+        writeBrowserStorageValue(
+          "local",
+          "cambium_workspace_artifacts",
+          JSON.stringify(SEED_ARTIFACTS)
+        );
+      } catch (error) {
+        console.error("[WorkspaceUpload] Unable to initialize artifact history:", error);
+      }
+    }
+  }, [hydrated, storedHistory]);
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -136,15 +158,11 @@ export default function UploadPage() {
       setIngestedArtifacts(results);
 
       // Prepend to historical ledger
-      setHistoryArtifacts((prev) => {
-        const updated = [...results, ...prev.filter((p) => !results.some((r) => r.id === p.id))];
-        try {
-          localStorage.setItem("cambium_workspace_artifacts", JSON.stringify(updated));
-        } catch {
-          // ignore quota
-        }
-        return updated;
-      });
+      const updated = [
+        ...results,
+        ...historyArtifacts.filter((item) => !results.some((result) => result.id === item.id)),
+      ];
+      persistHistory(updated);
     } catch {
       clearInterval(interval);
       setUploadProgress(100);
@@ -161,40 +179,19 @@ export default function UploadPage() {
       }));
       setIngestedArtifacts(fallback);
 
-      setHistoryArtifacts((prev) => {
-        const updated = [...fallback, ...prev];
-        try {
-          localStorage.setItem("cambium_workspace_artifacts", JSON.stringify(updated));
-        } catch {
-          // ignore
-        }
-        return updated;
-      });
+      persistHistory([...fallback, ...historyArtifacts]);
     } finally {
       setUploading(false);
     }
   };
 
   const removeHistoricalArtifact = (id: string) => {
-    setHistoryArtifacts((prev) => {
-      const updated = prev.filter((a) => a.id !== id);
-      try {
-        localStorage.setItem("cambium_workspace_artifacts", JSON.stringify(updated));
-      } catch {
-        // ignore
-      }
-      return updated;
-    });
+    persistHistory(historyArtifacts.filter((artifact) => artifact.id !== id));
   };
 
   const clearHistoricalArtifacts = () => {
     if (confirm("Clear local upload history? Original workspace pages remain untouched.")) {
-      setHistoryArtifacts([]);
-      try {
-        localStorage.removeItem("cambium_workspace_artifacts");
-      } catch {
-        // ignore
-      }
+      persistHistory([]);
     }
   };
 
@@ -217,7 +214,8 @@ export default function UploadPage() {
 
   const formatTimeAgo = (isoString?: string) => {
     if (!isoString) return "Recently";
-    const diffMs = Date.now() - new Date(isoString).getTime();
+    if (currentTime === null) return "Recently";
+    const diffMs = currentTime - new Date(isoString).getTime();
     const mins = Math.floor(diffMs / 60000);
     if (mins < 1) return "Just now";
     if (mins < 60) return `${mins}m ago`;
@@ -304,7 +302,7 @@ export default function UploadPage() {
             className="hidden"
             onChange={handleFileInput}
           />
-          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-5 rounded-full bg-[#FAF7F0] dark:bg-[#1A261D] border-2 border-[#E4DCCB] dark:border-[#28382C] flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80] shadow-sm transition-transform duration-200 hover:scale-105">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-5 rounded-full bg-[#DCE6D7]/35 dark:bg-[#1A261D] border border-[#3E6248]/25 dark:border-[#28382C] flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80] shadow-xs transition-transform duration-200 hover:scale-105 shrink-0 aspect-square">
             <UploadCloud className="w-8 h-8 sm:w-9 sm:h-9" />
           </div>
           <p className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] mb-2">
@@ -480,14 +478,14 @@ export default function UploadPage() {
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-[#3E6248] dark:text-[#4ADE80]" />
                 <h2 className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] m-0">
-                  Artifact Ingestion Ledger
+                  Uploaded Documents & Artifacts
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-[#DCE6D7] dark:bg-[#1E2B21] text-[#3E6248] dark:text-[#4ADE80] font-semibold border border-[#66866A]/20">
                   {historyArtifacts.length} Indexed
                 </span>
               </div>
               <p className="text-xs text-[#62685E] dark:text-[#8FA89B] mt-1 m-0">
-                Persistent cryptographic audit trail of all research materials ingested into your workspace.
+                Record of research materials uploaded to your active workspace.
               </p>
             </div>
 

@@ -1,7 +1,19 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import { ArrowRight } from "lucide-react";
+import { useHydrated } from "@/lib/hooks/use-hydrated";
+import { useBrowserStorageValue, writeBrowserStorageValue } from "@/lib/hooks/use-browser-storage";
+
+const INTRO_SEEN_KEY = "cambium_intro_seen";
+
+function markIntroSeen() {
+  try {
+    writeBrowserStorageValue("session", INTRO_SEEN_KEY, "true");
+  } catch {
+    // ignore
+  }
+}
 
 interface CambiumIntroPreloaderProps {
   onComplete?: () => void;
@@ -39,51 +51,28 @@ export function CambiumIntroPreloader({
   onComplete,
   forceShow = false,
 }: CambiumIntroPreloaderProps) {
-  const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
   const [progress, setProgress] = useState(0);
   const [step, setStep] = useState(0); // 0: Genesis spiral, 1: Connecting Nodes, 2: Typography Assembly, 3: Resolved
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const hydrated = useHydrated();
+  const seen = useBrowserStorageValue("session", INTRO_SEEN_KEY) === "true";
+  const visible = !dismissed && (forceShow || (hydrated && (!seen || fadingOut)));
 
   // Total duration: ~4.5 seconds on screen before silky fade-out
   const TOTAL_DURATION_MS = 4500;
   const FADE_OUT_DURATION_MS = 1000;
 
-  // On mount check session storage
-  useEffect(() => {
-    try {
-      const seen = sessionStorage.getItem("cambium_intro_seen");
-      if (forceShow || seen !== "true") {
-        setVisible(true);
-      }
-    } catch {
-      setVisible(true);
-    }
-  }, [forceShow]);
-
-  // Reset state when forceShow triggers
-  useEffect(() => {
-    if (forceShow) {
-      setVisible(true);
-      setFadingOut(false);
-      setProgress(0);
-      setStep(0);
-    }
-  }, [forceShow]);
-
   // Handle Skip (button or Escape key)
-  const handleSkip = () => {
-    try {
-      sessionStorage.setItem("cambium_intro_seen", "true");
-    } catch {
-      // ignore
-    }
+  const handleSkip = useCallback(() => {
+    markIntroSeen();
     setFadingOut(true);
     setTimeout(() => {
-      setVisible(false);
+      setDismissed(true);
       if (onComplete) onComplete();
     }, 200);
-  };
+  }, [onComplete]);
 
   // Keyboard shortcut listener for Esc key
   useEffect(() => {
@@ -94,7 +83,7 @@ export function CambiumIntroPreloader({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [handleSkip]);
 
   // Timer & progress stepper
   useEffect(() => {
@@ -118,14 +107,10 @@ export function CambiumIntroPreloader({
 
       if (elapsed >= TOTAL_DURATION_MS) {
         clearInterval(interval);
-        try {
-          sessionStorage.setItem("cambium_intro_seen", "true");
-        } catch {
-          // ignore
-        }
+        markIntroSeen();
         setFadingOut(true);
         setTimeout(() => {
-          setVisible(false);
+          setDismissed(true);
           if (onComplete) onComplete();
         }, FADE_OUT_DURATION_MS);
       }
@@ -575,7 +560,7 @@ export function CambiumIntroPreloader({
       <div className="relative z-10 flex items-center justify-between w-full max-w-6xl mx-auto">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 rounded-full bg-[#1B231D] border border-[#3E6248]/50 flex items-center justify-center p-0.5 shadow-xs overflow-hidden">
-            <img src="/public_logo/cambium-logo-dark.svg" alt="CAMBIUM Mark" className="w-full h-full object-contain scale-[1.3] transition-transform" />
+            <img src="/public_logo/cambium-logo-dark.svg" alt="CAMBIUM Mark" className="w-full h-full object-contain transition-transform" />
           </div>
           <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#85877B]">
             Cambium Runtime · Kernel 2.4
@@ -599,7 +584,7 @@ export function CambiumIntroPreloader({
             <img
               src="/public_logo/cambium-logo-dark.svg"
               alt="CAMBIUM Logo"
-              className="w-full h-full object-contain scale-[1.3] transition-transform"
+              className="w-full h-full object-contain transition-transform"
             />
           </div>
         </div>
@@ -660,10 +645,10 @@ export function CambiumIntroPreloader({
             The Research Operating System.
           </p>
           <span className="font-mono text-[11px] text-[#88B790] tracking-[0.18em] uppercase font-semibold">
-            {step === 0 && "SYNCHRONIZING SCHOLARLY TOPOLOGY"}
-            {step === 1 && "CONNECTING ACADEMIC MESH"}
-            {step === 2 && "INITIALIZING RESEARCH WORKSPACE"}
-            {step === 3 && "TOPOLOGY CONVERGED · SYSTEM READY"}
+            {step === 0 && "INDEXING RESEARCH TOPICS"}
+            {step === 1 && "CONNECTING CITATION GRAPH"}
+            {step === 2 && "PREPARING WORKSPACE"}
+            {step === 3 && "ENVIRONMENT READY"}
           </span>
         </div>
       </div>
@@ -672,7 +657,7 @@ export function CambiumIntroPreloader({
       <div className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between gap-4 border-t border-[#3E6248]/30 pt-5">
         <div className="flex items-center gap-2 text-[11px] font-mono text-[#85877B]">
           <span className="w-1.5 h-1.5 rounded-full bg-[#66866A] inline-block animate-pulse" />
-          <span>FIBONACCI MESH · VERIFIED SECURE</span>
+          <span>RESEARCH PLATFORM · READY</span>
         </div>
 
         {/* Clean Hairline Progress Meter */}

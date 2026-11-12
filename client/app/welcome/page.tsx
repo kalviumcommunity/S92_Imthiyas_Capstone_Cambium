@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, ReactElement } from "react";
+import React, { useState, useMemo, ReactElement } from "react";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -424,7 +425,7 @@ function SetupWelcome({
             starting point.
           </h1>
           <p className="text-sm sm:text-base text-ink-secondary mb-8 leading-relaxed max-w-md">
-            Connect your academic identity, define what you research, and bring your publications directly into the Cambium ecosystem.
+            Connect your academic identity, define what you research, and bring your publications directly into your workspace.
           </p>
 
           {/* Step Cards */}
@@ -1467,8 +1468,10 @@ export default function WelcomeOnboardingPage() {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isProvisioning, setIsProvisioning] = useState(false);
   const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const updateUser = useAuthStore((state) => state.updateUser);
 
-  const [setupData, setSetupData] = useState<SetupData>({
+  const [setupDataState, setSetupData] = useState<SetupData>({
     orcidConnected: false,
     orcidName: "",
     orcidId: "",
@@ -1476,6 +1479,54 @@ export default function WelcomeOnboardingPage() {
     topics: [],
     publications: [],
   });
+  const setupData = useMemo(
+    () => ({
+      ...setupDataState,
+      orcidName: setupDataState.orcidName || user?.fullName || user?.name || "",
+      interests: setupDataState.interests.length > 0
+        ? setupDataState.interests
+        : user?.interests || [],
+      topics: setupDataState.topics.length > 0
+        ? setupDataState.topics
+        : user?.topics || [],
+    }),
+    [setupDataState, user]
+  );
+
+  const handleFinishOnboarding = async () => {
+    updateUser({
+      interests: setupData.interests,
+      topics: setupData.topics,
+      onboardingCompleted: true,
+    });
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cambium_onboarding_completed", "true");
+      localStorage.setItem("cambium_setup_data", JSON.stringify(setupData));
+    }
+
+    if (user?.id) {
+      try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("cambium_token") : null;
+        const apiBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1").replace(/\/api\/v1\/?$/, "");
+        await fetch(`${apiBase}/api/users/${user.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            researchInterests: setupData.interests,
+            institution: user.institution || (setupData.orcidConnected ? "Verified Institution" : undefined),
+          }),
+        }).catch(() => null);
+      } catch {
+        // graceful offline fallback
+      }
+    }
+
+    setIsProvisioning(true);
+  };
 
   const steps: Screen[] = [
     "welcome",
@@ -1584,7 +1635,7 @@ export default function WelcomeOnboardingPage() {
             <SetupComplete
               setupData={setupData}
               onEdit={() => goTo("review")}
-              onFinish={() => setIsProvisioning(true)}
+              onFinish={handleFinishOnboarding}
             />
           )}
         </motion.div>
@@ -1594,7 +1645,7 @@ export default function WelcomeOnboardingPage() {
         isOpen={isProvisioning}
         onComplete={() => router.push("/dashboard")}
         destinationUrl="/dashboard"
-        userName={setupData.orcidName || "Dr. Alex Rivera"}
+        userName={setupData.orcidName || user?.fullName || user?.name || "Scholar"}
       />
 
       {showExitConfirm && (

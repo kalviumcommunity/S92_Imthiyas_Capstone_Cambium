@@ -25,6 +25,7 @@ import {
 
 import { useEffect } from "react";
 import { fetchScholarlyWorks, ScholarlyWork } from "@/lib/scholarly-api";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -201,7 +202,7 @@ const TRENDING_ITEMS: FeedItem[] = [
     role: "Global Research Network",
     date: "4h ago",
     title: "NIH & Horizon Europe Announce Unified Open Data Standard for 2027",
-    body: "Starting January 2027, all funded researchers must provide machine-actionable metadata and raw tensor checkpoints in FAIR-compliant repositories with persistent cryptographic verification.",
+    body: "Starting January 2027, all funded researchers must provide machine-actionable metadata and open tensor checkpoints in FAIR-compliant repositories with persistent identifier (PID) minting.",
     likes: 183,
     comments: 65,
     reposts: 74,
@@ -385,6 +386,21 @@ function TopBar() {
   const router = useRouter();
   const [dashboardQuery, setDashboardQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const user = useAuthStore((state) => state.user);
+
+  const displayName = user?.fullName || user?.name || user?.username || "Scholar";
+  const userInitials = displayName
+    .split(" ")
+    .map((w: string) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase() || "SC";
+  const displaySubtitle = user?.role
+    ? `${user.role} · ${user.institution || "Cambium Research"}`
+    : user?.institution
+    ? user.institution
+    : "Verified Scholar";
 
   const handleSearchSubmit = (e?: React.FormEvent, customQuery?: string) => {
     if (e) e.preventDefault();
@@ -533,11 +549,11 @@ function TopBar() {
           className="flex items-center gap-2.5 p-1 rounded-xl hover:bg-[#F2EBDD] transition-colors no-underline"
         >
           <div className="w-8 h-8 rounded-full bg-[#DCE6D7] text-[#3E6248] font-bold text-xs flex items-center justify-center border border-[#66866A]/40">
-            IM
+            {userInitials}
           </div>
           <div className="hidden sm:block text-left">
-            <span className="block text-xs font-semibold text-[#202920] leading-none">Imthiyas</span>
-            <span className="block text-[10px] text-[#85877B] leading-none mt-1 font-sans">MIT CSAIL · Postdoc</span>
+            <span className="block text-xs font-semibold text-[#202920] leading-none">{displayName}</span>
+            <span className="block text-[10px] text-[#85877B] leading-none mt-1 font-sans truncate max-w-[140px]">{displaySubtitle}</span>
           </div>
         </Link>
       </div>
@@ -550,10 +566,13 @@ function TopBar() {
 function MainContent() {
   const [activeTab, setActiveTab] = useState("For You");
   const [attentionCards, setAttentionCards] = useState<AttentionCardData[]>(ATTENTION_CARDS);
+  const user = useAuthStore((state) => state.user);
+  const displayName = user?.fullName || user?.name || "Imthiyas";
+  const userInterest = user?.interests && user.interests.length > 0 ? user.interests[0] : "climate artificial intelligence";
 
   useEffect(() => {
     let isCancelled = false;
-    fetchScholarlyWorks({ query: "climate artificial intelligence", limit: 2 })
+    fetchScholarlyWorks({ query: userInterest, limit: 2 })
       .then((works) => {
         if (!isCancelled && works.length > 0) {
           const livePaperCard: AttentionCardData = {
@@ -577,7 +596,7 @@ function MainContent() {
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [userInterest]);
 
   const now = new Date();
   const hour = now.getHours();
@@ -599,7 +618,7 @@ function MainContent() {
         {/* Welcome Greeting (30% larger) */}
         <div className="mb-8">
           <h1 className="font-serif text-4xl sm:text-5xl md:text-[52px] font-normal text-[#202920] leading-[1.12] tracking-tight mb-2">
-            {greeting}, <span className="italic text-[#3E6248]">Imthiyas.</span>
+            {greeting}, <span className="italic text-[#3E6248]">{displayName}.</span>
           </h1>
           <p className="text-sm sm:text-base text-[#62685E] font-sans">
             Here is your live research synthesis and active scholarly horizon for {dateStr}.

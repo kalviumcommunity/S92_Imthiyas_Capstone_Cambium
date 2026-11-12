@@ -150,7 +150,7 @@ export function ArtifactDropzone({
             </div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#E4DCCB] text-[11px] font-mono text-[#85877B]">
               <ShieldCheck className="w-3.5 h-3.5 text-[#3E6248]" />
-              <span>Air-Gap Isolated Enclave Processing · SHA-256 Verified</span>
+              <span>Secure Ingestion Pipeline · SHA-256 Checksum Verified</span>
             </div>
 
             {/* Quick Demo Simulator Trigger */}

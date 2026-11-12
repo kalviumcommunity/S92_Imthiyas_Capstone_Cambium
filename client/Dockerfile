@@ -1,6 +1,6 @@
 # ==============================================================================
 # CAMBIUM RESEARCH PLATFORM — CLIENT DOCKERFILE
-# Multi-stage production container for Next.js 15 App Router frontend
+# Multi-stage production container for Next.js 16 App Router frontend
 # ==============================================================================
 
 # Stage 1: Build & Dependencies
@@ -17,7 +17,7 @@ RUN npm ci
 
 # Copy configuration, source code, design tokens, and static assets
 COPY tsconfig.json next.config.ts tailwind.config.ts postcss.config.* ./
-COPY next-env.d.ts* components.json* eslint.config.js* ./
+COPY next-env.d.ts* components.json* eslint.config.* ./
 COPY app ./app
 COPY components ./components
 COPY lib ./lib

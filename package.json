@@ -2,6 +2,10 @@
   "name": "cambium-monorepo",
   "version": "2.0.0",
   "description": "Cambium — AI-Powered Research Opportunity Discovery & Intelligence Platform",
+  "engines": {
+    "node": ">=20.0.0 <25.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "server:dev": "npm --prefix server run dev",
     "server:build": "npm --prefix server run build",
@@ -11,7 +15,7 @@
     "seed": "npm --prefix server run seed",
     "client:dev": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
-    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "dev": "concurrently --kill-others-on-fail \"npm run server:dev\" \"npm run client:dev\"",
     "build": "npm run server:build && npm run client:build",
     "test": "npm --prefix server run test",
     "test:jest": "jest --runInBand",
@@ -26,7 +30,8 @@
     "backup:db": "node scripts/backup-db.mjs",
     "restore:db": "node scripts/restore-db.mjs",
     "smoke": "node scripts/smoke-test.mjs",
-    "verify:ai": "node scripts/verify-ai-autocomplete.mjs"
+    "verify:ai": "node scripts/verify-ai-autocomplete.mjs",
+    "push:all": "git push all main --tags"
   },
   "keywords": [
     "cambium",

@@ -1,41 +1,31 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Compass, Sparkles } from "lucide-react";
 
 export function CambiumSpatialTransition() {
-  const pathname = usePathname();
-  const [transitioning, setTransitioning] = useState(false);
-  const [targetLabel, setTargetLabel] = useState("");
-
-  useEffect(() => {
-    // Determine friendly label from route
-    let label = "Living Knowledge Mesh";
-    if (pathname.includes("workspace")) label = "Scholar Workspace & Synthesis Engine";
-    else if (pathname.includes("opportunities")) label = "Frontier Opportunity Engine";
-    else if (pathname.includes("discover")) label = "Global Literature Discovery Cluster";
-    else if (pathname.includes("notifications")) label = "Scholarly Message & Peer Network";
-    else if (pathname.includes("settings")) label = "Research Identity & RBAC Matrix";
-    else if (pathname.includes("billing")) label = "Institutional Grants & Compute Meter";
-    else if (pathname.includes("portfolio")) label = "Verified Scholar Portfolio & Provenance";
-
-    setTargetLabel(label);
-    setTransitioning(true);
-
-    const timer = setTimeout(() => {
-      setTransitioning(false);
-    }, 1400);
-
-    return () => clearTimeout(timer);
-  }, [pathname]);
-
-  if (!transitioning) return null;
+  const pathname = usePathname() ?? "";
+  const targetLabel = pathname.includes("workspace")
+    ? "Scholar Workspace & Synthesis Engine"
+    : pathname.includes("opportunities")
+      ? "Frontier Opportunity Engine"
+      : pathname.includes("discover")
+        ? "Global Literature Discovery Cluster"
+        : pathname.includes("notifications")
+          ? "Scholarly Message & Peer Network"
+          : pathname.includes("settings")
+            ? "Research Identity & RBAC Matrix"
+            : pathname.includes("billing")
+              ? "Institutional Grants & Compute Meter"
+              : pathname.includes("portfolio")
+                ? "Verified Scholar Portfolio & Provenance"
+                : "Living Knowledge Mesh";
 
   return (
     <div
+      key={pathname}
       aria-hidden="true"
-      className="fixed inset-0 z-[9990] pointer-events-none flex items-center justify-center overflow-hidden animate-in fade-in duration-200"
+      className="cambium-spatial-transition fixed inset-0 z-[9990] pointer-events-none flex items-center justify-center overflow-hidden"
     >
       {/* Expanding Concentric Vascular Rings (Cambium Living Tissue) */}
       <div className="absolute inset-0 flex items-center justify-center">
@@ -54,7 +44,7 @@ export function CambiumSpatialTransition() {
       {/* Floating Spatial Orientation Indicator Pill */}
       <div className="relative z-10 px-5 py-2.5 rounded-full bg-[#1B231D]/90 border border-[#3E6248] text-[#FAF7F0] shadow-2xl flex items-center gap-3 backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
         <div className="w-5 h-5 rounded-full bg-[#FAF7F0] p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
-          <img src="/public_logo/cambium-logo-light.svg" alt="Cambium Mark" className="w-full h-full object-contain scale-[1.3] transition-transform" />
+          <img src="/public_logo/cambium-logo-light.svg" alt="Cambium Mark" className="w-full h-full object-contain transition-transform" />
         </div>
         <div className="flex flex-col">
           <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#A3C9A8] font-semibold">

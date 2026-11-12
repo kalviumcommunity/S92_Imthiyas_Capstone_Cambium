@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback, useEffect, type ChangeEvent } from "react";
+import React, { useState, useRef, useCallback, useMemo, type ChangeEvent } from "react";
 import Link from "next/link";
 import {
   User,
@@ -146,7 +146,25 @@ export default function ProfileCalibrationPage() {
   const [step, setStep] = useState(0);
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
-  const [profile, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
+  const [profileState, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
+  const profile = useMemo(
+    () => ({
+      ...profileState,
+      name:
+        profileState.name === INITIAL_PROFILE.name
+          ? user?.fullName || user?.name || profileState.name
+          : profileState.name,
+      institution:
+        profileState.institution === INITIAL_PROFILE.institution
+          ? user?.institution || profileState.institution
+          : profileState.institution,
+      interests:
+        profileState.interests === INITIAL_PROFILE.interests && user?.interests?.length
+          ? user.interests
+          : profileState.interests,
+    }),
+    [profileState, user]
+  );
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set([0, 1]));
   const [isSaving, setIsSaving] = useState(false);
   const [isPhotoDragging, setIsPhotoDragging] = useState(false);
@@ -185,17 +203,6 @@ export default function ProfileCalibrationPage() {
       setIsSyncingOrcid(false);
     }
   };
-
-  useEffect(() => {
-    if (user) {
-      setProfile((prev) => ({
-        ...prev,
-        name: user.name || prev.name,
-        institution: user.institution || prev.institution,
-        interests: user.interests && user.interests.length > 0 ? user.interests : prev.interests,
-      }));
-    }
-  }, [user]);
 
   const update = useCallback((patch: Partial<ProfileData>) => {
     setProfile((prev) => ({ ...prev, ...patch }));
@@ -263,7 +270,8 @@ export default function ProfileCalibrationPage() {
     try {
       if (user?.id) {
         const token = typeof window !== "undefined" ? localStorage.getItem("cambium_token") : null;
-        await fetch(`http://localhost:5000/api/users/${user.id}`, {
+        const apiBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1").replace(/\/api\/v1\/?$/, "");
+        await fetch(`${apiBase}/api/users/${user.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -280,9 +288,14 @@ export default function ProfileCalibrationPage() {
       if (user) {
         setUser({
           ...user,
+          fullName: profile.name,
           name: profile.name,
           institution: profile.institution,
           interests: profile.interests,
+          headline: profile.headline,
+          bio: profile.bio,
+          department: profile.department,
+          orcid: profile.links.ORCID,
         });
       }
 
@@ -318,63 +331,63 @@ export default function ProfileCalibrationPage() {
   );
 
   return (
-    <div className="flex-1 min-h-screen bg-[#FAF7F0] text-[#202920] font-sans flex flex-col overflow-y-auto">
+    <div className="flex-1 min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] text-[#202920] dark:text-[#EDEAE2] font-sans flex flex-col overflow-y-auto transition-colors">
       {/* Top Breadcrumb & Status Bar */}
-      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-[#E4DCCB] bg-[#FAF7F0]/90 backdrop-blur-md px-6 sm:px-10">
+      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0]/90 dark:bg-[#0E140F]/90 backdrop-blur-md px-6 sm:px-10">
         <div className="flex items-center gap-3">
           <CambiumLogo size="sm" href="/dashboard" />
-          <span className="text-[#85877B] text-xs">/</span>
-          <span className="font-mono text-xs uppercase tracking-wider font-semibold text-[#3E6248]">
+          <span className="text-[#85877B] dark:text-[#7E8B7B] text-xs">/</span>
+          <span className="font-mono text-xs uppercase tracking-wider font-semibold text-[#3E6248] dark:text-[#4ADE80]">
             Academic Identity Calibration
           </span>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-[#85877B]">
-            <span className="w-2 h-2 rounded-full bg-[#66866A] animate-pulse" />
+          <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-[#85877B] dark:text-[#7E8B7B]">
+            <span className="w-2 h-2 rounded-full bg-[#66866A] dark:bg-[#4ADE80] animate-pulse" />
             <span>{isSaving ? "Saving changes..." : lastSaved}</span>
           </div>
 
           <Button
             asChild
             variant="outline"
-            className="rounded-full border-[#E4DCCB] hover:bg-white text-xs font-mono uppercase tracking-wider text-[#202920] h-8"
+            className="rounded-full border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] hover:bg-[#FAF7F0] dark:hover:bg-[#1F2E23] text-xs font-mono uppercase tracking-wider text-[#202920] dark:text-[#EDEAE2] h-8"
           >
             <Link href="/portfolio">
               <span>View Live Portfolio</span>
-              <ArrowRight size={13} className="ml-1 text-[#3E6248]" />
+              <ArrowRight size={13} className="ml-1 text-[#3E6248] dark:text-[#4ADE80]" />
             </Link>
           </Button>
         </div>
       </header>
 
       {/* Main Workspace Grid: Stepper Navigation + Builder Form + Live Scholarly Preview */}
-      <div className="max-w-7xl mx-auto w-full p-6 sm:p-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         {/* Left Rail: Multi-Step Progress Tracker (3 Cols) */}
         <div className="lg:col-span-3 space-y-6">
-          <div className="p-5 rounded-2xl bg-white border border-[#E4DCCB] shadow-2xs">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] shadow-2xs">
             {/* Completeness Gauge */}
             <div className="flex items-center justify-between mb-2">
-              <span className="font-mono text-[10.5px] uppercase tracking-wider font-bold text-[#62685E]">
+              <span className="font-mono text-[10.5px] uppercase tracking-wider font-bold text-[#62685E] dark:text-[#A3B899]">
                 Identity Strength
               </span>
-              <span className="font-mono text-xs font-bold text-[#3E6248]">
+              <span className="font-mono text-xs font-bold text-[#3E6248] dark:text-[#4ADE80]">
                 {completeness}%
               </span>
             </div>
-            <div className="w-full h-1.5 rounded-full bg-[#E4DCCB] overflow-hidden mb-3">
+            <div className="w-full h-1.5 rounded-full bg-[#E4DCCB] dark:bg-[#233327] overflow-hidden mb-3">
               <div
-                className="h-full bg-gradient-to-r from-[#3E6248] to-[#66866A] rounded-full transition-all duration-300"
+                className="h-full bg-gradient-to-r from-[#3E6248] to-[#66866A] dark:from-[#4ADE80] dark:to-[#22C55E] rounded-full transition-all duration-300"
                 style={{ width: `${completeness}%` }}
               />
             </div>
-            <p className="text-[11.5px] text-[#62685E] m-0 leading-relaxed font-sans">
+            <p className="text-[11.5px] text-[#62685E] dark:text-[#A3B899] m-0 leading-relaxed font-sans">
               Verified identities receive 3.8× higher citation matching and grant visibility across Cambium.
             </p>
           </div>
 
           {/* Stepper Navigation List */}
-          <nav className="p-2 rounded-2xl bg-white border border-[#E4DCCB] space-y-1 shadow-2xs">
+          <nav className="p-2 rounded-2xl bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] space-y-1 shadow-2xs">
             {STEPS.map((s, idx) => {
               const isActive = step === idx;
               const isDone = completedSteps.has(idx);
@@ -385,18 +398,18 @@ export default function ProfileCalibrationPage() {
                   onClick={() => setStep(idx)}
                   className={`w-full flex items-center justify-between p-3 rounded-xl text-left transition-all cursor-pointer border-0 ${
                     isActive
-                      ? "bg-[#FAF7F0] border border-[#E4DCCB] shadow-2xs text-[#202920] font-semibold"
-                      : "bg-transparent text-[#62685E] hover:text-[#202920] hover:bg-[#FAF7F0]/60"
+                      ? "bg-[#FAF7F0] dark:bg-[#1F2E23] border border-[#E4DCCB] dark:border-[#365F42] shadow-2xs text-[#202920] dark:text-[#EDEAE2] font-semibold"
+                      : "bg-transparent text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#FAF7F0]/60 dark:hover:bg-[#1F2E23]/50"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span
                       className={`w-6 h-6 rounded-full flex items-center justify-center font-mono text-[10.5px] font-bold shrink-0 transition-colors ${
                         isActive
-                          ? "bg-[#3E6248] text-white"
+                          ? "bg-[#3E6248] dark:bg-[#4ADE80] text-white dark:text-[#0E140F]"
                           : isDone
-                          ? "bg-[#DCE6D7] text-[#3E6248]"
-                          : "bg-[#FAF7F0] text-[#85877B] border border-[#E4DCCB]"
+                          ? "bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80]"
+                          : "bg-[#FAF7F0] dark:bg-[#131C15] text-[#85877B] dark:text-[#7E8B7B] border border-[#E4DCCB] dark:border-[#233327]"
                       }`}
                     >
                       {isDone && !isActive ? <Check size={12} /> : s.num}
@@ -404,7 +417,7 @@ export default function ProfileCalibrationPage() {
                     <span className="text-xs truncate font-sans">{s.label}</span>
                   </div>
                   {isActive && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] shrink-0" />
                   )}
                 </button>
               );
@@ -412,33 +425,33 @@ export default function ProfileCalibrationPage() {
           </nav>
 
           {/* Quick Provenance Note */}
-          <div className="p-4 rounded-xl bg-[#F2EBDD]/60 border border-[#E4DCCB] text-[11px] text-[#62685E] leading-relaxed">
-            <span className="font-semibold text-[#202920] block mb-1">
-              Cryptographic Data Sovereignty
+          <div className="p-4 rounded-xl bg-[#F2EBDD]/60 dark:bg-[#18231B]/60 border border-[#E4DCCB] dark:border-[#233327] text-[11px] text-[#62685E] dark:text-[#A3B899] leading-relaxed">
+            <span className="font-semibold text-[#202920] dark:text-[#EDEAE2] block mb-1">
+              Data Privacy & Portability
             </span>
             All profile attributes are encrypted and portable. You can export this record anytime in BibTeX or CSL-JSON under Account Settings.
           </div>
         </div>
 
         {/* Center: Active Step Configuration Form (5 Cols) */}
-        <div className="lg:col-span-5 bg-white border border-[#E4DCCB] rounded-3xl p-6 sm:p-8 shadow-xs">
+        <div className="lg:col-span-5 bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-3xl p-6 sm:p-8 shadow-xs">
           {/* Step 01: Scholarly Identity */}
           {step === 0 && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div>
-                <span className="font-mono text-[10.5px] font-bold text-[#3E6248] uppercase tracking-wider block mb-1">
+                <span className="font-mono text-[10.5px] font-bold text-[#3E6248] dark:text-[#4ADE80] uppercase tracking-wider block mb-1">
                   Step 01 / 06 · Core Provenance
                 </span>
-                <h2 className="font-serif text-2xl font-normal text-[#202920] m-0">
+                <h2 className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] m-0">
                   Scholarly Identity
                 </h2>
-                <p className="text-xs text-[#62685E] mt-1 leading-relaxed">
+                <p className="text-xs text-[#62685E] dark:text-[#A3B899] mt-1 leading-relaxed">
                   Establish your authoritative name, professional headline, and scholar photo across peer indices.
                 </p>
               </div>
 
               {/* Photo Upload with /Profile.png default & Drag and Drop Halo */}
-              <div className="p-4 rounded-2xl bg-[#FAF7F0] border border-[#E4DCCB] flex items-center gap-4">
+              <div className="p-4 rounded-2xl bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] flex items-center gap-4">
                 <div
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -464,8 +477,8 @@ export default function ProfileCalibrationPage() {
                   }}
                   className={`relative w-16 h-16 rounded-full overflow-hidden border-2 transition-all shrink-0 shadow-sm cursor-pointer ${
                     isPhotoDragging
-                      ? "border-[#3E6248] ring-4 ring-[#3E6248]/30 scale-105"
-                      : "border-[#3E6248] bg-white"
+                      ? "border-[#3E6248] dark:border-[#4ADE80] ring-4 ring-[#3E6248]/30 dark:ring-[#4ADE80]/30 scale-105"
+                      : "border-[#3E6248] dark:border-[#4ADE80] bg-white dark:bg-[#18231B]"
                   }`}
                   onClick={() => fileInputRef.current?.click()}
                   title="Click or drag an image here to update portrait"
@@ -477,10 +490,10 @@ export default function ProfileCalibrationPage() {
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className="text-xs font-semibold text-[#202920] block mb-0.5">
+                  <span className="text-xs font-semibold text-[#202920] dark:text-[#EDEAE2] block mb-0.5">
                     Official Scholar Portrait
                   </span>
-                  <span className="text-[11px] font-mono text-[#85877B] block mb-2">
+                  <span className="text-[11px] font-mono text-[#85877B] dark:text-[#7E8B7B] block mb-2">
                     JPG, PNG, or WebP. Centered face recommended.
                   </span>
                   <div className="flex items-center gap-2">
@@ -488,7 +501,7 @@ export default function ProfileCalibrationPage() {
                       type="button"
                       size="sm"
                       onClick={() => fileInputRef.current?.click()}
-                      className="bg-[#3E6248] hover:bg-[#293E30] text-white text-[11px] font-mono uppercase h-7 px-3 rounded-full border-none shadow-2xs"
+                      className="bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] text-[11px] font-mono uppercase h-7 px-3 rounded-full border-none shadow-2xs"
                     >
                       <Upload size={11} className="mr-1" />
                       Upload Photo
@@ -497,7 +510,7 @@ export default function ProfileCalibrationPage() {
                       <button
                         type="button"
                         onClick={() => update({ photo: "/Profile.png" })}
-                        className="text-[11px] font-mono text-[#62685E] hover:text-[#B33D35] bg-transparent border-0 cursor-pointer p-0"
+                        className="text-[11px] font-mono text-[#62685E] dark:text-[#A3B899] hover:text-[#B33D35] dark:hover:text-[#F87171] bg-transparent border-0 cursor-pointer p-0"
                       >
                         Reset Default
                       </button>
@@ -515,59 +528,59 @@ export default function ProfileCalibrationPage() {
 
               {/* Full Name */}
               <div className="space-y-1.5">
-                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                   Full Academic Name
                 </label>
                 <Input
                   value={profile.name}
                   onChange={(e) => update({ name: e.target.value })}
                   placeholder="Imthiyas"
-                  className="bg-[#FAF7F0] border-[#E4DCCB] text-xs h-10"
+                  className="bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] text-xs h-10"
                 />
               </div>
 
               {/* Headline */}
               <div className="space-y-1.5">
-                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                   Professional Headline & Core Discipline
                 </label>
                 <Input
                   value={profile.headline}
                   onChange={(e) => update({ headline: e.target.value })}
                   placeholder="Principal Investigator · Computational Genomics"
-                  className="bg-[#FAF7F0] border-[#E4DCCB] text-xs h-10"
+                  className="bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] text-xs h-10"
                 />
               </div>
 
               {/* Location (City & Country) */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                  <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                     City / Hub
                   </label>
                   <Input
                     value={profile.city}
                     onChange={(e) => update({ city: e.target.value })}
                     placeholder="Cambridge, MA"
-                    className="bg-[#FAF7F0] border-[#E4DCCB] text-xs h-10"
+                    className="bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] text-xs h-10"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                  <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                     Country / Jurisdiction
                   </label>
                   <Input
                     value={profile.country}
                     onChange={(e) => update({ country: e.target.value })}
                     placeholder="United States"
-                    className="bg-[#FAF7F0] border-[#E4DCCB] text-xs h-10"
+                    className="bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] text-xs h-10"
                   />
                 </div>
               </div>
 
               {/* Biography */}
               <div className="space-y-1.5">
-                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                   Scholarly Narrative & Inquiries
                 </label>
                 <textarea
@@ -575,7 +588,7 @@ export default function ProfileCalibrationPage() {
                   onChange={(e) => update({ bio: e.target.value })}
                   rows={4}
                   placeholder="Describe your active hypotheses and scientific focus..."
-                  className="w-full rounded-md border border-[#E4DCCB] bg-[#FAF7F0] p-3 text-xs text-[#202920] outline-none focus:border-[#3E6248] focus:ring-1 focus:ring-[#3E6248] font-sans resize-none"
+                  className="w-full rounded-md border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#131C15] p-3 text-xs text-[#202920] dark:text-[#EDEAE2] outline-none focus:border-[#3E6248] dark:focus:border-[#4ADE80] focus:ring-1 focus:ring-[#3E6248] dark:focus:ring-[#4ADE80] font-sans resize-none"
                 />
               </div>
             </div>
@@ -585,75 +598,75 @@ export default function ProfileCalibrationPage() {
           {step === 1 && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div>
-                <span className="font-mono text-[10.5px] font-bold text-[#3E6248] uppercase tracking-wider block mb-1">
+                <span className="font-mono text-[10.5px] font-bold text-[#3E6248] dark:text-[#4ADE80] uppercase tracking-wider block mb-1">
                   Step 02 / 06 · Affiliation Matrix
                 </span>
-                <h2 className="font-serif text-2xl font-normal text-[#202920] m-0">
+                <h2 className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] m-0">
                   Institution & Laboratory
                 </h2>
-                <p className="text-xs text-[#62685E] mt-1 leading-relaxed">
+                <p className="text-xs text-[#62685E] dark:text-[#A3B899] mt-1 leading-relaxed">
                   Connect your research center, university laboratory, and formal faculty appointment.
                 </p>
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                   University or Research Organization
                 </label>
                 <Input
                   value={profile.institution}
                   onChange={(e) => update({ institution: e.target.value })}
                   placeholder="MIT CSAIL & Broad Institute"
-                  className="bg-[#FAF7F0] border-[#E4DCCB] text-xs h-10"
+                  className="bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] text-xs h-10"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                   Department or Institute Branch
                 </label>
                 <Input
                   value={profile.department}
                   onChange={(e) => update({ department: e.target.value })}
                   placeholder="Department of Computational Biology"
-                  className="bg-[#FAF7F0] border-[#E4DCCB] text-xs h-10"
+                  className="bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] text-xs h-10"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                  <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                     Academic Rank / Role
                   </label>
                   <Input
                     value={profile.position}
                     onChange={(e) => update({ position: e.target.value })}
                     placeholder="Senior Research Fellow"
-                    className="bg-[#FAF7F0] border-[#E4DCCB] text-xs h-10"
+                    className="bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] text-xs h-10"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                  <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                     Level Tier
                   </label>
                   <Input
                     value={profile.academicLevel}
                     onChange={(e) => update({ academicLevel: e.target.value })}
                     placeholder="Senior Investigator"
-                    className="bg-[#FAF7F0] border-[#E4DCCB] text-xs h-10"
+                    className="bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] text-xs h-10"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                   Laboratory or Research Group Name
                 </label>
                 <Input
                   value={profile.researchLab}
                   onChange={(e) => update({ researchLab: e.target.value })}
                   placeholder="Cellular Topology & Neural Synthesis Lab"
-                  className="bg-[#FAF7F0] border-[#E4DCCB] text-xs h-10"
+                  className="bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] text-[#202920] dark:text-[#EDEAE2] text-xs h-10"
                 />
               </div>
             </div>
@@ -663,20 +676,20 @@ export default function ProfileCalibrationPage() {
           {step === 2 && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div>
-                <span className="font-mono text-[10.5px] font-bold text-[#3E6248] uppercase tracking-wider block mb-1">
+                <span className="font-mono text-[10.5px] font-bold text-[#3E6248] dark:text-[#4ADE80] uppercase tracking-wider block mb-1">
                   Step 03 / 06 · Vector Embeddings
                 </span>
-                <h2 className="font-serif text-2xl font-normal text-[#202920] m-0">
+                <h2 className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] m-0">
                   Research Vectors
                 </h2>
-                <p className="text-xs text-[#62685E] mt-1 leading-relaxed">
+                <p className="text-xs text-[#62685E] dark:text-[#A3B899] mt-1 leading-relaxed">
                   Select primary inquiry domains to automatically calibrate grant recommendations and citation alerts.
                 </p>
               </div>
 
               {/* Research Domain Chips */}
               <div className="space-y-2">
-                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                   Key Inquiry Domains ({profile.interests.length} selected)
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -689,8 +702,8 @@ export default function ProfileCalibrationPage() {
                         onClick={() => handleToggleInterest(domain)}
                         className={`text-xs px-3 py-1.5 rounded-full font-sans transition-all cursor-pointer border ${
                           isSelected
-                            ? "bg-[#3E6248] text-white border-[#3E6248] shadow-2xs font-semibold"
-                            : "bg-[#FAF7F0] text-[#62685E] border-[#E4DCCB] hover:border-[#3E6248]"
+                            ? "bg-[#3E6248] dark:bg-[#4ADE80] text-white dark:text-[#0E140F] border-[#3E6248] dark:border-[#4ADE80] shadow-2xs font-semibold"
+                            : "bg-[#FAF7F0] dark:bg-[#131C15] text-[#62685E] dark:text-[#A3B899] border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80]"
                         }`}
                       >
                         {isSelected ? "✓ " : "+ "}
@@ -703,7 +716,7 @@ export default function ProfileCalibrationPage() {
 
               {/* Abstract / Problem Statement */}
               <div className="space-y-1.5">
-                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                   Current Active Hypothesis / Core Focus
                 </label>
                 <textarea
@@ -711,13 +724,13 @@ export default function ProfileCalibrationPage() {
                   onChange={(e) => update({ researchDescription: e.target.value })}
                   rows={4}
                   placeholder="Summarize the core scientific question your active lab inquiries address..."
-                  className="w-full rounded-md border border-[#E4DCCB] bg-[#FAF7F0] p-3 text-xs text-[#202920] outline-none focus:border-[#3E6248] focus:ring-1 focus:ring-[#3E6248] font-sans resize-none"
+                  className="w-full rounded-md border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#131C15] p-3 text-xs text-[#202920] dark:text-[#EDEAE2] outline-none focus:border-[#3E6248] dark:focus:border-[#4ADE80] focus:ring-1 focus:ring-[#3E6248] dark:focus:ring-[#4ADE80] font-sans resize-none"
                 />
               </div>
 
               {/* Research Goals */}
               <div className="space-y-2">
-                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                   Collaboration & Milestone Objectives
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -730,8 +743,8 @@ export default function ProfileCalibrationPage() {
                         onClick={() => handleToggleGoal(g)}
                         className={`text-xs px-3 py-1 rounded-full font-mono transition-all cursor-pointer border ${
                           isSelected
-                            ? "bg-[#DCE6D7] text-[#293E30] border-[#66866A]/40 font-bold"
-                            : "bg-[#FAF7F0] text-[#62685E] border-[#E4DCCB]"
+                            ? "bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#293E30] dark:text-[#EDEAE2] border-[#66866A]/40 dark:border-[#4ADE80]/40 font-bold"
+                            : "bg-[#FAF7F0] dark:bg-[#131C15] text-[#62685E] dark:text-[#A3B899] border-[#E4DCCB] dark:border-[#233327]"
                         }`}
                       >
                         {isSelected ? "✓ " : "+ "}
@@ -748,19 +761,19 @@ export default function ProfileCalibrationPage() {
           {step === 3 && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div>
-                <span className="font-mono text-[10.5px] font-bold text-[#3E6248] uppercase tracking-wider block mb-1">
+                <span className="font-mono text-[10.5px] font-bold text-[#3E6248] dark:text-[#4ADE80] uppercase tracking-wider block mb-1">
                   Step 04 / 06 · Technical Architecture
                 </span>
-                <h2 className="font-serif text-2xl font-normal text-[#202920] m-0">
+                <h2 className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] m-0">
                   Scientific Toolkit
                 </h2>
-                <p className="text-xs text-[#62685E] mt-1 leading-relaxed">
+                <p className="text-xs text-[#62685E] dark:text-[#A3B899] mt-1 leading-relaxed">
                   Signal your analytical frameworks, experimental stacks, and computation environments.
                 </p>
               </div>
 
               <div className="space-y-3">
-                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                   Select Core Technical Stacks
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -773,8 +786,8 @@ export default function ProfileCalibrationPage() {
                         onClick={() => handleToggleSkill(skill)}
                         className={`text-xs px-3 py-1.5 rounded-full font-mono transition-all cursor-pointer border ${
                           isSelected
-                            ? "bg-[#3E6248] text-white border-[#3E6248] font-bold"
-                            : "bg-[#FAF7F0] text-[#62685E] border-[#E4DCCB] hover:border-[#3E6248]"
+                            ? "bg-[#3E6248] dark:bg-[#4ADE80] text-white dark:text-[#0E140F] border-[#3E6248] dark:border-[#4ADE80] font-bold"
+                            : "bg-[#FAF7F0] dark:bg-[#131C15] text-[#62685E] dark:text-[#A3B899] border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80]"
                         }`}
                       >
                         {isSelected ? "✓ " : "+ "}
@@ -786,17 +799,17 @@ export default function ProfileCalibrationPage() {
               </div>
 
               {/* Active Skills List with Level */}
-              <div className="p-4 rounded-2xl bg-[#FAF7F0] border border-[#E4DCCB] space-y-2.5">
-                <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#3E6248] block">
+              <div className="p-4 rounded-2xl bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] space-y-2.5">
+                <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] block">
                   Active Framework Proficiency
                 </span>
                 {Object.entries(profile.skills).map(([skill, level]) => (
                   <div
                     key={skill}
-                    className="flex items-center justify-between p-2 rounded-lg bg-white border border-[#E4DCCB] text-xs"
+                    className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] text-xs"
                   >
-                    <span className="font-mono font-medium text-[#202920]">{skill}</span>
-                    <span className="font-mono text-[10px] font-semibold uppercase text-[#3E6248] bg-[#DCE6D7] px-2 py-0.5 rounded-full">
+                    <span className="font-mono font-medium text-[#202920] dark:text-[#EDEAE2]">{skill}</span>
+                    <span className="font-mono text-[10px] font-semibold uppercase text-[#3E6248] dark:text-[#4ADE80] bg-[#DCE6D7] dark:bg-[#1F2E23] px-2 py-0.5 rounded-full">
                       {level}
                     </span>
                   </div>
@@ -809,29 +822,29 @@ export default function ProfileCalibrationPage() {
           {step === 4 && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div>
-                <span className="font-mono text-[10.5px] font-bold text-[#3E6248] uppercase tracking-wider block mb-1">
+                <span className="font-mono text-[10.5px] font-bold text-[#3E6248] dark:text-[#4ADE80] uppercase tracking-wider block mb-1">
                   Step 05 / 06 · Permanent Identifiers
                 </span>
-                <h2 className="font-serif text-2xl font-normal text-[#202920] m-0">
+                <h2 className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] m-0">
                   Academic Mesh & ORCID
                 </h2>
-                <p className="text-xs text-[#62685E] mt-1 leading-relaxed">
+                <p className="text-xs text-[#62685E] dark:text-[#A3B899] mt-1 leading-relaxed">
                   Link verified scholar registries for automated bibliographic ingestion and co-authorship discovery.
                 </p>
               </div>
 
               {/* ORCID Primary Box with Live Sync Button & Verified Data Card */}
-              <div className="p-5 rounded-2xl bg-[#FAF7F0] border border-[#3E6248]/40 space-y-4 shadow-xs">
+              <div className="p-5 rounded-2xl bg-[#FAF7F0] dark:bg-[#131C15] border border-[#3E6248]/40 dark:border-[#4ADE80]/40 space-y-4 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="w-5 h-5 rounded-md bg-[#A6CE39] text-white flex items-center justify-center font-bold text-[10px]">
                       iD
                     </span>
-                    <span className="font-serif text-sm font-semibold text-[#202920]">
+                    <span className="font-serif text-sm font-semibold text-[#202920] dark:text-[#EDEAE2]">
                       ORCID Digital Identifier & Bibliographic Sync
                     </span>
                   </div>
-                  <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full font-bold">
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full font-bold">
                     OpenAlex Live Bridge
                   </span>
                 </div>
@@ -845,13 +858,13 @@ export default function ProfileCalibrationPage() {
                       })
                     }
                     placeholder="0000-0002-1825-0097"
-                    className="bg-white border-[#E4DCCB] text-xs font-mono h-10 flex-1"
+                    className="bg-white dark:bg-[#18231B] border-[#E4DCCB] dark:border-[#233327] text-xs font-mono h-10 flex-1 text-[#202920] dark:text-[#EDEAE2]"
                   />
                   <button
                     type="button"
                     onClick={handleSyncOrcid}
                     disabled={isSyncingOrcid}
-                    className="px-4 h-10 rounded-lg bg-[#3E6248] hover:bg-[#2d4734] text-white text-xs font-mono font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-xs shrink-0"
+                    className="px-4 h-10 rounded-lg bg-[#3E6248] hover:bg-[#2d4734] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] text-xs font-mono font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-xs shrink-0 border-0"
                   >
                     <Sparkles size={13} className={isSyncingOrcid ? "animate-spin" : ""} />
                     <span>{isSyncingOrcid ? "Querying..." : "Sync ORCID"}</span>
@@ -859,45 +872,45 @@ export default function ProfileCalibrationPage() {
                 </div>
 
                 {syncedOrcidData && (
-                  <div className="p-4 rounded-xl bg-white border border-[#E4DCCB] space-y-3">
-                    <div className="flex items-center justify-between border-b border-[#E4DCCB] pb-2.5">
+                  <div className="p-4 rounded-xl bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] space-y-3">
+                    <div className="flex items-center justify-between border-b border-[#E4DCCB] dark:border-[#233327] pb-2.5">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-xs text-[#202920]">{syncedOrcidData.name}</span>
-                          <span className="px-2 py-0.5 rounded-full bg-[#DCE6D7] text-[#3E6248] text-[10px] font-mono font-bold">
+                          <span className="font-semibold text-xs text-[#202920] dark:text-[#EDEAE2]">{syncedOrcidData.name}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-[#DCE6D7] dark:bg-[#1F2E23] text-[#3E6248] dark:text-[#4ADE80] text-[10px] font-mono font-bold">
                             Verified
                           </span>
                         </div>
-                        <span className="text-[11px] text-[#62685E] font-sans">
+                        <span className="text-[11px] text-[#62685E] dark:text-[#A3B899] font-sans">
                           {syncedOrcidData.institution}
                         </span>
                       </div>
                       <div className="flex items-center gap-3 text-right">
                         <div>
-                          <span className="font-mono text-[10px] text-[#85877B] block uppercase">h-index</span>
-                          <span className="font-mono text-xs font-bold text-[#3E6248]">{syncedOrcidData.hIndex}</span>
+                          <span className="font-mono text-[10px] text-[#85877B] dark:text-[#7E8B7B] block uppercase">h-index</span>
+                          <span className="font-mono text-xs font-bold text-[#3E6248] dark:text-[#4ADE80]">{syncedOrcidData.hIndex}</span>
                         </div>
                         <div>
-                          <span className="font-mono text-[10px] text-[#85877B] block uppercase">Citations</span>
-                          <span className="font-mono text-xs font-bold text-[#202920]">{syncedOrcidData.totalCitations.toLocaleString()}</span>
+                          <span className="font-mono text-[10px] text-[#85877B] dark:text-[#7E8B7B] block uppercase">Citations</span>
+                          <span className="font-mono text-xs font-bold text-[#202920] dark:text-[#EDEAE2]">{syncedOrcidData.totalCitations.toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
 
                     {syncedOrcidData.recentWorks.length > 0 && (
                       <div className="space-y-1.5">
-                        <span className="font-mono text-[10px] text-[#85877B] uppercase tracking-wider block font-semibold">
+                        <span className="font-mono text-[10px] text-[#85877B] dark:text-[#7E8B7B] uppercase tracking-wider block font-semibold">
                           Ingested Verified Works ({syncedOrcidData.recentWorks.length})
                         </span>
                         {syncedOrcidData.recentWorks.map((work, wIdx) => (
                           <div
                             key={wIdx}
-                            className="p-2 rounded-lg bg-[#FAF7F0] border border-[#E4DCCB]/60 flex items-center justify-between text-[11px]"
+                            className="p-2 rounded-lg bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB]/60 dark:border-[#233327]/60 flex items-center justify-between text-[11px]"
                           >
-                            <span className="font-serif text-[#202920] truncate mr-2 font-medium">
+                            <span className="font-serif text-[#202920] dark:text-[#EDEAE2] truncate mr-2 font-medium">
                               {work.title}
                             </span>
-                            <span className="font-mono text-[10px] text-[#3E6248] shrink-0 font-semibold">
+                            <span className="font-mono text-[10px] text-[#3E6248] dark:text-[#4ADE80] shrink-0 font-semibold">
                               {work.citations} cites · {work.year}
                             </span>
                           </div>
@@ -911,7 +924,7 @@ export default function ProfileCalibrationPage() {
               {/* Other Academic Links */}
               {["Google Scholar", "GitHub", "Semantic Scholar"].map((platform) => (
                 <div key={platform} className="space-y-1.5">
-                  <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E]">
+                  <label className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                     {platform} Profile URI
                   </label>
                   <Input
@@ -922,7 +935,7 @@ export default function ProfileCalibrationPage() {
                       })
                     }
                     placeholder={`https://${platform.toLowerCase().replace(" ", "")}.com/...`}
-                    className="bg-[#FAF7F0] border-[#E4DCCB] text-xs font-mono h-10"
+                    className="bg-[#FAF7F0] dark:bg-[#131C15] border-[#E4DCCB] dark:border-[#233327] text-xs font-mono h-10 text-[#202920] dark:text-[#EDEAE2]"
                   />
                 </div>
               ))}
@@ -933,58 +946,58 @@ export default function ProfileCalibrationPage() {
           {step === 5 && (
             <div className="space-y-6 animate-in fade-in duration-200">
               <div>
-                <span className="font-mono text-[10.5px] font-bold text-[#3E6248] uppercase tracking-wider block mb-1">
+                <span className="font-mono text-[10.5px] font-bold text-[#3E6248] dark:text-[#4ADE80] uppercase tracking-wider block mb-1">
                   Step 06 / 06 · Peer Ledger Alignment
                 </span>
-                <h2 className="font-serif text-2xl font-normal text-[#202920] m-0">
+                <h2 className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] m-0">
                   Review & Publish
                 </h2>
-                <p className="text-xs text-[#62685E] mt-1 leading-relaxed">
+                <p className="text-xs text-[#62685E] dark:text-[#A3B899] mt-1 leading-relaxed">
                   Your scholarly profile is fully calibrated and ready for broadcast across the Cambium research mesh.
                 </p>
               </div>
 
-              <div className="p-5 rounded-2xl bg-[#DCE6D7]/40 border border-[#66866A]/30 space-y-3">
-                <div className="flex items-center gap-2 text-[#3E6248]">
+              <div className="p-5 rounded-2xl bg-[#DCE6D7]/40 dark:bg-[#1F2E23]/40 border border-[#66866A]/30 dark:border-[#4ADE80]/30 space-y-3">
+                <div className="flex items-center gap-2 text-[#3E6248] dark:text-[#4ADE80]">
                   <ShieldCheck size={18} />
                   <span className="font-serif text-sm font-semibold">
                     100% Scholarly Schema Parity
                   </span>
                 </div>
-                <p className="text-xs text-[#293E30] m-0 leading-relaxed font-sans">
+                <p className="text-xs text-[#293E30] dark:text-[#A3B899] m-0 leading-relaxed font-sans">
                   Published profiles are indexed on OpenAlex, Crossref-linked, and immediately resolvable in researcher graph searches.
                 </p>
               </div>
 
               <div className="space-y-3 font-mono text-xs">
-                <div className="flex justify-between p-3 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB]">
-                  <span className="text-[#62685E]">Author Name:</span>
-                  <span className="font-bold text-[#202920]">{profile.name}</span>
+                <div className="flex justify-between p-3 rounded-xl bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327]">
+                  <span className="text-[#62685E] dark:text-[#A3B899]">Author Name:</span>
+                  <span className="font-bold text-[#202920] dark:text-[#EDEAE2]">{profile.name}</span>
                 </div>
-                <div className="flex justify-between p-3 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB]">
-                  <span className="text-[#62685E]">Institution:</span>
-                  <span className="font-bold text-[#202920]">{profile.institution}</span>
+                <div className="flex justify-between p-3 rounded-xl bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327]">
+                  <span className="text-[#62685E] dark:text-[#A3B899]">Institution:</span>
+                  <span className="font-bold text-[#202920] dark:text-[#EDEAE2]">{profile.institution}</span>
                 </div>
-                <div className="flex justify-between p-3 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB]">
-                  <span className="text-[#62685E]">Inquiry Vectors:</span>
-                  <span className="font-bold text-[#3E6248]">{profile.interests.length} Domains</span>
+                <div className="flex justify-between p-3 rounded-xl bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327]">
+                  <span className="text-[#62685E] dark:text-[#A3B899]">Inquiry Vectors:</span>
+                  <span className="font-bold text-[#3E6248] dark:text-[#4ADE80]">{profile.interests.length} Domains</span>
                 </div>
-                <div className="flex justify-between p-3 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB]">
-                  <span className="text-[#62685E]">ORCID Registry:</span>
-                  <span className="font-bold text-[#202920]">{profile.links.ORCID}</span>
+                <div className="flex justify-between p-3 rounded-xl bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327]">
+                  <span className="text-[#62685E] dark:text-[#A3B899]">ORCID Registry:</span>
+                  <span className="font-bold text-[#202920] dark:text-[#EDEAE2]">{profile.links.ORCID}</span>
                 </div>
               </div>
             </div>
           )}
 
           {/* Stepper Navigation Buttons */}
-          <div className="pt-6 mt-6 border-t border-[#E4DCCB] flex items-center justify-between">
+          <div className="pt-6 mt-6 border-t border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between">
             <Button
               type="button"
               variant="outline"
               onClick={handleBack}
               disabled={step === 0}
-              className="border-[#E4DCCB] text-[#62685E] hover:bg-[#FAF7F0] rounded-full text-xs font-mono uppercase tracking-wider h-9 px-4"
+              className="border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] text-[#62685E] dark:text-[#A3B899] hover:bg-[#FAF7F0] dark:hover:bg-[#1F2E23] rounded-full text-xs font-mono uppercase tracking-wider h-9 px-4"
             >
               <ChevronLeft size={14} className="mr-1" />
               Back
@@ -995,7 +1008,7 @@ export default function ProfileCalibrationPage() {
                 <Button
                   type="button"
                   onClick={handleNext}
-                  className="bg-[#3E6248] hover:bg-[#293E30] text-white rounded-full text-xs font-mono uppercase tracking-wider h-9 px-6 border-none shadow-sm"
+                  className="bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] rounded-full text-xs font-mono uppercase tracking-wider h-9 px-6 border-none shadow-sm cursor-pointer"
                 >
                   <span>Continue</span>
                   <ChevronRight size={14} className="ml-1" />
@@ -1005,7 +1018,7 @@ export default function ProfileCalibrationPage() {
                   type="button"
                   onClick={handleSaveAndExit}
                   asChild
-                  className="bg-[#3E6248] hover:bg-[#293E30] text-white rounded-full text-xs font-mono uppercase tracking-wider h-9 px-6 border-none shadow-sm"
+                  className="bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] rounded-full text-xs font-mono uppercase tracking-wider h-9 px-6 border-none shadow-sm cursor-pointer"
                 >
                   <Link href="/portfolio">
                     <Save size={14} className="mr-1.5" />
@@ -1020,19 +1033,19 @@ export default function ProfileCalibrationPage() {
         {/* Right: Live Scholarly Profile Card Preview (4 Cols) */}
         <div className="lg:col-span-4 sticky top-24 space-y-4">
           <div className="flex items-center justify-between px-1">
-            <span className="font-mono text-[10.5px] uppercase tracking-widest font-bold text-[#85877B]">
+            <span className="font-mono text-[10.5px] uppercase tracking-widest font-bold text-[#85877B] dark:text-[#7E8B7B]">
               Live Peer Preview
             </span>
-            <span className="font-mono text-[10px] text-[#3E6248] bg-[#DCE6D7] px-2 py-0.5 rounded-full font-semibold">
+            <span className="font-mono text-[10px] text-[#3E6248] dark:text-[#4ADE80] bg-[#DCE6D7] dark:bg-[#1F2E23] px-2 py-0.5 rounded-full font-semibold">
               Public Ledger View
             </span>
           </div>
 
           {/* The Cambium Scholar Profile Card */}
-          <div className="p-6 rounded-3xl bg-white border border-[#E4DCCB] shadow-sm space-y-5">
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] shadow-sm space-y-5">
             {/* Header / Avatar / Name */}
             <div className="flex flex-col items-center text-center">
-              <div className="relative w-20 h-20 rounded-full border-2 border-[#3E6248] overflow-hidden mb-3.5 shadow-xs">
+              <div className="relative w-20 h-20 rounded-full border-2 border-[#3E6248] dark:border-[#4ADE80] overflow-hidden mb-3.5 shadow-xs">
                 <img
                   src={profile.photo || "/Profile.png"}
                   alt={profile.name}
@@ -1040,19 +1053,19 @@ export default function ProfileCalibrationPage() {
                 />
               </div>
 
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#3E6248] bg-[#DCE6D7] px-2.5 py-0.5 rounded-full font-bold mb-1.5">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#3E6248] dark:text-[#4ADE80] bg-[#DCE6D7] dark:bg-[#1F2E23] px-2.5 py-0.5 rounded-full font-bold mb-1.5">
                 {profile.position || "Senior Researcher"}
               </span>
 
-              <h3 className="font-serif text-xl font-normal text-[#202920] m-0 leading-snug">
+              <h3 className="font-serif text-xl font-normal text-[#202920] dark:text-[#EDEAE2] m-0 leading-snug">
                 {profile.name}
               </h3>
 
-              <p className="font-sans text-xs text-[#62685E] mt-1 m-0 max-w-xs leading-relaxed">
+              <p className="font-sans text-xs text-[#62685E] dark:text-[#A3B899] mt-1 m-0 max-w-xs leading-relaxed">
                 {profile.headline}
               </p>
 
-              <div className="mt-2 text-[11px] font-mono text-[#85877B] flex items-center gap-1.5">
+              <div className="mt-2 text-[11px] font-mono text-[#85877B] dark:text-[#7E8B7B] flex items-center gap-1.5">
                 <span>{profile.institution}</span>
                 <span>·</span>
                 <span>{profile.city}</span>
@@ -1060,28 +1073,28 @@ export default function ProfileCalibrationPage() {
             </div>
 
             {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-3 gap-2 py-3 border-y border-[#E4DCCB] text-center font-mono">
+            <div className="grid grid-cols-3 gap-2 py-3 border-y border-[#E4DCCB] dark:border-[#233327] text-center font-mono">
               <div>
-                <span className="text-base font-bold text-[#202920] block">48</span>
-                <span className="text-[9.5px] text-[#85877B] uppercase">Papers</span>
+                <span className="text-base font-bold text-[#202920] dark:text-[#EDEAE2] block">48</span>
+                <span className="text-[9.5px] text-[#85877B] dark:text-[#7E8B7B] uppercase">Papers</span>
               </div>
-              <div className="border-x border-[#E4DCCB]">
-                <span className="text-base font-bold text-[#3E6248] block">1,842</span>
-                <span className="text-[9.5px] text-[#85877B] uppercase">Citations</span>
+              <div className="border-x border-[#E4DCCB] dark:border-[#233327]">
+                <span className="text-base font-bold text-[#3E6248] dark:text-[#4ADE80] block">1,842</span>
+                <span className="text-[9.5px] text-[#85877B] dark:text-[#7E8B7B] uppercase">Citations</span>
               </div>
               <div>
-                <span className="text-base font-bold text-[#202920] block">19</span>
-                <span className="text-[9.5px] text-[#85877B] uppercase">h-index</span>
+                <span className="text-base font-bold text-[#202920] dark:text-[#EDEAE2] block">19</span>
+                <span className="text-[9.5px] text-[#85877B] dark:text-[#7E8B7B] uppercase">h-index</span>
               </div>
             </div>
 
             {/* Narrative Excerpt */}
             {profile.bio && (
               <div>
-                <span className="font-mono text-[9.5px] font-bold uppercase text-[#85877B] tracking-wider block mb-1">
+                <span className="font-mono text-[9.5px] font-bold uppercase text-[#85877B] dark:text-[#7E8B7B] tracking-wider block mb-1">
                   Inquiry Abstract
                 </span>
-                <p className="font-sans text-xs text-[#62685E] leading-relaxed m-0 line-clamp-3">
+                <p className="font-sans text-xs text-[#62685E] dark:text-[#A3B899] leading-relaxed m-0 line-clamp-3">
                   {profile.bio}
                 </p>
               </div>
@@ -1090,20 +1103,20 @@ export default function ProfileCalibrationPage() {
             {/* Research Vector Badges */}
             {profile.interests.length > 0 && (
               <div>
-                <span className="font-mono text-[9.5px] font-bold uppercase text-[#85877B] tracking-wider block mb-1.5">
+                <span className="font-mono text-[9.5px] font-bold uppercase text-[#85877B] dark:text-[#7E8B7B] tracking-wider block mb-1.5">
                   Research Vectors
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {profile.interests.slice(0, 4).map((i) => (
                     <span
                       key={i}
-                      className="text-[10px] font-sans px-2 py-0.5 rounded-full bg-[#FAF7F0] border border-[#E4DCCB] text-[#3E6248] font-medium"
+                      className="text-[10px] font-sans px-2 py-0.5 rounded-full bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] text-[#3E6248] dark:text-[#4ADE80] font-medium"
                     >
                       {i}
                     </span>
                   ))}
                   {profile.interests.length > 4 && (
-                    <span className="text-[10px] font-mono text-[#85877B]">
+                    <span className="text-[10px] font-mono text-[#85877B] dark:text-[#7E8B7B]">
                       +{profile.interests.length - 4} more
                     </span>
                   )}
@@ -1115,7 +1128,7 @@ export default function ProfileCalibrationPage() {
             <div className="pt-2">
               <Button
                 asChild
-                className="w-full bg-[#3E6248] hover:bg-[#293E30] text-white rounded-full text-xs font-mono uppercase tracking-wider h-9 border-none shadow-sm"
+                className="w-full bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] rounded-full text-xs font-mono uppercase tracking-wider h-9 border-none shadow-sm cursor-pointer"
               >
                 <Link href="/portfolio">
                   <span>Open Full Portfolio</span>

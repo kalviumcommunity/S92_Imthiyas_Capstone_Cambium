@@ -35,8 +35,9 @@ import { useAuthStore } from "@/lib/store/useAuthStore";
 import CambiumLogo from "@/components/CambiumLogo";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useBrowserStorageValue, writeBrowserStorageValue } from "@/lib/hooks/use-browser-storage";
 
-interface NavItem {
+export interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string; size?: number }>;
@@ -45,7 +46,7 @@ interface NavItem {
   i18nKey?: string;
 }
 
-const NAV_ITEMS: NavItem[] = [
+export const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: Home, i18nKey: "nav.dashboard" },
   { label: "Discover", href: "/discover", icon: Compass },
   { label: "Constellation Graph", href: "/graph", icon: Network, badge: "2D", i18nKey: "nav.graph" },
@@ -75,29 +76,20 @@ export default function GlobalSidebar() {
   const { t } = useLanguage();
 
   const [isHovered, setIsHovered] = useState(false);
-  const [isPinned, setIsPinned] = useState(false);
+  const [pinFallback, setPinFallback] = useState<boolean | null>(null);
+  const storedPin = useBrowserStorageValue("local", "cambium_sidebar_pinned");
+  const isPinned = pinFallback ?? storedPin === "true";
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize pinned state from localStorage
-  useEffect(() => {
-    try {
-      const savedPin = localStorage.getItem("cambium_sidebar_pinned");
-      if (savedPin === "true") setIsPinned(true);
-    } catch {
-      // ignore
-    }
-  }, []);
-
   const togglePin = () => {
-    setIsPinned((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem("cambium_sidebar_pinned", String(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
+    const next = !isPinned;
+    try {
+      writeBrowserStorageValue("local", "cambium_sidebar_pinned", String(next));
+      setPinFallback(null);
+    } catch (error) {
+      console.error("[GlobalSidebar] Unable to persist sidebar preference:", error);
+      setPinFallback(next);
+    }
   };
 
   const handleMouseEnter = () => {
@@ -120,33 +112,28 @@ export default function GlobalSidebar() {
   };
 
   // User display metadata
-  const rawName = user?.fullName || "Imthiyas";
-  let displayName = rawName;
-  if (/maya|chen/i.test(displayName)) {
-    displayName = "Imthiyas";
-  } else {
-    displayName = displayName.replace(/\s*\([^)]*\)/g, "").trim() || "Imthiyas";
-  }
+  const rawName = user?.fullName || user?.name || user?.username || "Scholar";
+  const displayName = rawName.replace(/\s*\([^)]*\)/g, "").trim() || "Scholar";
   const displaySubtitle = user?.role
     ? `${user.role} · ${user.institution || "Cambium Research"}`
-    : user?.institution && !/maya|chen/i.test(user.institution)
+    : user?.institution
     ? user.institution
-    : user?.email && !/maya|chen/i.test(user.email)
+    : user?.email
     ? user.email
-    : "MIT CSAIL · Postdoc";
+    : "Verified Scholar";
   const initials = displayName
     .split(" ")
     .map((n) => n[0])
     .filter(Boolean)
     .slice(0, 2)
     .join("")
-    .toUpperCase() || "IM";
+    .toUpperCase() || "SC";
 
   return (
     <aside
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative h-[calc(100vh-20px)] my-2.5 ml-2.5 flex flex-col justify-between select-none z-30 flex-shrink-0 bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] rounded-[26px] shadow-[0_4px_24px_rgba(32,41,32,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      className={`relative h-[calc(100vh-20px)] my-2.5 ml-2.5 hidden md:flex flex-col justify-between select-none z-30 flex-shrink-0 bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] rounded-[26px] shadow-[0_4px_24px_rgba(32,41,32,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         isOpen ? "w-[250px]" : "w-[68px]"
       }`}
       aria-label="Enterprise Scholarly Navigation"
@@ -162,31 +149,7 @@ export default function GlobalSidebar() {
           {isOpen ? (
             <CambiumLogo size="sm" href="/dashboard" />
           ) : (
-            <Link
-              href="/dashboard"
-              prefetch={true}
-              onMouseEnter={() => {
-                try {
-                  router.prefetch("/dashboard");
-                } catch {}
-              }}
-              title="CAMBIUM RESEARCH Dashboard"
-              style={{ width: 36, height: 36, minWidth: 36, minHeight: 36 }}
-              className="w-9 h-9 min-w-[36px] min-h-[36px] rounded-full bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] p-0.5 flex items-center justify-center shadow-xs transition-transform hover:scale-105 shrink-0 overflow-hidden"
-            >
-              <img
-                src="/public_logo/cambium-logo-light.svg"
-                alt="CAMBIUM RESEARCH"
-                style={{ width: "100%", height: "100%", maxWidth: 30, maxHeight: 30 }}
-                className="w-full h-full object-contain max-w-full max-h-full block dark:hidden scale-[1.3] transition-transform"
-              />
-              <img
-                src="/public_logo/cambium-logo-dark.svg"
-                alt="CAMBIUM RESEARCH"
-                style={{ width: "100%", height: "100%", maxWidth: 30, maxHeight: 30 }}
-                className="w-full h-full object-contain max-w-full max-h-full hidden dark:block scale-[1.3] transition-transform"
-              />
-            </Link>
+            <CambiumLogo size="lg" showWordmark={false} href="/dashboard" />
           )}
 
           {/* Pin Toggle Button (Visible when open) */}
@@ -252,7 +215,7 @@ export default function GlobalSidebar() {
                   router.prefetch(item.href);
                 } catch {}
               }}
-              title={!isOpen ? item.label : undefined}
+              title={item.label}
               className={`flex items-center rounded-xl text-[13.5px] transition-all duration-200 group no-underline relative ${
                 isOpen ? "px-3 py-2.5 justify-between" : "w-11 h-11 mx-auto justify-center"
               } ${

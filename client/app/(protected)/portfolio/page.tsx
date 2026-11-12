@@ -494,7 +494,7 @@ function _unusedOld() {
 
       {/* Footer legend */}
       <div className="flex items-center justify-between text-xs text-[#85877B] mt-4 pt-3 border-t border-[#E4DCCB]">
-        <span>Verified cryptographic research momentum ledger</span>
+        <span>Verified research activity record</span>
         <div className="flex items-center gap-1.5 text-[11px] font-mono">
           <span>Less</span>
           {levelColors.map((cls, i) => (
@@ -527,7 +527,7 @@ export default function ResearchPortfolioPage() {
   }
 
   return (
-    <div className="flex-1 min-h-screen overflow-y-auto bg-[#FAF7F0] font-sans pb-24" tabIndex={-1}>
+    <main className="flex-1 min-h-screen overflow-y-auto bg-[#FAF7F0] font-sans pb-24" tabIndex={-1}>
       <div className="max-w-[1180px] mx-auto px-6 sm:px-8 pt-6">
 
         {/* ── Top Breadcrumb Badge ── */}
@@ -583,7 +583,6 @@ export default function ResearchPortfolioPage() {
               {/* Avatar Overlap */}
               <div className="relative shrink-0">
                 <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden ring-4 ring-white bg-[#F2EBDD] shadow-md">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/Profile.png"
                     alt="Imthiyas"
@@ -1137,7 +1136,7 @@ export default function ResearchPortfolioPage() {
                 />
               </div>
               <p className="text-xs text-[#62685E] leading-relaxed mb-3">
-                Your profile is cryptographically verified against ORCID and institutional domain records.
+                Your profile is verified with your connected ORCID record and institutional email domain.
               </p>
               <div className="space-y-1.5">
                 {["Add Secondary Institution", "Sync PubMed Repository", "Export BibTeX Citations"].map(
@@ -1182,6 +1181,6 @@ export default function ResearchPortfolioPage() {
 
       {/* Share Modal */}
       {shareOpen && <ShareModal onClose={() => setShareOpen(false)} />}
-    </div>
+    </main>
   );
 }

@@ -14,6 +14,7 @@ dist/
 .next/
 */.next/
 **/.next/
+**/.next-dev/
 out/
 */out/
 **/out/
@@ -54,6 +55,7 @@ Thumbs.db
 # Automated Test & Quality Gate Artifacts
 test-results/
 playwright-report/
+.playwright-mcp/
 coverage/
 .nyc_output/
 

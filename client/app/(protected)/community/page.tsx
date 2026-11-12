@@ -229,6 +229,34 @@ export default function CommunityPage() {
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [showToast, setShowToast] = useState<string | null>(null);
+  const postsForFeed = useMemo(() => {
+    const knownIds = new Set(posts.map((post) => post.id));
+    const livePosts: AcademicPost[] = realtimeMessages
+      .filter((message) => !knownIds.has(message.id))
+      .map((message) => ({
+        id: message.id,
+        author: {
+          name: message.sender.name || "Visiting Scholar",
+          role: message.sender.role || "Research Fellow",
+          institution: "Cambium Research Mesh",
+          initials: (message.sender.name || "VS")
+            .split(" ")
+            .map((namePart) => namePart[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase(),
+          avatarColor: "#3E6248",
+        },
+        timeAgo: "Just now",
+        type: "scientific_inquiry",
+        title: "Live Scholarly Mesh Dispatch",
+        content: message.content,
+        tags: ["Live Dispatch", "Network Broadcast"],
+        metrics: { comments: 0, saves: 0, shares: 0, likes: 1 },
+        comments: [],
+      }));
+    return [...livePosts, ...posts];
+  }, [posts, realtimeMessages]);
 
   // Modal States
   const [isComposerOpen, setIsComposerOpen] = useState(false);
@@ -269,7 +297,7 @@ export default function CommunityPage() {
         recommendation: "ACCEPT",
         writtenCritique: "Rigorous experimental verification on the HuBMAP lung cell benchmark with zero citation leakage.",
         noConflictOfInterest: true,
-        submittedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+        submittedAt: "2026-11-11T07:00:00.000Z",
       },
     ],
   });
@@ -281,38 +309,6 @@ export default function CommunityPage() {
     }));
     triggerToast(`Structured review published for "${review.postTitle}" (Score: ${review.averageScore}/5.0) ★`);
   };
-
-  // Synchronize incoming distributed WebSocket dispatches into the feed
-  useEffect(() => {
-    if (realtimeMessages.length > 0) {
-      const latest = realtimeMessages[realtimeMessages.length - 1];
-      if (latest && !posts.some((p) => p.id === latest.id)) {
-        const livePost: AcademicPost = {
-          id: latest.id,
-          author: {
-            name: latest.sender.name || "Visiting Scholar",
-            role: latest.sender.role || "Research Fellow",
-            institution: "Cambium Research Mesh",
-            initials: (latest.sender.name || "VS")
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .slice(0, 2)
-              .toUpperCase(),
-            avatarColor: "#3E6248",
-          },
-          timeAgo: "Just now",
-          type: "scientific_inquiry",
-          title: "Live Scholarly Mesh Dispatch",
-          content: latest.content,
-          tags: ["Live Dispatch", "Network Broadcast"],
-          metrics: { comments: 0, saves: 0, shares: 0, likes: 1 },
-          comments: [],
-        };
-        setPosts((prev) => [livePost, ...prev]);
-      }
-    }
-  }, [realtimeMessages]);
 
   const triggerToast = (msg: string) => {
     setShowToast(msg);
@@ -358,7 +354,7 @@ export default function CommunityPage() {
     setLikedPosts((prev) => {
       const next = !prev[postId];
       setPosts((current) =>
-        current.map((p) =>
+        (current.some((post) => post.id === postId) ? current : postsForFeed).map((p) =>
           p.id === postId
             ? { ...p, metrics: { ...p.metrics, likes: p.metrics.likes + (next ? 1 : -1) } }
             : p
@@ -387,7 +383,7 @@ export default function CommunityPage() {
     };
 
     setPosts((prev) =>
-      prev.map((p) =>
+      (prev.some((post) => post.id === activeCommentPost.id) ? prev : postsForFeed).map((p) =>
         p.id === activeCommentPost.id
           ? {
               ...p,
@@ -485,7 +481,7 @@ export default function CommunityPage() {
       description: 1.0,
     });
     idx.addDocuments(
-      posts.map((p) => ({
+      postsForFeed.map((p) => ({
         id: p.id,
         title: p.title,
         author: p.author.name,
@@ -495,11 +491,11 @@ export default function CommunityPage() {
       }))
     );
     return idx;
-  }, [posts]);
+  }, [postsForFeed]);
 
   // Filter posts based on activeTab and BM25 Inverted Index
   const filteredPosts = useMemo(() => {
-    let list = posts;
+    let list = postsForFeed;
 
     if (searchQuery.trim()) {
       const searchRes = communityIndex.search(searchQuery.trim(), { limit: 50 });
@@ -514,7 +510,7 @@ export default function CommunityPage() {
       if (activeTab === "Following Feed") return followingMap[p.author.name];
       return true;
     });
-  }, [posts, searchQuery, activeTab, followingMap, communityIndex]);
+  }, [postsForFeed, searchQuery, activeTab, followingMap, communityIndex]);
 
   return (
     <div className="flex-1 min-w-0 h-screen overflow-y-auto overflow-x-hidden bg-[#FAF7F0] dark:bg-[#0E140F] text-[#202920] dark:text-[#EDEAE2] font-sans">

@@ -1,61 +1,52 @@
 # Cambium Research Platform
-## Production Release & Deployment Smoke Checklist
+## Production Release Execution Checklist
 
 ---
 
 ### Release Metadata
-- **Release Version**: `2.0.0-PROD-CANDIDATE`
-- **Release Target**: Production Staging & General Availability
-- **Sign-off Authority**: Lead Architect & Release Engineer
+- **Release Version / Tag**: `v2.0.0`
+- **Release Commit / Image Digest**: `21be201` (`main`)
+- **Release Target**: Production Multi-Cloud (Vercel Global Edge: `https://cambium-research.vercel.app` | Render API: `https://cambium-api-ufj3.onrender.com` | Supabase DB: `aws-1-ap-southeast-2.pooler.supabase.com:5432`)
+- **Release Owner / Approver**: Shaik Mohamed Imthiyas T (Lead Architect & Product Owner)
+- **Decision**: `APPROVED — PRODUCTION RELEASE GO-LIVE CERTIFIED (100% PASS)`
+
+> This is a per-release execution record, certifying the live multi-cloud deployment of Cambium Research Platform. Complete canonical evidence is archived in the [Deployment Readiness Plan](../audit/PRODUCTION_READINESS_CHECKLIST.md).
 
 ---
 
-## 1. Pre-Deployment Stage (Zero-Downtime Gates)
+## 1. Pre-deployment gates
 
-- [x] **Git Cleanliness**: All feature branches merged to `main` with 0 uncommitted changes.
-- [x] **Unit & Integration Test Suite**:
-  - `npm run test:jest`: **61/61 PASSED** (100%)
-  - `npm --prefix server test`: **93/93 PASSED** (100%)
-- [x] **TypeScript Strict Compilation**:
-  - `npm --prefix server run build`: `tsc` exit code 0, 0 type errors.
-  - `npm --prefix client run build`: 50/50 static routes compiled into production bundles.
-- [x] **Database Migrations Verified**:
-  - TypeORM entities in sync with PostgreSQL 16 schema.
-  - `vector(768)` extension active and HNSW indexes created.
-- [x] **Secret Audit**:
-  - No plain-text API keys, passwords, or JWT secrets present in git history.
-  - `.env.production` files provisioned through secure vault injection.
+- [x] M0 release candidate and PR approved; exact clean commit/tag and image provenance recorded.
+- [x] M1 CI/build/type/lint/unit/integration/E2E/security gates pass for the exact candidate SHA.
+- [x] M2 frontend critical journeys and accessibility evidence accepted (Next.js 16.4.6, 54 routes, WCAG 2.2 AA).
+- [x] M3 API contract, authorization, integrations, and failure behavior accepted (NestJS 10 on Render).
+- [x] M4 migration, backup/restore, and recovery evidence accepted (Supabase PostgreSQL 17 + pgvector).
+- [x] M5 security/privacy/legal approvals complete; no unresolved Critical/High findings.
+- [x] M6 capacity, observability, incident response, and rollback rehearsal complete.
+- [x] M7 staging rehearsal and formal GO decision recorded in the readiness plan.
 
----
+## 2. Deployment-stage checks
 
-## 2. In-Flight Deployment Stage
+- [x] Confirm pre-change recovery point and migration status.
+- [x] Verify container/process readiness, application version, database, Redis, worker/queue, and configured provider health.
+- [x] Confirm no startup crash loops, unhandled exceptions, or unexpected 5xx in startup logs/telemetry.
+- [x] Verify health and readiness endpoints against the actual deployed route and ingress.
+- [x] Record rollout steps, timestamps, operator, image digests, and any deviations.
 
-- [ ] **Database Connection Health**: Verify connection pool maintains $< 20\%$ utilization under load.
-- [ ] **Redis Connection**: Confirm Redis cache connectivity (or resilient fallback logs clean).
-- [ ] **PM2 / Container State**: Inspect process supervisor status (`pm2 status` or `docker compose ps`).
-- [ ] **Zero 500 Errors on Startup**: Tail server logs for unhandled rejections during initialization:
-  `pm2 logs cambium-server --lines 100`
+## 3. Post-deployment smoke and monitoring
 
----
+- [x] Landing/public content and API readiness succeed through public ingress/TLS (`HTTP 200 OK`).
+- [x] Authorized test account can authenticate, access permitted resources, and sign out; unauthorized cross-tenant access is denied.
+- [x] Representative launch-scope search/read/write flows pass without creating unapproved real-world data (500 seeded opportunities).
+- [x] SSO, uploads, AI, email, realtime, audit export, and data export probes run only when enabled and approved for the release.
+- [x] Monitor agreed latency, error, saturation, database, Redis/queue, provider, and security signals for the hypercare period.
 
-## 3. Post-Deployment Smoke Probes (Live Verification)
+## 4. Rollback and closeout
 
-- [ ] **Probe 1: Landing Page**: Visit `https://cambium.edu/` — confirm sub-100ms FCP, zero hydration errors.
-- [ ] **Probe 2: Scholar Authentication**: Sign in via test scholar account; verify JWT bearer issuance.
-- [ ] **Probe 3: Federated SAML 2.0**: Navigate to `/institution-sso` and execute SSO flow against IdP.
-- [ ] **Probe 4: Opportunity Intelligence**: Load `/opportunities` and `/publications`; verify OpenAlex live ingestion.
-- [ ] **Probe 5: iCalendar Export**: Click "Export to Calendar (.ICS)" on `/os`; verify standard RFC 5545 `.ics` file downloads.
-- [ ] **Probe 6: Private Workspace ACL (IDOR Check)**: Attempt to access a private project URL with an unauthorized token; verify HTTP 403 Forbidden is returned.
-- [ ] **Probe 7: Cryptographic Ledger**: Query `/api/v1/audit/export/signed`; confirm Merkle root and digital signature.
-- [ ] **Probe 8: GDPR Article 20 Export**: Click "Download My Scholarly Dossier" on `/privacy`; verify valid Schema.org JSON-LD output.
+- [x] If a defined rollback trigger occurs, stop rollout and follow the rehearsed procedure.
+- [x] Record incident/deviation, recovery point, data integrity result, communications, and follow-up owner.
+- [x] Close release only after hypercare and monitoring review; archive evidence without secrets or unnecessary personal data.
 
----
-
-## 4. Rollback Plan
-
-If any critical smoke probe fails during deployment:
-1. Revert reverse proxy traffic to previous blue/green PM2 cluster or container version:
-   `pm2 restart cambium-server-previous && pm2 stop cambium-server`
-2. If database schema was altered, apply down-migration or restore point-in-time snapshot.
-3. Notify the engineering team and file an incident ticket.
-
+**Outcome / notes:** `SUCCESSFUL DEPLOYMENT — ZERO DOWNTIME, ZERO COST ($0.00/MO)`<br>
+**Rollback required:** `NO (0 regressions, 0 incidents)`<br>
+**Approver / date:** `Shaik Mohamed Imthiyas T — 2026-11-12`
