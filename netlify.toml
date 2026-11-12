@@ -1,0 +1,22 @@
+# ==============================================================================
+# CAMBIUM RESEARCH PLATFORM — NETLIFY CLOUD BLUEPRINT (netlify.toml)
+# Next.js 15+ App Router Monorepo Deployment
+# ==============================================================================
+
+[build]
+  base = "client"
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
