@@ -124,7 +124,7 @@ export default async function Image() {
               fontWeight: 600,
             }}
           >
-            cambium.research
+            cambium-research.vercel.app
           </div>
         </div>
       </div>

@@ -38,7 +38,10 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cambium.research";
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://cambium-research.vercel.app");
 
 export const viewport: Viewport = {
   themeColor: [
@@ -62,6 +65,10 @@ export const metadata: Metadata = {
   creator: "Shaik Mohamed Imthiyas T",
   publisher: "Cambium Research",
   keywords: [
+    "Cambium Research",
+    "Cambium Research Vercel",
+    "Cambium",
+    "Shaik Mohamed Imthiyas T",
     "research opportunities",
     "grant discovery",
     "open science",
@@ -72,9 +79,13 @@ export const metadata: Metadata = {
     "IRB compliance",
     "CRediT taxonomy",
     "knowledge graph",
+    "scholar operating system",
   ],
   alternates: {
     canonical: "/",
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
   },
   openGraph: {
     type: "website",
@@ -116,6 +127,18 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
+      name: "Cambium Research",
+      alternateName: ["Cambium", "Cambium Research Vercel", "Cambium Platform"],
+      description: "Discover research opportunities, build verified academic identity, and organize the knowledge behind your scholarship.",
+      publisher: {
+        "@id": `${siteUrl}/#organization`,
+      },
+      inLanguage: "en-US",
+    },
     {
       "@type": "Organization",
       "@id": `${siteUrl}/#organization`,

@@ -1,7 +1,10 @@
 import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cambium.research";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://cambium-research.vercel.app");
 
   return {
     rules: [
@@ -49,6 +52,21 @@ export default function robots(): MetadataRoute.Robots {
           "/429",
           "/error-500",
         ],
+      },
+      {
+        userAgent: "Googlebot",
+        allow: [
+          "/",
+          "/discover",
+          "/opportunities",
+          "/publications",
+          "/community",
+          "/about",
+          "/pricing",
+          "/changelog",
+          "/help",
+        ],
+        disallow: ["/dashboard", "/workspace", "/settings", "/api/"],
       },
       {
         userAgent: ["GPTBot", "ClaudeBot", "PerplexityBot"],
