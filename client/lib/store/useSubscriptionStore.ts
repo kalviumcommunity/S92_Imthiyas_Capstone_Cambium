@@ -40,7 +40,7 @@ export interface SubscriptionState {
   maxLabMembers: number;
   paymentMethod: PaymentMethodInfo | null;
   invoices: InvoiceItem[];
-  
+
   // Actions
   setCurrency: (currency: Currency) => void;
   setBillingCycle: (cycle: BillingCycle) => void;
@@ -351,3 +351,4 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => {
     },
   };
 });
+
