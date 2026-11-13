@@ -45,11 +45,16 @@ if (fs.existsSync(srcDir)) {
   // Also copy key root icons to public/ for standard root access
   const rootCopies = [
     { from: "favicon.svg", to: "favicon.svg" },
+    { from: "favicon.ico", to: "favicon.ico" },
+    { from: "apple-touch-icon.png", to: "apple-touch-icon.png" },
     { from: "favicon-light.svg", to: "favicon-light.svg" },
     { from: "favicon-dark.svg", to: "favicon-dark.svg" },
     { from: "cambium-logo-light.svg", to: "cambium-logo-light.svg" },
     { from: "cambium-logo-dark.svg", to: "cambium-logo-dark.svg" },
     { from: "cambium-logo-light.svg", to: "logo.svg" }, // Update legacy logo.svg to new design
+    { from: "cambium-emblem.png", to: "cambium-emblem.png" },
+    { from: "cambium-emblem-circle.png", to: "cambium-emblem-circle.png" },
+    { from: "cambium-emblem-hd.png", to: "cambium-emblem-hd.png" },
   ];
 
   for (const { from, to } of rootCopies) {

@@ -475,11 +475,16 @@ function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start my-auto">
           {/* Left Column: Semantic Typographic Statement (7 Cols) */}
           <div className="lg:col-span-7 flex flex-col items-start">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-[#F2EBDD] dark:bg-[#131C15] mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-[#F2EBDD] dark:bg-[#131C15] mb-6 shadow-2xs">
+              <img
+                src="/public_logo/cambium-emblem-circle.png"
+                alt="Cambium Fibonacci Golden Spiral"
+                className="w-4 h-4 rounded-full object-contain shrink-0 shadow-xs"
+              />
               <span className="font-sans text-[11px] font-semibold tracking-wider text-[#3E6248] dark:text-[#4ADE80] uppercase">
                 The Research Operating System
               </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
             </div>
 
             <h1 className="font-serif text-[clamp(2.75rem,5.6vw,4.75rem)] text-[#202920] dark:text-[#EDEAE2] font-normal leading-[1.08] tracking-tight mb-8">

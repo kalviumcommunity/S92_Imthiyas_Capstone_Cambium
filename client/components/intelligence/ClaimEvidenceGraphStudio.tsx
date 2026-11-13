@@ -547,3 +547,4 @@ ${activeClaim.supportingStudies
     </div>
   );
 }
+
