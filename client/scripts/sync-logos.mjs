@@ -55,6 +55,7 @@ if (fs.existsSync(srcDir)) {
     { from: "cambium-emblem.png", to: "cambium-emblem.png" },
     { from: "cambium-emblem-circle.png", to: "cambium-emblem-circle.png" },
     { from: "cambium-emblem-hd.png", to: "cambium-emblem-hd.png" },
+    { from: "cambium-emblem-transparent.png", to: "cambium-emblem-transparent.png" },
   ];
 
   for (const { from, to } of rootCopies) {
