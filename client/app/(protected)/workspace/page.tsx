@@ -1100,7 +1100,16 @@ function Toolbar({
             router.push("/workspace/upload");
           },
         },
-        { icon: icons.share, label: "Share", onClick: () => {} },
+        {
+          icon: icons.share,
+          label: "Share Workspace Link",
+          onClick: () => {
+            if (typeof window !== "undefined") {
+              navigator.clipboard.writeText(window.location.href);
+              alert("Workspace URL copied to clipboard for collaboration!");
+            }
+          },
+        },
         { icon: icons.export, label: "Export", onClick: onOpenCitation },
       ].map((action, i) => (
         <Tooltip key={i} text={action.label}>
@@ -1718,6 +1727,8 @@ function Editor({
   setSelectedRows,
   onOpenCitation,
   onContextMenu,
+  onOpenAi,
+  onNavigateSection,
 }: {
   activeNav?: string;
   saveStatus: string;
@@ -1726,6 +1737,8 @@ function Editor({
   setSelectedRows: React.Dispatch<React.SetStateAction<number[]>>;
   onOpenCitation: (cite?: any) => void;
   onContextMenu?: (e: React.MouseEvent, item: any) => void;
+  onOpenAi?: () => void;
+  onNavigateSection?: (id: string) => void;
 }) {
   const [slashOpen, setSlashOpen] = useState(false);
 
@@ -1897,6 +1910,87 @@ function Editor({
         />
 
         {/* Section Heading: Key Citations */}
+        {/* AI Copilot In-Canvas Smart Assistant */}
+        <div
+          style={{
+            background: W.surface2,
+            border: `1px solid ${W.border}`,
+            borderRadius: 12,
+            padding: "16px 20px",
+            marginBottom: 24,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 8,
+                background: W.greenBg,
+                color: W.green,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Icon d={icons.sparkle} size={18} strokeWidth={2} />
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: W.text1 }}>
+                Scholarly AI Co-Author & Literature Synthesis Active
+              </div>
+              <div style={{ fontSize: 12, color: W.text2 }}>
+                Auto-complete hypotheses, cross-validate methodology baselines, and extract grounded citations.
+              </div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              onClick={() => onOpenAi?.()}
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                padding: "6px 12px",
+                borderRadius: 6,
+                background: W.surface,
+                border: `1px solid ${W.border}`,
+                color: W.text1,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <Icon d={icons.sparkle} size={13} stroke={W.green} />
+              Instant Synthesis
+            </button>
+            <button
+              onClick={() => onNavigateSection?.("ai-copilot")}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                padding: "6px 14px",
+                borderRadius: 6,
+                background: W.green,
+                border: "none",
+                color: "white",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              Open Copilot Studio →
+            </button>
+          </div>
+        </div>
+
         <h2
           style={{
             fontSize: 20,
@@ -1985,6 +2079,15 @@ function Editor({
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end", flexShrink: 0 }}>
                 <button
+                  onClick={() => {
+                    onOpenCitation?.({
+                      title: cite.title,
+                      author: cite.authors,
+                      year: 2025,
+                      organization: cite.journal,
+                      doi: cite.doi,
+                    });
+                  }}
                   style={{
                     fontSize: 11.5,
                     padding: "3px 10px",
@@ -2002,7 +2105,7 @@ function Editor({
                   Insert citation
                 </button>
                 <Link
-                  href="/reader"
+                  href={`/agent-reader?doi=${encodeURIComponent(cite.doi)}&title=${encodeURIComponent(cite.title)}`}
                   style={{
                     fontSize: 11.5,
                     padding: "3px 10px",
@@ -2018,7 +2121,7 @@ function Editor({
                   onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = W.text2)}
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = W.text3)}
                 >
-                  Open paper
+                  Open in Agentic Reader ↗
                 </Link>
               </div>
             </div>
@@ -3004,6 +3107,8 @@ function WorkspacePageContent() {
                   setShowCitationModal(true);
                 }}
                 onContextMenu={handleContextMenu}
+                onOpenAi={() => setShowAiModal(true)}
+                onNavigateSection={(id) => setActiveNav(id)}
               />
             </div>
 

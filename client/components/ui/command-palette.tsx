@@ -886,6 +886,16 @@ export function CommandPalette() {
                   <span>Launch in Discover</span>
                   <ArrowRight size={12} />
                 </button>
+                <button
+                  onClick={() => {
+                    closePalette();
+                    router.push(`/opportunities?q=${encodeURIComponent(query)}`);
+                  }}
+                  className="bg-white border border-[#E4DCCB] text-[#202920] px-4 py-1.5 rounded-full font-sans text-xs font-semibold inline-flex items-center gap-1.5 hover:border-[#3E6248] transition-colors cursor-pointer"
+                >
+                  <span>Search Grants</span>
+                  <ArrowRight size={12} />
+                </button>
               </div>
             </div>
           )}

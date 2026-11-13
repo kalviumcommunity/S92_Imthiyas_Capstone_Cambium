@@ -39,7 +39,7 @@ export default function PricingPage() {
       period: billingPeriod === "monthly" ? "/ month" : "/ year (Save ~16%)",
       badge: "Best Value · Lowest Entry Rate",
       buttonText: `Activate Scholar Pro (${currency === "USD" ? "$1" : "₹89"}/mo)`,
-      buttonHref: "/billing",
+      buttonHref: "/billing?tier=pro",
       highlight: true,
       features: [
         "10,000 AI Assistant query credits / month",
@@ -60,7 +60,7 @@ export default function PricingPage() {
       period: billingPeriod === "monthly" ? "/ month" : "/ year (Save ~16%)",
       badge: "Laboratory Standard",
       buttonText: "Equip Lab Team",
-      buttonHref: "/billing",
+      buttonHref: "/billing?tier=team",
       highlight: false,
       features: [
         "Up to 10 collaborative investigator seats",

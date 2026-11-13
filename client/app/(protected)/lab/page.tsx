@@ -67,6 +67,47 @@ export default function UniversityLabWorkspacePage() {
   const [activeTab, setActiveTab] = useState<"projects" | "compute" | "members">("projects");
   const { projects, addProject, updateProjectStage, isAdding } = useOptimisticLab();
 
+  const [members, setMembers] = useState<LabMember[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("cambium_lab_members_v2");
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {}
+      }
+    }
+    return LAB_MEMBERS;
+  });
+
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [newMemberName, setNewMemberName] = useState("");
+  const [newMemberRole, setNewMemberRole] = useState("Doctoral Researcher");
+  const [newMemberOrcid, setNewMemberOrcid] = useState("0009-0004-9812-");
+  const [inviteFeedback, setInviteFeedback] = useState<string | null>(null);
+
+  const handleAddMember = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMemberName.trim()) return;
+
+    const newM: LabMember = {
+      name: newMemberName.trim(),
+      role: newMemberRole.trim(),
+      orcid: newMemberOrcid.trim() || "0009-0004-xxxx-xxxx",
+      activeProjects: 1,
+      avatarColor: "bg-[#3E6248]",
+    };
+
+    const updated = [newM, ...members];
+    setMembers(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cambium_lab_members_v2", JSON.stringify(updated));
+    }
+    setIsInviteOpen(false);
+    setNewMemberName("");
+    setInviteFeedback(`Invited ${newM.name} to Cambium Lab Roster!`);
+    setTimeout(() => setInviteFeedback(null), 3500);
+  };
+
   return (
     <div className="flex-1 min-w-0 h-screen overflow-y-auto bg-[#FAF7F0] text-[#202920] font-sans p-6 sm:p-10 selection:bg-[#3E6248]/20 selection:text-[#173F35]">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -345,38 +386,150 @@ export default function UniversityLabWorkspacePage() {
 
         {/* Tab 3: Lab Roster */}
         {activeTab === "members" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {LAB_MEMBERS.map((member, idx) => (
-              <div
-                key={idx}
-                className="p-5 rounded-2xl bg-white border border-[#E4DCCB] shadow-xs space-y-3"
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-serif text-lg font-bold text-[#202920] m-0">
+                  Active Institutional Investigators ({members.length})
+                </h3>
+                <p className="text-xs text-[#62685E] mt-0.5">
+                  CRediT-verified research personnel, doctoral fellows, and visiting scientists with active cluster credentials.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsInviteOpen(true)}
+                className="px-4 py-2 rounded-xl bg-[#3E6248] hover:bg-[#173F35] text-white text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs self-start sm:self-auto"
               >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-full ${member.avatarColor} text-white flex items-center justify-center font-serif font-bold text-sm`}
-                  >
-                    {member.name[0]}
+                <Plus size={14} />
+                Invite Lab Member
+              </button>
+            </div>
+
+            {inviteFeedback && (
+              <div className="p-3 rounded-xl bg-[#DCE6D7] border border-[#66866A]/30 text-xs font-mono text-[#3E6248] flex items-center gap-2">
+                <CheckCircle2 size={14} />
+                <span>{inviteFeedback}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {members.map((member, idx) => (
+                <div
+                  key={idx}
+                  className="p-5 rounded-2xl bg-white border border-[#E4DCCB] shadow-xs space-y-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-full ${member.avatarColor} text-white flex items-center justify-center font-serif font-bold text-sm`}
+                    >
+                      {member.name[0]}
+                    </div>
+                    <div>
+                      <h3 className="font-serif text-base font-normal text-[#202920] m-0">
+                        {member.name}
+                      </h3>
+                      <div className="text-[11px] font-mono text-[#3E6248]">{member.role}</div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-serif text-base font-normal text-[#202920] m-0">
-                      {member.name}
-                    </h3>
-                    <div className="text-[11px] font-mono text-[#3E6248]">{member.role}</div>
+
+                  <div className="pt-2 border-t border-[#E4DCCB] text-xs font-mono text-[#62685E] space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span>ORCID:</span>
+                      <span className="text-[#202920]">{member.orcid}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Projects:</span>
+                      <span className="text-[#202920]">{member.activeProjects} Active</span>
+                    </div>
                   </div>
                 </div>
+              ))}
+            </div>
 
-                <div className="pt-2 border-t border-[#E4DCCB] text-xs font-mono text-[#62685E] space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span>ORCID:</span>
-                    <span className="text-[#202920]">{member.orcid}</span>
+            {/* Invite Modal */}
+            {isInviteOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+                <div className="bg-white border border-[#E4DCCB] rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#E4DCCB]">
+                    <h3 className="font-serif text-lg font-bold text-[#202920] m-0">
+                      Invite Research Colleague
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setIsInviteOpen(false)}
+                      className="text-[#85877B] hover:text-[#202920] text-sm cursor-pointer border-0 bg-transparent"
+                    >
+                      ✕
+                    </button>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span>Projects:</span>
-                    <span className="text-[#202920]">{member.activeProjects} Active</span>
-                  </div>
+
+                  <form onSubmit={handleAddMember} className="space-y-3">
+                    <div>
+                      <label className="text-xs font-mono text-[#62685E] block mb-1">
+                        Scholar Full Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newMemberName}
+                        onChange={(e) => setNewMemberName(e.target.value)}
+                        placeholder="e.g. Dr. Alistair Finch"
+                        className="w-full px-3 py-2 rounded-lg border border-[#E4DCCB] text-xs font-sans text-[#202920] focus:outline-none focus:border-[#3E6248]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-mono text-[#62685E] block mb-1">
+                        Authorship / CRediT Role
+                      </label>
+                      <select
+                        value={newMemberRole}
+                        onChange={(e) => setNewMemberRole(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-[#E4DCCB] text-xs font-sans text-[#202920] focus:outline-none focus:border-[#3E6248] bg-white"
+                      >
+                        <option value="Co-PI & Clinical Lead">Co-PI & Clinical Lead</option>
+                        <option value="Post-Doctoral Fellow">Post-Doctoral Fellow</option>
+                        <option value="Senior Computational Biologist">Senior Computational Biologist</option>
+                        <option value="Doctoral Researcher">Doctoral Researcher</option>
+                        <option value="Visiting Research Scholar">Visiting Research Scholar</option>
+                        <option value="Data Analyst / Statistician">Data Analyst / Statistician</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-mono text-[#62685E] block mb-1">
+                        ORCID iD
+                      </label>
+                      <input
+                        type="text"
+                        value={newMemberOrcid}
+                        onChange={(e) => setNewMemberOrcid(e.target.value)}
+                        placeholder="0009-0004-9812-4112"
+                        className="w-full px-3 py-2 rounded-lg border border-[#E4DCCB] text-xs font-mono text-[#202920] focus:outline-none focus:border-[#3E6248]"
+                      />
+                    </div>
+
+                    <div className="pt-3 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsInviteOpen(false)}
+                        className="px-3.5 py-1.5 rounded-lg border border-[#E4DCCB] text-xs font-mono text-[#62685E] hover:bg-[#FAF7F0] cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-4 py-1.5 rounded-lg bg-[#3E6248] hover:bg-[#173F35] text-white text-xs font-mono font-semibold cursor-pointer shadow-xs"
+                      >
+                        Send Lab Invitation
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>

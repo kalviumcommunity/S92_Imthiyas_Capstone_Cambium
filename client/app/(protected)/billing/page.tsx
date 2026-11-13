@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Sparkles,
   Check,
@@ -38,7 +39,10 @@ const CheckIcon = () => (
   </svg>
 );
 
-export default function BillingPage() {
+function BillingPageContent() {
+  const searchParams = useSearchParams();
+  const requestedTier = searchParams.get("tier");
+
   const {
     currentPlan,
     billingCycle,
@@ -58,6 +62,12 @@ export default function BillingPage() {
   const [showTopupModal, setShowTopupModal] = useState(false);
   const [topupSuccessMessage, setTopupSuccessMessage] = useState("");
   const [barWidth, setBarWidth] = useState(0);
+
+  useEffect(() => {
+    if (requestedTier === "pro" || requestedTier === "team" || requestedTier === "enterprise") {
+      setCheckoutPlan(requestedTier as SubscriptionTier);
+    }
+  }, [requestedTier]);
 
   useEffect(() => {
     const percentage = Math.min(100, Math.round((tokensUsed / tokensTotal) * 100));
@@ -810,5 +820,19 @@ export default function BillingPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function BillingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] flex items-center justify-center font-mono text-xs text-[#85877B]">
+          Loading billing ledger...
+        </div>
+      }
+    >
+      <BillingPageContent />
+    </Suspense>
   );
 }

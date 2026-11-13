@@ -30,7 +30,10 @@ import {
   UploadCloud,
   Globe,
   X,
+  Zap,
 } from "lucide-react";
+import { useSubscriptionStore } from "@/lib/store/useSubscriptionStore";
+import { FeatureGateModal } from "@/components/ui/feature-gate-modal";
 
 interface SynthesisMessage {
   id: string;
@@ -57,7 +60,10 @@ function AgenticReaderContent() {
   const [showLiveFetchModal, setShowLiveFetchModal] = useState(false);
   const [liveDoiInput, setLiveDoiInput] = useState("");
   const [isLiveFetching, setIsLiveFetching] = useState(false);
+  const [showGateModal, setShowGateModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { tokensUsed, tokensTotal, consumeTokens } = useSubscriptionStore();
 
   const [manuscript, setManuscript] = useState({
     title: paramTitle || "Neuro-Symbolic Deductive Inference Over Large Chemical Spaces",
@@ -251,6 +257,13 @@ function AgenticReaderContent() {
     const query = inputQuery.trim();
     if (!query || isThinking) return;
 
+    // Deduct compute tokens via Subscription Ledger
+    const canDeduct = consumeTokens(50);
+    if (!canDeduct) {
+      setShowGateModal(true);
+      return;
+    }
+
     const userMsg: SynthesisMessage = {
       id: `usr-${Date.now()}`,
       sender: "user",
@@ -410,6 +423,14 @@ function AgenticReaderContent() {
             <Globe size={13} />
             Fetch Live Paper (DOI / OpenAlex)
           </button>
+          <Link
+            href="/billing"
+            className="px-2.5 py-1.5 rounded-lg border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#18231B] hover:border-[#3E6248] dark:hover:border-[#4ADE80] text-xs font-mono text-[#202920] dark:text-[#EDEAE2] flex items-center gap-1.5 transition-colors"
+            title="Compute tokens quota. Click to view billing or top up."
+          >
+            <Zap size={13} className="text-[#3E6248] dark:text-[#4ADE80]" />
+            <span>{tokensTotal - tokensUsed > 0 ? (tokensTotal - tokensUsed).toLocaleString() : 0} tokens</span>
+          </Link>
           <button
             onClick={handleExportSynthesis}
             className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] text-xs font-mono text-[#202920] dark:text-[#EDEAE2] hover:bg-[#FAF7F0] dark:hover:bg-[#1F2E23] flex items-center gap-1.5 transition-colors cursor-pointer"
@@ -744,6 +765,14 @@ function AgenticReaderContent() {
           </form>
         </div>
       </div>
+
+      <FeatureGateModal
+        isOpen={showGateModal}
+        onClose={() => setShowGateModal(false)}
+        featureTitle="Grounded AI Reading & Synthesis Quota"
+        featureDescription="You have reached your current compute token allowance. Upgrade to Scholar Pro ($1/mo) or top up compute tokens to continue querying full-text preprints."
+        requiredTier="pro"
+      />
     </div>
   );
 }

@@ -461,6 +461,10 @@ Proposal repository verified under institutional provenance protocols.
             <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono bg-[#DCE6D7] text-[#3E6248] border border-[#66866A]/30 font-semibold">
               CRediT 14-Role Matrix
             </span>
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-mono bg-white text-[#3E6248] border border-[#E4DCCB] font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] animate-pulse" />
+              Live Presence Synced (Hybrid SSE & Broadcast)
+            </span>
           </div>
           <p className="text-xs text-[#62685E] mt-1">
             Co-PI authorship governance, shared OpenAlex literature vaults, real-time activity changelog & tokenized viral invites.
