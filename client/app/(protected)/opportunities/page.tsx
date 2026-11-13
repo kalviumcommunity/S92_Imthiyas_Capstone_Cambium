@@ -1229,10 +1229,20 @@ function Toast({ message, onDismiss }: { message: string; onDismiss: () => void 
 
 function OpportunityHubContent() {
   const searchParams = useSearchParams();
-  const urlQ = searchParams.get("q") || "";
+  const urlQ = searchParams.get("q") || searchParams.get("search") || "";
 
   const [activeTab, setActiveTab] = useState<TabId>("for-you");
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set(["sm1"]));
+  const [savedIds, setSavedIds] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("cambium_opportunities_saved");
+        if (stored) return new Set(JSON.parse(stored));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return new Set(["sm1"]);
+  });
   const [trackedIds, setTrackedIds] = useState<Map<string, TrackStatus>>(new Map<string, TrackStatus>([["sm1", "Preparing"]]));
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -1354,8 +1364,39 @@ function OpportunityHubContent() {
   const handleSave = useCallback((id: string) => {
     setSavedIds((prev) => {
       const next = new Set(prev);
+      const isSaving = !next.has(id);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("cambium_opportunities_saved", JSON.stringify(Array.from(next)));
+          const oppObj = ALL_OPPS.find((o) => o.id === id);
+          if (oppObj) {
+            const rawBookmarks = localStorage.getItem("cambium_bookmarks") || "[]";
+            let bookmarksList: any[] = JSON.parse(rawBookmarks);
+            if (isSaving) {
+              if (!bookmarksList.some((b) => b.id === id)) {
+                bookmarksList.push({
+                  id: oppObj.id,
+                  type: "opportunity",
+                  title: oppObj.title,
+                  funder: oppObj.org,
+                  amount: oppObj.funding || "$500,000",
+                  deadline: oppObj.deadline,
+                  url: oppObj.officialSource || "/opportunities",
+                  savedAt: new Date().toISOString(),
+                });
+              }
+            } else {
+              bookmarksList = bookmarksList.filter((b) => b.id !== id);
+            }
+            localStorage.setItem("cambium_bookmarks", JSON.stringify(bookmarksList));
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
       return next;
     });
   }, []);

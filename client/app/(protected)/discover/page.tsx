@@ -23,7 +23,9 @@ import {
   Clock,
   Search,
   ExternalLink,
+  Quote,
 } from "lucide-react";
+import CitationExportModal, { CitationItem } from "@/components/CitationExportModal";
 import { BooleanQueryBuilder } from "@/components/ui/boolean-query-builder";
 import { AiAutocompleteInput } from "@/components/ai/AiAutocompleteInput";
 import {
@@ -1590,6 +1592,8 @@ function DetailPanel({
   onSave,
   followed,
   onFollow,
+  onCite,
+  onToast,
 }: {
   item: AnyCard;
   onClose: () => void;
@@ -1597,6 +1601,8 @@ function DetailPanel({
   onSave: (id: string) => void;
   followed: boolean;
   onFollow: (id: string) => void;
+  onCite?: (item: AnyCard) => void;
+  onToast?: (msg: string) => void;
 }) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -1736,7 +1742,32 @@ function DetailPanel({
             </button>
           )}
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            {onCite && (itemType === "paper" || itemType === "book" || itemType === "dataset" || itemType === "software") && (
+              <button
+                type="button"
+                onClick={() => onCite(item)}
+                className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#62685E] dark:text-[#A4B3A2] hover:text-[#202920] dark:hover:text-[#EDEAE2] px-3 py-2 rounded-xl border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#131C15] cursor-pointer"
+                title="Export citation in BibTeX, APA, IEEE, or RIS format"
+              >
+                <Quote className="w-3.5 h-3.5 text-[#3E6248] dark:text-[#4ADE80]" />
+                <span>Cite</span>
+              </button>
+            )}
+            <Link
+              href={`/workspace?createDraft=1&title=${encodeURIComponent(title)}&funder=National+Science+Foundation&budget=$500,000`}
+              className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#62685E] dark:text-[#A4B3A2] hover:text-[#202920] dark:hover:text-[#EDEAE2] px-3 py-2 rounded-xl border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#131C15] no-underline"
+              title="Pin this work into an active grant proposal draft"
+            >
+              <span>Pin to Draft</span>
+            </Link>
+            <Link
+              href={`/opportunities?q=${encodeURIComponent(title.slice(0, 45))}`}
+              className="inline-flex items-center gap-1.5 text-xs font-mono font-medium text-[#3E6248] dark:text-[#4ADE80] hover:underline px-3 py-2 rounded-xl border border-[#3E6248]/30 dark:border-[#4ADE80]/30 bg-[#DCE6D7]/40 dark:bg-[#1F2E23]/40 no-underline"
+              title="Find matching RFP funding opportunities for this research area"
+            >
+              <span>Grants ↗</span>
+            </Link>
             {(item as any).openUrl && (
               <a
                 href={(item as any).openUrl}
@@ -1796,10 +1827,40 @@ function DiscoverContent() {
   const [activeArea, setActiveArea] = useState("");
   const [activeSort, setActiveSort] = useState("Relevance");
   const [detailItem, setDetailItem] = useState<AnyCard | null>(null);
-  const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
+  const [savedItems, setSavedItems] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("cambium_discover_saved");
+        if (stored) return new Set(JSON.parse(stored));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return new Set();
+  });
   const [followedItems, setFollowedItems] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState({ message: "", visible: false });
   const [showProfileBanner, setShowProfileBanner] = useState(false);
+  const [citationItem, setCitationItem] = useState<CitationItem | null>(null);
+  const [showCitationModal, setShowCitationModal] = useState(false);
+
+  const handleOpenCite = useCallback((rawItem: AnyCard) => {
+    const itType = (rawItem as any).type || "paper";
+    const authorsArr = (rawItem as any).authors || (rawItem as any).creators || ["Scholar"];
+    const yearNum = (rawItem as any).year || new Date().getFullYear();
+    const citeObj: CitationItem = {
+      id: rawItem.id,
+      title: (rawItem as any).title || (rawItem as any).name || "Scholarly Work",
+      author: Array.isArray(authorsArr) ? authorsArr.join(", ") : String(authorsArr),
+      organization: (rawItem as any).venue || (rawItem as any).publisher || "Cambium Research Index",
+      year: typeof yearNum === "number" ? yearNum : parseInt(yearNum) || 2026,
+      doi: (rawItem as any).doi || undefined,
+      url: (rawItem as any).openUrl || (rawItem as any).doiUrl || undefined,
+      type: itType === "book" ? "book" : itType === "dataset" || itType === "software" ? "dataset" : "paper",
+    };
+    setCitationItem(citeObj);
+    setShowCitationModal(true);
+  }, []);
 
   useEffect(() => {
     if (urlQuery) {
@@ -1877,6 +1938,7 @@ function DiscoverContent() {
     (id: string) => {
       setSavedItems((prev) => {
         const next = new Set(prev);
+        const isSaving = !next.has(id);
         if (next.has(id)) {
           next.delete(id);
           showToast("Removed from Reading List");
@@ -1884,10 +1946,42 @@ function DiscoverContent() {
           next.add(id);
           showToast("Saved to Reading List");
         }
+
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("cambium_discover_saved", JSON.stringify(Array.from(next)));
+            const allItems: any[] = [...livePapers, ...liveBooks, ...liveArtifacts, ...liveResearchers, ...liveTopics];
+            const found = allItems.find((c) => c.id === id);
+            if (found) {
+              const rawBookmarks = localStorage.getItem("cambium_bookmarks") || "[]";
+              let bookmarksList: any[] = JSON.parse(rawBookmarks);
+              if (isSaving) {
+                if (!bookmarksList.some((b) => b.id === id)) {
+                  bookmarksList.push({
+                    id: found.id,
+                    type: found.type || (found.isbn ? "book" : found.doi ? "paper" : "dataset"),
+                    title: found.title || found.name || "Scholarly Item",
+                    authors: found.authors || found.creators || [found.name || "Scholar"],
+                    year: found.year || 2026,
+                    venue: found.venue || found.publisher || found.institution || "Academic Index",
+                    doi: found.doi || "",
+                    url: found.openUrl || found.doiUrl || `/discover?q=${encodeURIComponent(found.title || found.name || "")}`,
+                    savedAt: new Date().toISOString(),
+                  });
+                }
+              } else {
+                bookmarksList = bookmarksList.filter((b) => b.id !== id);
+              }
+              localStorage.setItem("cambium_bookmarks", JSON.stringify(bookmarksList));
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        }
         return next;
       });
     },
-    [showToast]
+    [livePapers, liveBooks, liveArtifacts, liveResearchers, liveTopics, showToast]
   );
 
   const handleFollow = useCallback(
@@ -2157,8 +2251,16 @@ function DiscoverContent() {
           onSave={handleSave}
           followed={followedItems.has(detailItem.id)}
           onFollow={handleFollow}
+          onCite={handleOpenCite}
+          onToast={showToast}
         />
       )}
+
+      <CitationExportModal
+        isOpen={showCitationModal}
+        onClose={() => setShowCitationModal(false)}
+        item={citationItem}
+      />
 
       <Toast message={toast.message} visible={toast.visible} />
     </div>

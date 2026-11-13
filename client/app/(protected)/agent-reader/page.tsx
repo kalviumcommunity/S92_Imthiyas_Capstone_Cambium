@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { chatWithAssistant, uploadArtifact } from "@/lib/api";
 import { fetchScholarlyWorks } from "@/lib/scholarly-api";
 import { queryRagEngine } from "@/lib/ai/rag-engine";
@@ -40,7 +41,11 @@ interface SynthesisMessage {
   timestamp: string;
 }
 
-export default function AgenticReaderPage() {
+function AgenticReaderContent() {
+  const searchParams = useSearchParams();
+  const paramTitle = searchParams.get("title");
+  const paramDoi = searchParams.get("doi");
+
   const [selectedAgent, setSelectedAgent] = useState<
     "Methodology Auditor" | "Statistical Rigor" | "Reproducibility Engine"
   >("Methodology Auditor");
@@ -55,13 +60,61 @@ export default function AgenticReaderPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [manuscript, setManuscript] = useState({
-    title: "Neuro-Symbolic Deductive Inference Over Large Chemical Spaces",
+    title: paramTitle || "Neuro-Symbolic Deductive Inference Over Large Chemical Spaces",
     journal: "Cell Systems · Research Article · Published April 2025",
     pages: 18,
-    doi: "10.1016/j.cels.2025.04.002",
+    doi: paramDoi || "10.1016/j.cels.2025.04.002",
     authors: "Imthiyas, S.",
     affiliations: "Department of EECS, MIT, Cambridge, MA · Cambium Research Lab",
   });
+
+  // Automatically fetch live paper when navigated with ?title= or ?doi=
+  useEffect(() => {
+    if (paramTitle || paramDoi) {
+      const q = paramTitle || paramDoi || "";
+      if (q) {
+        fetchScholarlyWorks({ query: q, limit: 1 })
+          .then((works) => {
+            if (works && works.length > 0) {
+              const w = works[0];
+              setManuscript({
+                title: w.title,
+                journal: `${w.venue} · ${w.year} · Cited by ${w.cited}`,
+                pages: 16,
+                doi: w.doi || paramDoi || "10.1016/j.cambium.2026.01",
+                authors: w.authors.join(", "),
+                affiliations: w.topics.join(" · ") || "Scholarly Federation",
+              });
+              setMessages((prev) => [
+                {
+                  id: `ingest-${Date.now()}`,
+                  sender: "agent",
+                  agentRole: selectedAgent,
+                  content: `**Live OpenAlex & Crossref Ingestion Complete**\n\nIngested: **"${w.title}"**\n**Authors**: ${w.authors.join(", ")}\n**Venue**: ${w.venue} (${w.year})\n\n**Abstract**:\n> "${w.abstract}"\n\nAll empirical hypotheses and statistical claims are grounded. You can now audit this paper's methodology or ask for replication scripts.`,
+                  citations: [
+                    {
+                      page: 1,
+                      section: "Abstract",
+                      line: "L1-L15",
+                      snippet: w.abstract.slice(0, 150) + "...",
+                    },
+                  ],
+                  timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                },
+                ...prev,
+              ]);
+            } else if (paramTitle) {
+              setManuscript((prev) => ({
+                ...prev,
+                title: paramTitle,
+                doi: paramDoi || prev.doi,
+              }));
+            }
+          })
+          .catch((e) => console.error(e));
+      }
+    }
+  }, [paramTitle, paramDoi, selectedAgent]);
 
   const handleLiveFetch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -692,5 +745,19 @@ export default function AgenticReaderPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AgenticReaderPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] flex items-center justify-center font-mono text-xs text-[#85877B]">
+          Initializing Agentic Manuscript Reader...
+        </div>
+      }
+    >
+      <AgenticReaderContent />
+    </Suspense>
   );
 }

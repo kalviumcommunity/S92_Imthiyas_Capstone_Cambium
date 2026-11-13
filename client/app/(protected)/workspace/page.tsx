@@ -1629,7 +1629,89 @@ function SlashMenu({ onClose }: { onClose: () => void }) {
 
 // ─── Center Editor ──────────────────────────────────────────────────────────
 
+const SECTION_METADATA: Record<string, { label: string; defaultTitle: string; prompt: string; blockType: string }> = {
+  overview: {
+    label: "Project Overview",
+    defaultTitle: "AI in Healthcare: Strategic Overview & Scope",
+    prompt: "Define project objectives, institutional deliverables, and cross-functional team milestones.",
+    blockType: "Strategic Scope",
+  },
+  questions: {
+    label: "Research Questions",
+    defaultTitle: "Foundational Scientific Hypotheses & Inquiries",
+    prompt: "Formulate core questions, boundary conditions, and testable empirical criteria.",
+    blockType: "Primary Hypothesis",
+  },
+  literature: {
+    label: "Literature Review",
+    defaultTitle: "Transformer Models for Medical Imaging",
+    prompt: "Synthesize prior art, benchmark datasets, and architectural trade-offs.",
+    blockType: "Literature Gap",
+  },
+  reading: {
+    label: "Reading Notes",
+    defaultTitle: "Reading Queue & Manuscript Annotations",
+    prompt: "Capture extracted figures, methodology takeaways, and counter-arguments.",
+    blockType: "Manuscript Annotation",
+  },
+  ideas: {
+    label: "Ideas & Ideation",
+    defaultTitle: "Unexplored Paradigms & Architectural Blueprints",
+    prompt: "Document nascent ideas, cross-disciplinary analogies, and exploratory architectures.",
+    blockType: "Novel Concept",
+  },
+  experiments: {
+    label: "Experiments",
+    defaultTitle: "Computational Protocol & Run Matrix",
+    prompt: "Specify GPU hardware requirements, batch sizes, learning rates, and seeds.",
+    blockType: "Experiment Protocol",
+  },
+  methodology: {
+    label: "Methodology",
+    defaultTitle: "Mathematical Formulations & Algorithmic Design",
+    prompt: "Derive loss functions, convergence guarantees, and data normalization pipelines.",
+    blockType: "Methodological Formulation",
+  },
+  analysis: {
+    label: "Statistical Analysis",
+    defaultTitle: "Empirical Rigor & P-Value Distributions",
+    prompt: "Report confidence intervals, effect sizes, and ablation study deltas.",
+    blockType: "Statistical Evidence",
+  },
+  results: {
+    label: "Empirical Results",
+    defaultTitle: "Benchmark Performance Tables & Figures",
+    prompt: "Tabulate SOTA comparisons across Dice scores, AUROC, and latency benchmarks.",
+    blockType: "Benchmark Finding",
+  },
+  references: {
+    label: "References & BibTeX",
+    defaultTitle: "Verified Bibliography & Citation Graph",
+    prompt: "Maintain authoritative Crossref and arXiv DOIs for institutional export.",
+    blockType: "Citation Corpus",
+  },
+  datasets: {
+    label: "Datasets",
+    defaultTitle: "Cohort Provenance & Training Splits",
+    prompt: "Document patient cohorts, train/val/test partitions, and licensing terms.",
+    blockType: "Data Provenance",
+  },
+  meetings: {
+    label: "Meeting Notes",
+    defaultTitle: "Weekly Lab Sync & Advisor Minutes",
+    prompt: "Record discussion points, action items, assignees, and next milestone deadlines.",
+    blockType: "Action Items",
+  },
+  tasks: {
+    label: "Tasks & Deadlines",
+    defaultTitle: "Submission Milestones & Deliverables",
+    prompt: "Track camera-ready drafts, grant reporting due dates, and reviewer responses.",
+    blockType: "Milestone Task",
+  },
+};
+
 function Editor({
+  activeNav = "literature",
   saveStatus,
   setSaveStatus,
   selectedRows,
@@ -1637,6 +1719,7 @@ function Editor({
   onOpenCitation,
   onContextMenu,
 }: {
+  activeNav?: string;
   saveStatus: string;
   setSaveStatus: (s: string) => void;
   selectedRows: number[];
@@ -1645,6 +1728,45 @@ function Editor({
   onContextMenu?: (e: React.MouseEvent, item: any) => void;
 }) {
   const [slashOpen, setSlashOpen] = useState(false);
+
+  const meta = SECTION_METADATA[activeNav] || {
+    label: "Research Section",
+    defaultTitle: `${activeNav.charAt(0).toUpperCase() + activeNav.slice(1)} Notebook`,
+    prompt: "Capture live hypotheses, methodology notes, and verified data structures.",
+    blockType: "Research Note",
+  };
+
+  const [sectionTitles, setSectionTitles] = useState<Record<string, string>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("cambium_workspace_section_titles");
+        if (stored) return JSON.parse(stored);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return {};
+  });
+
+  const activeTitle = sectionTitles[activeNav] || meta.defaultTitle;
+
+  const handleTitleBlur = (e: React.FocusEvent<HTMLHeadingElement>) => {
+    const newTitle = e.currentTarget.innerText.trim();
+    if (!newTitle) return;
+    setSectionTitles((prev) => {
+      const next = { ...prev, [activeNav]: newTitle };
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("cambium_workspace_section_titles", JSON.stringify(next));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      return next;
+    });
+    setSaveStatus("Saving…");
+    setTimeout(() => setSaveStatus("Saved"), 600);
+  };
 
   const triggerSave = () => {
     setSaveStatus("Saving…");
@@ -1666,31 +1788,37 @@ function Editor({
               fontWeight: 500,
             }}
           >
-            Literature Review
+            {meta.label}
           </span>
           <span style={{ fontSize: 11, color: W.text3 }}>·</span>
-          <span style={{ fontSize: 11, color: W.text3 }}>Last edited 8 minutes ago</span>
+          <span style={{ fontSize: 11, color: W.text3 }}>Persistent Multi-User Canvas</span>
         </div>
 
         {/* Page Title */}
         <h1
+          key={activeNav}
           contentEditable
           suppressContentEditableWarning
           onInput={triggerSave}
+          onBlur={handleTitleBlur}
           style={{
             fontSize: 34,
             fontWeight: 600,
             lineHeight: 1.2,
             color: W.text1,
-            marginBottom: 20,
+            marginBottom: 12,
             outline: "none",
             cursor: "text",
             letterSpacing: "-0.01em",
             fontFamily: "'Source Serif 4', Georgia, serif",
           }}
         >
-          Transformer Models for Medical Imaging
+          {activeTitle}
         </h1>
+
+        <p style={{ fontSize: 13, color: W.text3, fontStyle: "italic", marginBottom: 20 }}>
+          {meta.prompt}
+        </p>
 
         {/* Research Blocks */}
         <div style={{ marginBottom: 28 }}>
@@ -2866,6 +2994,7 @@ function WorkspacePageContent() {
             {/* Main Notebook / Editor */}
             <div style={{ flex: isSplitView ? "1 1 50%" : "1 1 100%", overflowY: "auto", height: "100%", transition: "flex 200ms ease" }}>
               <Editor
+                activeNav={activeNav}
                 saveStatus={saveStatus}
                 setSaveStatus={setSaveStatus}
                 selectedRows={selectedRows}
