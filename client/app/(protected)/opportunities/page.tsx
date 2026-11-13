@@ -4,8 +4,9 @@ import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } fr
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Quote, Calendar, FileEdit, ArrowUpRight } from "lucide-react";
+import { Quote, Calendar, FileEdit, ArrowUpRight, ShieldCheck } from "lucide-react";
 import CitationExportModal, { CitationItem } from "@/components/CitationExportModal";
+import { GrantEligibilityCheckerModal, GrantOpportunitySummary } from "@/components/opportunities/GrantEligibilityCheckerModal";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fetchScholarlyWorks } from "@/lib/scholarly-api";
 import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
@@ -426,10 +427,11 @@ function deadlineBgClass(d: number) {
 }
 
 function OpportunityCard({
-  opp, saved, onSave, onToast, onView,
+  opp, saved, onSave, onToast, onView, onCheckEligibility,
 }: {
   opp: Opportunity; saved: boolean;
   onSave: (id: string) => void; onToast: (msg: string) => void; onView: (id: string) => void;
+  onCheckEligibility?: (opp: Opportunity) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -528,6 +530,16 @@ function OpportunityCard({
           <IconBookmark filled={saved} />
           {saved ? "Saved" : "Save"}
         </button>
+        {onCheckEligibility && (
+          <button
+            onClick={() => onCheckEligibility(opp)}
+            className="flex items-center gap-1 text-xs font-semibold text-[#3E6248] hover:text-[#293E30] px-2.5 py-2 rounded border border-[#3E6248]/20 bg-[#FAF7F0] hover:bg-[#DCE6D7]/40 transition-colors cursor-pointer"
+            title="Pre-screen career stage and institutional eligibility"
+          >
+            <ShieldCheck size={13} />
+            <span>Eligibility</span>
+          </button>
+        )}
         <button
           onClick={() => onToast(`Searching opportunities similar to ${opp.title}...`)}
           className="text-xs text-faint hover:text-muted transition-colors ml-1 cursor-pointer"
@@ -608,13 +620,14 @@ function CompactRow({
 // ─── Opportunity Detail Panel ─────────────────────────────────────────────────
 
 function DetailPanel({
-  opp, saved, tracked, onSave, onTrack, onToast, onClose, onSelectRelated, onCite,
+  opp, saved, tracked, onSave, onTrack, onToast, onClose, onSelectRelated, onCite, onCheckEligibility,
 }: {
   opp: Opportunity; saved: boolean; tracked: TrackStatus | null;
   onSave: (id: string) => void; onTrack: (id: string, status: TrackStatus) => void;
   onToast: (msg: string) => void; onClose: () => void;
   onSelectRelated: (id: string) => void;
   onCite?: (opp: Opportunity) => void;
+  onCheckEligibility?: (opp: Opportunity) => void;
 }) {
   const [showTrackMenu, setShowTrackMenu] = useState(false);
 
@@ -945,6 +958,17 @@ function DetailPanel({
               <span>Draft Proposal</span>
             </button>
 
+            {onCheckEligibility && (
+              <button
+                onClick={() => onCheckEligibility(opp)}
+                className="flex items-center gap-1.5 text-xs font-mono font-semibold px-2.5 py-2 rounded-md border border-[#3E6248]/30 bg-[#FAF7F0] text-[#3E6248] hover:bg-[#DCE6D7] transition-colors cursor-pointer shadow-xs"
+                title="Check Career & Institutional Eligibility"
+              >
+                <ShieldCheck size={13} />
+                <span>Eligibility</span>
+              </button>
+            )}
+
             <button
               onClick={() => {
                 if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -1259,8 +1283,22 @@ function OpportunityHubContent() {
   const [toast, setToast] = useState<{ msg: string; key: number } | null>(null);
   const [citationItem, setCitationItem] = useState<CitationItem | null>(null);
   const [showCitationModal, setShowCitationModal] = useState(false);
+  const [eligibilityOpp, setEligibilityOpp] = useState<GrantOpportunitySummary | null>(null);
+  const [showEligibilityModal, setShowEligibilityModal] = useState(false);
   const toastKey = useRef(0);
   const { t } = useLanguage();
+
+  const handleCheckEligibility = useCallback((opp: Opportunity) => {
+    setEligibilityOpp({
+      id: opp.id,
+      title: opp.title,
+      funder: opp.org,
+      amount: opp.funding,
+      deadline: opp.deadline,
+      mechanism: opp.kind,
+    });
+    setShowEligibilityModal(true);
+  }, []);
 
   // ─── Live TanStack Query Hydration with Graceful Fallback ───────────────────
   const { data: serverOpps, isLoading: isServerLoading } = useQuery({
@@ -1778,6 +1816,7 @@ function OpportunityHubContent() {
                     onSave={handleSave}
                     onToast={handleToast}
                     onView={setActiveOppId}
+                    onCheckEligibility={handleCheckEligibility}
                   />
                 ))}
               </div>
@@ -1919,6 +1958,7 @@ function OpportunityHubContent() {
           onClose={() => setActiveOppId(null)}
           onSelectRelated={setActiveOppId}
           onCite={handleCite}
+          onCheckEligibility={handleCheckEligibility}
         />
       )}
 
@@ -1927,6 +1967,17 @@ function OpportunityHubContent() {
         isOpen={showCitationModal}
         onClose={() => setShowCitationModal(false)}
         item={citationItem}
+      />
+
+      {/* Grant eligibility checker modal */}
+      <GrantEligibilityCheckerModal
+        isOpen={showEligibilityModal}
+        onClose={() => setShowEligibilityModal(false)}
+        opportunity={eligibilityOpp}
+        onInjectProposal={(attestation) => {
+          localStorage.setItem("cambium_injected_eligibility", attestation);
+          handleToast("Eligibility attestation injected into active proposal draft ✓");
+        }}
       />
 
       {/* Toast notifications */}

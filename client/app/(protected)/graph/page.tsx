@@ -28,6 +28,7 @@ import {
   Loader2,
 } from "lucide-react";
 import RelationalKnowledgeNetwork from "@/components/intelligence/RelationalKnowledgeNetwork";
+import { ResearchLandscapeExplorer } from "@/components/graph/ResearchLandscapeExplorer";
 import { fetchScholarlyWorks, ScholarlyWork } from "@/lib/scholarly-api";
 
 interface GraphNode {
@@ -179,7 +180,7 @@ function SemanticGraphContent() {
   const urlQ = searchParams.get("q") || "";
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [viewMode, setViewMode] = useState<"relational" | "constellation">("relational");
+  const [viewMode, setViewMode] = useState<"relational" | "constellation" | "landscape">("relational");
   const [nodes, setNodes] = useState<GraphNode[]>(INITIAL_NODES);
   const [links, setLinks] = useState<GraphLink[]>(INITIAL_LINKS);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(INITIAL_NODES[1]);
@@ -622,7 +623,7 @@ function SemanticGraphContent() {
             </div>
           </div>
 
-          {/* View Mode Switcher: Relational Network vs 2D Force Constellation */}
+          {/* View Mode Switcher: Relational Network vs 2D Force Constellation vs Research Landscape */}
           <div className="flex items-center bg-[#F2EBDD] dark:bg-[#18231B] p-1 rounded-xl border border-[#E4DCCB] dark:border-[#28382C] shrink-0 self-start md:self-auto shadow-2xs">
             <button
               onClick={() => setViewMode("relational")}
@@ -633,7 +634,7 @@ function SemanticGraphContent() {
               }`}
             >
               <Network size={13} />
-              <span>Relational Knowledge Network</span>
+              <span>Relational Network</span>
             </button>
             <button
               onClick={() => setViewMode("constellation")}
@@ -644,7 +645,18 @@ function SemanticGraphContent() {
               }`}
             >
               <Compass size={13} />
-              <span>Semantic Constellation (2D Force)</span>
+              <span>2D Constellation</span>
+            </button>
+            <button
+              onClick={() => setViewMode("landscape")}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
+                viewMode === "landscape"
+                  ? "bg-[#202920] dark:bg-[#FAF7F0] text-[#FAF7F0] dark:text-[#18231B] shadow-xs"
+                  : "text-[#62685E] dark:text-[#8FA89B] hover:text-[#202920] dark:hover:text-[#FAF7F0]"
+              }`}
+            >
+              <Layers size={13} />
+              <span>Landscape Explorer</span>
             </button>
           </div>
         </div>
@@ -814,8 +826,14 @@ function SemanticGraphContent() {
         </div>
       </div>
 
-      {/* Main Workspace: Relational Network View vs Constellation Canvas */}
-      {viewMode === "relational" ? (
+      {/* Main Workspace: Landscape Explorer vs Relational Network View vs Constellation Canvas */}
+      {viewMode === "landscape" ? (
+        <div className="flex-1 min-h-0 p-4 md:p-6 bg-[#FAF7F0] overflow-y-auto flex flex-col">
+          <div className="w-full max-w-[1520px] mx-auto">
+            <ResearchLandscapeExplorer />
+          </div>
+        </div>
+      ) : viewMode === "relational" ? (
         <div className="flex-1 min-h-0 p-3 md:p-4 bg-[#FAF7F0] overflow-hidden flex flex-col">
           <div className="w-full h-full max-w-[1520px] mx-auto bg-white rounded-2xl border border-[#E4DCCB] shadow-sm flex flex-col min-h-0 overflow-hidden p-2 md:p-3">
             <RelationalKnowledgeNetwork dark={false} />

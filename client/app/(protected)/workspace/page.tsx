@@ -11,6 +11,7 @@ import { SplitPaneReader } from "@/components/workspace/SplitPaneReader";
 import { CollaborativeProjectsDesk } from "@/components/workspace/CollaborativeProjectsDesk";
 import { ProposalDraftsDesk } from "@/components/workspace/ProposalDraftsDesk";
 import { AiAutocompleteCopilotStudio } from "@/components/ai/AiAutocompleteCopilotStudio";
+import { ProjectDigitalTwinOverview } from "@/components/workspace/ProjectDigitalTwinOverview";
 import { useToast } from "@/components/ui/toast";
 import CambiumLogo from "@/components/CambiumLogo";
 import { uploadArtifact, type UploadedArtifact } from "@/lib/api";
@@ -194,7 +195,7 @@ const navSections = [
     label: "Workspace",
     items: [
       { id: "projects", label: "Team Repositories", icon: icons.folder },
-      { id: "overview", label: "Overview", icon: icons.target },
+      { id: "overview", label: "Project Digital Twin", icon: icons.target },
       { id: "ai-copilot", label: "AI Copilot & Autocomplete", icon: icons.sparkle },
       { id: "questions", label: "Research Questions", icon: icons.lightbulb },
       { id: "literature", label: "Literature Review", icon: icons.quote, active: true },
@@ -3079,7 +3080,7 @@ function WorkspacePageContent() {
           onLockSession={() => setShowLockModal(true)}
         />
 
-        {/* ── Main Area (Projects Desk OR Drafts Desk OR Copilot OR Editor + Split-View Reader or Right Panel) ── */}
+        {/* ── Main Area (Projects Desk OR Drafts Desk OR Copilot OR Digital Twin OR Editor + Split-View Reader or Right Panel) ── */}
         {activeNav === "projects" ? (
           <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
             <CollaborativeProjectsDesk />
@@ -3091,6 +3092,10 @@ function WorkspacePageContent() {
         ) : activeNav === "ai-copilot" ? (
           <div style={{ flex: 1, overflowY: "auto", height: "100%", padding: "28px 36px" }}>
             <AiAutocompleteCopilotStudio />
+          </div>
+        ) : activeNav === "overview" || activeNav === "digital-twin" ? (
+          <div style={{ flex: 1, overflowY: "auto", height: "100%", padding: "28px 36px" }}>
+            <ProjectDigitalTwinOverview />
           </div>
         ) : (
           <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>

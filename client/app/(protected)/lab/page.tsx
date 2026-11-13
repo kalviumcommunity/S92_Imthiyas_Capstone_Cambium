@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { useOptimisticLab, LabProjectEntity } from "@/lib/hooks/useOptimisticQueries";
 import {
@@ -31,6 +31,66 @@ interface LabMember {
   activeProjects: number;
   avatarColor: string;
 }
+
+export interface CampusDepartment {
+  id: string;
+  campusName: string;
+  departmentName: string;
+  leadPI: string;
+  totalFunding: string;
+  activeArticles: string;
+  gpuCluster: string;
+  utilization: string;
+  rorId: string;
+  scratchStorage: string;
+  slurmPartition: string;
+  activeGrant: string;
+}
+
+export const CAMPUS_DEPARTMENTS: CampusDepartment[] = [
+  {
+    id: "mit_csail",
+    campusName: "MIT CSAIL & Broad Institute",
+    departmentName: "Cambium Neuro-Symbolic Bio-Intelligence Lab",
+    leadPI: "Imthiyas (PI)",
+    totalFunding: "$3,450,000",
+    activeArticles: "7 Articles",
+    gpuCluster: "8x H100 SXM5",
+    utilization: "74% Utilization",
+    rorId: "0428wax08",
+    scratchStorage: "140 TB Lustre NVMe",
+    slurmPartition: "MIT SuperCloud (SLURM-GPU-H100)",
+    activeGrant: "NSF OAC-2311492 / NIH NIBIB R01",
+  },
+  {
+    id: "harvard_biox",
+    campusName: "Harvard Bio-X & Wyss Institute",
+    departmentName: "Quantitative Systems Biology & Molecular Machine Intelligence",
+    leadPI: "Dr. Elena Rodriguez (Co-PI)",
+    totalFunding: "$4,200,000",
+    activeArticles: "9 Articles",
+    gpuCluster: "16x A100 80GB",
+    utilization: "86% Utilization",
+    rorId: "03vek6s52",
+    scratchStorage: "200 TB Ceph Tier-1",
+    slurmPartition: "Harvard FAS-RC (Cannon-GPU)",
+    activeGrant: "ARPA-H Health Science / NIH R01",
+  },
+  {
+    id: "stanford_sail",
+    campusName: "Stanford AI Lab (SAIL) & Medical Consortia",
+    departmentName: "Clinical Foundation Models & Planetary Digital Twins",
+    leadPI: "Marcus Vance (Lead)",
+    totalFunding: "$5,100,000",
+    activeArticles: "12 Articles",
+    gpuCluster: "12x H100 SXM5",
+    utilization: "68% Utilization",
+    rorId: "00f54p054",
+    scratchStorage: "250 TB GPFS High-IOPS",
+    slurmPartition: "Stanford Sherlock (GPU-H100-Multi)",
+    activeGrant: "DOE ASCR / NSF Cyber-Physical #240891",
+  },
+];
 
 const LAB_MEMBERS: LabMember[] = [
   {
@@ -66,6 +126,24 @@ const LAB_MEMBERS: LabMember[] = [
 export default function UniversityLabWorkspacePage() {
   const [activeTab, setActiveTab] = useState<"projects" | "compute" | "members">("projects");
   const { projects, addProject, updateProjectStage, isAdding } = useOptimisticLab();
+
+  const [selectedDeptId, setSelectedDeptId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("cambium_lab_selected_dept") || "mit_csail";
+    }
+    return "mit_csail";
+  });
+
+  const currentDept = useMemo(() => {
+    return CAMPUS_DEPARTMENTS.find((d) => d.id === selectedDeptId) || CAMPUS_DEPARTMENTS[0];
+  }, [selectedDeptId]);
+
+  const handleDeptChange = (deptId: string) => {
+    setSelectedDeptId(deptId);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cambium_lab_selected_dept", deptId);
+    }
+  };
 
   const [members, setMembers] = useState<LabMember[]>(() => {
     if (typeof window !== "undefined") {
@@ -111,17 +189,45 @@ export default function UniversityLabWorkspacePage() {
   return (
     <div className="flex-1 min-w-0 h-screen overflow-y-auto bg-[#FAF7F0] text-[#202920] font-sans p-6 sm:p-10 selection:bg-[#3E6248]/20 selection:text-[#173F35]">
       <div className="max-w-7xl mx-auto space-y-8">
+        {/* Campus & Department Multi-Tenant Switcher */}
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-white border border-[#E4DCCB] shadow-2xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-mono text-[#62685E] uppercase tracking-wider px-2 font-semibold">
+              Institutional Partition:
+            </span>
+            {CAMPUS_DEPARTMENTS.map((dept) => (
+              <button
+                key={dept.id}
+                type="button"
+                onClick={() => handleDeptChange(dept.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer ${
+                  selectedDeptId === dept.id
+                    ? "bg-[#3E6248] text-white shadow-xs"
+                    : "bg-[#FAF7F0] border border-[#E4DCCB] text-[#62685E] hover:text-[#202920] hover:border-[#66866A]"
+                }`}
+              >
+                {dept.campusName.split("&")[0].trim()}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#DCE6D7]/60 text-[#3E6248] font-mono text-xs">
+            <span className="w-2 h-2 rounded-full bg-[#3E6248] animate-pulse" />
+            <span>Lead: {currentDept.leadPI}</span>
+          </div>
+        </div>
+
         {/* Header Breadcrumb */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E4DCCB] pb-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#DCE6D7]/60 border border-[#66866A]/30 mb-3">
               <Building2 size={13} className="text-[#3E6248]" />
               <span className="font-mono text-xs uppercase tracking-widest text-[#3E6248] font-semibold">
-                Institutional Hub // MIT CSAIL & Broad Institute
+                Institutional Hub // {currentDept.campusName}
               </span>
             </div>
             <h1 className="font-serif text-3xl sm:text-4xl font-normal text-[#202920] tracking-tight m-0">
-              Cambium Neuro-Symbolic Bio-Intelligence Lab
+              {currentDept.departmentName}
             </h1>
             <p className="font-serif text-base text-[#62685E] mt-2 max-w-2xl leading-relaxed">
               Multi-tenant laboratory workspace managing shared computational clusters, joint grant allocations, collaborative manuscript drafts, and institutional compliance.
@@ -162,10 +268,10 @@ export default function UniversityLabWorkspacePage() {
               Total Grant Funding
             </div>
             <div className="font-serif text-2xl font-semibold text-[#202920] mt-1">
-              $3,450,000
+              {currentDept.totalFunding}
             </div>
             <div className="text-[10px] font-mono text-[#3E6248] mt-1">
-              Active NIH & NSF Grants
+              Active Consortia Grants
             </div>
           </div>
 
@@ -174,10 +280,10 @@ export default function UniversityLabWorkspacePage() {
               Active Manuscripts
             </div>
             <div className="font-serif text-2xl font-semibold text-[#202920] mt-1">
-              7 Articles
+              {currentDept.activeArticles}
             </div>
             <div className="text-[10px] font-mono text-[#3E6248] mt-1">
-              3 in Peer Review
+              Continuous Dissemination
             </div>
           </div>
 
@@ -186,10 +292,10 @@ export default function UniversityLabWorkspacePage() {
               Shared GPU Compute
             </div>
             <div className="font-serif text-2xl font-semibold text-[#202920] mt-1">
-              8x H100 SXM5
+              {currentDept.gpuCluster}
             </div>
             <div className="text-[10px] font-mono text-[#3E6248] mt-1">
-              74% Cluster Utilization
+              {currentDept.utilization}
             </div>
           </div>
 
@@ -197,11 +303,11 @@ export default function UniversityLabWorkspacePage() {
             <div className="text-[11px] font-mono uppercase text-[#62685E]">
               Institutional Affiliation
             </div>
-            <div className="font-serif text-lg font-semibold text-[#202920] mt-1">
-              MIT CSAIL
+            <div className="font-serif text-lg font-semibold text-[#202920] mt-1 truncate">
+              {currentDept.campusName.split("&")[0].trim()}
             </div>
             <div className="text-[10px] font-mono text-[#62685E] mt-1">
-              ROR: 0428wax08
+              ROR: {currentDept.rorId}
             </div>
           </div>
         </div>
@@ -321,14 +427,14 @@ export default function UniversityLabWorkspacePage() {
               <div className="p-6 rounded-2xl bg-white border border-[#E4DCCB] shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-serif text-lg font-normal text-[#202920] m-0">
-                    MIT SuperCloud Partition (SLURM)
+                    {currentDept.slurmPartition}
                   </h3>
                   <span className="px-2 py-0.5 rounded-full bg-[#DCE6D7] text-[#3E6248] font-mono text-[10px] font-semibold">
-                    Healthy
+                    Healthy · Active
                   </span>
                 </div>
                 <p className="text-xs text-[#62685E]">
-                  Dedicated 8x NVIDIA H100 SXM5 GPU node allocated via NSF Grant OAC-2311492.
+                  Dedicated {currentDept.gpuCluster} GPU cluster allocated via {currentDept.activeGrant}.
                 </p>
 
                 <div className="space-y-3 pt-2">
