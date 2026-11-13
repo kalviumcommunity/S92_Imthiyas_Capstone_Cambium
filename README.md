@@ -19,7 +19,7 @@
 [![NestJS](https://img.shields.io/badge/NestJS-10.4-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17%20+%20pgvector-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://github.com/pgvector/pgvector)
 [![Live Scholarly APIs](https://img.shields.io/badge/Scholarly%20APIs-OpenAlex%20%7C%20arXiv%20%7C%20Crossref%20%7C%20DOAJ-FF8C00?style=for-the-badge&logo=book&logoColor=white)](https://openalex.org)
-[![Unit Tests](https://img.shields.io/badge/Unit%20Tests-199%2F199%20Passing-4ADE80?style=for-the-badge&logo=jest&logoColor=black)](tests/)
+[![Unit Tests](https://img.shields.io/badge/Unit%20Tests-204%2F204%20Passing-4ADE80?style=for-the-badge&logo=jest&logoColor=black)](tests/)
 [![WCAG](https://img.shields.io/badge/WCAG-2.2%20Level%20AA%20Pass-4ADE80?style=for-the-badge&logo=w3c&logoColor=black)](https://www.w3.org/WAI/WCAG22/quickref/)
 [![License](https://img.shields.io/badge/License-MIT-805B43?style=for-the-badge)](LICENSE)
 
@@ -567,8 +567,8 @@ npm run test:e2e
 | Verification Gate | Standard / Tool | Verified Result |
 | :--- | :--- | :---: |
 | **Monorepo Domain Tests** | Jest 29 (9 Domain Suites) | `PASSED (82/82 tests, 0 failures)` |
-| **Backend Service Tests** | Vitest 5.0 (24 Test Files) | `PASSED (117/117 tests, 0 failures)` |
-| **Total Automated Unit Tests** | Monorepo Unified Pyramid | `199/199 PASSING (100% PASS RATE)` |
+| **Backend Service Tests** | Vitest 5.1 (25 Test Files) | `PASSED (122/122 tests, 0 failures)` |
+| **Total Automated Unit Tests** | Monorepo Unified Pyramid | `204/204 PASSING (100% PASS RATE)` |
 | **TypeScript Compilation**| `tsc --noEmit` (Exit 0) | `PASSED (0 errors across monorepo)` |
 | **Next.js Production Build**| `next build` (54 Static Routes) | `COMPILED (0 errors, 11.1s)` |
 | **Docker Multi-Stage Build** | Alpine Linux Builder & Runner | `PASSED (Server & Client Buildx)` |

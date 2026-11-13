@@ -15,7 +15,7 @@
 Cambium is the **Enterprise Research Operating System (Research OS)**—an AI-orchestrated environment unifying grant discovery, force-directed citation topologies, lab computing allocations, multi-agent literature auditors, institutional ethics (IRB) tracking, and cryptographic audit ledgers into a single, cohesive academic workspace.
 
 This final submission fulfills all 4 required parts of Milestone 2.21:
-1. **The Project Repository**: Complete, production-grade monorepo containing Next.js 15 App Router frontend, NestJS 10 enterprise API, PostgreSQL 17 + pgvector database, and 199 automated unit tests (82 Jest + 117 Vitest).
+1. **The Project Repository**: Complete, production-grade monorepo containing Next.js 15 App Router frontend, NestJS 10 enterprise API, PostgreSQL 17 + pgvector database, and 204 automated unit tests (82 Jest + 122 Vitest).
 2. **Updated README**: Structured according to the authoritative 13-section rubric.
 3. **Verified Live Deployment Links**:
    - **Frontend Application (Live on Vercel)**: [`https://cambium-research.vercel.app`](https://cambium-research.vercel.app)
@@ -151,7 +151,7 @@ Record this demonstration using **Google Meet** or **Loom**:
 • Say: "Let's review our codebase architecture:
   1. Frontend (client/): Built with Next.js 15 App Router, React 19, and Tailwind CSS powered by our Living Materials design tokens in tokens/cambium.tokens.json, achieving WCAG 2.2 Level AA accessibility compliance.
   2. Backend (server/): Modular NestJS 10 architecture with TypeORM, PostgreSQL 17 + pgvector, and Redis caching.
-  3. Automated Testing Pyramid: We maintain 199 automated unit tests — 82 Jest domain tests across citation engines and Boolean AST parsers, and 117 Vitest tests across all NestJS backend services, running with 100% pass rates."
+  3. Automated Testing Pyramid: We maintain 204 automated unit tests — 82 Jest domain tests across citation engines and Boolean AST parsers, and 122 Vitest tests across all NestJS backend services, running with 100% pass rates."
 
 [4:45 – 6:00] Part 5: Technical Defense — Architecture Choices & Challenges
 • Say: "To conclude our technical defense, let's address our key engineering decisions and challenges:

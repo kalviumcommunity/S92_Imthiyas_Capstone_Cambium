@@ -1663,8 +1663,8 @@ function WorkspaceSection() {
                       <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E]">
                         UPCOMING DEADLINES
                       </span>
-                      <Link href="/calendar" className="text-[11px] text-[#85877B] hover:text-[#202920] no-underline font-medium">
-                        Calendar
+                      <Link href="/opportunities" className="text-[11px] text-[#85877B] hover:text-[#202920] no-underline font-medium">
+                        Calendar →
                       </Link>
                     </div>
 
@@ -1697,7 +1697,7 @@ function WorkspaceSection() {
                       <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E]">
                         SCHOLARS YOU MAY KNOW
                       </span>
-                      <Link href="/network" className="text-[11px] text-[#85877B] hover:text-[#202920] no-underline font-medium">
+                      <Link href="/community" className="text-[11px] text-[#85877B] hover:text-[#202920] no-underline font-medium">
                         Explore →
                       </Link>
                     </div>
