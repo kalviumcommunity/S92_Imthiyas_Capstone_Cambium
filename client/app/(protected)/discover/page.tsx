@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
 import {
   Compass,
@@ -1785,7 +1786,10 @@ function Toast({ message, visible }: { message: string; visible: boolean }) {
 
 // ─── Main Discover Page ───────────────────────────────────────────────────────
 
-export default function DiscoverPage() {
+function DiscoverContent() {
+  const searchParams = useSearchParams();
+  const urlQuery = searchParams.get("q") || "";
+
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeType, setActiveType] = useState("All");
   const [activeTime, setActiveTime] = useState("Any time");
@@ -1796,6 +1800,12 @@ export default function DiscoverPage() {
   const [followedItems, setFollowedItems] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState({ message: "", visible: false });
   const [showProfileBanner, setShowProfileBanner] = useState(false);
+
+  useEffect(() => {
+    if (urlQuery) {
+      setActiveQuery(urlQuery);
+    }
+  }, [urlQuery]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -1965,6 +1975,19 @@ export default function DiscoverPage() {
             <p className="text-[15px] text-[#62685E] dark:text-[#A4B3A2] font-sans leading-relaxed max-w-2xl m-0">
               Find papers, open-access books, software artifacts, researchers, and emerging topics connected to your research canvas across 250M+ open scholarly records.
             </p>
+
+            <div className="flex items-center justify-between flex-wrap gap-2 pt-1">
+              <span className="text-xs font-mono text-[#85877B] dark:text-[#7E8B7B]">
+                Live OpenAlex & Crossref Federation
+              </span>
+              <Link
+                href={`/opportunities${activeQuery ? `?q=${encodeURIComponent(activeQuery)}` : ""}`}
+                className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-[#3E6248] dark:text-[#4ADE80] hover:underline"
+              >
+                <span>Switch to Grant & Opportunity Matching</span>
+                <ArrowUpRight size={13} />
+              </Link>
+            </div>
 
             <div className="pt-2 space-y-3">
               <div className="flex flex-col gap-2">
@@ -2139,5 +2162,19 @@ export default function DiscoverPage() {
 
       <Toast message={toast.message} visible={toast.visible} />
     </div>
+  );
+}
+
+export default function DiscoverPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] flex items-center justify-center font-mono text-xs text-[#85877B]">
+          Loading Discover Console...
+        </div>
+      }
+    >
+      <DiscoverContent />
+    </Suspense>
   );
 }

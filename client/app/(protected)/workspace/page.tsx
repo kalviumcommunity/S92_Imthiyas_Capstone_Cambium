@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CitationModal, CitationItem } from "@/components/ui/citation-modal";
 import { AiProgressModal } from "@/components/ui/ai-progress-modal";
 import { ConflictModal } from "@/components/ui/conflict-modal";
 import { SessionLockModal } from "@/components/ui/session-lock-modal";
 import { SplitPaneReader } from "@/components/workspace/SplitPaneReader";
 import { CollaborativeProjectsDesk } from "@/components/workspace/CollaborativeProjectsDesk";
+import { ProposalDraftsDesk } from "@/components/workspace/ProposalDraftsDesk";
 import { AiAutocompleteCopilotStudio } from "@/components/ai/AiAutocompleteCopilotStudio";
 import { useToast } from "@/components/ui/toast";
 import CambiumLogo from "@/components/CambiumLogo";
@@ -2696,14 +2697,45 @@ function RightPanel({
 
 // ─── Main Workspace Screen ──────────────────────────────────────────────────
 
-export default function WorkspacePage() {
+function WorkspacePageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const createDraftParam = searchParams.get("createDraft");
+  const draftTitle = searchParams.get("title");
+  const draftFunder = searchParams.get("funder");
+  const draftBudget = searchParams.get("budget");
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeNav, setActiveNav] = useState("literature");
+  const [activeNav, setActiveNav] = useState(() => (createDraftParam === "1" ? "drafts" : "literature"));
+  const [injectedDraft, setInjectedDraft] = useState<
+    { title?: string; funder?: string; budget?: string } | undefined
+  >(() => {
+    if (createDraftParam === "1" && draftTitle) {
+      return {
+        title: draftTitle,
+        funder: draftFunder || undefined,
+        budget: draftBudget || undefined,
+      };
+    }
+    return undefined;
+  });
   const [activeTab, setActiveTab] = useState("ai");
   const [saveStatus, setSaveStatus] = useState("Saved");
   const [syncStatus, setSyncStatus] = useState<"synced" | "saving" | "offline" | "conflict">("synced");
   const [rightVisible, setRightVisible] = useState(true);
   const [isSplitView, setIsSplitView] = useState(false);
+
+  // Handle live URL params update
+  useEffect(() => {
+    if (createDraftParam === "1" && draftTitle) {
+      setActiveNav("drafts");
+      setInjectedDraft({
+        title: draftTitle,
+        funder: draftFunder || undefined,
+        budget: draftBudget || undefined,
+      });
+    }
+  }, [createDraftParam, draftTitle, draftFunder, draftBudget]);
 
   // Modals state
   const [showCitationModal, setShowCitationModal] = useState(false);
@@ -2816,10 +2848,14 @@ export default function WorkspacePage() {
           onLockSession={() => setShowLockModal(true)}
         />
 
-        {/* ── Main Area (Projects Desk OR Editor + Split-View Reader or Right Panel) ── */}
+        {/* ── Main Area (Projects Desk OR Drafts Desk OR Copilot OR Editor + Split-View Reader or Right Panel) ── */}
         {activeNav === "projects" ? (
           <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
             <CollaborativeProjectsDesk />
+          </div>
+        ) : activeNav === "drafts" ? (
+          <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+            <ProposalDraftsDesk injectedDraft={injectedDraft} />
           </div>
         ) : activeNav === "ai-copilot" ? (
           <div style={{ flex: 1, overflowY: "auto", height: "100%", padding: "28px 36px" }}>
@@ -3126,5 +3162,19 @@ export default function WorkspacePage() {
         onUnlock={() => setShowLockModal(false)}
       />
     </div>
+  );
+}
+
+export default function WorkspacePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-1 h-screen items-center justify-center bg-[#FAF7F0] dark:bg-[#0E140F] font-sans text-xs font-mono text-[#62685E] dark:text-[#A3B899]">
+          <span>Mounting Research Workspace Environment…</span>
+        </div>
+      }
+    >
+      <WorkspacePageContent />
+    </Suspense>
   );
 }

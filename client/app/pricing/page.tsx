@@ -18,7 +18,7 @@ export default function PricingPage() {
       tagline: "Essential literature discovery for independent students and researchers.",
       price: currency === "USD" ? "$0" : "₹0",
       period: "forever",
-      badge: "Open Science",
+      badge: "Open Science (75% Free)",
       buttonText: "Get Started Free",
       buttonHref: "/sign-up",
       highlight: false,
@@ -31,7 +31,7 @@ export default function PricingPage() {
       ],
     },
     {
-      name: "Scholar Pro (Starting Stage)",
+      name: "Scholar Pro",
       tagline: "Lowest market price: Passes student card & UPI micro-transaction limits without grant approval.",
       price: currency === "USD"
         ? (billingPeriod === "monthly" ? "$1" : "$10")
@@ -52,7 +52,28 @@ export default function PricingPage() {
       ],
     },
     {
-      name: "Institutional Enterprise",
+      name: "Lab Team Workspace",
+      tagline: "Collaborative multi-investigator research hub for laboratories and research groups.",
+      price: currency === "USD"
+        ? (billingPeriod === "monthly" ? "$49" : "$490")
+        : (billingPeriod === "monthly" ? "₹3,999" : "₹39,990"),
+      period: billingPeriod === "monthly" ? "/ month" : "/ year (Save ~16%)",
+      badge: "Laboratory Standard",
+      buttonText: "Equip Lab Team",
+      buttonHref: "/billing",
+      highlight: false,
+      features: [
+        "Up to 10 collaborative investigator seats",
+        "100,000 shared team AI reasoning credits",
+        "CRediT 14-role authorship governance ledger",
+        "Shared grant proposal drafting vaults",
+        "Cross-lab dense vector indices & datasets",
+        "Collaborative project activity logs",
+        "Real-time WebSocket & Broadcast synchrony",
+      ],
+    },
+    {
+      name: "Campus Enterprise",
       tagline: "Campus-wide compliance, SMART IRB reliance, and dedicated HPC clusters.",
       price: "Custom",
       period: "per university department",
@@ -153,7 +174,7 @@ export default function PricingPage() {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
           {plans.map((p, idx) => (
             <div
               key={idx}

@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Quote } from "lucide-react";
+import { Quote, Calendar, FileEdit, ArrowUpRight } from "lucide-react";
 import CitationExportModal, { CitationItem } from "@/components/CitationExportModal";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fetchScholarlyWorks } from "@/lib/scholarly-api";
@@ -634,6 +635,45 @@ function DetailPanel({
     onToast(`Status updated: ${status}`);
   };
 
+  const handleDownloadIcs = () => {
+    const startDate = new Date();
+    const deadlineDate = new Date(Date.now() + (opp.daysLeft || 30) * 24 * 60 * 60 * 1000);
+    const sourcePortal = opp.officialSource
+      ? (opp.officialSource.startsWith("http") ? opp.officialSource : `https://${opp.officialSource}`)
+      : "https://cambium-research.vercel.app/opportunities";
+
+    const icsContent = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Cambium Research//Opportunity Calendar//EN",
+      "BEGIN:VEVENT",
+      `SUMMARY:${opp.title} (${opp.org || "Grant Funder"})`,
+      `DESCRIPTION:Opportunity: ${opp.title} | Funder: ${opp.org} | Funding: ${opp.funding || "Announced Award"} | Eligibility: ${opp.eligibility || "Open"} | Portal: ${sourcePortal}`,
+      `DTSTART:${startDate.toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
+      `DTEND:${deadlineDate.toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
+      `URL:${sourcePortal}`,
+      "STATUS:CONFIRMED",
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\r\n");
+
+    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${opp.title.slice(0, 25).replace(/[^a-zA-Z0-9]/g, "_")}_Deadline.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    onToast("Downloaded .ICS calendar deadline reminder ✓");
+  };
+
+  const handleDraftProposal = () => {
+    const url = `/workspace?createDraft=1&title=${encodeURIComponent(opp.title)}&funder=${encodeURIComponent(opp.org)}&budget=${encodeURIComponent(opp.funding || "$500,000")}`;
+    window.location.href = url;
+  };
+
   const related = ALL_OPPS.filter((o) => opp.relatedIds?.includes(o.id));
 
   return (
@@ -886,6 +926,24 @@ function DetailPanel({
                 </div>
               )}
             </div>
+
+            <button
+              onClick={handleDownloadIcs}
+              className="flex items-center gap-1.5 text-xs font-mono font-semibold px-2.5 py-2 rounded-md border border-border bg-surface text-ink hover:border-accent hover:text-accent transition-colors cursor-pointer"
+              title="Download RFC-5545 iCalendar reminder"
+            >
+              <Calendar size={13} />
+              <span className="hidden sm:inline">ICS Calendar</span>
+            </button>
+
+            <button
+              onClick={handleDraftProposal}
+              className="flex items-center gap-1.5 text-xs font-mono font-semibold px-2.5 py-2 rounded-md bg-[#3E6248] text-white hover:bg-[#293E30] transition-colors cursor-pointer shadow-xs"
+              title="Draft Proposal in Workspace"
+            >
+              <FileEdit size={13} />
+              <span>Draft Proposal</span>
+            </button>
 
             <button
               onClick={() => {
@@ -1169,11 +1227,20 @@ function Toast({ message, onDismiss }: { message: string; onDismiss: () => void 
 
 // ─── Main Opportunity Hub Component ───────────────────────────────────────────
 
-export default function OpportunityHub() {
+function OpportunityHubContent() {
+  const searchParams = useSearchParams();
+  const urlQ = searchParams.get("q") || "";
+
   const [activeTab, setActiveTab] = useState<TabId>("for-you");
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set(["sm1"]));
   const [trackedIds, setTrackedIds] = useState<Map<string, TrackStatus>>(new Map<string, TrackStatus>([["sm1", "Preparing"]]));
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (urlQ) {
+      setSearchQuery(urlQ);
+    }
+  }, [urlQ]);
   const [activeSort, setActiveSort] = useState("Best Match");
   const [showSort, setShowSort] = useState(false);
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
@@ -1566,6 +1633,20 @@ export default function OpportunityHub() {
             </div>
           </div>
 
+          {/* Quick Toggle to Literature Discover */}
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-6 px-1">
+            <span className="text-xs font-mono text-[#85877B] dark:text-[#7E8B7B]">
+              Federal Grants & Foundation CFPs Indexed
+            </span>
+            <Link
+              href={`/discover${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ""}`}
+              className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-[#3E6248] dark:text-[#4ADE80] hover:underline"
+            >
+              <span>Search Academic Literature & Preprints</span>
+              <ArrowUpRight size={13} />
+            </Link>
+          </div>
+
           {/* Type tabs */}
           <div className="flex items-center border-b border-border overflow-x-auto scrollbar-hide mb-7 -mx-1 px-1" role="tablist" aria-label="Opportunity type">
             {TABS.map((tab) => (
@@ -1816,5 +1897,19 @@ export default function OpportunityHub() {
         />
       )}
     </div>
+  );
+}
+
+export default function OpportunityHub() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] flex items-center justify-center font-mono text-xs text-[#85877B]">
+          Loading Research Opportunities & Grants...
+        </div>
+      }
+    >
+      <OpportunityHubContent />
+    </Suspense>
   );
 }

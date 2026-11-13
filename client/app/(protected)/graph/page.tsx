@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Share2,
   Sparkles,
@@ -173,7 +174,10 @@ const INITIAL_LINKS: GraphLink[] = [
   { source: "n-3", target: "n-1", weight: 2, type: "grant_overlap" },
 ];
 
-export default function SemanticGraphPage() {
+function SemanticGraphContent() {
+  const searchParams = useSearchParams();
+  const urlQ = searchParams.get("q") || "";
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [viewMode, setViewMode] = useState<"relational" | "constellation">("relational");
   const [nodes, setNodes] = useState<GraphNode[]>(INITIAL_NODES);
@@ -183,6 +187,13 @@ export default function SemanticGraphPage() {
   const [highlightBridgesOnly, setHighlightBridgesOnly] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (urlQ) {
+      setSearchQuery(urlQ);
+      handleSyncLiveOpenAlex(urlQ);
+    }
+  }, [urlQ]);
 
   const matchingNodes = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -1011,17 +1022,37 @@ export default function SemanticGraphPage() {
               {/* Action Buttons */}
               <div className="pt-2 space-y-2">
                 <Link
-                  href="/agent-reader"
-                  className="w-full py-2.5 px-4 rounded-xl bg-[#3E6248] hover:bg-[#173F35] text-white font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center justify-center gap-2 shadow-xs"
+                  href={`/agent-reader?title=${encodeURIComponent(selectedNode.title)}&abstract=${encodeURIComponent(selectedNode.abstract || "")}`}
+                  className="w-full py-2.5 px-4 rounded-xl bg-[#3E6248] hover:bg-[#173F35] text-white font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center justify-center gap-2 shadow-xs no-underline"
                 >
                   <Sparkles size={14} />
                   Open in Agentic Reader
                 </Link>
 
-                <button className="w-full py-2.5 px-4 rounded-xl bg-[#FAF7F0] hover:bg-[#E4DCCB] border border-[#E4DCCB] text-[#202920] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <button
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      const existing = JSON.parse(localStorage.getItem("cambium_pinned_proposals") || "[]");
+                      localStorage.setItem(
+                        "cambium_pinned_proposals",
+                        JSON.stringify([...existing, { id: selectedNode.id, title: selectedNode.title, year: selectedNode.year, category: selectedNode.category }])
+                      );
+                      setCanvasAnnouncement(`Pinned "${selectedNode.title}" to active research workspace proposal.`);
+                    }
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-[#FAF7F0] hover:bg-[#E4DCCB] border border-[#E4DCCB] text-[#202920] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
                   <Bookmark size={14} />
                   Pin to Active Grant Proposal
                 </button>
+
+                <Link
+                  href={`/opportunities?q=${encodeURIComponent(selectedNode.title.split(" ").slice(0, 4).join(" "))}`}
+                  className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-[#F2EBDD] border border-[#E4DCCB] text-[#3E6248] font-mono text-xs uppercase tracking-wider font-semibold transition-all flex items-center justify-center gap-2 no-underline"
+                >
+                  <ArrowUpRight size={14} />
+                  Find Matching Grant RFPs
+                </Link>
               </div>
             </div>
           ) : (
@@ -1039,5 +1070,19 @@ export default function SemanticGraphPage() {
       </div>
       )}
     </main>
+  );
+}
+
+export default function SemanticGraphPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] flex items-center justify-center font-mono text-xs text-[#85877B]">
+          Loading Relational Knowledge Constellation...
+        </div>
+      }
+    >
+      <SemanticGraphContent />
+    </Suspense>
   );
 }
