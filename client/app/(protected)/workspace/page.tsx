@@ -12,6 +12,7 @@ import { CollaborativeProjectsDesk } from "@/components/workspace/CollaborativeP
 import { ProposalDraftsDesk } from "@/components/workspace/ProposalDraftsDesk";
 import { AiAutocompleteCopilotStudio } from "@/components/ai/AiAutocompleteCopilotStudio";
 import { ProjectDigitalTwinOverview } from "@/components/workspace/ProjectDigitalTwinOverview";
+import { PresenceBar } from "@/components/workspace/PresenceBar";
 import { useToast } from "@/components/ui/toast";
 import CambiumLogo from "@/components/CambiumLogo";
 import { uploadArtifact, type UploadedArtifact } from "@/lib/api";
@@ -1048,36 +1049,8 @@ function Toolbar({
 
       <div style={{ width: 1, height: 20, background: W.border, margin: "0 4px" }} />
 
-      {/* Collaborators */}
-      <div style={{ display: "flex", alignItems: "center" }}>
-        {[
-          { initials: "MC", color: "#4A7C9E" },
-          { initials: "ER", color: "#6B5A9A" },
-          { initials: "JS", color: "#3A6B50" },
-        ].map((c, i) => (
-          <div
-            key={i}
-            style={{
-              width: 26,
-              height: 26,
-              borderRadius: "50%",
-              background: c.color,
-              border: `2px solid ${W.surface}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginLeft: i > 0 ? -8 : 0,
-              fontSize: 9.5,
-              fontWeight: 700,
-              color: "white",
-              letterSpacing: "0.02em",
-            }}
-          >
-            {c.initials}
-          </div>
-        ))}
-        <span style={{ fontSize: 11.5, color: W.text3, marginLeft: 8 }}>3 collaborators</span>
-      </div>
+      {/* Real-time Collaborators / Presence */}
+      <PresenceBar roomId="workspace:main" />
 
       <div style={{ width: 1, height: 20, background: W.border, margin: "0 4px" }} />
 
