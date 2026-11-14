@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { Sparkles } from "lucide-react";
+import { JournalScopeMatcherModal } from "@/components/publications/JournalScopeMatcherModal";
 import { fetchScholarlyWorks } from "@/lib/scholarly-api";
 import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
 
@@ -946,6 +948,7 @@ function PaperExplorer({
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState("Relevance");
   const [searchSaved, setSearchSaved] = useState(false);
+  const [showScopeMatcher, setShowScopeMatcher] = useState(false);
 
   const [livePapers, setLivePapers] = useState<Paper[]>([]);
   const [isLoadingLive, setIsLoadingLive] = useState(false);
@@ -1049,10 +1052,20 @@ function PaperExplorer({
           <p className="text-sm text-[#62685E] font-sans m-0">
             Discover foundational publications, preprints, and citation graphs shaping your research vector.
           </p>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FAF7F0] border border-[#3E6248]/30 text-[#3E6248] dark:text-[#4ADE80] font-mono text-[10px] font-bold shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
-            Live OpenAlex & Europe PMC Sync
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowScopeMatcher(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3E6248] hover:bg-[#293E30] text-white font-mono text-xs font-semibold shadow-xs transition-all cursor-pointer"
+            >
+              <Sparkles size={13} />
+              <span>Match Journal Scope</span>
+            </button>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FAF7F0] border border-[#3E6248]/30 text-[#3E6248] dark:text-[#4ADE80] font-mono text-[10px] font-bold shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+              Live OpenAlex & Europe PMC Sync
+            </span>
+          </div>
         </div>
 
         {/* Search Input */}
@@ -1697,6 +1710,12 @@ function PaperExplorer({
           </div>
         )}
       </div>
+
+      {/* AI Journal Scope Matcher Modal */}
+      <JournalScopeMatcherModal
+        isOpen={showScopeMatcher}
+        onClose={() => setShowScopeMatcher(false)}
+      />
     </main>
   );
 }

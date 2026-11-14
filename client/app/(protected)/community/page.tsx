@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
 import { useRealtimeEvents } from "@/lib/realtime/useRealtimeEvents";
 import {
@@ -50,6 +51,7 @@ export interface PostComment {
     institution: string;
     initials: string;
     avatarColor: string;
+    photo?: string | null;
   };
   timeAgo: string;
   content: string;
@@ -66,6 +68,7 @@ export interface AcademicPost {
     initials: string;
     avatarColor: string;
     orcid?: string;
+    photo?: string | null;
   };
   timeAgo: string;
   type: AcademicPostType;
@@ -217,6 +220,7 @@ const INITIAL_ACADEMIC_POSTS: AcademicPost[] = [
 ];
 
 export default function CommunityPage() {
+  const user = useAuthStore((state) => state.user);
   const [activeTab, setActiveTab] = useState<string>("All Discussions");
   const { isSocketConnected, sendMessage, messages: realtimeMessages } =
     useRealtimeEvents("community");
@@ -229,6 +233,31 @@ export default function CommunityPage() {
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [showToast, setShowToast] = useState<string | null>(null);
+
+  // Restore persisted community mesh state
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const storedPosts = localStorage.getItem("cambium_community_posts_v2");
+        if (storedPosts) {
+          const parsed = JSON.parse(storedPosts);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setPosts(parsed);
+          }
+        }
+        const storedSaved = localStorage.getItem("cambium_community_saved");
+        if (storedSaved) setSavedPosts(JSON.parse(storedSaved));
+        const storedLiked = localStorage.getItem("cambium_community_liked");
+        if (storedLiked) setLikedPosts(JSON.parse(storedLiked));
+        const storedFollowing = localStorage.getItem("cambium_community_following");
+        if (storedFollowing) setFollowingMap(JSON.parse(storedFollowing));
+        const storedConnections = localStorage.getItem("cambium_community_connections");
+        if (storedConnections) setConnectionsMap(JSON.parse(storedConnections));
+      } catch (e) {
+        console.error("Failed to restore persisted community state", e);
+      }
+    }
+  }, []);
   const postsForFeed = useMemo(() => {
     const knownIds = new Set(posts.map((post) => post.id));
     const livePosts: AcademicPost[] = realtimeMessages
@@ -318,15 +347,25 @@ export default function CommunityPage() {
   const toggleFollow = (authorName: string) => {
     setFollowingMap((prev) => {
       const next = !prev[authorName];
+      const updated = { ...prev, [authorName]: next };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cambium_community_following", JSON.stringify(updated));
+      }
       triggerToast(next ? `Following ${authorName}'s public output ✓` : `Unfollowed ${authorName}`);
-      return { ...prev, [authorName]: next };
+      return updated;
     });
   };
 
   const handleSendConnectionRequest = (e: React.FormEvent) => {
     e.preventDefault();
     if (!connectModalAuthor) return;
-    setConnectionsMap((prev) => ({ ...prev, [connectModalAuthor.name]: true }));
+    setConnectionsMap((prev) => {
+      const updated = { ...prev, [connectModalAuthor.name]: true };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cambium_community_connections", JSON.stringify(updated));
+      }
+      return updated;
+    });
     triggerToast(`2-way connection request sent to ${connectModalAuthor.name} ✓`);
     setConnectModalAuthor(null);
     setConnectContext("");
@@ -345,22 +384,34 @@ export default function CommunityPage() {
   const toggleSave = (postId: string) => {
     setSavedPosts((prev) => {
       const next = !prev[postId];
+      const updated = { ...prev, [postId]: next };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cambium_community_saved", JSON.stringify(updated));
+      }
       triggerToast(next ? "Saved to your Research Desk ✓" : "Removed from saved");
-      return { ...prev, [postId]: next };
+      return updated;
     });
   };
 
   const toggleLike = (postId: string) => {
     setLikedPosts((prev) => {
       const next = !prev[postId];
-      setPosts((current) =>
-        (current.some((post) => post.id === postId) ? current : postsForFeed).map((p) =>
+      const updatedLiked = { ...prev, [postId]: next };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cambium_community_liked", JSON.stringify(updatedLiked));
+      }
+      setPosts((current) => {
+        const updated = (current.some((post) => post.id === postId) ? current : postsForFeed).map((p) =>
           p.id === postId
             ? { ...p, metrics: { ...p.metrics, likes: p.metrics.likes + (next ? 1 : -1) } }
             : p
-        )
-      );
-      return { ...prev, [postId]: next };
+        );
+        if (typeof window !== "undefined") {
+          localStorage.setItem("cambium_community_posts_v2", JSON.stringify(updated));
+        }
+        return updated;
+      });
+      return updatedLiked;
     });
   };
 
@@ -368,22 +419,34 @@ export default function CommunityPage() {
     e.preventDefault();
     if (!activeCommentPost || !newCommentText.trim()) return;
 
+    const authorName = user?.fullName || user?.name || user?.username || "Scholar";
+    const authorRole = user?.role || "Independent Researcher";
+    const authorInstitution = user?.institution || "Cambium Research Mesh";
+    const authorInitials = authorName
+      .split(" ")
+      .map((n) => n[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "SC";
+
     const newComment: PostComment = {
       id: `comm-${Date.now()}`,
       author: {
-        name: "Imthiyas",
-        role: "Principal Systems Architect",
-        institution: "Cambium Research Mesh",
-        initials: "IM",
+        name: authorName,
+        role: authorRole,
+        institution: authorInstitution,
+        initials: authorInitials,
         avatarColor: "#202920",
+        photo: user?.photo || null,
       },
       timeAgo: "Just now",
       content: newCommentText.trim(),
       endorsements: 1,
     };
 
-    setPosts((prev) =>
-      (prev.some((post) => post.id === activeCommentPost.id) ? prev : postsForFeed).map((p) =>
+    setPosts((prev) => {
+      const updated = (prev.some((post) => post.id === activeCommentPost.id) ? prev : postsForFeed).map((p) =>
         p.id === activeCommentPost.id
           ? {
               ...p,
@@ -391,8 +454,12 @@ export default function CommunityPage() {
               metrics: { ...p.metrics, comments: p.metrics.comments + 1 },
             }
           : p
-      )
-    );
+      );
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cambium_community_posts_v2", JSON.stringify(updated));
+      }
+      return updated;
+    });
 
     setActiveCommentPost((prev) =>
       prev ? { ...prev, comments: [...(prev.comments || []), newComment] } : null
@@ -406,15 +473,28 @@ export default function CommunityPage() {
     e.preventDefault();
     if (!composerTitle.trim() || !composerContent.trim()) return;
 
+    const authorName = user?.fullName || user?.name || user?.username || "Scholar";
+    const authorRole = user?.role || "Principal Investigator";
+    const authorInstitution = user?.institution || "Cambium Research Mesh";
+    const authorInitials = authorName
+      .split(" ")
+      .map((n) => n[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "SC";
+    const authorOrcid = user?.orcid || "0000-0002-1825-0097";
+
     const newPost: AcademicPost = {
       id: `post-${Date.now()}`,
       author: {
-        name: "Imthiyas",
-        role: "Principal Systems Architect · AI",
-        institution: "MIT CSAIL & Cambium Labs",
-        initials: "IM",
+        name: authorName,
+        role: authorRole,
+        institution: authorInstitution,
+        initials: authorInitials,
         avatarColor: "#202920",
-        orcid: "0000-0002-1825-0097",
+        orcid: authorOrcid,
+        photo: user?.photo || null,
       },
       timeAgo: "Just now",
       type: composerType,
@@ -457,7 +537,12 @@ export default function CommunityPage() {
       comments: [],
     };
 
-    setPosts([newPost, ...posts]);
+    const updated = [newPost, ...posts];
+    setPosts(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cambium_community_posts_v2", JSON.stringify(updated));
+    }
+
     setIsComposerOpen(false);
     setComposerTitle("");
     setComposerContent("");
@@ -638,10 +723,14 @@ export default function CommunityPage() {
                   <div className="flex items-start justify-between gap-4 mb-3.5">
                     <div className="flex items-center gap-3">
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs text-white shadow-xs"
+                        className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs text-white shadow-xs overflow-hidden shrink-0"
                         style={{ backgroundColor: post.author.avatarColor }}
                       >
-                        {post.author.initials}
+                        {post.author.photo ? (
+                          <img src={post.author.photo} alt={post.author.name} className="w-full h-full object-cover" />
+                        ) : (
+                          post.author.initials
+                        )}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
@@ -1326,7 +1415,16 @@ export default function CommunityPage() {
               {activeCommentPost.comments?.map((c) => (
                 <div key={c.id} className="p-3 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB] space-y-1.5 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-[#202920]">{c.author.name}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center text-[9px] font-bold text-white bg-[#3E6248] shrink-0">
+                        {c.author.photo ? (
+                          <img src={c.author.photo} alt={c.author.name} className="w-full h-full object-cover" />
+                        ) : (
+                          c.author.initials
+                        )}
+                      </div>
+                      <span className="font-bold text-[#202920]">{c.author.name}</span>
+                    </div>
                     <span className="text-[10px] font-mono text-[#85877B]">{c.timeAgo}</span>
                   </div>
                   <p className="text-[#202920]">{c.content}</p>

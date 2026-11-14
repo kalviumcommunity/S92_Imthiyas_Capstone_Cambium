@@ -1061,13 +1061,12 @@ export default function ReaderPage() {
 
             <div className="p-2.5 bg-surface-sunken rounded-lg border border-edge-default flex items-center justify-between gap-2">
               <span className="text-xs text-ink-secondary truncate font-mono">
-                https://cambium.ac/reader?doi={encodeURIComponent(PAPER_DATA.doi)}
+                {typeof window !== "undefined" ? window.location.origin : "https://cambium-research.vercel.app"}/reader?doi={encodeURIComponent(PAPER_DATA.doi)}
               </span>
               <button
                 onClick={() => {
-                  navigator.clipboard?.writeText(
-                    `https://cambium.ac/reader?doi=${encodeURIComponent(PAPER_DATA.doi)}`
-                  );
+                  const shareUrl = `${typeof window !== "undefined" ? window.location.origin : "https://cambium-research.vercel.app"}/reader?doi=${encodeURIComponent(PAPER_DATA.doi)}`;
+                  navigator.clipboard?.writeText(shareUrl);
                   setShowShareModal(false);
                   showToast("Link copied to clipboard");
                 }}

@@ -84,6 +84,27 @@ function ContactContent() {
       setIsSubmitting(false);
       const referenceId = `CAMBIUM-REQ-${Date.now().toString().slice(-6)}`;
       setSubmittedMessageId(referenceId);
+
+      // Persist to user transmission audit log
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("cambium_inquiries_log") || "[]";
+          const log = JSON.parse(stored);
+          log.unshift({
+            referenceId,
+            fullName,
+            email,
+            organization,
+            inquiryType,
+            subject,
+            message,
+            timestamp: new Date().toISOString(),
+          });
+          localStorage.setItem("cambium_inquiries_log", JSON.stringify(log));
+        } catch (err) {
+          console.error("Failed to log inquiry", err);
+        }
+      }
     }, 700);
   };
 

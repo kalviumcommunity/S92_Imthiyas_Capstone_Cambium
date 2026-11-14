@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, ShieldCheck, Database, HardDrive, Cpu, Sparkles } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
+import { CambiumMark } from "@/components/CambiumLogo";
 
 export interface WorkspaceProvisioningModalProps {
   isOpen: boolean;
@@ -11,12 +12,10 @@ export interface WorkspaceProvisioningModalProps {
   userName?: string;
 }
 
-const PROVISIONING_STEPS = [
-  { id: 1, label: "Structuring relational schemas & lab entities", icon: Database },
-  { id: 2, label: "Compiling personal dense vector partition", icon: Cpu },
-  { id: 3, label: "Mounting CrossRef & arXiv citation indices", icon: HardDrive },
-  { id: 4, label: "Establishing air-gap encryption ledger", icon: ShieldCheck },
-  { id: 5, label: "Dedicated workspace provisioned", icon: CheckCircle2 },
+const REAL_STEPS = [
+  { id: 1, label: "Calibrating research vectors & focus areas" },
+  { id: 2, label: "Configuring personalized discovery feed" },
+  { id: 3, label: "Workspace calibrated and ready" },
 ];
 
 export function WorkspaceProvisioningModal(props: WorkspaceProvisioningModalProps) {
@@ -30,146 +29,114 @@ function WorkspaceProvisioningContent({
 }: Omit<WorkspaceProvisioningModalProps, "isOpen">) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
-  const [percent, setPercent] = useState(12);
+  const [percent, setPercent] = useState(20);
 
   useEffect(() => {
     const t1 = setTimeout(() => {
       setCurrentStep(2);
-      setPercent(38);
-    }, 450);
+      setPercent(65);
+    }, 600);
 
     const t2 = setTimeout(() => {
       setCurrentStep(3);
-      setPercent(68);
-    }, 950);
+      setPercent(100);
+    }, 1250);
 
     const t3 = setTimeout(() => {
-      setCurrentStep(4);
-      setPercent(88);
-    }, 1450);
-
-    const t4 = setTimeout(() => {
-      setCurrentStep(5);
-      setPercent(100);
-    }, 1900);
-
-    const t5 = setTimeout(() => {
       if (onComplete) {
         onComplete();
       } else {
         router.push(destinationUrl);
       }
-    }, 2400);
+    }, 1800);
 
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
-      clearTimeout(t4);
-      clearTimeout(t5);
     };
   }, [onComplete, destinationUrl, router]);
 
-  // Ring circumference for r = 42: 2 * Math.PI * 42 = 263.89
-  const circumference = 263.89;
-  const strokeDashoffset = circumference - (percent / 100) * circumference;
+  const cleanName = userName && userName !== "Scholar" ? userName : "your account";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#141A14]/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-[#FAF7F0] border border-[#E4DCCB] rounded-2xl shadow-2xl overflow-hidden font-sans text-[#202920]">
-        {/* Header */}
-        <div className="p-6 text-center border-b border-[#E4DCCB]/60 bg-[#F2EBDD]/40">
-          <div className="relative w-24 h-24 mx-auto mb-3 flex items-center justify-center">
-            {/* SVG Progress Ring */}
-            <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="42"
-                stroke="#E4DCCB"
-                strokeWidth="5"
-                fill="none"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r="42"
-                stroke="#3E6248"
-                strokeWidth="5"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                fill="none"
-                className="transition-all duration-300 ease-out"
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="font-mono font-bold text-[18px] text-[#202920] leading-none">
-                {percent}%
-              </span>
-              <span className="text-[9px] font-mono text-[#85877B] tracking-wider uppercase mt-0.5">
-                ALLOCATING
-              </span>
-            </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#202920]/65 dark:bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] rounded-3xl shadow-2xl p-7 sm:p-8 font-sans text-[#202920] dark:text-[#EDEAE2] animate-in zoom-in-[0.98] duration-200 space-y-6">
+        {/* Brand Icon & Heading */}
+        <div className="text-center space-y-3">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-[#DCE6D7] dark:bg-[#1F2E23] border border-[#66866A]/30 dark:border-[#4ADE80]/30 flex items-center justify-center shadow-xs">
+            <CambiumMark size={28} />
           </div>
-
-          <h2 className="font-serif text-[20px] font-semibold text-[#202920] tracking-tight m-0">
-            Provisioning Research Workspace
-          </h2>
-          <p className="text-[12.5px] text-[#62685E] mt-1 m-0">
-            Mounting schema partitions and indexing initial citation graph for {userName}.
-          </p>
+          <div>
+            <h2 className="font-serif text-2xl font-normal text-[#202920] dark:text-[#EDEAE2] m-0">
+              Setting up your workspace
+            </h2>
+            <p className="text-xs text-[#62685E] dark:text-[#A3B899] mt-1 m-0 leading-relaxed font-sans">
+              Personalizing research tools and discovery feed for {cleanName}.
+            </p>
+          </div>
         </div>
 
-        {/* Steps List */}
-        <div className="p-6 space-y-3">
-          {PROVISIONING_STEPS.map((step) => {
-            const isCompleted = currentStep > step.id;
-            const isCurrent = currentStep === step.id;
-            const Icon = step.icon;
+        {/* Clean Linear Progress Bar */}
+        <div className="space-y-1.5">
+          <div className="w-full h-1.5 rounded-full bg-[#E4DCCB] dark:bg-[#233327] overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-[#3E6248] to-[#66866A] dark:from-[#4ADE80] dark:to-[#22C55E] rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${percent}%` }}
+            />
+          </div>
+          <div className="flex justify-between items-center text-[10.5px] font-mono text-[#85877B] dark:text-[#7E8B7B]">
+            <span>Preparing environment</span>
+            <span>{percent}%</span>
+          </div>
+        </div>
+
+        {/* Real Milestones Checklist */}
+        <div className="space-y-2.5 pt-1">
+          {REAL_STEPS.map((step) => {
+            const isCompleted = currentStep > step.id || percent === 100;
+            const isCurrent = currentStep === step.id && percent < 100;
 
             return (
               <div
                 key={step.id}
-                className={`flex items-center justify-between p-2.5 rounded-xl border transition-all duration-200 ${
+                className={`flex items-center justify-between p-3 rounded-xl border transition-all text-xs font-sans ${
                   isCurrent
-                    ? "bg-white border-[#3E6248] shadow-xs"
+                    ? "bg-white dark:bg-[#18231B] border-[#3E6248]/40 dark:border-[#4ADE80]/40 text-[#202920] dark:text-[#EDEAE2] shadow-2xs"
                     : isCompleted
-                    ? "bg-[#FAF7F0] border-[#E4DCCB]"
-                    : "bg-white/40 border-transparent opacity-40"
+                    ? "bg-[#DCE6D7]/30 dark:bg-[#1F2E23]/30 border-transparent text-[#62685E] dark:text-[#A3B899]"
+                    : "border-transparent text-[#85877B]/70 dark:text-[#7E8B7B]/70"
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                   <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                    className={`w-5 h-5 rounded-full flex items-center justify-center transition-all ${
                       isCompleted
-                        ? "bg-[#DCE6D7] text-[#3E6248]"
+                        ? "bg-[#3E6248] dark:bg-[#4ADE80] text-white dark:text-[#0E140F]"
                         : isCurrent
-                        ? "bg-[#3E6248] text-white"
-                        : "bg-[#F2EBDD] text-[#85877B]"
+                        ? "border-2 border-[#3E6248] dark:border-[#4ADE80] bg-transparent"
+                        : "border border-[#E4DCCB] dark:border-[#233327]"
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
+                    {isCompleted ? (
+                      <Check size={11} strokeWidth={3} />
+                    ) : isCurrent ? (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+                    ) : null}
                   </div>
-                  <span className={`text-[12.5px] font-medium ${isCurrent ? "text-[#202920] font-semibold" : "text-[#62685E]"}`}>
+                  <span className={`text-[12px] ${isCurrent ? "font-semibold" : ""}`}>
                     {step.label}
                   </span>
                 </div>
 
-                {isCompleted ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#3E6248] shrink-0" />
-                ) : isCurrent ? (
-                  <span className="w-2 h-2 rounded-full bg-[#3E6248] animate-ping shrink-0 mr-1" />
-                ) : null}
+                {isCurrent && (
+                  <span className="text-[10px] font-mono text-[#3E6248] dark:text-[#4ADE80] font-bold uppercase tracking-wider animate-pulse">
+                    Active
+                  </span>
+                )}
               </div>
             );
           })}
-        </div>
-
-        {/* Footer Hardware Metrics */}
-        <div className="px-6 py-3 border-t border-[#E4DCCB]/60 bg-[#FAF7F0] flex items-center justify-between text-[11px] font-mono text-[#85877B]">
-          <span>STATUS: SECURE</span>
-          <span className="text-[#3E6248]">NODE // US-EAST-RESEARCH</span>
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, KeyboardEvent } from "react";
 import Link from "next/link";
+import { ClaimEvidenceGraphStudio } from "@/components/intelligence/ClaimEvidenceGraphStudio";
 import {
   Brain,
   Search,
@@ -35,7 +36,8 @@ type Mode =
   | "Critique"
   | "Discover"
   | "Plan"
-  | "Write";
+  | "Write"
+  | "ClaimGraph";
 
 type ContextOption =
   | "Entire Research World"
@@ -62,9 +64,11 @@ const MODES: { name: Mode; desc: string }[] = [
   { name: "Discover", desc: "Find papers, researchers, datasets, and opportunities" },
   { name: "Plan", desc: "Turn research findings into next steps" },
   { name: "Write", desc: "Structure research writing using existing context" },
+  { name: "ClaimGraph", desc: "Empirical Claim & Evidence graph with p-value and consensus audit" },
 ];
 
 const QUICK_ACTIONS = [
+  "Claim Verification Matrix",
   "Summarize literature",
   "Find research gaps",
   "Compare papers",
@@ -730,6 +734,10 @@ export default function ResearchIntelligencePage() {
   };
 
   const handleQuickAction = (action: string) => {
+    if (action === "Claim Verification Matrix") {
+      setMode("ClaimGraph");
+      return;
+    }
     const map: Record<string, string> = {
       "Find research gaps":
         "What are the main research gaps in low-resource medical image segmentation?",
@@ -803,114 +811,122 @@ export default function ResearchIntelligencePage() {
               <ModePicker value={mode} onChange={setMode} />
             </div>
 
-            {/* Query Input Box with Keyboard Shortcut */}
-            <div className="border border-edge-strong/80 focus-within:border-moss-600 focus-within:ring-2 focus-within:ring-moss-600/10 rounded-lg bg-surface-raised shadow-xs transition-all overflow-hidden">
-              <textarea
-                ref={textareaRef}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e: KeyboardEvent<HTMLTextAreaElement>) => {
-                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                    e.preventDefault();
-                    handleSubmit();
-                  }
-                }}
-                placeholder="Ask anything about your research..."
-                rows={3}
-                className="w-full px-4 py-3.5 border-none outline-none text-[14.5px] text-ink-primary bg-transparent resize-none leading-relaxed font-sans placeholder:text-ink-tertiary"
-                aria-label="Research query input"
-              />
-              <div className="flex items-center justify-between px-3 py-2 border-t border-edge-default bg-surface-sunken/40">
-                <span className="text-[11px] text-ink-tertiary">
-                  ⌘ + Enter to submit
-                </span>
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={!query.trim() || loading}
-                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all shadow-xs ${
-                    query.trim() && !loading
-                      ? "bg-moss-600 hover:bg-moss-700 text-white cursor-pointer"
-                      : "bg-edge-default text-ink-tertiary cursor-not-allowed"
-                  }`}
-                  aria-label="Submit research query"
-                >
-                  <ArrowUp size={13} />
-                  Research
-                </button>
+            {mode === "ClaimGraph" ? (
+              <div className="pt-2 animate-in fade-in duration-200">
+                <ClaimEvidenceGraphStudio />
               </div>
-            </div>
-
-            {/* Quick Actions Chips */}
-            {!submitted && !loading && (
-              <div>
-                <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-ink-tertiary mb-2">
-                  Quick actions
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {QUICK_ACTIONS.map((a) => (
+            ) : (
+              <>
+                {/* Query Input Box with Keyboard Shortcut */}
+                <div className="border border-edge-strong/80 focus-within:border-moss-600 focus-within:ring-2 focus-within:ring-moss-600/10 rounded-lg bg-surface-raised shadow-xs transition-all overflow-hidden">
+                  <textarea
+                    ref={textareaRef}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e: KeyboardEvent<HTMLTextAreaElement>) => {
+                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        handleSubmit();
+                      }
+                    }}
+                    placeholder="Ask anything about your research..."
+                    rows={3}
+                    className="w-full px-4 py-3.5 border-none outline-none text-[14.5px] text-ink-primary bg-transparent resize-none leading-relaxed font-sans placeholder:text-ink-tertiary"
+                    aria-label="Research query input"
+                  />
+                  <div className="flex items-center justify-between px-3 py-2 border-t border-edge-default bg-surface-sunken/40">
+                    <span className="text-[11px] text-ink-tertiary">
+                      ⌘ + Enter to submit
+                    </span>
                     <button
-                      key={a}
                       type="button"
-                      onClick={() => handleQuickAction(a)}
-                      className="px-2.5 py-1 rounded border border-edge-default hover:border-moss-300 hover:text-moss-700 bg-surface-raised hover:bg-surface-sunken text-xs text-ink-secondary transition-colors"
+                      onClick={handleSubmit}
+                      disabled={!query.trim() || loading}
+                      className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold transition-all shadow-xs ${
+                        query.trim() && !loading
+                          ? "bg-moss-600 hover:bg-moss-700 text-white cursor-pointer"
+                          : "bg-edge-default text-ink-tertiary cursor-not-allowed"
+                      }`}
+                      aria-label="Submit research query"
                     >
-                      {a}
+                      <ArrowUp size={13} />
+                      Research
                     </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Suggested Prompts Empty State */}
-            {!submitted && !loading && (
-              <div className="pt-2">
-                <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-ink-tertiary mb-2">
-                  Suggested
-                </div>
-                <div className="flex flex-col gap-2">
-                  {SUGGESTED_PROMPTS.map((p) => (
-                    <button
-                      key={p}
-                      type="button"
-                      onClick={() => {
-                        setQuery(p);
-                        textareaRef.current?.focus();
-                      }}
-                      className="flex items-center gap-2.5 text-left p-3 rounded-lg border border-edge-default hover:border-edge-strong bg-surface-raised hover:bg-surface-sunken text-xs sm:text-[13px] text-ink-primary transition-all shadow-xs group"
-                    >
-                      <Search
-                        size={14}
-                        className="text-ink-tertiary group-hover:text-moss-700 shrink-0 transition-colors"
-                      />
-                      <span>{p}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Loading Simulation */}
-            {loading && <LoadingState />}
-
-            {/* Submitted Answer State */}
-            {submitted && (
-              <div className="space-y-4">
-                <div className="p-3.5 bg-surface-sunken/80 rounded-lg border border-edge-default">
-                  <div className="text-[10px] font-bold tracking-wider text-ink-tertiary uppercase mb-1">
-                    Your question
                   </div>
-                  <p className="text-sm font-medium text-ink-primary">
-                    {query}
-                  </p>
                 </div>
-                <ResearchAnswer
-                  onSave={() => {
-                    setSavedToast(true);
-                    setTimeout(() => setSavedToast(false), 2400);
-                  }}
-                />
-              </div>
+
+                {/* Quick Actions Chips */}
+                {!submitted && !loading && (
+                  <div>
+                    <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-ink-tertiary mb-2">
+                      Quick actions
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {QUICK_ACTIONS.map((a) => (
+                        <button
+                          key={a}
+                          type="button"
+                          onClick={() => handleQuickAction(a)}
+                          className="px-2.5 py-1 rounded border border-edge-default hover:border-moss-300 hover:text-moss-700 bg-surface-raised hover:bg-surface-sunken text-xs text-ink-secondary transition-colors"
+                        >
+                          {a}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Suggested Prompts Empty State */}
+                {!submitted && !loading && (
+                  <div className="pt-2">
+                    <div className="text-[10px] font-bold tracking-[0.08em] uppercase text-ink-tertiary mb-2">
+                      Suggested
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      {SUGGESTED_PROMPTS.map((p) => (
+                        <button
+                          key={p}
+                          type="button"
+                          onClick={() => {
+                            setQuery(p);
+                            textareaRef.current?.focus();
+                          }}
+                          className="flex items-center gap-2.5 text-left p-3 rounded-lg border border-edge-default hover:border-edge-strong bg-surface-raised hover:bg-surface-sunken text-xs sm:text-[13px] text-ink-primary transition-all shadow-xs group"
+                        >
+                          <Search
+                            size={14}
+                            className="text-ink-tertiary group-hover:text-moss-700 shrink-0 transition-colors"
+                          />
+                          <span>{p}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Loading Simulation */}
+                {loading && <LoadingState />}
+
+                {/* Submitted Answer State */}
+                {submitted && (
+                  <div className="space-y-4">
+                    <div className="p-3.5 bg-surface-sunken/80 rounded-lg border border-edge-default">
+                      <div className="text-[10px] font-bold tracking-wider text-ink-tertiary uppercase mb-1">
+                        Your question
+                      </div>
+                      <p className="text-sm font-medium text-ink-primary">
+                        {query}
+                      </p>
+                    </div>
+                    <ResearchAnswer
+                      onSave={() => {
+                        setSavedToast(true);
+                        setTimeout(() => setSavedToast(false), 2400);
+                      }}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

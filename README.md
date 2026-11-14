@@ -19,7 +19,7 @@
 [![NestJS](https://img.shields.io/badge/NestJS-10.4-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17%20+%20pgvector-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://github.com/pgvector/pgvector)
 [![Live Scholarly APIs](https://img.shields.io/badge/Scholarly%20APIs-OpenAlex%20%7C%20arXiv%20%7C%20Crossref%20%7C%20DOAJ-FF8C00?style=for-the-badge&logo=book&logoColor=white)](https://openalex.org)
-[![Unit Tests](https://img.shields.io/badge/Unit%20Tests-199%2F199%20Passing-4ADE80?style=for-the-badge&logo=jest&logoColor=black)](tests/)
+[![Unit Tests](https://img.shields.io/badge/Unit%20Tests-204%2F204%20Passing-4ADE80?style=for-the-badge&logo=jest&logoColor=black)](tests/)
 [![WCAG](https://img.shields.io/badge/WCAG-2.2%20Level%20AA%20Pass-4ADE80?style=for-the-badge&logo=w3c&logoColor=black)](https://www.w3.org/WAI/WCAG22/quickref/)
 [![License](https://img.shields.io/badge/License-MIT-805B43?style=for-the-badge)](LICENSE)
 
@@ -56,7 +56,7 @@ For local development, run `npm run dev` once from the repository root to start 
 
 ---
 
-## 🌐 Live Deployment & Technical Verification
+## 🌐 Deployment Links
 
 | Resource | Environment | Endpoint / URL | Status |
 | :--- | :--- | :--- | :--- |
@@ -68,13 +68,28 @@ For local development, run `npm run dev` once from the repository root to start 
 
 ---
 
-## 🎯 Problem Statement & Solution
+## 🎯 Problem Statement
 
 ### The Core Dilemma
 Academic scholars, laboratory principal investigators (PIs), and research institutions spend over **35% of their working hours** navigating administrative and discovery friction: tracking disconnected funding agency portals (Grants.gov, NIH, NSF), parsing static PDF literature without verified citations, managing computing quotas across spreadsheets, and tracking ethics/IRB approvals manually.
 
-### The Cambium Solution
+---
+
+## 💡 Proposed Solution
+
 **Cambium** is the **Enterprise Research Operating System (Research OS)**—an AI-orchestrated environment unifying grant discovery, force-directed citation topologies, lab computing allocations, multi-agent literature auditors, institutional ethics (IRB) tracking, and cryptographic audit ledgers into a single, cohesive academic workspace.
+
+---
+
+## ✨ Key Features
+
+1. **Autonomous Research Opportunity Discovery**: Semantic and Boolean query parsing across 120M+ preprints and grants with real-time deadline urgency tiers (`critical`, `urgent`, `approaching`, `healthy`).
+2. **Interactive Relational Knowledge Network**: Force-directed topological visualization of citation networks, co-authorship pipelines, and funding streams.
+3. **Sub-50ms AI Autocomplete Copilot Studio**: Real-time ghost-text completion powered by Google Gemini 1.5 Flash with resilient scholarly RAG fallback.
+4. **Scholarly Workspace & Collaborative Desks**: Split-pane literature reader, LaTeX formula rendering, BibTeX/APA/IEEE citation export, and optimistic offline mutation sync.
+5. **Multi-Agent Consensus & Paper Synthesis**: Automated peer-review auditing with COPE-compliant double-blind anonymization.
+6. **Enterprise Security & Cryptographic Audit Ledger**: Recursive SHA-256 tamper-proof hash chains for institutional IRB compliance, SAML 2.0 InCommon SSO, and role-based access guards (RBAC).
+7. **Living Materials Design System**: W3C DTCG token architecture complying with WCAG 2.2 AA and APCA high-density dark/light themes.
 
 ---
 
@@ -362,7 +377,7 @@ graph TB
 
 ---
 
-## 🛠️ Technology Stack Inventory
+## 🛠️ Technology Stack
 
 | Architectural Layer | Core Technologies | Version | Strategic Rationale |
 | :--- | :--- | :--- | :--- |
@@ -385,7 +400,7 @@ graph TB
 
 ---
 
-## 📂 Monorepo Repository Map
+## 📂 Folder Structure
 
 ```
 S92_Imthiyas_Capstone_Cambium/
@@ -433,50 +448,73 @@ S92_Imthiyas_Capstone_Cambium/
 
 ---
 
-## 🚀 Local Quickstart & Docker Orchestration
+## 📦 Installation Instructions
 
-### Option A: 1-Command Production Stack (Docker Compose)
-Launch the entire Cambium infrastructure (PostgreSQL 16 + pgvector, Redis 7, NestJS API, and Next.js client):
-
-```bash
-docker-compose up -d --build
-```
-
-- **Client Web Application**: [http://localhost:3000](http://localhost:3000)
-- **NestJS API Service**: [http://localhost:5000](http://localhost:5000)
-- **Interactive Swagger Docs**: [http://localhost:5000/api/docs](http://localhost:5000/api/docs)
-- **PostgreSQL Database**: `localhost:5432` (`cambium`)
-- **Redis Cluster**: `localhost:6379`
-
-### Option B: Local Developer Workflow
-
-#### Prerequisites
+### Prerequisites
 * **Node.js**: `v20.x` or `v22.x` (LTS)
 * **npm**: `v10.x+`
-* **PostgreSQL**: `16.x` with `pgvector`
-* **Redis**: `7.x`
+* **PostgreSQL**: `16.x` or `17.x` with `pgvector`
+* **Redis**: `7.x` (optional, in-memory fallback enabled)
 
+### Step-by-Step Installation
 ```bash
-# 1. Clone repository
-git clone https://github.com/kalviumcommunity/S92_Imthiyas_Capstone_Cambium.git
-cd S92_Imthiyas_Capstone_Cambium
+# 1. Clone the repository
+git clone https://github.com/shaikimthiyas/cambium-research.git
+cd cambium-research
 
-# 2. Install monorepo dependencies
+# 2. Install monorepo root dependencies
 npm install
+
+# 3. Install client & server package dependencies
 npm --prefix client install
 npm --prefix server install
+```
 
-# 3. Configure environment
+---
+
+## ⚙️ Environment Setup
+
+Cambium uses explicit environment separation. Copy sample configurations into active `.env` files:
+
+```bash
+# Monorepo root environment
 cp .env.example .env
-cp server/.env.example server/.env
-cp client/.env.example client/.env.local
 
-# 4. Initialize schema and seed data
+# Server backend environment
+cp server/.env.example server/.env
+
+# Client frontend environment
+cp client/.env.example client/.env.local
+```
+
+### Essential Environment Variables
+- `DATABASE_URL`: PostgreSQL connection string with `pgvector` enabled (e.g. Supabase pooler or local DB).
+- `JWT_SECRET`: 64-character entropy key for signing session tokens.
+- `GEMINI_API_KEY`: Google Gemini API key for real-time LLM autocomplete (fallback enabled if omitted).
+- `NEXT_PUBLIC_API_URL`: Backend URL (e.g. `http://localhost:5000` or production Render URL).
+
+---
+
+## 🚀 Running the Project
+
+### Option A: Local Concurrent Development (Recommended)
+Run both frontend and backend concurrently with a single command from root:
+```bash
+# Initialize schema and seed demo opportunities
 npm --prefix server run init:db
 npm --prefix server run seed
 
-# 5. Launch both servers concurrently
+# Start both Next.js frontend (port 3000) and NestJS backend (port 5000)
 npm run dev
+```
+- **Frontend App**: [http://localhost:3000](http://localhost:3000)
+- **Backend API**: [http://localhost:5000](http://localhost:5000)
+- **Interactive Swagger Docs**: [http://localhost:5000/api/docs](http://localhost:5000/api/docs)
+
+### Option B: Docker Compose 1-Command Stack
+Launch all services including PostgreSQL with pgvector, Redis, and app containers:
+```bash
+docker-compose up -d --build
 ```
 
 ---
@@ -529,8 +567,8 @@ npm run test:e2e
 | Verification Gate | Standard / Tool | Verified Result |
 | :--- | :--- | :---: |
 | **Monorepo Domain Tests** | Jest 29 (9 Domain Suites) | `PASSED (82/82 tests, 0 failures)` |
-| **Backend Service Tests** | Vitest 5.0 (24 Test Files) | `PASSED (117/117 tests, 0 failures)` |
-| **Total Automated Unit Tests** | Monorepo Unified Pyramid | `199/199 PASSING (100% PASS RATE)` |
+| **Backend Service Tests** | Vitest 5.1 (25 Test Files) | `PASSED (122/122 tests, 0 failures)` |
+| **Total Automated Unit Tests** | Monorepo Unified Pyramid | `204/204 PASSING (100% PASS RATE)` |
 | **TypeScript Compilation**| `tsc --noEmit` (Exit 0) | `PASSED (0 errors across monorepo)` |
 | **Next.js Production Build**| `next build` (54 Static Routes) | `COMPILED (0 errors, 11.1s)` |
 | **Docker Multi-Stage Build** | Alpine Linux Builder & Runner | `PASSED (Server & Client Buildx)` |
@@ -545,6 +583,23 @@ Cambium strictly adheres to **GitHub Flow** to maintain a clean, auditable devel
 - **Short-Lived Feature Branches**: Semantic prefixes (`feat/`, `fix/`, `refactor/`, `docs/`, `test/`, `chore/`).
 - **Post-Merge Cleanup**: Branches are pruned immediately upon PR merge, preventing repository clutter.
 - Detailed conventions and audit procedures are codified in [`docs/engineering/branching-strategy.md`](docs/engineering/branching-strategy.md) and [`docs/engineering/git-branch-audit.md`](docs/engineering/git-branch-audit.md).
+
+---
+
+## 🔮 Future Improvements
+
+1. **InCommon & Shibboleth Federated SSO**: Expanding SAML 2.0 integration to support seamless identity federation across hundreds of worldwide university campuses.
+2. **Client-Side WebAssembly Vector Scoring**: Running quantized on-device embedding similarities in the browser for instant offline preprint recommendations.
+3. **Automated Persistent Identifier (DOI) Minting**: Direct API integrations with Zenodo, Dryad, and Crossref to mint citable DOIs automatically upon proposal acceptance.
+4. **Multi-Region PostgreSQL Read Replicas**: Distributing read traffic globally to reduce semantic search latencies below 10ms worldwide.
+
+---
+
+## 👥 Contributors
+
+* **Shaik Mohamed Imthiyas T** — *Lead Architect, Product Designer & Full-Stack Engineer*
+  - Repository: [github.com/shaikimthiyas/cambium-research](https://github.com/shaikimthiyas/cambium-research)
+  - Capstone Organization: [kalviumcommunity/S92_Imthiyas_Capstone_Cambium](https://github.com/kalviumcommunity/S92_Imthiyas_Capstone_Cambium)
 
 ---
 
