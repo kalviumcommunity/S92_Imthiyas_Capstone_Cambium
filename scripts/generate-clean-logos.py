@@ -217,3 +217,4 @@ def clean_and_build_logos():
 
 if __name__ == "__main__":
     clean_and_build_logos()
+

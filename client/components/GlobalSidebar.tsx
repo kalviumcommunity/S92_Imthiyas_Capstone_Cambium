@@ -68,7 +68,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Security & Audit", href: "/audit", icon: KeyRound, i18nKey: "nav.audit" },
   { label: "Publications", href: "/publications", icon: BookOpen, hasChevron: true, i18nKey: "nav.publications" },
   { label: "Portfolio", href: "/portfolio", icon: Briefcase },
-  { label: "Notifications", href: "/notifications", icon: Bell, badge: "3" },
+  { label: "Notifications", href: "/notifications", icon: Bell },
 ];
 
 export default function GlobalSidebar() {
@@ -81,9 +81,34 @@ export default function GlobalSidebar() {
 
   const [isHovered, setIsHovered] = useState(false);
   const [pinFallback, setPinFallback] = useState<boolean | null>(null);
+  const [notifCount, setNotifCount] = useState(0);
   const storedPin = useBrowserStorageValue("local", "cambium_sidebar_pinned");
   const isPinned = pinFallback ?? storedPin === "true";
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch live notification count from backend
+  useEffect(() => {
+    const fetchNotifCount = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const token = typeof window !== 'undefined' ? localStorage.getItem('cambium_access_token') : null;
+        if (!token) return;
+        const res = await fetch(`${apiUrl}/api/notifications/count`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(4000),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setNotifCount(typeof data.count === 'number' ? data.count : 0);
+        }
+      } catch {
+        // Non-blocking — backend may not be running in dev
+      }
+    };
+    fetchNotifCount();
+    const interval = setInterval(fetchNotifCount, 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const togglePin = () => {
     const next = !isPinned;
@@ -246,9 +271,14 @@ export default function GlobalSidebar() {
 
               {isOpen && (
                 <div className="flex items-center gap-1.5 shrink-0 ml-1">
-                  {item.badge && (
+                  {/* Dynamic notification badge for /notifications; static badge for all others */}
+                  {(item.href === "/notifications"
+                    ? notifCount > 0 ? String(notifCount) : undefined
+                    : item.badge) && (
                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E4DCCB] dark:bg-[#233327] text-[#3E6248] dark:text-[#4ADE80] font-mono">
-                      {item.badge}
+                      {item.href === "/notifications"
+                        ? notifCount > 0 ? String(notifCount) : undefined
+                        : item.badge}
                     </span>
                   )}
                   {item.hasChevron && (

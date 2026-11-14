@@ -119,6 +119,27 @@ export function PaymentCheckoutModal({
     }
 
     upgradePlan(targetPlan, cycle, paymentInfo);
+
+    // Sync subscription tier to backend (mock billing endpoint)
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = typeof window !== "undefined" ? localStorage.getItem("cambium_access_token") : null;
+      if (token) {
+        fetch(`${apiUrl}/api/billing/subscribe`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ tier: targetPlan, cycle }),
+        }).catch((err) => {
+          console.warn("[Billing] Backend sync warning (non-blocking):", err);
+        });
+      }
+    } catch {
+      // Non-blocking catch
+    }
+
     setIsProcessing(false);
     setIsCompleted(true);
 
