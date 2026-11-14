@@ -24,6 +24,7 @@ import { ConnectionsModule } from './modules/connections/connections.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { ContributionsModule } from './modules/contributions/contributions.module';
+import { BillingModule } from './modules/billing/billing.module';
 import { TelemetryInterceptor } from './common/telemetry/telemetry.interceptor';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -56,6 +57,7 @@ import { DatabaseDiagnosticService } from './database/database-diagnostic.servic
     ProjectsModule,
     AuditModule,
     ContributionsModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [

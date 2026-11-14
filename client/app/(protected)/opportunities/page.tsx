@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Quote } from "lucide-react";
+import { Quote, Calendar, FileEdit, ArrowUpRight, ShieldCheck } from "lucide-react";
 import CitationExportModal, { CitationItem } from "@/components/CitationExportModal";
+import { GrantEligibilityCheckerModal, GrantOpportunitySummary } from "@/components/opportunities/GrantEligibilityCheckerModal";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fetchScholarlyWorks } from "@/lib/scholarly-api";
 import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
@@ -425,10 +427,11 @@ function deadlineBgClass(d: number) {
 }
 
 function OpportunityCard({
-  opp, saved, onSave, onToast, onView,
+  opp, saved, onSave, onToast, onView, onCheckEligibility,
 }: {
   opp: Opportunity; saved: boolean;
   onSave: (id: string) => void; onToast: (msg: string) => void; onView: (id: string) => void;
+  onCheckEligibility?: (opp: Opportunity) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -527,6 +530,16 @@ function OpportunityCard({
           <IconBookmark filled={saved} />
           {saved ? "Saved" : "Save"}
         </button>
+        {onCheckEligibility && (
+          <button
+            onClick={() => onCheckEligibility(opp)}
+            className="flex items-center gap-1 text-xs font-semibold text-[#3E6248] hover:text-[#293E30] px-2.5 py-2 rounded border border-[#3E6248]/20 bg-[#FAF7F0] hover:bg-[#DCE6D7]/40 transition-colors cursor-pointer"
+            title="Pre-screen career stage and institutional eligibility"
+          >
+            <ShieldCheck size={13} />
+            <span>Eligibility</span>
+          </button>
+        )}
         <button
           onClick={() => onToast(`Searching opportunities similar to ${opp.title}...`)}
           className="text-xs text-faint hover:text-muted transition-colors ml-1 cursor-pointer"
@@ -607,13 +620,14 @@ function CompactRow({
 // ─── Opportunity Detail Panel ─────────────────────────────────────────────────
 
 function DetailPanel({
-  opp, saved, tracked, onSave, onTrack, onToast, onClose, onSelectRelated, onCite,
+  opp, saved, tracked, onSave, onTrack, onToast, onClose, onSelectRelated, onCite, onCheckEligibility,
 }: {
   opp: Opportunity; saved: boolean; tracked: TrackStatus | null;
   onSave: (id: string) => void; onTrack: (id: string, status: TrackStatus) => void;
   onToast: (msg: string) => void; onClose: () => void;
   onSelectRelated: (id: string) => void;
   onCite?: (opp: Opportunity) => void;
+  onCheckEligibility?: (opp: Opportunity) => void;
 }) {
   const [showTrackMenu, setShowTrackMenu] = useState(false);
 
@@ -632,6 +646,45 @@ function DetailPanel({
     onTrack(opp.id, status);
     setShowTrackMenu(false);
     onToast(`Status updated: ${status}`);
+  };
+
+  const handleDownloadIcs = () => {
+    const startDate = new Date();
+    const deadlineDate = new Date(Date.now() + (opp.daysLeft || 30) * 24 * 60 * 60 * 1000);
+    const sourcePortal = opp.officialSource
+      ? (opp.officialSource.startsWith("http") ? opp.officialSource : `https://${opp.officialSource}`)
+      : "https://cambium-research.vercel.app/opportunities";
+
+    const icsContent = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Cambium Research//Opportunity Calendar//EN",
+      "BEGIN:VEVENT",
+      `SUMMARY:${opp.title} (${opp.org || "Grant Funder"})`,
+      `DESCRIPTION:Opportunity: ${opp.title} | Funder: ${opp.org} | Funding: ${opp.funding || "Announced Award"} | Eligibility: ${opp.eligibility || "Open"} | Portal: ${sourcePortal}`,
+      `DTSTART:${startDate.toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
+      `DTEND:${deadlineDate.toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
+      `URL:${sourcePortal}`,
+      "STATUS:CONFIRMED",
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\r\n");
+
+    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${opp.title.slice(0, 25).replace(/[^a-zA-Z0-9]/g, "_")}_Deadline.ics`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    onToast("Downloaded .ICS calendar deadline reminder ✓");
+  };
+
+  const handleDraftProposal = () => {
+    const url = `/workspace?createDraft=1&title=${encodeURIComponent(opp.title)}&funder=${encodeURIComponent(opp.org)}&budget=${encodeURIComponent(opp.funding || "$500,000")}`;
+    window.location.href = url;
   };
 
   const related = ALL_OPPS.filter((o) => opp.relatedIds?.includes(o.id));
@@ -886,6 +939,35 @@ function DetailPanel({
                 </div>
               )}
             </div>
+
+            <button
+              onClick={handleDownloadIcs}
+              className="flex items-center gap-1.5 text-xs font-mono font-semibold px-2.5 py-2 rounded-md border border-border bg-surface text-ink hover:border-accent hover:text-accent transition-colors cursor-pointer"
+              title="Download RFC-5545 iCalendar reminder"
+            >
+              <Calendar size={13} />
+              <span className="hidden sm:inline">ICS Calendar</span>
+            </button>
+
+            <button
+              onClick={handleDraftProposal}
+              className="flex items-center gap-1.5 text-xs font-mono font-semibold px-2.5 py-2 rounded-md bg-[#3E6248] text-white hover:bg-[#293E30] transition-colors cursor-pointer shadow-xs"
+              title="Draft Proposal in Workspace"
+            >
+              <FileEdit size={13} />
+              <span>Draft Proposal</span>
+            </button>
+
+            {onCheckEligibility && (
+              <button
+                onClick={() => onCheckEligibility(opp)}
+                className="flex items-center gap-1.5 text-xs font-mono font-semibold px-2.5 py-2 rounded-md border border-[#3E6248]/30 bg-[#FAF7F0] text-[#3E6248] hover:bg-[#DCE6D7] transition-colors cursor-pointer shadow-xs"
+                title="Check Career & Institutional Eligibility"
+              >
+                <ShieldCheck size={13} />
+                <span>Eligibility</span>
+              </button>
+            )}
 
             <button
               onClick={() => {
@@ -1169,11 +1251,30 @@ function Toast({ message, onDismiss }: { message: string; onDismiss: () => void 
 
 // ─── Main Opportunity Hub Component ───────────────────────────────────────────
 
-export default function OpportunityHub() {
+function OpportunityHubContent() {
+  const searchParams = useSearchParams();
+  const urlQ = searchParams.get("q") || searchParams.get("search") || "";
+
   const [activeTab, setActiveTab] = useState<TabId>("for-you");
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set(["sm1"]));
+  const [savedIds, setSavedIds] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("cambium_opportunities_saved");
+        if (stored) return new Set(JSON.parse(stored));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return new Set(["sm1"]);
+  });
   const [trackedIds, setTrackedIds] = useState<Map<string, TrackStatus>>(new Map<string, TrackStatus>([["sm1", "Preparing"]]));
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (urlQ) {
+      setSearchQuery(urlQ);
+    }
+  }, [urlQ]);
   const [activeSort, setActiveSort] = useState("Best Match");
   const [showSort, setShowSort] = useState(false);
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
@@ -1182,8 +1283,22 @@ export default function OpportunityHub() {
   const [toast, setToast] = useState<{ msg: string; key: number } | null>(null);
   const [citationItem, setCitationItem] = useState<CitationItem | null>(null);
   const [showCitationModal, setShowCitationModal] = useState(false);
+  const [eligibilityOpp, setEligibilityOpp] = useState<GrantOpportunitySummary | null>(null);
+  const [showEligibilityModal, setShowEligibilityModal] = useState(false);
   const toastKey = useRef(0);
   const { t } = useLanguage();
+
+  const handleCheckEligibility = useCallback((opp: Opportunity) => {
+    setEligibilityOpp({
+      id: opp.id,
+      title: opp.title,
+      funder: opp.org,
+      amount: opp.funding,
+      deadline: opp.deadline,
+      mechanism: opp.kind,
+    });
+    setShowEligibilityModal(true);
+  }, []);
 
   // ─── Live TanStack Query Hydration with Graceful Fallback ───────────────────
   const { data: serverOpps, isLoading: isServerLoading } = useQuery({
@@ -1287,8 +1402,39 @@ export default function OpportunityHub() {
   const handleSave = useCallback((id: string) => {
     setSavedIds((prev) => {
       const next = new Set(prev);
+      const isSaving = !next.has(id);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("cambium_opportunities_saved", JSON.stringify(Array.from(next)));
+          const oppObj = ALL_OPPS.find((o) => o.id === id);
+          if (oppObj) {
+            const rawBookmarks = localStorage.getItem("cambium_bookmarks") || "[]";
+            let bookmarksList: any[] = JSON.parse(rawBookmarks);
+            if (isSaving) {
+              if (!bookmarksList.some((b) => b.id === id)) {
+                bookmarksList.push({
+                  id: oppObj.id,
+                  type: "opportunity",
+                  title: oppObj.title,
+                  funder: oppObj.org,
+                  amount: oppObj.funding || "$500,000",
+                  deadline: oppObj.deadline,
+                  url: oppObj.officialSource || "/opportunities",
+                  savedAt: new Date().toISOString(),
+                });
+              }
+            } else {
+              bookmarksList = bookmarksList.filter((b) => b.id !== id);
+            }
+            localStorage.setItem("cambium_bookmarks", JSON.stringify(bookmarksList));
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
       return next;
     });
   }, []);
@@ -1566,6 +1712,20 @@ export default function OpportunityHub() {
             </div>
           </div>
 
+          {/* Quick Toggle to Literature Discover */}
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-6 px-1">
+            <span className="text-xs font-mono text-[#85877B] dark:text-[#7E8B7B]">
+              Federal Grants & Foundation CFPs Indexed
+            </span>
+            <Link
+              href={`/discover${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ""}`}
+              className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-[#3E6248] dark:text-[#4ADE80] hover:underline"
+            >
+              <span>Search Academic Literature & Preprints</span>
+              <ArrowUpRight size={13} />
+            </Link>
+          </div>
+
           {/* Type tabs */}
           <div className="flex items-center border-b border-border overflow-x-auto scrollbar-hide mb-7 -mx-1 px-1" role="tablist" aria-label="Opportunity type">
             {TABS.map((tab) => (
@@ -1656,6 +1816,7 @@ export default function OpportunityHub() {
                     onSave={handleSave}
                     onToast={handleToast}
                     onView={setActiveOppId}
+                    onCheckEligibility={handleCheckEligibility}
                   />
                 ))}
               </div>
@@ -1797,6 +1958,7 @@ export default function OpportunityHub() {
           onClose={() => setActiveOppId(null)}
           onSelectRelated={setActiveOppId}
           onCite={handleCite}
+          onCheckEligibility={handleCheckEligibility}
         />
       )}
 
@@ -1805,6 +1967,17 @@ export default function OpportunityHub() {
         isOpen={showCitationModal}
         onClose={() => setShowCitationModal(false)}
         item={citationItem}
+      />
+
+      {/* Grant eligibility checker modal */}
+      <GrantEligibilityCheckerModal
+        isOpen={showEligibilityModal}
+        onClose={() => setShowEligibilityModal(false)}
+        opportunity={eligibilityOpp}
+        onInjectProposal={(attestation) => {
+          localStorage.setItem("cambium_injected_eligibility", attestation);
+          handleToast("Eligibility attestation injected into active proposal draft ✓");
+        }}
       />
 
       {/* Toast notifications */}
@@ -1816,5 +1989,19 @@ export default function OpportunityHub() {
         />
       )}
     </div>
+  );
+}
+
+export default function OpportunityHub() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] flex items-center justify-center font-mono text-xs text-[#85877B]">
+          Loading Research Opportunities & Grants...
+        </div>
+      }
+    >
+      <OpportunityHubContent />
+    </Suspense>
   );
 }

@@ -35,9 +35,8 @@ export interface JwtTokenPayload {
 
 @Injectable()
 export class AuthService {
-  private readonly jwtSecret = process.env.JWT_SECRET || 'cambium_jwt_secret_key_2026';
-  private readonly jwtRefreshSecret =
-    process.env.JWT_REFRESH_SECRET || 'cambium_jwt_refresh_secret_key_2026_super_secure';
+  private readonly jwtSecret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('JWT_SECRET is required in production') })() : 'cambium_dev_jwt_secret_DO_NOT_USE_IN_PRODUCTION');
+  private readonly jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('JWT_REFRESH_SECRET is required in production') })() : 'cambium_dev_refresh_secret_DO_NOT_USE_IN_PRODUCTION');
   private readonly googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy-client-id');
 
   constructor(

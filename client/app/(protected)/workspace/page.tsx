@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CitationModal, CitationItem } from "@/components/ui/citation-modal";
 import { AiProgressModal } from "@/components/ui/ai-progress-modal";
 import { ConflictModal } from "@/components/ui/conflict-modal";
 import { SessionLockModal } from "@/components/ui/session-lock-modal";
 import { SplitPaneReader } from "@/components/workspace/SplitPaneReader";
 import { CollaborativeProjectsDesk } from "@/components/workspace/CollaborativeProjectsDesk";
+import { ProposalDraftsDesk } from "@/components/workspace/ProposalDraftsDesk";
 import { AiAutocompleteCopilotStudio } from "@/components/ai/AiAutocompleteCopilotStudio";
+import { ProjectDigitalTwinOverview } from "@/components/workspace/ProjectDigitalTwinOverview";
 import { useToast } from "@/components/ui/toast";
 import CambiumLogo from "@/components/CambiumLogo";
 import { uploadArtifact, type UploadedArtifact } from "@/lib/api";
@@ -193,7 +195,7 @@ const navSections = [
     label: "Workspace",
     items: [
       { id: "projects", label: "Team Repositories", icon: icons.folder },
-      { id: "overview", label: "Overview", icon: icons.target },
+      { id: "overview", label: "Project Digital Twin", icon: icons.target },
       { id: "ai-copilot", label: "AI Copilot & Autocomplete", icon: icons.sparkle },
       { id: "questions", label: "Research Questions", icon: icons.lightbulb },
       { id: "literature", label: "Literature Review", icon: icons.quote, active: true },
@@ -1099,7 +1101,16 @@ function Toolbar({
             router.push("/workspace/upload");
           },
         },
-        { icon: icons.share, label: "Share", onClick: () => {} },
+        {
+          icon: icons.share,
+          label: "Share Workspace Link",
+          onClick: () => {
+            if (typeof window !== "undefined") {
+              navigator.clipboard.writeText(window.location.href);
+              alert("Workspace URL copied to clipboard for collaboration!");
+            }
+          },
+        },
         { icon: icons.export, label: "Export", onClick: onOpenCitation },
       ].map((action, i) => (
         <Tooltip key={i} text={action.label}>
@@ -1628,22 +1639,148 @@ function SlashMenu({ onClose }: { onClose: () => void }) {
 
 // ─── Center Editor ──────────────────────────────────────────────────────────
 
+const SECTION_METADATA: Record<string, { label: string; defaultTitle: string; prompt: string; blockType: string }> = {
+  overview: {
+    label: "Project Overview",
+    defaultTitle: "AI in Healthcare: Strategic Overview & Scope",
+    prompt: "Define project objectives, institutional deliverables, and cross-functional team milestones.",
+    blockType: "Strategic Scope",
+  },
+  questions: {
+    label: "Research Questions",
+    defaultTitle: "Foundational Scientific Hypotheses & Inquiries",
+    prompt: "Formulate core questions, boundary conditions, and testable empirical criteria.",
+    blockType: "Primary Hypothesis",
+  },
+  literature: {
+    label: "Literature Review",
+    defaultTitle: "Transformer Models for Medical Imaging",
+    prompt: "Synthesize prior art, benchmark datasets, and architectural trade-offs.",
+    blockType: "Literature Gap",
+  },
+  reading: {
+    label: "Reading Notes",
+    defaultTitle: "Reading Queue & Manuscript Annotations",
+    prompt: "Capture extracted figures, methodology takeaways, and counter-arguments.",
+    blockType: "Manuscript Annotation",
+  },
+  ideas: {
+    label: "Ideas & Ideation",
+    defaultTitle: "Unexplored Paradigms & Architectural Blueprints",
+    prompt: "Document nascent ideas, cross-disciplinary analogies, and exploratory architectures.",
+    blockType: "Novel Concept",
+  },
+  experiments: {
+    label: "Experiments",
+    defaultTitle: "Computational Protocol & Run Matrix",
+    prompt: "Specify GPU hardware requirements, batch sizes, learning rates, and seeds.",
+    blockType: "Experiment Protocol",
+  },
+  methodology: {
+    label: "Methodology",
+    defaultTitle: "Mathematical Formulations & Algorithmic Design",
+    prompt: "Derive loss functions, convergence guarantees, and data normalization pipelines.",
+    blockType: "Methodological Formulation",
+  },
+  analysis: {
+    label: "Statistical Analysis",
+    defaultTitle: "Empirical Rigor & P-Value Distributions",
+    prompt: "Report confidence intervals, effect sizes, and ablation study deltas.",
+    blockType: "Statistical Evidence",
+  },
+  results: {
+    label: "Empirical Results",
+    defaultTitle: "Benchmark Performance Tables & Figures",
+    prompt: "Tabulate SOTA comparisons across Dice scores, AUROC, and latency benchmarks.",
+    blockType: "Benchmark Finding",
+  },
+  references: {
+    label: "References & BibTeX",
+    defaultTitle: "Verified Bibliography & Citation Graph",
+    prompt: "Maintain authoritative Crossref and arXiv DOIs for institutional export.",
+    blockType: "Citation Corpus",
+  },
+  datasets: {
+    label: "Datasets",
+    defaultTitle: "Cohort Provenance & Training Splits",
+    prompt: "Document patient cohorts, train/val/test partitions, and licensing terms.",
+    blockType: "Data Provenance",
+  },
+  meetings: {
+    label: "Meeting Notes",
+    defaultTitle: "Weekly Lab Sync & Advisor Minutes",
+    prompt: "Record discussion points, action items, assignees, and next milestone deadlines.",
+    blockType: "Action Items",
+  },
+  tasks: {
+    label: "Tasks & Deadlines",
+    defaultTitle: "Submission Milestones & Deliverables",
+    prompt: "Track camera-ready drafts, grant reporting due dates, and reviewer responses.",
+    blockType: "Milestone Task",
+  },
+};
+
 function Editor({
+  activeNav = "literature",
   saveStatus,
   setSaveStatus,
   selectedRows,
   setSelectedRows,
   onOpenCitation,
   onContextMenu,
+  onOpenAi,
+  onNavigateSection,
 }: {
+  activeNav?: string;
   saveStatus: string;
   setSaveStatus: (s: string) => void;
   selectedRows: number[];
   setSelectedRows: React.Dispatch<React.SetStateAction<number[]>>;
   onOpenCitation: (cite?: any) => void;
   onContextMenu?: (e: React.MouseEvent, item: any) => void;
+  onOpenAi?: () => void;
+  onNavigateSection?: (id: string) => void;
 }) {
   const [slashOpen, setSlashOpen] = useState(false);
+
+  const meta = SECTION_METADATA[activeNav] || {
+    label: "Research Section",
+    defaultTitle: `${activeNav.charAt(0).toUpperCase() + activeNav.slice(1)} Notebook`,
+    prompt: "Capture live hypotheses, methodology notes, and verified data structures.",
+    blockType: "Research Note",
+  };
+
+  const [sectionTitles, setSectionTitles] = useState<Record<string, string>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("cambium_workspace_section_titles");
+        if (stored) return JSON.parse(stored);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return {};
+  });
+
+  const activeTitle = sectionTitles[activeNav] || meta.defaultTitle;
+
+  const handleTitleBlur = (e: React.FocusEvent<HTMLHeadingElement>) => {
+    const newTitle = e.currentTarget.innerText.trim();
+    if (!newTitle) return;
+    setSectionTitles((prev) => {
+      const next = { ...prev, [activeNav]: newTitle };
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("cambium_workspace_section_titles", JSON.stringify(next));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      return next;
+    });
+    setSaveStatus("Saving…");
+    setTimeout(() => setSaveStatus("Saved"), 600);
+  };
 
   const triggerSave = () => {
     setSaveStatus("Saving…");
@@ -1665,31 +1802,37 @@ function Editor({
               fontWeight: 500,
             }}
           >
-            Literature Review
+            {meta.label}
           </span>
           <span style={{ fontSize: 11, color: W.text3 }}>·</span>
-          <span style={{ fontSize: 11, color: W.text3 }}>Last edited 8 minutes ago</span>
+          <span style={{ fontSize: 11, color: W.text3 }}>Persistent Multi-User Canvas</span>
         </div>
 
         {/* Page Title */}
         <h1
+          key={activeNav}
           contentEditable
           suppressContentEditableWarning
           onInput={triggerSave}
+          onBlur={handleTitleBlur}
           style={{
             fontSize: 34,
             fontWeight: 600,
             lineHeight: 1.2,
             color: W.text1,
-            marginBottom: 20,
+            marginBottom: 12,
             outline: "none",
             cursor: "text",
             letterSpacing: "-0.01em",
             fontFamily: "'Source Serif 4', Georgia, serif",
           }}
         >
-          Transformer Models for Medical Imaging
+          {activeTitle}
         </h1>
+
+        <p style={{ fontSize: 13, color: W.text3, fontStyle: "italic", marginBottom: 20 }}>
+          {meta.prompt}
+        </p>
 
         {/* Research Blocks */}
         <div style={{ marginBottom: 28 }}>
@@ -1768,6 +1911,87 @@ function Editor({
         />
 
         {/* Section Heading: Key Citations */}
+        {/* AI Copilot In-Canvas Smart Assistant */}
+        <div
+          style={{
+            background: W.surface2,
+            border: `1px solid ${W.border}`,
+            borderRadius: 12,
+            padding: "16px 20px",
+            marginBottom: 24,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 8,
+                background: W.greenBg,
+                color: W.green,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <Icon d={icons.sparkle} size={18} strokeWidth={2} />
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: W.text1 }}>
+                Scholarly AI Co-Author & Literature Synthesis Active
+              </div>
+              <div style={{ fontSize: 12, color: W.text2 }}>
+                Auto-complete hypotheses, cross-validate methodology baselines, and extract grounded citations.
+              </div>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              onClick={() => onOpenAi?.()}
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                padding: "6px 12px",
+                borderRadius: 6,
+                background: W.surface,
+                border: `1px solid ${W.border}`,
+                color: W.text1,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <Icon d={icons.sparkle} size={13} stroke={W.green} />
+              Instant Synthesis
+            </button>
+            <button
+              onClick={() => onNavigateSection?.("ai-copilot")}
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                padding: "6px 14px",
+                borderRadius: 6,
+                background: W.green,
+                border: "none",
+                color: "white",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              Open Copilot Studio →
+            </button>
+          </div>
+        </div>
+
         <h2
           style={{
             fontSize: 20,
@@ -1856,6 +2080,15 @@ function Editor({
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end", flexShrink: 0 }}>
                 <button
+                  onClick={() => {
+                    onOpenCitation?.({
+                      title: cite.title,
+                      author: cite.authors,
+                      year: 2025,
+                      organization: cite.journal,
+                      doi: cite.doi,
+                    });
+                  }}
                   style={{
                     fontSize: 11.5,
                     padding: "3px 10px",
@@ -1873,7 +2106,7 @@ function Editor({
                   Insert citation
                 </button>
                 <Link
-                  href="/reader"
+                  href={`/agent-reader?doi=${encodeURIComponent(cite.doi)}&title=${encodeURIComponent(cite.title)}`}
                   style={{
                     fontSize: 11.5,
                     padding: "3px 10px",
@@ -1889,7 +2122,7 @@ function Editor({
                   onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = W.text2)}
                   onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = W.text3)}
                 >
-                  Open paper
+                  Open in Agentic Reader ↗
                 </Link>
               </div>
             </div>
@@ -2696,14 +2929,45 @@ function RightPanel({
 
 // ─── Main Workspace Screen ──────────────────────────────────────────────────
 
-export default function WorkspacePage() {
+function WorkspacePageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const createDraftParam = searchParams.get("createDraft");
+  const draftTitle = searchParams.get("title");
+  const draftFunder = searchParams.get("funder");
+  const draftBudget = searchParams.get("budget");
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeNav, setActiveNav] = useState("literature");
+  const [activeNav, setActiveNav] = useState(() => (createDraftParam === "1" ? "drafts" : "literature"));
+  const [injectedDraft, setInjectedDraft] = useState<
+    { title?: string; funder?: string; budget?: string } | undefined
+  >(() => {
+    if (createDraftParam === "1" && draftTitle) {
+      return {
+        title: draftTitle,
+        funder: draftFunder || undefined,
+        budget: draftBudget || undefined,
+      };
+    }
+    return undefined;
+  });
   const [activeTab, setActiveTab] = useState("ai");
   const [saveStatus, setSaveStatus] = useState("Saved");
   const [syncStatus, setSyncStatus] = useState<"synced" | "saving" | "offline" | "conflict">("synced");
   const [rightVisible, setRightVisible] = useState(true);
   const [isSplitView, setIsSplitView] = useState(false);
+
+  // Handle live URL params update
+  useEffect(() => {
+    if (createDraftParam === "1" && draftTitle) {
+      setActiveNav("drafts");
+      setInjectedDraft({
+        title: draftTitle,
+        funder: draftFunder || undefined,
+        budget: draftBudget || undefined,
+      });
+    }
+  }, [createDraftParam, draftTitle, draftFunder, draftBudget]);
 
   // Modals state
   const [showCitationModal, setShowCitationModal] = useState(false);
@@ -2816,20 +3080,29 @@ export default function WorkspacePage() {
           onLockSession={() => setShowLockModal(true)}
         />
 
-        {/* ── Main Area (Projects Desk OR Editor + Split-View Reader or Right Panel) ── */}
+        {/* ── Main Area (Projects Desk OR Drafts Desk OR Copilot OR Digital Twin OR Editor + Split-View Reader or Right Panel) ── */}
         {activeNav === "projects" ? (
           <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
             <CollaborativeProjectsDesk />
           </div>
+        ) : activeNav === "drafts" ? (
+          <div style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+            <ProposalDraftsDesk injectedDraft={injectedDraft} />
+          </div>
         ) : activeNav === "ai-copilot" ? (
           <div style={{ flex: 1, overflowY: "auto", height: "100%", padding: "28px 36px" }}>
             <AiAutocompleteCopilotStudio />
+          </div>
+        ) : activeNav === "overview" || activeNav === "digital-twin" ? (
+          <div style={{ flex: 1, overflowY: "auto", height: "100%", padding: "28px 36px" }}>
+            <ProjectDigitalTwinOverview />
           </div>
         ) : (
           <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
             {/* Main Notebook / Editor */}
             <div style={{ flex: isSplitView ? "1 1 50%" : "1 1 100%", overflowY: "auto", height: "100%", transition: "flex 200ms ease" }}>
               <Editor
+                activeNav={activeNav}
                 saveStatus={saveStatus}
                 setSaveStatus={setSaveStatus}
                 selectedRows={selectedRows}
@@ -2839,6 +3112,8 @@ export default function WorkspacePage() {
                   setShowCitationModal(true);
                 }}
                 onContextMenu={handleContextMenu}
+                onOpenAi={() => setShowAiModal(true)}
+                onNavigateSection={(id) => setActiveNav(id)}
               />
             </div>
 
@@ -3126,5 +3401,19 @@ export default function WorkspacePage() {
         onUnlock={() => setShowLockModal(false)}
       />
     </div>
+  );
+}
+
+export default function WorkspacePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-1 h-screen items-center justify-center bg-[#FAF7F0] dark:bg-[#0E140F] font-sans text-xs font-mono text-[#62685E] dark:text-[#A3B899]">
+          <span>Mounting Research Workspace Environment…</span>
+        </div>
+      }
+    >
+      <WorkspacePageContent />
+    </Suspense>
   );
 }

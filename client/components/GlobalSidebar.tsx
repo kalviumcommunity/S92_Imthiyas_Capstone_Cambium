@@ -30,8 +30,10 @@ import {
   Users,
   UploadCloud,
   MessageSquare,
+  LogOut,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/useAuthStore";
+import { useSubscriptionStore } from "@/lib/store/useSubscriptionStore";
 import CambiumLogo from "@/components/CambiumLogo";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
@@ -66,20 +68,47 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Security & Audit", href: "/audit", icon: KeyRound, i18nKey: "nav.audit" },
   { label: "Publications", href: "/publications", icon: BookOpen, hasChevron: true, i18nKey: "nav.publications" },
   { label: "Portfolio", href: "/portfolio", icon: Briefcase },
-  { label: "Notifications", href: "/notifications", icon: Bell, badge: "3" },
+  { label: "Notifications", href: "/notifications", icon: Bell },
 ];
 
 export default function GlobalSidebar() {
   const router = useRouter();
   const pathname = usePathname() || "";
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const currentPlan = useSubscriptionStore((state) => state.currentPlan);
   const { t } = useLanguage();
 
   const [isHovered, setIsHovered] = useState(false);
   const [pinFallback, setPinFallback] = useState<boolean | null>(null);
+  const [notifCount, setNotifCount] = useState(0);
   const storedPin = useBrowserStorageValue("local", "cambium_sidebar_pinned");
   const isPinned = pinFallback ?? storedPin === "true";
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch live notification count from backend
+  useEffect(() => {
+    const fetchNotifCount = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const token = typeof window !== 'undefined' ? localStorage.getItem('cambium_access_token') : null;
+        if (!token) return;
+        const res = await fetch(`${apiUrl}/api/notifications/count`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(4000),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setNotifCount(typeof data.count === 'number' ? data.count : 0);
+        }
+      } catch {
+        // Non-blocking — backend may not be running in dev
+      }
+    };
+    fetchNotifCount();
+    const interval = setInterval(fetchNotifCount, 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const togglePin = () => {
     const next = !isPinned;
@@ -242,9 +271,14 @@ export default function GlobalSidebar() {
 
               {isOpen && (
                 <div className="flex items-center gap-1.5 shrink-0 ml-1">
-                  {item.badge && (
+                  {/* Dynamic notification badge for /notifications; static badge for all others */}
+                  {(item.href === "/notifications"
+                    ? notifCount > 0 ? String(notifCount) : undefined
+                    : item.badge) && (
                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E4DCCB] dark:bg-[#233327] text-[#3E6248] dark:text-[#4ADE80] font-mono">
-                      {item.badge}
+                      {item.href === "/notifications"
+                        ? notifCount > 0 ? String(notifCount) : undefined
+                        : item.badge}
                     </span>
                   )}
                   {item.hasChevron && (
@@ -319,6 +353,42 @@ export default function GlobalSidebar() {
           <LanguageSelector compact={!isOpen} dropdownAlign={!isOpen ? "flyout-right" : "auto"} />
         </div>
 
+        {/* Tier Status & Quota Pill */}
+        {isOpen ? (
+          <div className="px-2 py-1 flex items-center justify-between">
+            <Link
+              href="/billing"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider bg-[#DCE6D7] dark:bg-[#1A281E] text-[#3E6248] dark:text-[#4ADE80] border border-[#66866A]/20 dark:border-[#4ADE80]/30 hover:opacity-85 transition-opacity no-underline"
+              title="Compute Allowance & Billing"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+              <span>
+                {currentPlan === "free"
+                  ? "SCHOLAR FREE"
+                  : currentPlan === "pro"
+                  ? "SCHOLAR PRO"
+                  : currentPlan === "team"
+                  ? "LAB TEAM"
+                  : "CAMPUS ENT"}
+              </span>
+            </Link>
+            <Link
+              href="/billing"
+              className="text-[10px] font-mono text-[#85877B] dark:text-[#7E8B7B] hover:text-[#3E6248] dark:hover:text-[#4ADE80] transition-colors no-underline"
+            >
+              Quota →
+            </Link>
+          </div>
+        ) : (
+          <Link
+            href="/billing"
+            className="w-11 h-3 mx-auto flex items-center justify-center my-0.5 no-underline"
+            title={`Active Plan: ${currentPlan.toUpperCase()} (Click for Billing & Compute)`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
+          </Link>
+        )}
+
         {/* Divider above Profile */}
         <div className="h-[1px] bg-[#E4DCCB]/80 dark:bg-[#233327]/80 my-1 mx-1" />
 
@@ -342,13 +412,13 @@ export default function GlobalSidebar() {
           }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            {/* Avatar Circle with /Profile.png */}
+            {/* Avatar Circle with user?.photo or fallback */}
             <div
               style={{ width: 32, height: 32, minWidth: 32, minHeight: 32, maxWidth: 32, maxHeight: 32 }}
               className="w-8 h-8 min-w-[32px] min-h-[32px] rounded-full bg-[#DCE6D7] dark:bg-[#1A281E] border border-[#66866A]/40 dark:border-[#4ADE80]/40 overflow-hidden flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-2xs"
             >
               <img
-                src="/Profile.png"
+                src={user?.photo || "/Profile.png"}
                 alt={displayName}
                 style={{ width: 32, height: 32, maxWidth: 32, maxHeight: 32, borderRadius: "50%", objectFit: "cover" }}
                 className="w-full h-full object-cover max-w-full max-h-full block"
@@ -360,7 +430,7 @@ export default function GlobalSidebar() {
             </div>
 
             {isOpen && (
-              <div className="flex flex-col min-w-0">
+              <div className="flex flex-col min-w-0 flex-1">
                 <span className="text-[13px] font-semibold text-[#202920] dark:text-[#EDEAE2] truncate leading-tight group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors">
                   {displayName}
                 </span>
@@ -372,10 +442,26 @@ export default function GlobalSidebar() {
           </div>
 
           {isOpen && (
-            <ChevronRight
-              size={14}
-              className="text-[#85877B] dark:text-[#7E8B7B] group-hover:text-[#202920] dark:group-hover:text-[#EDEAE2] transition-colors shrink-0"
-            />
+            <div className="flex items-center gap-1 shrink-0 ml-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  logout();
+                  router.push("/sign-in");
+                }}
+                title="Sign out of Cambium"
+                className="p-1 rounded-md text-[#85877B] hover:text-[#C84B31] dark:hover:text-[#F87171] hover:bg-[#FBEAE8] dark:hover:bg-[#2A1515] transition-colors cursor-pointer border-0 bg-transparent"
+                aria-label="Sign out"
+              >
+                <LogOut size={13} />
+              </button>
+              <ChevronRight
+                size={14}
+                className="text-[#85877B] dark:text-[#7E8B7B] group-hover:text-[#202920] dark:group-hover:text-[#EDEAE2] transition-colors shrink-0"
+              />
+            </div>
           )}
         </Link>
       </div>

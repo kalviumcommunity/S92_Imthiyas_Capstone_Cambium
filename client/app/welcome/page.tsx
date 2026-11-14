@@ -267,50 +267,63 @@ function BottomNav({
 function StepIndicator({
   steps,
   current,
+  onStepClick,
 }: {
   steps: string[];
   current: number;
+  onStepClick?: (stepIndex: number) => void;
 }) {
   return (
     <header className="fixed top-0 left-0 right-0 z-30 bg-surface-base/95 backdrop-blur-md border-b border-edge-default">
-      <div className="max-w-[820px] mx-auto px-5 sm:px-10 h-16 flex items-center justify-between gap-4">
-        <CambiumLogo size="sm" href="/" />
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4 sm:gap-8">
+        <div className="shrink-0 flex items-center min-w-max">
+          <CambiumLogo size="sm" href="/" />
+        </div>
 
         {/* Progress steps */}
-        <div className="flex items-center gap-2 sm:gap-4">
+        <nav aria-label="Onboarding Progress" className="flex items-center gap-1.5 sm:gap-3 shrink-0 overflow-x-auto py-1 no-scrollbar">
           {steps.map((step, i) => {
             const isCompleted = i < current;
             const isCurrent = i === current;
+            const isClickable = Boolean(onStepClick && (isCompleted || isCurrent));
 
             return (
-              <div key={step} className="flex items-center gap-2 sm:gap-4">
-                <div className="flex items-center gap-2">
+              <div key={step} className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => isClickable && onStepClick && onStepClick(i)}
+                  disabled={!isClickable}
+                  className={`flex items-center gap-1.5 sm:gap-2 border-0 bg-transparent p-0 ${
+                    isClickable ? "cursor-pointer" : "cursor-default"
+                  }`}
+                  title={`Step ${i + 1}: ${step}`}
+                >
                   <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-mono font-bold transition-all shrink-0 ${
                       isCompleted
                         ? "bg-moss-600 text-white"
                         : isCurrent
-                        ? "bg-moss-600 text-white shadow-xs"
+                        ? "bg-moss-600 text-white shadow-xs ring-2 ring-moss-600/30"
                         : "border border-edge-default text-ink-tertiary bg-surface-raised"
                     }`}
                   >
-                    {isCompleted ? <Check size={11} /> : i + 1}
+                    {isCompleted ? <Check size={11} strokeWidth={3} /> : i + 1}
                   </div>
                   <span
-                    className={`text-xs hidden md:inline transition-colors ${
+                    className={`text-xs whitespace-nowrap transition-colors ${
                       isCurrent
-                        ? "font-semibold text-ink-primary"
+                        ? "font-semibold text-ink-primary inline"
                         : isCompleted
-                        ? "text-moss-700 font-medium"
-                        : "text-ink-tertiary"
+                        ? "text-moss-700 font-medium hidden md:inline"
+                        : "text-ink-tertiary hidden md:inline"
                     }`}
                   >
                     {step}
                   </span>
-                </div>
+                </button>
                 {i < steps.length - 1 && (
                   <div
-                    className={`w-3 sm:w-6 h-[1.5px] transition-colors ${
+                    className={`w-2.5 sm:w-5 h-[1.5px] shrink-0 transition-colors ${
                       i < current ? "bg-moss-600" : "bg-edge-default"
                     }`}
                   />
@@ -318,7 +331,7 @@ function StepIndicator({
               </div>
             );
           })}
-        </div>
+        </nav>
       </div>
     </header>
   );
@@ -376,35 +389,66 @@ function SetupWelcome({
   onStart,
   onSkip,
   onLoadSample,
+  onJumpToStep,
 }: {
   onStart: () => void;
   onSkip: () => void;
   onLoadSample?: () => void;
+  onJumpToStep?: (screen: Screen) => void;
 }) {
+  const [selectedCards, setSelectedCards] = useState<Record<string, boolean>>({
+    orcid: true,
+    interests: true,
+    publications: true,
+  });
+
   const steps = [
     {
+      id: "orcid" as Screen,
       icon: <User size={18} className="text-moss-700" />,
       label: "Academic identity",
       desc: "Connect your verified ORCID profile",
     },
     {
+      id: "interests" as Screen,
       icon: <Layers size={18} className="text-moss-700" />,
       label: "Research focus",
       desc: "Select domain interests and specialized topics",
     },
     {
+      id: "publications" as Screen,
       icon: <BookOpen size={18} className="text-moss-700" />,
       label: "Publications",
       desc: "Import and index your research output",
     },
   ];
 
+  const handleToggleCard = (id: Screen) => {
+    setSelectedCards((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleStartSetup = () => {
+    if (onJumpToStep) {
+      if (selectedCards.orcid) {
+        onJumpToStep("orcid");
+      } else if (selectedCards.interests) {
+        onJumpToStep("interests");
+      } else if (selectedCards.publications) {
+        onJumpToStep("publications");
+      } else {
+        onJumpToStep("review");
+      }
+    } else {
+      onStart();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-surface-base flex flex-col">
       {/* Top bar */}
       <div className="px-6 sm:px-10 py-5 border-b border-edge-default flex items-center justify-between">
         <CambiumLogo size="sm" href="/" />
-        <span className="text-[10px] font-bold text-moss-700 bg-moss-50 border border-moss-200 px-2 py-0.5 rounded uppercase tracking-wider">
+        <span className="text-[10px] font-bold text-moss-700 bg-moss-50 border border-moss-200 px-2.5 py-1 rounded-full uppercase tracking-wider font-mono">
           Onboarding
         </span>
       </div>
@@ -425,37 +469,78 @@ function SetupWelcome({
             starting point.
           </h1>
           <p className="text-sm sm:text-base text-ink-secondary mb-8 leading-relaxed max-w-md">
-            Connect your academic identity, define what you research, and bring your publications directly into your workspace.
+            Connect your academic identity, define what you research, and bring your publications directly into your workspace. Click any module to jump in.
           </p>
 
           {/* Step Cards */}
           <div className="space-y-3 mb-8">
-            {steps.map((s, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-4 bg-surface-raised border border-edge-default rounded-xl p-4 shadow-xs"
-              >
-                <div className="w-10 h-10 rounded-lg bg-moss-50 border border-moss-200/60 flex items-center justify-center shrink-0">
-                  {s.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-ink-primary">
-                    {s.label}
+            {steps.map((s) => {
+              const isChecked = selectedCards[s.id] ?? true;
+
+              return (
+                <div
+                  key={s.id}
+                  onClick={() => handleToggleCard(s.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleToggleCard(s.id);
+                    }
+                  }}
+                  className={`flex items-center gap-4 border rounded-2xl p-4 shadow-xs transition-all cursor-pointer group hover:shadow-md ${
+                    isChecked
+                      ? "border-moss-600/50 hover:border-moss-600 bg-surface-raised"
+                      : "border-edge-default hover:border-edge-strong bg-surface-sunken/40"
+                  }`}
+                >
+                  <div className="w-10 h-10 rounded-xl bg-moss-50 border border-moss-200/60 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    {s.icon}
                   </div>
-                  <div className="text-xs text-ink-tertiary mt-0.5 truncate">
-                    {s.desc}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-ink-primary group-hover:text-moss-700 transition-colors">
+                      {s.label}
+                    </div>
+                    <div className="text-xs text-ink-tertiary mt-0.5 truncate font-sans">
+                      {s.desc}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onJumpToStep) onJumpToStep(s.id);
+                      }}
+                      className="text-[11px] font-mono text-moss-700 font-semibold opacity-80 group-hover:opacity-100 transition-opacity flex items-center gap-1 hover:underline bg-moss-50 border border-moss-200/60 px-2 py-0.5 rounded-md cursor-pointer"
+                      title={`Configure ${s.label}`}
+                    >
+                      <span>Setup</span>
+                      <ArrowRight size={11} />
+                    </button>
+                    <div
+                      role="checkbox"
+                      aria-checked={isChecked}
+                      className={`w-5 h-5 rounded-full flex items-center justify-center transition-all ${
+                        isChecked
+                          ? "bg-moss-600 text-white shadow-2xs"
+                          : "border border-edge-default bg-surface-raised"
+                      }`}
+                    >
+                      {isChecked ? <Check size={11} strokeWidth={3} /> : null}
+                    </div>
                   </div>
                 </div>
-                <div className="w-5 h-5 rounded-full border border-edge-default shrink-0" />
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Action CTAs */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <button
               type="button"
-              onClick={onStart}
+              onClick={handleStartSetup}
               className="flex items-center justify-center gap-2 px-7 py-3 rounded-lg bg-moss-600 hover:bg-moss-700 text-white font-semibold text-sm transition-all shadow-xs cursor-pointer"
             >
               Start setup
@@ -1380,13 +1465,8 @@ function SetupComplete({
     <div className="min-h-screen bg-surface-base flex flex-col">
       {/* Top bar */}
       <div className="px-6 sm:px-10 py-5 border-b border-edge-default flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <CambiumLogo size={24} />
-          <span className="font-serif font-bold text-base tracking-tight text-ink-primary">
-            CAMBIUM
-          </span>
-        </div>
-        <span className="text-[10px] font-bold text-moss-700 bg-moss-50 border border-moss-200 px-2 py-0.5 rounded uppercase tracking-wider">
+        <CambiumLogo size="sm" href="/" />
+        <span className="text-[10px] font-bold text-moss-700 bg-moss-50 border border-moss-200 px-2.5 py-1 rounded-full uppercase tracking-wider font-mono">
           Complete
         </span>
       </div>
@@ -1562,6 +1642,10 @@ export default function WelcomeOnboardingPage() {
         <StepIndicator
           steps={["ORCID", "Interests", "Topics", "Publications", "Review"]}
           current={currentStep - 1}
+          onStepClick={(i) => {
+            const stepScreens: Screen[] = ["orcid", "interests", "topics", "publications", "review"];
+            if (stepScreens[i]) goTo(stepScreens[i]);
+          }}
         />
       )}
 
@@ -1579,6 +1663,7 @@ export default function WelcomeOnboardingPage() {
               onStart={() => goTo("orcid")}
               onSkip={() => setShowExitConfirm(true)}
               onLoadSample={loadSampleProfile}
+              onJumpToStep={(step) => goTo(step)}
             />
           )}
 
