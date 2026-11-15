@@ -13,6 +13,13 @@ const eslintConfig = [
       "@typescript-eslint/no-unused-vars": "off",
       "react/no-unescaped-entities": "off",
       "@next/next/no-img-element": "off",
+      "no-restricted-syntax": [
+        "warn",
+        {
+          "selector": "Literal[value=/^#(?:ff0000|0000ff|00ff00|123456)$/i]",
+          "message": "Enforce Living Materials Design System: Do not use unapproved raw hex colors. Use design tokens from cambium.tokens.json or globals.css."
+        }
+      ],
     },
   },
 ];

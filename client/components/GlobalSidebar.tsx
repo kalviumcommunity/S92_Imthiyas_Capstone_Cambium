@@ -38,6 +38,7 @@ import CambiumLogo from "@/components/CambiumLogo";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useBrowserStorageValue, writeBrowserStorageValue } from "@/lib/hooks/use-browser-storage";
+import { useSocket } from "@/lib/hooks/useSocket";
 
 export interface NavItem {
   label: string;
@@ -82,6 +83,7 @@ export default function GlobalSidebar() {
   const [isHovered, setIsHovered] = useState(false);
   const [pinFallback, setPinFallback] = useState<boolean | null>(null);
   const [notifCount, setNotifCount] = useState(0);
+  const { isConnected: isSocketLive } = useSocket({ namespace: '/chat', autoConnect: true });
   const storedPin = useBrowserStorageValue("local", "cambium_sidebar_pinned");
   const isPinned = pinFallback ?? storedPin === "true";
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -271,16 +273,29 @@ export default function GlobalSidebar() {
 
               {isOpen && (
                 <div className="flex items-center gap-1.5 shrink-0 ml-1">
-                  {/* Dynamic notification badge for /notifications; static badge for all others */}
-                  {(item.href === "/notifications"
-                    ? notifCount > 0 ? String(notifCount) : undefined
-                    : item.badge) && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E4DCCB] dark:bg-[#233327] text-[#3E6248] dark:text-[#4ADE80] font-mono">
-                      {item.href === "/notifications"
-                        ? notifCount > 0 ? String(notifCount) : undefined
-                        : item.badge}
+                  {/* Dynamic notification badge for /notifications; real-time socket badge for /messages; static for others */}
+                  {item.href === "/notifications" ? (
+                    notifCount > 0 && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E4DCCB] dark:bg-[#233327] text-[#3E6248] dark:text-[#4ADE80] font-mono">
+                        {notifCount}
+                      </span>
+                    )
+                  ) : item.href === "/messages" ? (
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full font-mono flex items-center gap-1 ${
+                        isSocketLive
+                          ? "bg-[#DCE6D7] dark:bg-[#1A281E] text-[#3E6248] dark:text-[#4ADE80]"
+                          : "bg-[#F2EBDD] dark:bg-[#1E2520] text-[#85877B]"
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${isSocketLive ? "bg-[#4ADE80] animate-pulse" : "bg-[#85877B]"}`} />
+                      {isSocketLive ? "LIVE" : "SYNC"}
                     </span>
-                  )}
+                  ) : item.badge ? (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E4DCCB] dark:bg-[#233327] text-[#3E6248] dark:text-[#4ADE80] font-mono">
+                      {item.badge}
+                    </span>
+                  ) : null}
                   {item.hasChevron && (
                     <ChevronRight size={14} className="text-[#85877B] dark:text-[#7E8B7B] group-hover:text-[#202920] dark:group-hover:text-[#EDEAE2] transition-colors" />
                   )}
