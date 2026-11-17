@@ -455,6 +455,16 @@ function EcosystemGraph({ dark, selectedCategory = 'all' }: { dark?: boolean; se
 
 // ─── Editorial Hero Section (Pure First Viewport Experience) ─────────────────
 function Hero() {
+  const router = useRouter();
+  const [heroQuery, setHeroQuery] = useState("");
+
+  const handleHeroSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (heroQuery.trim()) {
+      router.push(`/discover?q=${encodeURIComponent(heroQuery.trim())}`);
+    }
+  };
+
   return (
     <section className="w-full bg-[#FAF7F0] dark:bg-[#0E140F] min-h-[calc(100vh-80px)] flex flex-col justify-between pt-8 md:pt-14 pb-8 md:pb-10 px-6 relative overflow-hidden border-b border-[#E4DCCB] dark:border-[#233327] transition-colors duration-200">
       {/* Subtle organic radial glow */}
@@ -465,11 +475,16 @@ function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start my-auto">
           {/* Left Column: Semantic Typographic Statement (7 Cols) */}
           <div className="lg:col-span-7 flex flex-col items-start">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-[#F2EBDD] dark:bg-[#131C15] mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-[#F2EBDD] dark:bg-[#131C15] mb-6 shadow-2xs">
+              <img
+                src="/public_logo/cambium-emblem-circle.png"
+                alt="Cambium Fibonacci Golden Spiral"
+                className="w-4 h-4 rounded-full object-contain shrink-0 shadow-xs"
+              />
               <span className="font-sans text-[11px] font-semibold tracking-wider text-[#3E6248] dark:text-[#4ADE80] uppercase">
                 The Research Operating System
               </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
             </div>
 
             <h1 className="font-serif text-[clamp(2.75rem,5.6vw,4.75rem)] text-[#202920] dark:text-[#EDEAE2] font-normal leading-[1.08] tracking-tight mb-8">
@@ -492,23 +507,56 @@ function Hero() {
             </div>
           </div>
 
-          {/* Right Column: Narrative Context & Actions (5 Cols) */}
-          <div className="lg:col-span-5 lg:pt-8 flex flex-col items-start gap-8">
+          {/* Right Column: Narrative Context, Search & Actions (5 Cols) */}
+          <div className="lg:col-span-5 lg:pt-8 flex flex-col items-start gap-6">
             <p className="font-sans text-[17px] md:text-[19px] font-normal text-[#202920]/90 dark:text-[#EDEAE2]/90 leading-[1.62] tracking-normal">
               Discover ideas, build your academic identity, collaborate with researchers, explore opportunities, and organize the knowledge behind your work — all in one living research environment.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto">
+            {/* Live Search Ecosystem Bridge Form */}
+            <form onSubmit={handleHeroSearch} className="w-full space-y-2">
+              <div className="relative flex items-center w-full">
+                <Search className="w-4 h-4 absolute left-3.5 text-[#85877B] dark:text-[#7E8B7B]" />
+                <input
+                  type="text"
+                  value={heroQuery}
+                  onChange={(e) => setHeroQuery(e.target.value)}
+                  placeholder="Search 250M+ papers, grants, or topics..."
+                  className="w-full pl-10 pr-24 py-3 rounded-xl border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#131C15] text-xs sm:text-sm text-[#202920] dark:text-[#EDEAE2] placeholder-[#85877B] dark:placeholder-[#7E8B7B] focus:outline-none focus:ring-1 focus:ring-[#3E6248] dark:focus:ring-[#4ADE80] transition-all shadow-xs"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-1.5 px-3 py-1.5 rounded-lg bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] text-xs font-mono font-semibold transition-all cursor-pointer shadow-2xs"
+                >
+                  Search
+                </button>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 text-[10.5px] font-mono text-[#85877B] dark:text-[#7E8B7B]">
+                <span>Trending:</span>
+                {["Quantum ML", "RNA Therapeutics", "NSF SaTC", "Spatial Biology"].map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => router.push(`/discover?q=${encodeURIComponent(tag)}`)}
+                    className="px-2 py-0.5 rounded-md bg-[#F2EBDD] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80] text-[#62685E] dark:text-[#A3B899] transition-colors cursor-pointer"
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </form>
+
+            <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto pt-1">
               <Link
                 href="/sign-up"
-                className="w-full sm:w-auto bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] px-8 py-4 rounded-xl font-sans text-sm font-semibold tracking-tight transition-all shadow-md shadow-[#3E6248]/25 hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2 group no-underline border border-[#66866A]/40 dark:border-[#4ADE80]/40"
+                className="w-full sm:w-auto bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] px-8 py-3.5 rounded-xl font-sans text-sm font-semibold tracking-tight transition-all shadow-md shadow-[#3E6248]/25 hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2 group no-underline border border-[#66866A]/40 dark:border-[#4ADE80]/40"
               >
                 <span>Get started — it's free</span>
                 <ArrowUpRight className="w-4 h-4 text-[#FAF7F0]/80 dark:text-[#0E140F]/80 group-hover:text-[#FAF7F0] dark:group-hover:text-[#0E140F] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Link>
               <a
                 href="#knowledge-network"
-                className="w-full sm:w-auto border border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80] text-[#202920] dark:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#131C15] px-8 py-4 rounded-xl font-sans text-sm font-medium transition-colors bg-[#FAF7F0] dark:bg-[#0E140F] flex items-center justify-center no-underline"
+                className="w-full sm:w-auto border border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80] text-[#202920] dark:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#131C15] px-8 py-3.5 rounded-xl font-sans text-sm font-medium transition-colors bg-[#FAF7F0] dark:bg-[#0E140F] flex items-center justify-center no-underline"
               >
                 Explore Cambium
               </a>
@@ -1620,8 +1668,8 @@ function WorkspaceSection() {
                       <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E]">
                         UPCOMING DEADLINES
                       </span>
-                      <Link href="/calendar" className="text-[11px] text-[#85877B] hover:text-[#202920] no-underline font-medium">
-                        Calendar
+                      <Link href="/opportunities" className="text-[11px] text-[#85877B] hover:text-[#202920] no-underline font-medium">
+                        Calendar →
                       </Link>
                     </div>
 
@@ -1654,7 +1702,7 @@ function WorkspaceSection() {
                       <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E]">
                         SCHOLARS YOU MAY KNOW
                       </span>
-                      <Link href="/network" className="text-[11px] text-[#85877B] hover:text-[#202920] no-underline font-medium">
+                      <Link href="/community" className="text-[11px] text-[#85877B] hover:text-[#202920] no-underline font-medium">
                         Explore →
                       </Link>
                     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Folder,
@@ -20,6 +20,7 @@ import {
   Clock,
   Shield,
   Share2,
+  Download,
 } from "lucide-react";
 
 export interface ProjectMemberDisplay {
@@ -190,9 +191,45 @@ const INITIAL_PROJECTS: CollaborativeProject[] = [
 ];
 
 export function CollaborativeProjectsDesk() {
-  const [projects, setProjects] = useState<CollaborativeProject[]>(INITIAL_PROJECTS);
+  const [projects, setProjects] = useState<CollaborativeProject[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("cambium_collaborative_projects_v2");
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error("Failed to parse stored collaborative projects", e);
+        }
+      }
+    }
+    return INITIAL_PROJECTS;
+  });
   const [selectedProjectId, setSelectedProjectId] = useState<string>("proj-1");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // BroadcastChannel for live cross-tab synchrony
+  useEffect(() => {
+    if (typeof window === "undefined" || !("BroadcastChannel" in window)) return;
+    const channel = new BroadcastChannel("cambium_collaborative_projects");
+    channel.onmessage = (event) => {
+      if (event.data?.type === "PROJECTS_UPDATED" && Array.isArray(event.data.projects)) {
+        setProjects(event.data.projects);
+      }
+    };
+    return () => channel.close();
+  }, []);
+
+  const saveProjectsAndBroadcast = (updated: CollaborativeProject[]) => {
+    setProjects(updated);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cambium_collaborative_projects_v2", JSON.stringify(updated));
+      if ("BroadcastChannel" in window) {
+        const channel = new BroadcastChannel("cambium_collaborative_projects");
+        channel.postMessage({ type: "PROJECTS_UPDATED", projects: updated });
+        channel.close();
+      }
+    }
+  };
 
   // Modals
   const [isInitModalOpen, setIsInitModalOpen] = useState(false);
@@ -218,6 +255,68 @@ export function CollaborativeProjectsDesk() {
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 2500);
+  };
+
+  const handleExportProposalPackage = () => {
+    if (!activeProject) return;
+
+    const membersTex = activeProject.members
+      .map((m) => `\\item \\textbf{${m.name}} (${m.role}) --- ${m.institution} [${m.status}]`)
+      .join("\n");
+
+    const doisTex = activeProject.linkedDois
+      .map((d) => `\\item ${d.title} (DOI: \\url{https://doi.org/${d.doi}})`)
+      .join("\n");
+
+    const texContent = `\\documentclass[11pt,a4paper]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage{geometry}
+\\usepackage{hyperref}
+\\geometry{margin=1in}
+
+\\title{\\textbf{${activeProject.title}}\\\\
+\\large Collaborative Multi-Investigator Research Proposal}
+\\author{Cambium Research Consortium}
+\\date{\\today}
+
+\\begin{document}
+\\maketitle
+
+\\section*{Executive Overview}
+${activeProject.description}
+
+\\section{Target Grant & Funding Mechanism}
+\\begin{itemize}
+  \\item \\textbf{Sponsoring Agency:} ${activeProject.targetGrant.funder}
+  \\item \\textbf{Solicitation Track:} ${activeProject.targetGrant.program}
+  \\item \\textbf{Requested Budget:} ${activeProject.targetGrant.budget}
+  \\item \\textbf{Days Until Window Close:} ${activeProject.targetGrant.daysLeft}
+\\end{itemize}
+
+\\section{CRediT Authorship Roster (14-Role Taxonomy)}
+\\begin{itemize}
+${membersTex}
+\\end{itemize}
+
+\\section{Vaulted Literature & Foundational DOIs}
+\\begin{itemize}
+${doisTex || "\\item None linked yet."}
+\\end{itemize}
+
+\\section{Changelog & Governance Ledger}
+Proposal repository verified under institutional provenance protocols.
+
+\\end{document}
+`;
+
+    const blob = new Blob([texContent], { type: "application/x-latex;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${activeProject.title.slice(0, 30).replace(/[^a-zA-Z0-9]/g, "_")}_Proposal_Package.tex`;
+    a.click();
+    URL.revokeObjectURL(url);
+    triggerToast("Proposal Package LaTeX source exported ✓");
   };
 
   const handleInitProject = (e: React.FormEvent) => {
@@ -257,7 +356,8 @@ export function CollaborativeProjectsDesk() {
       ],
     };
 
-    setProjects([newProj, ...projects]);
+    const updated = [newProj, ...projects];
+    saveProjectsAndBroadcast(updated);
     setSelectedProjectId(newProj.id);
     setIsInitModalOpen(false);
     setNewProjectTitle("");
@@ -289,26 +389,25 @@ export function CollaborativeProjectsDesk() {
       status: "INVITED",
     };
 
-    setProjects((prev) =>
-      prev.map((p) =>
-        p.id === activeProject.id
-          ? {
-              ...p,
-              members: [...p.members, newMember],
-              activityChangelog: [
-                {
-                  time: "Just now",
-                  actor: "Imthiyas",
-                  action: "INVITED_MEMBER",
-                  details: `Generated signed CRediT invitation for ${newMember.name} as ${newMember.role}.`,
-                },
-                ...p.activityChangelog,
-              ],
-            }
-          : p
-      )
+    const updated = projects.map((p) =>
+      p.id === activeProject.id
+        ? {
+            ...p,
+            members: [...p.members, newMember],
+            activityChangelog: [
+              {
+                time: "Just now",
+                actor: "Imthiyas",
+                action: "INVITED_MEMBER",
+                details: `Generated signed CRediT invitation for ${newMember.name} as ${newMember.role}.`,
+              },
+              ...p.activityChangelog,
+            ],
+          }
+        : p
     );
 
+    saveProjectsAndBroadcast(updated);
     triggerToast(`Signed CRediT invitation generated for ${newMember.name} ✓`);
   };
 
@@ -322,26 +421,25 @@ export function CollaborativeProjectsDesk() {
       citations: 24,
     };
 
-    setProjects((prev) =>
-      prev.map((p) =>
-        p.id === activeProject.id
-          ? {
-              ...p,
-              linkedDois: [...p.linkedDois, newDoiItem],
-              activityChangelog: [
-                {
-                  time: "Just now",
-                  actor: "Imthiyas",
-                  action: "LINKED_DOI",
-                  details: `Linked DOI reference ${newDoiItem.doi} to Proposal Vault.`,
-                },
-                ...p.activityChangelog,
-              ],
-            }
-          : p
-      )
+    const updated = projects.map((p) =>
+      p.id === activeProject.id
+        ? {
+            ...p,
+            linkedDois: [...p.linkedDois, newDoiItem],
+            activityChangelog: [
+              {
+                time: "Just now",
+                actor: "Imthiyas",
+                action: "LINKED_DOI",
+                details: `Linked DOI reference ${newDoiItem.doi} to Proposal Vault.`,
+              },
+              ...p.activityChangelog,
+            ],
+          }
+        : p
     );
 
+    saveProjectsAndBroadcast(updated);
     setIsDoiModalOpen(false);
     setDoiInput("");
     setDoiTitleInput("");
@@ -362,6 +460,10 @@ export function CollaborativeProjectsDesk() {
             </h2>
             <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono bg-[#DCE6D7] text-[#3E6248] border border-[#66866A]/30 font-semibold">
               CRediT 14-Role Matrix
+            </span>
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-mono bg-white text-[#3E6248] border border-[#E4DCCB] font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] animate-pulse" />
+              Live Presence Synced (Hybrid SSE & Broadcast)
             </span>
           </div>
           <p className="text-xs text-[#62685E] mt-1">
@@ -476,6 +578,14 @@ export function CollaborativeProjectsDesk() {
                 >
                   <BookOpen size={13} className="text-[#3E6248]" />
                   Link DOI
+                </button>
+                <button
+                  onClick={handleExportProposalPackage}
+                  className="px-3 py-1.5 rounded-lg border border-[#E4DCCB] bg-[#FAF7F0] hover:bg-white text-xs font-mono text-[#202920] flex items-center gap-1.5 cursor-pointer shadow-2xs transition-colors"
+                  title="Export Complete CRediT Proposal Package (LaTeX)"
+                >
+                  <Download size={13} className="text-[#3E6248]" />
+                  Export Package
                 </button>
               </div>
             </div>

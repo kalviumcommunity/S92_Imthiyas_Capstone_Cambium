@@ -9,11 +9,13 @@ import {
   Req,
   UsePipes,
   ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { InviteMemberDto } from './dto/invite-member.dto';
+import { SubscriptionGuard, RequiresSubscription } from '../auth/guards/subscription.guard';
 
 @ApiTags('Collaborative Project Workspaces')
 @Controller(['projects', 'api/projects'])
@@ -35,7 +37,9 @@ export class ProjectsController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Initialize new collaborative research project workspace' })
+  @UseGuards(SubscriptionGuard)
+  @RequiresSubscription('team')
+  @ApiOperation({ summary: 'Initialize new collaborative research project workspace (Team Tier Required)' })
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async createProject(@Body() dto: CreateProjectDto, @Req() req: any) {
     const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';

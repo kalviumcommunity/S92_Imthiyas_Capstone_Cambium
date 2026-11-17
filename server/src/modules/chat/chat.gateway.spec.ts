@@ -52,14 +52,14 @@ describe('ChatGateway', () => {
     expect(mockSocket.leave).toHaveBeenCalledWith('room:genomics-grant-42');
   });
 
-  it('should broadcast messages to all room participants via Redis adapter', () => {
+  it('should broadcast messages to all room participants via Redis adapter', async () => {
     const payload = {
       room: 'room:genomics-grant-42',
       message: 'Initial draft of methodology uploaded to workspace.',
       sender: { id: 'user-1', name: 'Dr. Jane' },
     };
 
-    const result = gateway.handleSendMessage(mockSocket, payload);
+    const result = await gateway.handleSendMessage(mockSocket, payload);
     expect(result.success).toBe(true);
     expect(result.messageId).toBeDefined();
     expect(mockServer.to).toHaveBeenCalledWith('room:genomics-grant-42');

@@ -49,6 +49,16 @@ const nextConfig: NextConfig = {
 
     return [
       {
+        // Cache bust public_logo so new SVG branding is immediately served without CDN cache lag
+        source: "/public_logo/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
+        ],
+      },
+      {
         // Apply security headers to HTML pages while strictly bypassing Next.js static asset pipelines
         source: "/((?!_next/static|_next/image|favicon.ico|public_logo).*)",
         headers: [

@@ -1,6 +1,15 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Inject } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Inject, UseGuards, Sse } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { Observable } from 'rxjs';
 import { AssistantService, AssistantChatRequest } from './assistant.service';
+import { SubscriptionGuard, RequiresSubscription } from '../auth/guards/subscription.guard';
+
+interface MessageEvent {
+  data: string | object;
+  id?: string;
+  type?: string;
+  retry?: number;
+}
 
 @ApiTags('AI Research Assistant (Agentic RAG)')
 @Controller(['api/v1/assistant', 'api/assistant'])
@@ -12,6 +21,8 @@ export class AssistantController {
 
   @Post('chat')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(SubscriptionGuard)
+  @RequiresSubscription('pro')
   @ApiOperation({
     summary: 'Multi-turn Agentic RAG chat with tool calling (eligibility verification, grant matching, proposal extraction)',
   })
@@ -41,5 +52,25 @@ export class AssistantController {
   @ApiResponse({ status: 200, description: 'Scholar assistant reply with executed tools and grounded citations' })
   async chat(@Body() body: AssistantChatRequest) {
     return this.assistantService.chat(body);
+  }
+
+  @Post('stream')
+  @Sse()
+  @UseGuards(SubscriptionGuard)
+  @RequiresSubscription('pro')
+  @ApiOperation({ summary: 'Stream Agentic RAG responses token-by-token via Server-Sent Events (SSE)' })
+  streamChat(@Body() body: AssistantChatRequest): Observable<MessageEvent> {
+    return new Observable<MessageEvent>((subscriber) => {
+      (async () => {
+        try {
+          for await (const chunk of this.assistantService.streamChat(body)) {
+            subscriber.next({ data: chunk.data });
+          }
+          subscriber.complete();
+        } catch (err: any) {
+          subscriber.error(err);
+        }
+      })();
+    });
   }
 }

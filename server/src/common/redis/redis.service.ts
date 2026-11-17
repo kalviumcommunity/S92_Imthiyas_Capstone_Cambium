@@ -265,6 +265,31 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Account Lockout Security: Records failed login attempts.
+   * After maxAttempts (default 5), locks account for lockoutSeconds (default 15 minutes).
+   */
+  async recordFailedLogin(emailOrUsername: string, maxAttempts = 5, lockoutSeconds = 900): Promise<{ locked: boolean; remaining: number }> {
+    const key = `lockout:failed:${emailOrUsername.toLowerCase()}`;
+    const result = await this.checkRateLimit(key, maxAttempts, lockoutSeconds);
+    return {
+      locked: !result.allowed,
+      remaining: result.remaining,
+    };
+  }
+
+  /**
+   * Clears failed login counter upon successful authentication
+   */
+  async resetFailedLogins(emailOrUsername: string): Promise<void> {
+    const key = `lockout:failed:${emailOrUsername.toLowerCase()}`;
+    const fullKey = `cambium:rate-limit:${key}`;
+    if (this.isConnected && this.client) {
+      await this.client.del(fullKey);
+    }
+    this.rateLimitStore.delete(fullKey);
+  }
+
+  /**
    * Zero-Trust JWT Blacklist: Revokes a JWT ID (jti) until token expiration
    */
   async blacklistJti(jti: string, ttlSeconds: number): Promise<void> {

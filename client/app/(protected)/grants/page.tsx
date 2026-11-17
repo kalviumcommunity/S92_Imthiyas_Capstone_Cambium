@@ -86,7 +86,35 @@ export default function GrantManagementPage() {
   const [activeTab, setActiveTab] = useState<"post-award" | "form-builder" | "proposals">("post-award");
   const [uploadedIRB, setUploadedIRB] = useState<UploadedArtifact | null>(null);
   const [isUploadingIRB, setIsUploadingIRB] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const irbInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handlePublishCFP = () => {
+    const cfp = {
+      id: `cfp-${Date.now()}`,
+      title: "Frontier Scientific ML 2027",
+      agency: "Department of Science & Advanced Technologies",
+      publishedAt: new Date().toISOString(),
+      rubrics: [
+        "Specific Aims & Hypothesis Defense (Max 1,500 Words)",
+        "Institutional Resource Allocation & Cloud Compute Plan",
+        "FAIR Data Management & Open-Access Repository Commitment",
+      ],
+      status: "Published",
+    };
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("cambium_published_cfps") || "[]";
+        const cfps = JSON.parse(stored);
+        cfps.push(cfp);
+        localStorage.setItem("cambium_published_cfps", JSON.stringify(cfps));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setToastMessage("CFP Rubric Schema Published & Synced to Institutional Registry!");
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   const handleIRBUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -342,7 +370,11 @@ export default function GrantManagementPage() {
                     Application Rubric Schema: "Frontier Scientific ML 2027"
                   </h3>
                 </div>
-                <button className="px-4 py-2 rounded-full bg-[#3E6248] text-white text-xs font-mono uppercase tracking-wider font-semibold cursor-pointer border-none">
+                <button
+                  type="button"
+                  onClick={handlePublishCFP}
+                  className="px-4 py-2 rounded-full bg-[#3E6248] hover:bg-[#293E30] text-white text-xs font-mono uppercase tracking-wider font-semibold cursor-pointer border-none transition-colors shadow-xs"
+                >
                   Publish CFP Template
                 </button>
               </div>
@@ -460,6 +492,12 @@ export default function GrantManagementPage() {
           </div>
         )}
       </div>
+
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-[#202920] text-[#FAF7F0] text-xs font-mono shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-150">
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 }

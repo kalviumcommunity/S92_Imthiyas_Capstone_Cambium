@@ -33,40 +33,16 @@ export function CambiumMark({
   theme?: "light" | "dark" | "forest" | "auto";
   className?: string;
 }) {
-  const isForcedDark = theme === "dark" || theme === "forest";
-  const isForcedLight = theme === "light";
-
   return (
     <div
       style={{ width: size, height: size, minWidth: size, minHeight: size }}
-      className={`rounded-full bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] p-0.5 flex items-center justify-center shadow-xs shrink-0 overflow-hidden ${className}`}
+      className={`rounded-full bg-[#092026] border border-[#3E6248]/40 dark:border-[#4ADE80]/30 p-0.5 flex items-center justify-center shadow-xs shrink-0 overflow-hidden ${className}`}
     >
-      {isForcedDark ? (
-        <img
-          src="/public_logo/cambium-logo-dark.svg"
-          alt="CAMBIUM RESEARCH Mark"
-          className="w-full h-full object-contain max-w-full max-h-full block transition-transform"
-        />
-      ) : isForcedLight ? (
-        <img
-          src="/public_logo/cambium-logo-light.svg"
-          alt="CAMBIUM RESEARCH Mark"
-          className="w-full h-full object-contain max-w-full max-h-full block transition-transform"
-        />
-      ) : (
-        <>
-          <img
-            src="/public_logo/cambium-logo-light.svg"
-            alt="CAMBIUM RESEARCH Mark"
-            className="w-full h-full object-contain max-w-full max-h-full block dark:hidden transition-transform"
-          />
-          <img
-            src="/public_logo/cambium-logo-dark.svg"
-            alt="CAMBIUM RESEARCH Mark"
-            className="w-full h-full object-contain max-w-full max-h-full hidden dark:block transition-transform"
-          />
-        </>
-      )}
+      <img
+        src="/public_logo/cambium-emblem-circle.png"
+        alt="CAMBIUM RESEARCH Mark"
+        className="w-full h-full object-contain max-w-full max-h-full block transition-transform group-hover:scale-105"
+      />
     </div>
   );
 }
@@ -121,34 +97,13 @@ export default function CambiumLogo({
       {/* Optional Circular Fibonacci Golden Spiral Mark */}
       {showMark && (
         <div
-          className={`${sizeConfig.container} rounded-full bg-[#FAF7F0] dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] flex items-center justify-center shadow-xs transition-transform duration-200 group-hover:scale-105 shrink-0 overflow-hidden`}
+          className={`${sizeConfig.container} rounded-full bg-[#092026] border border-[#3E6248]/40 dark:border-[#4ADE80]/30 flex items-center justify-center shadow-xs transition-transform duration-200 group-hover:scale-105 shrink-0 overflow-hidden`}
         >
-          {isForcedDark ? (
-            <img
-              src="/public_logo/cambium-logo-dark.svg"
-              alt="CAMBIUM RESEARCH Emblem"
-              className="w-full h-full object-contain max-w-full max-h-full block transition-transform"
-            />
-          ) : isForcedLight ? (
-            <img
-              src="/public_logo/cambium-logo-light.svg"
-              alt="CAMBIUM RESEARCH Emblem"
-              className="w-full h-full object-contain max-w-full max-h-full block transition-transform"
-            />
-          ) : (
-            <>
-              <img
-                src="/public_logo/cambium-logo-light.svg"
-                alt="CAMBIUM RESEARCH Emblem"
-                className="w-full h-full object-contain max-w-full max-h-full block dark:hidden transition-transform"
-              />
-              <img
-                src="/public_logo/cambium-logo-dark.svg"
-                alt="CAMBIUM RESEARCH Emblem"
-                className="w-full h-full object-contain max-w-full max-h-full hidden dark:block transition-transform"
-              />
-            </>
-          )}
+          <img
+            src="/public_logo/cambium-emblem-circle.png"
+            alt="CAMBIUM RESEARCH Emblem"
+            className="w-full h-full object-contain max-w-full max-h-full block transition-transform"
+          />
         </div>
       )}
 

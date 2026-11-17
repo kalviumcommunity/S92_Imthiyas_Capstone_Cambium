@@ -35,9 +35,8 @@ export interface JwtTokenPayload {
 
 @Injectable()
 export class AuthService {
-  private readonly jwtSecret = process.env.JWT_SECRET || 'cambium_jwt_secret_key_2026';
-  private readonly jwtRefreshSecret =
-    process.env.JWT_REFRESH_SECRET || 'cambium_jwt_refresh_secret_key_2026_super_secure';
+  private readonly jwtSecret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('JWT_SECRET is required in production') })() : 'cambium_dev_jwt_secret_DO_NOT_USE_IN_PRODUCTION');
+  private readonly jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('JWT_REFRESH_SECRET is required in production') })() : 'cambium_dev_refresh_secret_DO_NOT_USE_IN_PRODUCTION');
   private readonly googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy-client-id');
 
   constructor(
@@ -103,6 +102,12 @@ export class AuthService {
       throw new BadRequestException('Please provide username or email');
     }
 
+    // Account Lockout Security Check: 5 attempts locks for 15 minutes (900s)
+    const lockoutCheck = await this.redisService.recordFailedLogin(identifier, 5, 900);
+    if (lockoutCheck.locked) {
+      throw new UnauthorizedException('Account temporarily locked due to 5 consecutive failed login attempts. Please try again in 15 minutes.');
+    }
+
     const user = await this.userRepo
       .createQueryBuilder('user')
       .addSelect('user.passwordHash')
@@ -112,13 +117,16 @@ export class AuthService {
       .getOne();
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials: User not found');
+      throw new UnauthorizedException(`Invalid credentials. ${lockoutCheck.remaining} attempts remaining.`);
     }
 
     const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
     if (!isMatch) {
-      throw new UnauthorizedException('Invalid credentials: Password incorrect');
+      throw new UnauthorizedException(`Invalid credentials. ${lockoutCheck.remaining} attempts remaining.`);
     }
+
+    // Reset failed login attempts on valid authentication
+    await this.redisService.resetFailedLogins(identifier);
 
     const tokens = this.generateTokenPair(user.id, user.email, user.username, user.role);
 

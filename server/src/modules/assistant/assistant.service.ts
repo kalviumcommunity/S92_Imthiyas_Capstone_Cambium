@@ -266,4 +266,30 @@ Quote exact appendix benchmarks and parameter settings (e.g. [Appendix C.4, L310
       })),
     };
   }
+
+  /**
+   * Stream Agentic RAG answers token-by-token or section-by-section via Server-Sent Events (SSE)
+   */
+  async *streamChat(request: AssistantChatRequest): AsyncGenerator<{ data: string }, void, unknown> {
+    const response = await this.chat(request);
+    const text = response.reply;
+    const words = text.split(' ');
+    const chunkSize = 4; // words per SSE token frame
+
+    for (let i = 0; i < words.length; i += chunkSize) {
+      const chunk = words.slice(i, i + chunkSize).join(' ') + ' ';
+      yield { data: JSON.stringify({ token: chunk, done: false }) };
+      // Gentle pacing for readable progressive streaming
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+
+    yield {
+      data: JSON.stringify({
+        token: '',
+        done: true,
+        toolCalls: response.toolCallsExecuted,
+        citations: response.evidenceCitations,
+      }),
+    };
+  }
 }

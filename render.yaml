@@ -41,6 +41,11 @@ services:
         sync: false
       - key: RESEND_API_KEY
         sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: cambium-redis
+          property: connectionString
 
   # ----------------------------------------------------------------------------
   # 2. Next.js 15 Presentation Client (Living Materials UI, App Router)
@@ -73,3 +78,9 @@ databases:
     databaseName: cambium
     user: cambium_admin
     postgresMajorVersion: "16"
+
+  # Redis (BullMQ, Socket.io adapter, rate limiting, Redlock)
+  - type: redis
+    name: cambium-redis
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
