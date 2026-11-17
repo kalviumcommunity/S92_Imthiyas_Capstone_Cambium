@@ -554,6 +554,31 @@ export default function CommunityPage() {
     setComposerBudget("");
 
     sendMessage(newPost.content, "community");
+
+    // Persist post to backend Community API asynchronously
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const token = typeof window !== "undefined" ? localStorage.getItem("cambium_access_token") : null;
+      if (token) {
+        fetch(`${apiUrl}/api/community/posts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            title: newPost.title,
+            content: newPost.content,
+            type: newPost.type,
+            tags: newPost.tags,
+            doiReference: newPost.doiReference,
+          }),
+        }).catch((err) => console.warn("[Community] Backend sync warning (non-blocking):", err));
+      }
+    } catch {
+      // Non-blocking fallback
+    }
+
     triggerToast("Your academic post has been published to the global scholar mesh ✓");
   };
 
