@@ -559,8 +559,8 @@ export function CambiumIntroPreloader({
       {/* Top Header Telemetry */}
       <div className="relative z-10 flex items-center justify-between w-full max-w-6xl mx-auto">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-full bg-[#1B231D] border border-[#3E6248]/50 flex items-center justify-center p-0.5 shadow-xs overflow-hidden">
-            <img src="/public_logo/cambium-logo-dark.svg" alt="CAMBIUM Mark" className="w-full h-full object-contain transition-transform" />
+          <div className="w-6 h-6 flex items-center justify-center shrink-0">
+            <img src="/public_logo/cambium-logo-dark.svg" alt="CAMBIUM Mark" className="w-full h-full object-contain" />
           </div>
           <span className="font-mono text-[10.5px] uppercase tracking-[0.18em] text-[#85877B]">
             Cambium Runtime · Kernel 2.4
@@ -580,11 +580,11 @@ export function CambiumIntroPreloader({
       <div className="relative z-10 flex flex-col items-center justify-center text-center my-auto px-4 max-w-5xl mx-auto w-full">
         {/* Minimalist Dual Fibonacci Spiral Mark */}
         <div className="relative mb-8 flex items-center justify-center">
-          <div className="w-16 h-16 rounded-full bg-[#1B231D] border border-[#3E6248] p-1.5 flex items-center justify-center shadow-lg transition-transform overflow-hidden">
+          <div className="w-16 h-16 flex items-center justify-center">
             <img
               src="/public_logo/cambium-logo-dark.svg"
               alt="CAMBIUM Logo"
-              className="w-full h-full object-contain transition-transform"
+              className="w-full h-full object-contain drop-shadow-[0_0_16px_rgba(74,222,128,0.35)] transition-transform"
             />
           </div>
         </div>

@@ -477,9 +477,14 @@ function Hero() {
           <div className="lg:col-span-7 flex flex-col items-start">
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-[#F2EBDD] dark:bg-[#131C15] mb-6 shadow-2xs">
               <img
-                src="/public_logo/cambium-emblem-circle.png"
+                src="/public_logo/cambium-logo-light.svg"
                 alt="Cambium Fibonacci Golden Spiral"
-                className="w-4 h-4 rounded-full object-contain shrink-0 shadow-xs"
+                className="w-4 h-4 object-contain shrink-0 dark:hidden"
+              />
+              <img
+                src="/public_logo/cambium-logo-dark.svg"
+                alt="Cambium Fibonacci Golden Spiral"
+                className="w-4 h-4 object-contain shrink-0 hidden dark:block"
               />
               <span className="font-sans text-[11px] font-semibold tracking-wider text-[#3E6248] dark:text-[#4ADE80] uppercase">
                 The Research Operating System

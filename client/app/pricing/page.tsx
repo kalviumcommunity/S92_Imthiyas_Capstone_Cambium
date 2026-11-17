@@ -55,8 +55,8 @@ export default function PricingPage() {
       name: "Lab Team Workspace",
       tagline: "Collaborative multi-investigator research hub for laboratories and research groups.",
       price: currency === "USD"
-        ? (billingPeriod === "monthly" ? "$49" : "$490")
-        : (billingPeriod === "monthly" ? "₹3,999" : "₹39,990"),
+        ? (billingPeriod === "monthly" ? "$5" : "$50")
+        : (billingPeriod === "monthly" ? "₹449" : "₹4,490"),
       period: billingPeriod === "monthly" ? "/ month" : "/ year (Save ~16%)",
       badge: "Laboratory Standard",
       buttonText: "Equip Lab Team",

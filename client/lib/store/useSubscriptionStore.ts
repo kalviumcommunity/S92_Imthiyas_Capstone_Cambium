@@ -189,11 +189,11 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => {
         totalTokens = 10000;
         maxMembers = 1;
       } else if (plan === "team") {
-        amountStr = currency === "USD" ? (cycle === "monthly" ? "$49.00" : "$490.00") : (cycle === "monthly" ? "₹3,999.00" : "₹39,990.00");
+        amountStr = currency === "USD" ? (cycle === "monthly" ? "$5.00" : "$50.00") : (cycle === "monthly" ? "₹449.00" : "₹4,490.00");
         totalTokens = 50000;
         maxMembers = 15;
       } else if (plan === "enterprise") {
-        amountStr = currency === "USD" ? "$5,000.00" : "₹420,000.00";
+        amountStr = "Custom";
         totalTokens = 500000;
         maxMembers = 250;
       }

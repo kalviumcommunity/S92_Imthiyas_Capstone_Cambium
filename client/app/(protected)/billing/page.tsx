@@ -83,12 +83,12 @@ function BillingPageContent() {
   const proPriceDisplay = isAnnual ? proAnnual : proMonthly;
   const proPeriodLabel = isAnnual ? "/ year (Save ~16%)" : "/ month";
 
-  const teamMonthly = currency === "USD" ? "$49.00" : "₹3,999.00";
-  const teamAnnual = currency === "USD" ? "$490.00" : "₹39,990.00";
+  const teamMonthly = currency === "USD" ? "$5.00" : "₹449.00";
+  const teamAnnual = currency === "USD" ? "$50.00" : "₹4,490.00";
   const teamPriceDisplay = isAnnual ? teamAnnual : teamMonthly;
   const teamPeriodLabel = isAnnual ? "/ year (Full Lab)" : "/ month (Full Lab)";
 
-  const enterprisePriceDisplay = currency === "USD" ? "$5,000.00" : "₹420,000.00";
+  const enterprisePriceDisplay = "Custom";
 
   const handleDownloadInvoice = (inv: InvoiceItem) => {
     const printWindow = window.open("", "_blank");
@@ -606,9 +606,9 @@ function BillingPageContent() {
                   </span>
                   <div className="flex items-baseline gap-1 mt-1">
                     <span className="text-3xl font-serif font-normal text-[#202920] dark:text-[#EDEAE2] leading-none">
-                      {currency === "USD" ? "$5,000+" : "₹4.2L+"}
+                      {enterprisePriceDisplay}
                     </span>
-                    <span className="text-xs text-[#62685E] dark:text-[#A3B899]">/ year</span>
+                    <span className="text-xs text-[#62685E] dark:text-[#A3B899]">/ institutional grant</span>
                   </div>
                   <div className="mt-2 inline-block text-[10px] font-mono font-semibold bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] text-[#62685E] dark:text-[#A3B899] px-2 py-0.5 rounded-full">
                     Campus-Wide SSO

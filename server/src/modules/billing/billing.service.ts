@@ -60,7 +60,7 @@ export class BillingService {
     const tierPrices: Record<SubscriptionTier, number> = {
       [SubscriptionTier.FREE]: 0,
       [SubscriptionTier.PRO]: dto.cycle === 'annual' ? 10 : 1,
-      [SubscriptionTier.TEAM]: dto.cycle === 'annual' ? 490 : 49,
+      [SubscriptionTier.TEAM]: dto.cycle === 'annual' ? 50 : 5,
       [SubscriptionTier.ENTERPRISE]: 299,
     };
 

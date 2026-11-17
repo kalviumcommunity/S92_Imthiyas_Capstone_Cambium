@@ -69,12 +69,12 @@ export function PaymentCheckoutModal({
 
   if (targetPlan === "team") {
     planTitle = "Cambium Lab Team Workspace";
-    priceDisplay = currency === "USD" ? (isAnnual ? "$490.00" : "$49.00") : (isAnnual ? "₹39,990.00" : "₹3,999.00");
+    priceDisplay = currency === "USD" ? (isAnnual ? "$50.00" : "$5.00") : (isAnnual ? "₹4,490.00" : "₹449.00");
     periodLabel = isAnnual ? "/ year (Full Lab)" : "/ month (Full Lab)";
     highlightNote = "Includes up to 15 team researchers, shared compute pool, and collaborative grant pipeline.";
   } else if (targetPlan === "enterprise") {
     planTitle = "Campus Enterprise Deployment";
-    priceDisplay = currency === "USD" ? "$5,000.00" : "₹420,000.00";
+    priceDisplay = "Custom (Institutional)";
     periodLabel = "/ year (Campus-wide)";
     highlightNote = "Includes unlimited departmental researchers, SAML SSO, and immutable Merkle audit ledgers.";
   }
