@@ -27,7 +27,7 @@ import { UploadService, UploadedArtifactMetadata } from './upload.service';
 import { PdfOcrService } from './ocr/pdf-ocr.service';
 
 @ApiTags('Research Artifacts & File Uploads')
-@Controller('api/upload')
+@Controller(['api/upload', 'api/v1/upload'])
 export class UploadController {
   constructor(
     private readonly uploadService: UploadService,

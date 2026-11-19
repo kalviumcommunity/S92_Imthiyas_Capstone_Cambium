@@ -557,10 +557,10 @@ export default function CommunityPage() {
 
     // Persist post to backend Community API asynchronously
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const token = typeof window !== "undefined" ? localStorage.getItem("cambium_access_token") : null;
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || (typeof window !== "undefined" && window.location.hostname !== "localhost" ? "https://cambium-api-ufj3.onrender.com/api" : "http://localhost:5000/api")).replace(/\/$/, "");
+      const token = typeof window !== "undefined" ? (localStorage.getItem("cambium_access_token") || localStorage.getItem("cambium_token")) : null;
       if (token) {
-        fetch(`${apiUrl}/api/community/posts`, {
+        fetch(`${apiBase}/community/posts`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

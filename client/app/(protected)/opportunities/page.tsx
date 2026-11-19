@@ -10,6 +10,7 @@ import { GrantEligibilityCheckerModal, GrantOpportunitySummary } from "@/compone
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fetchScholarlyWorks } from "@/lib/scholarly-api";
 import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
+import { API_BASE } from "@/lib/api";
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
 
@@ -1305,8 +1306,8 @@ function OpportunityHubContent() {
     queryKey: ["opportunities", activeTab, searchQuery],
     queryFn: async () => {
       try {
-        const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1"}/opportunities?category=${activeTab}&search=${encodeURIComponent(searchQuery)}`;
-        const res = await fetch(url, { signal: AbortSignal.timeout(2000) });
+        const url = `${API_BASE}/opportunities?category=${activeTab}&search=${encodeURIComponent(searchQuery)}`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
         if (res.ok) {
           const json = await res.json();
           const items = Array.isArray(json?.data) ? json.data : Array.isArray(json) ? json : null;

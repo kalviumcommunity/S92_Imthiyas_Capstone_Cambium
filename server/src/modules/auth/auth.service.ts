@@ -97,26 +97,54 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const identifier = (dto.username || dto.email)?.toLowerCase();
+    const identifier = (dto.username || dto.email)?.trim().toLowerCase();
     if (!identifier) {
       throw new BadRequestException('Please provide username or email');
     }
 
     // Account Lockout Security Check: 5 attempts locks for 15 minutes (900s)
-    const lockoutCheck = await this.redisService.recordFailedLogin(identifier, 5, 900);
-    if (lockoutCheck.locked) {
-      throw new UnauthorizedException('Account temporarily locked due to 5 consecutive failed login attempts. Please try again in 15 minutes.');
+    let lockoutCheck = { locked: false, remaining: 5 };
+    try {
+      lockoutCheck = await this.redisService.recordFailedLogin(identifier, 5, 900);
+      if (lockoutCheck.locked) {
+        throw new UnauthorizedException('Account temporarily locked due to 5 consecutive failed login attempts. Please try again in 15 minutes.');
+      }
+    } catch (lockoutErr) {
+      if (lockoutErr instanceof UnauthorizedException) throw lockoutErr;
+      // Resilient fallback if Redis has transient issues
     }
 
-    const user = await this.userRepo
-      .createQueryBuilder('user')
-      .addSelect('user.passwordHash')
-      .leftJoinAndSelect('user.researchInterests', 'interest')
-      .where('LOWER(user.username) = :id', { id: identifier })
-      .orWhere('LOWER(user.email) = :id', { id: identifier })
-      .getOne();
+    let user: User | null = null;
+    try {
+      // Direct lookup with relations
+      user = await this.userRepo.findOne({
+        where: [
+          { username: identifier },
+          { email: identifier },
+        ],
+        relations: { researchInterests: true },
+      });
 
-    if (!user) {
+      // Case-insensitive fallback if direct match not found
+      if (!user) {
+        user = await this.userRepo
+          .createQueryBuilder('u')
+          .leftJoinAndSelect('u.researchInterests', 'interest')
+          .where('LOWER(u.username) = :identifier', { identifier })
+          .orWhere('LOWER(u.email) = :identifier', { identifier })
+          .getOne();
+      }
+    } catch {
+      // Resilient fallback without joining relational tables
+      user = await this.userRepo.findOne({
+        where: [
+          { username: identifier },
+          { email: identifier },
+        ],
+      });
+    }
+
+    if (!user || !user.passwordHash) {
       throw new UnauthorizedException(`Invalid credentials. ${lockoutCheck.remaining} attempts remaining.`);
     }
 
@@ -126,7 +154,11 @@ export class AuthService {
     }
 
     // Reset failed login attempts on valid authentication
-    await this.redisService.resetFailedLogins(identifier);
+    try {
+      await this.redisService.resetFailedLogins(identifier);
+    } catch {
+      // Non-blocking
+    }
 
     const tokens = this.generateTokenPair(user.id, user.email, user.username, user.role);
 

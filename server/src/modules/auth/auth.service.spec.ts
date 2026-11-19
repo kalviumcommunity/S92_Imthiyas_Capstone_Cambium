@@ -100,4 +100,48 @@ describe('AuthService', () => {
 
     await expect(authService.refreshSession(refreshToken)).rejects.toThrow(UnauthorizedException);
   });
+
+  it('should authenticate user and return token pair on valid login', async () => {
+    const bcrypt = await import('bcryptjs');
+    const hash = await bcrypt.hash('CorrectPassword123!', 10);
+    mockUserRepo.findOne = vi.fn().mockResolvedValue({
+      id: 'mock-user-uuid-1234',
+      username: 'valid_scholar',
+      email: 'scholar@mit.edu',
+      passwordHash: hash,
+      role: 'Researcher',
+      fullName: 'Dr. Valid Scholar',
+      institution: 'MIT',
+      researchInterests: [],
+    });
+
+    const result = await authService.login({
+      username: 'valid_scholar',
+      password: 'CorrectPassword123!',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.token).toBeDefined();
+    expect(result.refreshToken).toBeDefined();
+    expect(result.user.username).toBe('valid_scholar');
+  });
+
+  it('should reject login if password does not match', async () => {
+    const bcrypt = await import('bcryptjs');
+    const hash = await bcrypt.hash('CorrectPassword123!', 10);
+    mockUserRepo.findOne = vi.fn().mockResolvedValue({
+      id: 'mock-user-uuid-1234',
+      username: 'valid_scholar',
+      email: 'scholar@mit.edu',
+      passwordHash: hash,
+      role: 'Researcher',
+    });
+
+    await expect(
+      authService.login({
+        username: 'valid_scholar',
+        password: 'WrongPassword!',
+      }),
+    ).rejects.toThrow(UnauthorizedException);
+  });
 });

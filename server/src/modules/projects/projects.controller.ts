@@ -20,7 +20,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { SubscriptionGuard, RequiresSubscription } from '../auth/guards/subscription.guard';
 
 @ApiTags('Collaborative Project Workspaces')
-@Controller(['projects', 'api/projects'])
+@Controller(['projects', 'api/projects', 'api/v1/projects'])
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 

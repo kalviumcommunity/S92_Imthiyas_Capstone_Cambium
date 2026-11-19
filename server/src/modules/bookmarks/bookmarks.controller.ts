@@ -17,7 +17,7 @@ import { JwtAuthGuard, AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('Bookmarks')
-@Controller('api/bookmarks')
+@Controller(['api/bookmarks', 'api/v1/bookmarks'])
 export class BookmarksController {
   constructor(private readonly bookmarksService: BookmarksService) {}
 

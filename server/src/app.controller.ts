@@ -3,7 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
 import { DatabaseDiagnosticService } from './database/database-diagnostic.service';
 import { RedisService } from './common/redis/redis.service';
-import { CircuitBreakerService } from './common/resilience/circuit-breaker.service';
+import { CircuitBreakerService, BreakerMetrics } from './common/resilience/circuit-breaker.service';
 
 @ApiTags('System')
 @Controller()

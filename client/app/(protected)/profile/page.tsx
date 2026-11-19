@@ -353,8 +353,8 @@ export default function ProfileCalibrationPage() {
 
       if (user?.id) {
         const token = typeof window !== "undefined" ? localStorage.getItem("cambium_token") : null;
-        const apiBase = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1").replace(/\/api\/v1\/?$/, "");
-        await fetch(`${apiBase}/api/users/${user.id}`, {
+        const apiBase = (process.env.NEXT_PUBLIC_API_URL || (typeof window !== "undefined" && window.location.hostname !== "localhost" ? "https://cambium-api-ufj3.onrender.com/api" : "http://localhost:5000/api")).replace(/\/$/, "");
+        await fetch(`${apiBase}/users/${user.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

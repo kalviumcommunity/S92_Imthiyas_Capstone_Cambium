@@ -21,7 +21,7 @@ const REFRESH_COOKIE_NAME = 'cambium_refresh_token';
 const REFRESH_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 @ApiTags('Authentication')
-@Controller('api/auth')
+@Controller(['api/auth', 'api/v1/auth'])
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

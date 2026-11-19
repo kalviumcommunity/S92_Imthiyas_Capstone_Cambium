@@ -38,8 +38,17 @@ export interface RealtimeState {
   clearAlerts: () => void;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
+function resolveRealtimeUrls() {
+  const isBrowser = typeof window !== 'undefined';
+  const isLocal = isBrowser && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const defaultApi = isLocal ? 'http://localhost:5000/api' : 'https://cambium-api-ufj3.onrender.com/api';
+  const defaultSocket = isLocal ? 'http://localhost:5000' : 'https://cambium-api-ufj3.onrender.com';
+  const apiBase = (process.env.NEXT_PUBLIC_API_URL || defaultApi).replace(/\/$/, '');
+  const socketUrl = (process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_WS_URL || defaultSocket).replace(/\/api(?:\/v1)?\/?$/, '');
+  return { apiBase, socketUrl };
+}
+
+const { apiBase: API_BASE, socketUrl: SOCKET_URL } = resolveRealtimeUrls();
 
 export function useRealtimeEvents(initialRoom: string = "general"): RealtimeState {
   const [isSocketConnected, setIsSocketConnected] = useState(false);

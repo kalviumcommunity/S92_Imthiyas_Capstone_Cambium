@@ -13,7 +13,7 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ConnectionsService } from './connections.service';
 
 @ApiTags('Scholar Network & Connections')
-@Controller(['connections', 'api/connections'])
+@Controller(['connections', 'api/connections', 'api/v1/connections'])
 export class ConnectionsController {
   constructor(private readonly connectionsService: ConnectionsService) {}
 

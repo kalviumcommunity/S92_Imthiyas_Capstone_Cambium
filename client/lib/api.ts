@@ -1,4 +1,17 @@
-export const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1").replace(/\/$/, "");
+function resolveApiBase(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
+  }
+  if (typeof window !== "undefined") {
+    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    if (!isLocal) {
+      return "https://cambium-api-ufj3.onrender.com/api";
+    }
+  }
+  return "http://localhost:5000/api";
+}
+
+export const API_BASE = resolveApiBase();
 
 function getAuthHeaders(): HeadersInit {
   const headers: HeadersInit = {
@@ -172,6 +185,7 @@ export async function loginUser(credentials: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       username: credentials.usernameOrEmail,
+      email: credentials.usernameOrEmail,
       password: credentials.password,
     }),
   });
@@ -199,19 +213,60 @@ export async function registerUser(data: {
 }
 
 const api = {
-  post: async (endpoint: string, body: any) => {
-    const res = await fetch(`${API_BASE}${endpoint}`, {
+  get: async (endpoint: string, config?: any) => {
+    const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const res = await fetch(`${API_BASE}${formatted}`, {
+      method: "GET",
+      headers: { ...getAuthHeaders(), ...(config?.headers || {}) },
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw { response: { data: error, status: res.status } };
+    }
+    const data = await res.json();
+    return { data };
+  },
+  post: async (endpoint: string, body: any, config?: any) => {
+    const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const res = await fetch(`${API_BASE}${formatted}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { ...getAuthHeaders(), ...(config?.headers || {}) },
       body: JSON.stringify(body),
     });
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
-      throw { response: { data: error } };
+      throw { response: { data: error, status: res.status } };
     }
     const data = await res.json();
     return { data };
-  }
+  },
+  put: async (endpoint: string, body: any, config?: any) => {
+    const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const res = await fetch(`${API_BASE}${formatted}`, {
+      method: "PUT",
+      headers: { ...getAuthHeaders(), ...(config?.headers || {}) },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw { response: { data: error, status: res.status } };
+    }
+    const data = await res.json();
+    return { data };
+  },
+  delete: async (endpoint: string, config?: any) => {
+    const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const res = await fetch(`${API_BASE}${formatted}`, {
+      method: "DELETE",
+      headers: { ...getAuthHeaders(), ...(config?.headers || {}) },
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw { response: { data: error, status: res.status } };
+    }
+    const data = await res.json();
+    return { data };
+  },
 };
 
 export default api;

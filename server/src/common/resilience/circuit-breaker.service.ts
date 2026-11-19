@@ -8,7 +8,7 @@ export interface CircuitBreakerOptions {
   halfOpenSuccessThreshold?: number; // Successes in HALF_OPEN before returning to CLOSED (default: 2)
 }
 
-interface BreakerMetrics {
+export interface BreakerMetrics {
   state: CircuitBreakerState;
   failureCount: number;
   successCount: number;

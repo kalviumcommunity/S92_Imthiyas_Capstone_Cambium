@@ -20,7 +20,7 @@ import { CreateManualContributionDto } from './dto/create-manual-contribution.dt
 const DEFAULT_SCHOLAR_ID = '00000000-0000-0000-0000-000000000001';
 
 @ApiTags('Research Contributions & Attribution Ledger')
-@Controller(['contributions', 'api/contributions'])
+@Controller(['contributions', 'api/contributions', 'api/v1/contributions'])
 export class ContributionsController {
   constructor(private readonly contributionsService: ContributionsService) {}
 

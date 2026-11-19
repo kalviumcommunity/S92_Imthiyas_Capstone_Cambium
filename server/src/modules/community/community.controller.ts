@@ -17,7 +17,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 
 @ApiTags('Academic Community')
-@Controller(['community', 'api/community'])
+@Controller(['community', 'api/community', 'api/v1/community'])
 export class CommunityController {
   constructor(private readonly communityService: CommunityService) {}
 

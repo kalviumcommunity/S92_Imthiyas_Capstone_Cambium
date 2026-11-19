@@ -37,8 +37,12 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
   useEffect(() => {
     if (!autoConnect) return;
 
-    const wsUrl = (process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000');
-    const token = typeof window !== 'undefined' ? localStorage.getItem('cambium_access_token') : null;
+    const isBrowser = typeof window !== 'undefined';
+    const isLocal = isBrowser && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const defaultHost = isLocal ? 'http://localhost:5000' : 'https://cambium-api-ufj3.onrender.com';
+    const rawUrl = process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_API_URL || defaultHost;
+    const wsUrl = rawUrl.replace(/\/api(?:\/v1)?\/?$/, '');
+    const token = typeof window !== 'undefined' ? (localStorage.getItem('cambium_access_token') || localStorage.getItem('cambium_token')) : null;
 
     if (!globalSocket || !globalSocket.connected) {
       globalSocket = io(`${wsUrl}${namespace}`, {

@@ -74,6 +74,7 @@ export const useAuthStore = create<AuthState>((set) => {
       if (typeof window !== "undefined") {
         const maxAgeSeconds = SESSION_WINDOW_DAYS * 24 * 60 * 60;
         localStorage.setItem("cambium_token", token);
+        localStorage.setItem("cambium_access_token", token);
         localStorage.setItem("cambium_user", JSON.stringify(sanitizedUser));
         localStorage.setItem("cambium_session_expiry", String(Date.now() + maxAgeSeconds * 1000));
         document.cookie = `cambium_token=${token}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax`;
@@ -107,6 +108,7 @@ export const useAuthStore = create<AuthState>((set) => {
     logout: () => {
       if (typeof window !== "undefined") {
         localStorage.removeItem("cambium_token");
+        localStorage.removeItem("cambium_access_token");
         localStorage.removeItem("cambium_user");
         localStorage.removeItem("cambium_session_expiry");
         localStorage.removeItem("cambium_onboarding_completed");
