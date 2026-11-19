@@ -7,6 +7,7 @@ import { useAuthStore } from "@/lib/store/useAuthStore";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import CambiumLogo from "@/components/CambiumLogo";
+import { NetworkStatusPill } from "@/components/ui/NetworkStatusPill";
 import {
   Compass,
   Bookmark,
@@ -62,6 +63,8 @@ export default function Navbar({ onOpenCreate }: NavbarProps) {
 
         {/* Right Actions */}
         <div className="flex items-center gap-3">
+          <NetworkStatusPill className="hidden sm:inline-flex" />
+
           {onOpenCreate && isAuthenticated && (
             <Button
               onClick={onOpenCreate}

@@ -4,6 +4,8 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { usePresenceStore } from '@/lib/store/usePresenceStore';
 
+export type SocketConnectionState = 'CONNECTED' | 'CONNECTING' | 'RECONNECTING' | 'OFFLINE';
+
 interface UseSocketOptions {
   namespace?: string;
   autoConnect?: boolean;
@@ -12,6 +14,9 @@ interface UseSocketOptions {
 interface UseSocketReturn {
   socket: Socket | null;
   isConnected: boolean;
+  connectionState: SocketConnectionState;
+  latencyMs: number | null;
+  pingGateway: () => Promise<number | null>;
   joinRoom: (room: string, user: { id: string; name: string; avatar?: string }) => void;
   leaveRoom: (room: string, userId?: string) => void;
   sendMessage: (room: string, message: string, sender: { id: string; name: string; avatar?: string }) => void;
@@ -25,6 +30,8 @@ let globalSocket: Socket | null = null;
 export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
   const { namespace = '/chat', autoConnect = true } = options;
   const [isConnected, setIsConnected] = useState(false);
+  const [connectionState, setConnectionState] = useState<SocketConnectionState>('CONNECTING');
+  const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
@@ -39,15 +46,45 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        reconnectionAttempts: 5,
+        reconnectionDelayMax: 10000,
+        randomizationFactor: 0.5,
+        reconnectionAttempts: 10,
+        timeout: 10000,
       });
     }
 
     socketRef.current = globalSocket;
 
-    const handleConnect = () => setIsConnected(true);
-    const handleDisconnect = () => setIsConnected(false);
+    const handleConnect = () => {
+      setIsConnected(true);
+      setConnectionState('CONNECTED');
+    };
+
+    const handleDisconnect = (reason: string) => {
+      setIsConnected(false);
+      setConnectionState(reason === 'io server disconnect' ? 'OFFLINE' : 'RECONNECTING');
+    };
+
+    const handleReconnectAttempt = () => {
+      setConnectionState('RECONNECTING');
+    };
+
+    const handleReconnectFailed = () => {
+      setConnectionState('OFFLINE');
+    };
+
+    const handleOnline = () => {
+      if (!globalSocket?.connected) {
+        setConnectionState('CONNECTING');
+        globalSocket?.connect();
+      }
+    };
+
+    const handleOffline = () => {
+      setConnectionState('OFFLINE');
+      setIsConnected(false);
+    };
+
     const handlePresenceUpdate = (data: { room: string; members: any[] }) => {
       if (data?.room && Array.isArray(data.members)) {
         usePresenceStore.getState().clearRoom(data.room);
@@ -65,16 +102,57 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
 
     globalSocket.on('connect', handleConnect);
     globalSocket.on('disconnect', handleDisconnect);
+    globalSocket.on('reconnect_attempt', handleReconnectAttempt);
+    globalSocket.on('reconnect_failed', handleReconnectFailed);
     globalSocket.on('presence_update', handlePresenceUpdate);
 
-    if (globalSocket.connected) setIsConnected(true);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+    }
+
+    if (globalSocket.connected) {
+      setIsConnected(true);
+      setConnectionState('CONNECTED');
+    }
 
     return () => {
       globalSocket?.off('connect', handleConnect);
       globalSocket?.off('disconnect', handleDisconnect);
+      globalSocket?.off('reconnect_attempt', handleReconnectAttempt);
+      globalSocket?.off('reconnect_failed', handleReconnectFailed);
       globalSocket?.off('presence_update', handlePresenceUpdate);
+
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      }
     };
   }, [namespace, autoConnect]);
+
+  const pingGateway = useCallback(async (): Promise<number | null> => {
+    const start = Date.now();
+    try {
+      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1').replace(/\/$/, '');
+      const res = await fetch(`${apiUrl}/network/ping`, { cache: 'no-store' });
+      if (res.ok) {
+        const roundtrip = Date.now() - start;
+        setLatencyMs(roundtrip);
+        return roundtrip;
+      }
+    } catch {
+      // Fallback local calculation
+    }
+    return null;
+  }, []);
+
+  // Periodic latency measurement every 45s
+  useEffect(() => {
+    if (!isConnected) return;
+    pingGateway();
+    const intervalId = setInterval(pingGateway, 45000);
+    return () => clearInterval(intervalId);
+  }, [isConnected, pingGateway]);
 
   const joinRoom = useCallback((room: string, user: { id: string; name: string; avatar?: string }) => {
     socketRef.current?.emit('join_room', { room, user });
@@ -104,6 +182,9 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
   return {
     socket: socketRef.current,
     isConnected,
+    connectionState,
+    latencyMs,
+    pingGateway,
     joinRoom,
     leaveRoom,
     sendMessage,

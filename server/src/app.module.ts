@@ -25,9 +25,11 @@ import { ProjectsModule } from './modules/projects/projects.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { ContributionsModule } from './modules/contributions/contributions.module';
 import { BillingModule } from './modules/billing/billing.module';
+import { NetworkModule } from './modules/network/network.module';
 import { TelemetryInterceptor } from './common/telemetry/telemetry.interceptor';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
+import { EtagInterceptor } from './modules/network/etag.interceptor';
 
 import { DatabaseDiagnosticService } from './database/database-diagnostic.service';
 
@@ -58,6 +60,7 @@ import { DatabaseDiagnosticService } from './database/database-diagnostic.servic
     AuditModule,
     ContributionsModule,
     BillingModule,
+    NetworkModule,
   ],
   controllers: [AppController],
   providers: [
@@ -73,6 +76,10 @@ import { DatabaseDiagnosticService } from './database/database-diagnostic.servic
     {
       provide: APP_INTERCEPTOR,
       useClass: AuditInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: EtagInterceptor,
     },
   ],
   exports: [DatabaseDiagnosticService],

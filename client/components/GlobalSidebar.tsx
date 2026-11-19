@@ -39,6 +39,7 @@ import LanguageSelector from "@/components/LanguageSelector";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useBrowserStorageValue, writeBrowserStorageValue } from "@/lib/hooks/use-browser-storage";
 import { useSocket } from "@/lib/hooks/useSocket";
+import { NetworkStatusPill } from "@/components/ui/NetworkStatusPill";
 
 export interface NavItem {
   label: string;
@@ -403,6 +404,14 @@ export default function GlobalSidebar() {
             <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
           </Link>
         )}
+
+        {/* Live Network & Edge Telemetry Pill */}
+        <div className="px-1 py-1 flex justify-center">
+          <NetworkStatusPill
+            className={isOpen ? "w-full justify-center" : "mx-auto"}
+            showLatency={isOpen}
+          />
+        </div>
 
         {/* Divider above Profile */}
         <div className="h-[1px] bg-[#E4DCCB]/80 dark:bg-[#233327]/80 my-1 mx-1" />
