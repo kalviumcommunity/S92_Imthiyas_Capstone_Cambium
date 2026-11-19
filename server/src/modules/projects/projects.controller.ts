@@ -14,7 +14,9 @@ import {
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 import { InviteMemberDto } from './dto/invite-member.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 import { SubscriptionGuard, RequiresSubscription } from '../auth/guards/subscription.guard';
 
 @ApiTags('Collaborative Project Workspaces')
@@ -70,14 +72,45 @@ export class ProjectsController {
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Update research workspace metadata (title, description, visibility)' })
+  @ApiOperation({ summary: 'Update research workspace metadata with optimistic concurrency control' })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async updateProject(
     @Param('id') projectId: string,
-    @Body() dto: Partial<CreateProjectDto>,
+    @Body() dto: UpdateProjectDto,
     @Req() req: any,
   ) {
     const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
     return this.projectsService.updateProject(projectId, userId, dto);
+  }
+
+  @Get(':id/comments')
+  @ApiOperation({ summary: 'List threaded comments and methodology critiques for workspace' })
+  async getProjectComments(@Param('id') projectId: string, @Req() req: any) {
+    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
+    return this.projectsService.getProjectComments(projectId, userId);
+  }
+
+  @Post(':id/comments')
+  @ApiOperation({ summary: 'Add section comment or peer review critique to workspace' })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async addComment(
+    @Param('id') projectId: string,
+    @Body() dto: CreateCommentDto,
+    @Req() req: any,
+  ) {
+    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
+    return this.projectsService.addComment(projectId, userId, dto);
+  }
+
+  @Put(':id/comments/:commentId/resolve')
+  @ApiOperation({ summary: 'Resolve threaded peer review comment' })
+  async resolveComment(
+    @Param('id') projectId: string,
+    @Param('commentId') commentId: string,
+    @Req() req: any,
+  ) {
+    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
+    return this.projectsService.resolveComment(projectId, commentId, userId);
   }
 
   @Delete(':id')

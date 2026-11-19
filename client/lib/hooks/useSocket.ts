@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { usePresenceStore } from '@/lib/store/usePresenceStore';
 
 interface UseSocketOptions {
   namespace?: string;
@@ -46,15 +47,31 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
 
     const handleConnect = () => setIsConnected(true);
     const handleDisconnect = () => setIsConnected(false);
+    const handlePresenceUpdate = (data: { room: string; members: any[] }) => {
+      if (data?.room && Array.isArray(data.members)) {
+        usePresenceStore.getState().clearRoom(data.room);
+        data.members.forEach((m) => {
+          usePresenceStore.getState().addUserToRoom(data.room, {
+            id: m.id || m.userId,
+            name: m.name || m.fullName || 'Scholar',
+            avatar: m.avatar,
+            joinedAt: m.joinedAt || new Date().toISOString(),
+            roomId: data.room,
+          });
+        });
+      }
+    };
 
     globalSocket.on('connect', handleConnect);
     globalSocket.on('disconnect', handleDisconnect);
+    globalSocket.on('presence_update', handlePresenceUpdate);
 
     if (globalSocket.connected) setIsConnected(true);
 
     return () => {
       globalSocket?.off('connect', handleConnect);
       globalSocket?.off('disconnect', handleDisconnect);
+      globalSocket?.off('presence_update', handlePresenceUpdate);
     };
   }, [namespace, autoConnect]);
 

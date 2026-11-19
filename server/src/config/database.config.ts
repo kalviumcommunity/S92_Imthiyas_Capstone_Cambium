@@ -29,6 +29,7 @@ import { ScholarFollow } from '../modules/connections/entities/scholar-follow.en
 import { GroupProject } from '../modules/projects/entities/group-project.entity';
 import { ProjectMember } from '../modules/projects/entities/project-member.entity';
 import { ProjectActivityLog } from '../modules/projects/entities/project-activity-log.entity';
+import { WorkspaceComment } from '../modules/projects/entities/workspace-comment.entity';
 import { ResearchContribution } from '../modules/contributions/entities/research-contribution.entity';
 
 export const getDatabaseConfig = (): TypeOrmModuleOptions => {
@@ -91,6 +92,7 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
     GroupProject,
     ProjectMember,
     ProjectActivityLog,
+    WorkspaceComment,
     ResearchContribution,
   ];
 

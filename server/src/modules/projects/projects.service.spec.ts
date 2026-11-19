@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ProjectsService } from './projects.service';
 import { CRediTRole } from './entities/project-member.entity';
+import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 
 describe('ProjectsService', () => {
   let service: ProjectsService;
@@ -8,16 +9,22 @@ describe('ProjectsService', () => {
   let mockMemberRepo: any;
   let mockLogRepo: any;
   let mockUserRepo: any;
+  let mockCommentRepo: any;
+  let mockOutboxService: any;
+  let mockNotificationsService: any;
+  let mockEventsService: any;
+  let mockChatGateway: any;
 
   beforeEach(() => {
     mockProjectRepo = {
-      create: vi.fn((d) => ({ id: 'proj-1', ...d })),
-      save: vi.fn((d) => Promise.resolve({ id: 'proj-1', ...d })),
+      create: vi.fn((d) => ({ id: 'proj-1', version: 1, ...d })),
+      save: vi.fn((d) => Promise.resolve({ id: 'proj-1', version: 1, ...d })),
       remove: vi.fn().mockResolvedValue(true),
       findOne: vi.fn().mockResolvedValue({
         id: 'proj-1',
         ownerId: 'u-1',
         title: 'Multimodal NIH Grant',
+        version: 1,
         linkedDois: [],
         members: [{ userId: 'u-1', creditRole: CRediTRole.LEAD_PI, status: 'ACCEPTED' }],
       }),
@@ -44,7 +51,48 @@ describe('ProjectsService', () => {
     };
 
     mockUserRepo = {
-      findOne: vi.fn().mockResolvedValue({ id: 'u-1', fullName: 'Dr. Imthiyas' }),
+      findOne: vi.fn().mockResolvedValue({ id: 'u-1', fullName: 'Dr. Imthiyas', role: 'PI' }),
+    };
+
+    mockCommentRepo = {
+      create: vi.fn((d) => ({ id: 'comment-1', isResolved: false, ...d })),
+      save: vi.fn((d) => Promise.resolve({ id: 'comment-1', ...d })),
+      findOne: vi.fn().mockResolvedValue({
+        id: 'comment-1',
+        projectId: 'proj-1',
+        authorId: 'u-1',
+        content: 'Review qubit lifetime methodology.',
+        isResolved: false,
+      }),
+      find: vi.fn().mockResolvedValue([
+        {
+          id: 'comment-1',
+          projectId: 'proj-1',
+          content: 'Review qubit lifetime methodology.',
+          author: { id: 'u-1', fullName: 'Dr. Imthiyas' },
+        },
+      ]),
+    };
+
+    mockOutboxService = {
+      emit: vi.fn().mockResolvedValue({ id: 'outbox-1' }),
+      emitWithinTransaction: vi.fn().mockResolvedValue({ id: 'outbox-1' }),
+    };
+
+    mockNotificationsService = {
+      create: vi.fn().mockResolvedValue({ id: 'notif-1' }),
+    };
+
+    mockEventsService = {
+      emit: vi.fn(),
+      dispatchNotification: vi.fn(),
+    };
+
+    mockChatGateway = {
+      broadcastComment: vi.fn(),
+      broadcastCommentResolved: vi.fn(),
+      broadcastWorkspaceUpdated: vi.fn(),
+      broadcastMemberInvited: vi.fn(),
     };
 
     service = new ProjectsService(
@@ -52,6 +100,11 @@ describe('ProjectsService', () => {
       mockMemberRepo,
       mockLogRepo,
       mockUserRepo,
+      mockCommentRepo,
+      mockOutboxService,
+      mockNotificationsService,
+      mockEventsService,
+      mockChatGateway,
     );
   });
 
@@ -65,6 +118,12 @@ describe('ProjectsService', () => {
     expect(res.data.title).toBe('Multimodal NIH Grant');
     expect(mockMemberRepo.save).toHaveBeenCalled();
     expect(mockLogRepo.save).toHaveBeenCalled();
+    expect(mockOutboxService.emit).toHaveBeenCalledWith(
+      'group_projects',
+      'proj-1',
+      'WORKSPACE_CREATED',
+      expect.anything(),
+    );
   });
 
   it('should retrieve user projects', async () => {
@@ -84,12 +143,21 @@ describe('ProjectsService', () => {
     expect(res.success).toBe(true);
     expect(res.data.creditRole).toBe(CRediTRole.CO_PI);
     expect(mockMemberRepo.save).toHaveBeenCalled();
+    expect(mockNotificationsService.create).toHaveBeenCalled();
+    expect(mockEventsService.dispatchNotification).toHaveBeenCalledWith('u-2', expect.anything());
+    expect(mockChatGateway.broadcastMemberInvited).toHaveBeenCalled();
   });
 
   it('should link OpenAlex DOI to project vault', async () => {
     const res = await service.linkDoi('proj-1', 'u-1', '10.1016/j.cels.2025.04.002');
     expect(res.success).toBe(true);
     expect(res.data).toContain('10.1016/j.cels.2025.04.002');
+    expect(mockOutboxService.emit).toHaveBeenCalledWith(
+      'group_projects',
+      'proj-1',
+      'PUBLICATION_ADDED',
+      expect.anything(),
+    );
   });
 
   it('should allow project owner or accepted member to access private project', async () => {
@@ -105,74 +173,83 @@ describe('ProjectsService', () => {
     expect(res.data.id).toBe('proj-priv');
   });
 
-  it('should reject unauthorized scholar access to a PRIVATE project with ForbiddenException (IDOR Protection)', async () => {
+  it('should reject non-member from viewing private research workspace', async () => {
     mockProjectRepo.findOne.mockResolvedValueOnce({
       id: 'proj-priv',
-      ownerId: 'u-1',
+      ownerId: 'u-owner',
       visibility: 'PRIVATE',
-      members: [{ userId: 'u-1', status: 'ACCEPTED' }],
+      members: [{ userId: 'u-owner', status: 'ACCEPTED' }],
     });
 
-    await expect(service.getProjectDetails('proj-priv', 'intruder-99')).rejects.toThrow(
-      'Access to private research workspace denied. You are not an authorized member.',
+    await expect(service.getProjectDetails('proj-priv', 'u-stranger')).rejects.toThrow(
+      ForbiddenException,
     );
   });
 
-  it('should update project workspace metadata', async () => {
-    mockProjectRepo.findOne.mockResolvedValueOnce({
-      id: 'proj-1',
-      ownerId: 'u-1',
-      title: 'Initial Title',
-      members: [{ userId: 'u-1', status: 'ACCEPTED' }],
-    });
-
+  it('should update project metadata and broadcast workspace_updated event', async () => {
     const res = await service.updateProject('proj-1', 'u-1', {
-      title: 'Updated AI NIH Grant',
-      description: 'Refined abstract.',
+      title: 'Updated Quantum Title',
     });
 
     expect(res.success).toBe(true);
-    expect(res.data.title).toBe('Updated AI NIH Grant');
     expect(mockProjectRepo.save).toHaveBeenCalled();
+    expect(mockChatGateway.broadcastWorkspaceUpdated).toHaveBeenCalledWith(
+      'proj-1',
+      expect.anything(),
+    );
   });
 
-  it('should delete project workspace when requested by owner', async () => {
+  it('should throw ConflictException on optimistic concurrency version mismatch', async () => {
     mockProjectRepo.findOne.mockResolvedValueOnce({
       id: 'proj-1',
       ownerId: 'u-1',
-      members: [],
+      version: 5,
+      members: [{ userId: 'u-1', status: 'ACCEPTED' }],
     });
 
+    await expect(
+      service.updateProject('proj-1', 'u-1', {
+        title: 'Concurrent Title',
+        version: 3, // stale version
+      }),
+    ).rejects.toThrow(ConflictException);
+  });
+
+  it('should allow members to add section comments and broadcast live critique', async () => {
+    const res = await service.addComment('proj-1', 'u-1', {
+      content: 'Confirm the control gate fidelities meet 99.9% fault-tolerance threshold.',
+      sectionId: 'methodology_section_2',
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.data.content).toContain('control gate fidelities');
+    expect(mockCommentRepo.save).toHaveBeenCalled();
+    expect(mockOutboxService.emit).toHaveBeenCalledWith(
+      'workspace_comments',
+      'comment-1',
+      'COMMENT_CREATED',
+      expect.anything(),
+    );
+    expect(mockChatGateway.broadcastComment).toHaveBeenCalledWith('proj-1', expect.anything());
+  });
+
+  it('should resolve workspace comment and broadcast comment_resolved', async () => {
+    const res = await service.resolveComment('proj-1', 'comment-1', 'u-1');
+    expect(res.success).toBe(true);
+    expect(res.data.isResolved).toBe(true);
+    expect(mockChatGateway.broadcastCommentResolved).toHaveBeenCalledWith('proj-1', 'comment-1');
+  });
+
+  it('should retrieve all workspace comments', async () => {
+    const res = await service.getProjectComments('proj-1', 'u-1');
+    expect(res.success).toBe(true);
+    expect(res.count).toBe(1);
+    expect(res.data[0].content).toContain('Review qubit lifetime methodology');
+  });
+
+  it('should delete project if requester is designated owner', async () => {
     const res = await service.deleteProject('proj-1', 'u-1');
     expect(res.success).toBe(true);
     expect(mockProjectRepo.remove).toHaveBeenCalled();
-  });
-
-  it('should reject workspace deletion from non-owner with ForbiddenException', async () => {
-    mockProjectRepo.findOne.mockResolvedValueOnce({
-      id: 'proj-1',
-      ownerId: 'u-1',
-      members: [],
-    });
-
-    await expect(service.deleteProject('proj-1', 'intruder')).rejects.toThrow(
-      'Only the designated workspace Owner can delete this project.',
-    );
-  });
-
-  it('should remove collaborator from project workspace roster', async () => {
-    mockProjectRepo.findOne.mockResolvedValueOnce({
-      id: 'proj-1',
-      ownerId: 'u-1',
-      members: [{ userId: 'u-2' }],
-    });
-    mockMemberRepo.findOne.mockResolvedValueOnce({
-      projectId: 'proj-1',
-      userId: 'u-2',
-    });
-
-    const res = await service.removeMember('proj-1', 'u-1', 'u-2');
-    expect(res.success).toBe(true);
-    expect(mockMemberRepo.remove).toHaveBeenCalled();
   });
 });

@@ -8,10 +8,12 @@ import {
   OneToMany,
   JoinColumn,
   Index,
+  VersionColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { ProjectMember } from './project-member.entity';
 import { ProjectActivityLog } from './project-activity-log.entity';
+import { WorkspaceComment } from './workspace-comment.entity';
 
 @Entity('group_projects')
 export class GroupProject {
@@ -49,6 +51,12 @@ export class GroupProject {
 
   @OneToMany(() => ProjectActivityLog, (log) => log.project, { cascade: true })
   activityLogs: ProjectActivityLog[];
+
+  @OneToMany(() => WorkspaceComment, (comment) => comment.project, { cascade: true })
+  comments: WorkspaceComment[];
+
+  @VersionColumn({ name: 'version', default: 1 })
+  version: number;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
