@@ -624,3 +624,63 @@ export async function deleteContribution(id: string): Promise<{ success: boolean
   }
   return res.json();
 }
+
+// 7. Workspace Real-Time Collaboration & Comments API
+export interface WorkspaceCommentItem {
+  id: string;
+  projectId: string;
+  authorId: string;
+  sectionId?: string;
+  parentId?: string;
+  content: string;
+  isResolved: boolean;
+  createdAt: string;
+  updatedAt: string;
+  author?: {
+    id: string;
+    fullName?: string;
+    username?: string;
+    avatar?: string;
+  };
+}
+
+export async function getProjectComments(projectId: string): Promise<WorkspaceCommentItem[]> {
+  try {
+    const res = await fetch(`${API_BASE}/projects/${projectId}/comments`, {
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export async function addProjectComment(
+  projectId: string,
+  payload: { content: string; sectionId?: string; parentId?: string }
+): Promise<WorkspaceCommentItem> {
+  const res = await fetch(`${API_BASE}/projects/${projectId}/comments`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to create comment (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function resolveProjectComment(
+  projectId: string,
+  commentId: string
+): Promise<WorkspaceCommentItem> {
+  const res = await fetch(`${API_BASE}/projects/${projectId}/comments/${commentId}/resolve`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to resolve comment (${res.status})`);
+  }
+  return res.json();
+}

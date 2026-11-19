@@ -16,6 +16,7 @@ interface UseSocketReturn {
   leaveRoom: (room: string, userId?: string) => void;
   sendMessage: (room: string, message: string, sender: { id: string; name: string; avatar?: string }) => void;
   sendTyping: (room: string, userId: string, userName: string, isTyping: boolean) => void;
+  emitEvent: (event: string, data: any) => void;
   onEvent: (event: string, handler: (...args: any[]) => void) => () => void;
 }
 
@@ -91,6 +92,10 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
     socketRef.current?.emit('typing', { room, userId, userName, isTyping });
   }, []);
 
+  const emitEvent = useCallback((event: string, data: any) => {
+    socketRef.current?.emit(event, data);
+  }, []);
+
   const onEvent = useCallback((event: string, handler: (...args: any[]) => void) => {
     socketRef.current?.on(event, handler);
     return () => { socketRef.current?.off(event, handler); };
@@ -103,6 +108,7 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
     leaveRoom,
     sendMessage,
     sendTyping,
+    emitEvent,
     onEvent,
   };
 }

@@ -10,8 +10,7 @@ interface PresenceBarProps {
 }
 
 export function PresenceBar({ roomId, maxVisible = 5, className = '' }: PresenceBarProps) {
-  const getUsersInRoom = usePresenceStore((s) => s.getUsersInRoom);
-  const users = getUsersInRoom(roomId);
+  const users = usePresenceStore((s) => s.rooms[roomId] || []);
 
   if (users.length === 0) return null;
 

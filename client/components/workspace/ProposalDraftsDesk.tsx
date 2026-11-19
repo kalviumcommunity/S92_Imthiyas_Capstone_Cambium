@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FileText,
   Plus,
@@ -16,7 +16,61 @@ import {
   ExternalLink,
   Save,
   BookOpen,
+  MessageSquare,
+  Users,
+  Lock,
+  CornerDownRight,
+  CheckCircle2,
 } from "lucide-react";
+import { useSocket } from "@/lib/hooks/useSocket";
+import { useAuthStore } from "@/lib/store/useAuthStore";
+import { PresenceBar } from "./PresenceBar";
+import { LockOverlay } from "./LockOverlay";
+import { CursorLayer } from "./CursorLayer";
+
+export interface DraftComment {
+  id: string;
+  draftId: string;
+  section: "aims" | "significance" | "methodology" | "budget";
+  authorName: string;
+  authorRole: string;
+  content: string;
+  createdAt: string;
+  isResolved: boolean;
+}
+
+const DEFAULT_COMMENTS: DraftComment[] = [
+  {
+    id: "comm-1",
+    draftId: "draft-satc-2026",
+    section: "aims",
+    authorName: "Dr. Elena Vance",
+    authorRole: "Co-PI & Formal Verification Lead",
+    content: "Aim 2 needs precise bounded model checking bounds (k <= 64 steps) to satisfy the NSF SaTC reviewer rubric.",
+    createdAt: "10 mins ago",
+    isResolved: false,
+  },
+  {
+    id: "comm-2",
+    draftId: "draft-satc-2026",
+    section: "budget",
+    authorName: "Prof. Marcus Thorne",
+    authorRole: "Institutional Research Officer",
+    content: "F&A rate updated to federally negotiated 52.5% MTDC base. Please re-check line item 5.",
+    createdAt: "1 hour ago",
+    isResolved: true,
+  },
+  {
+    id: "comm-3",
+    draftId: "draft-r01-spatial",
+    section: "methodology",
+    authorName: "Dr. Elena Rodriguez",
+    authorRole: "Staff Bioinformatician",
+    content: "Consider adding 10x Visium HD 2-micron spatial resolution controls to address cell-type deconvolution challenges.",
+    createdAt: "2 hours ago",
+    isResolved: false,
+  },
+];
 
 export interface ProposalDraft {
   id: string;
@@ -160,6 +214,192 @@ export function ProposalDraftsDesk({ injectedDraft }: ProposalDraftsDeskProps) {
   };
 
   const activeDraft = drafts.find((d) => d.id === selectedId) || drafts[0];
+
+  // User identity for real-time collaboration
+  const currentUser = useAuthStore((s) => s.user);
+  const currentUserId = currentUser?.id || "scholar-local-user";
+  const currentUserName = currentUser?.fullName || currentUser?.name || "Fellow Scholar";
+
+  // Real-time socket & presence connection
+  const { joinRoom, leaveRoom, emitEvent, onEvent } = useSocket({ namespace: "/chat" });
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const lastCursorEmitRef = useRef<number>(0);
+
+  // Comments state
+  const [comments, setComments] = useState<DraftComment[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("cambium_draft_comments_v1");
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          // fallback
+        }
+      }
+    }
+    return DEFAULT_COMMENTS;
+  });
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [newCommentText, setNewCommentText] = useState("");
+  const [commentFilterSection, setCommentFilterSection] = useState<string>("ALL");
+
+  const saveComments = (newComments: DraftComment[]) => {
+    setComments(newComments);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cambium_draft_comments_v1", JSON.stringify(newComments));
+    }
+  };
+
+  // Join draft room on selection
+  useEffect(() => {
+    if (!activeDraft?.id) return;
+    const room = `draft:${activeDraft.id}`;
+    joinRoom(room, {
+      id: currentUserId,
+      name: currentUserName,
+      avatar: currentUser?.photo || undefined,
+    });
+
+    return () => {
+      leaveRoom(room, currentUserId);
+    };
+  }, [activeDraft?.id, currentUserId, currentUserName, currentUser?.photo, joinRoom, leaveRoom]);
+
+  // Listen to remote draft content updates and comments
+  useEffect(() => {
+    if (!activeDraft?.id) return;
+
+    const unsubSync = onEvent("draft_content_update", (data: any) => {
+      if (data.draftId === activeDraft.id && data.userId !== currentUserId) {
+        setDrafts((prev) =>
+          prev.map((d) =>
+            d.id === activeDraft.id ? { ...d, [data.section]: data.content, lastEdited: "Just now" } : d
+          )
+        );
+      }
+    });
+
+    const unsubComment = onEvent("new_workspace_comment", (data: any) => {
+      if (data.draftId === activeDraft.id) {
+        setComments((prev) => {
+          if (prev.some((c) => c.id === data.id)) return prev;
+          const updated = [data, ...prev];
+          if (typeof window !== "undefined") {
+            localStorage.setItem("cambium_draft_comments_v1", JSON.stringify(updated));
+          }
+          return updated;
+        });
+      }
+    });
+
+    const unsubResolved = onEvent("comment_resolved", (data: any) => {
+      setComments((prev) => {
+        const updated = prev.map((c) =>
+          c.id === data.commentId ? { ...c, isResolved: true } : c
+        );
+        if (typeof window !== "undefined") {
+          localStorage.setItem("cambium_draft_comments_v1", JSON.stringify(updated));
+        }
+        return updated;
+      });
+    });
+
+    return () => {
+      unsubSync();
+      unsubComment();
+      unsubResolved();
+    };
+  }, [activeDraft?.id, currentUserId, onEvent]);
+
+  // Throttled cursor tracking
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!activeDraft?.id || !editorContainerRef.current) return;
+    const now = Date.now();
+    if (now - lastCursorEmitRef.current < 50) return; // 50ms throttle
+    lastCursorEmitRef.current = now;
+
+    const rect = editorContainerRef.current.getBoundingClientRect();
+    const x = Math.round(e.clientX - rect.left);
+    const y = Math.round(e.clientY - rect.top);
+
+    emitEvent("cursor_update", {
+      room: `draft:${activeDraft.id}`,
+      userId: currentUserId,
+      userName: currentUserName,
+      x,
+      y,
+      color: "#3E6248",
+    });
+  };
+
+  // Section lock handlers
+  const handleSectionFocus = () => {
+    if (!activeDraft?.id) return;
+    emitEvent("lock_section", {
+      room: `draft:${activeDraft.id}`,
+      sectionId: activeTab,
+      userId: currentUserId,
+      userName: currentUserName,
+    });
+  };
+
+  const handleSectionBlur = () => {
+    if (!activeDraft?.id) return;
+    emitEvent("unlock_section", {
+      room: `draft:${activeDraft.id}`,
+      sectionId: activeTab,
+    });
+  };
+
+  const handleBroadcastDraftChange = (field: keyof ProposalDraft, val: string) => {
+    updateActiveDraft({ [field]: val });
+    if (!activeDraft?.id) return;
+    emitEvent("draft_content_update", {
+      draftId: activeDraft.id,
+      room: `draft:${activeDraft.id}`,
+      section: field,
+      content: val,
+      userId: currentUserId,
+      userName: currentUserName,
+    });
+  };
+
+  const handleAddComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCommentText.trim() || !activeDraft) return;
+
+    const commentItem: DraftComment = {
+      id: `comm-${Date.now()}`,
+      draftId: activeDraft.id,
+      section: activeTab,
+      authorName: currentUserName,
+      authorRole: currentUser?.role || "Research Collaborator",
+      content: newCommentText.trim(),
+      createdAt: "Just now",
+      isResolved: false,
+    };
+
+    const updated = [commentItem, ...comments];
+    saveComments(updated);
+    emitEvent("new_workspace_comment", {
+      ...commentItem,
+      room: `draft:${activeDraft.id}`,
+    });
+    setNewCommentText("");
+  };
+
+  const handleToggleResolve = (commentId: string) => {
+    const updated = comments.map((c) =>
+      c.id === commentId ? { ...c, isResolved: !c.isResolved } : c
+    );
+    saveComments(updated);
+    if (!activeDraft) return;
+    emitEvent("comment_resolved", {
+      commentId,
+      projectId: activeDraft.id,
+      room: `draft:${activeDraft.id}`,
+    });
+  };
 
   const updateActiveDraft = (patch: Partial<ProposalDraft>) => {
     if (!activeDraft) return;
@@ -492,6 +732,28 @@ ${activeDraft.budgetBreakdown}
 
               {/* Status Selector & Action Strip */}
               <div className="flex items-center gap-2 shrink-0">
+                {/* Ephemeral Real-Time Presence Roster */}
+                <PresenceBar roomId={`draft:${activeDraft.id}`} />
+
+                <button
+                  type="button"
+                  onClick={() => setIsCommentsOpen(!isCommentsOpen)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono font-medium cursor-pointer shadow-2xs transition-colors ${
+                    isCommentsOpen
+                      ? "bg-[#3E6248] border-[#3E6248] text-white"
+                      : "border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#18231B] hover:bg-[#E4DCCB]/60 dark:hover:bg-[#233327] text-[#202920] dark:text-[#EDEAE2]"
+                  }`}
+                  title="Toggle Peer Review & Collaborative Critiques"
+                >
+                  <MessageSquare size={13} />
+                  <span>Critiques</span>
+                  {comments.filter((c) => c.draftId === activeDraft.id && !c.isResolved).length > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#B33D35] text-white">
+                      {comments.filter((c) => c.draftId === activeDraft.id && !c.isResolved).length}
+                    </span>
+                  )}
+                </button>
+
                 <select
                   value={activeDraft.status}
                   onChange={(e) => updateActiveDraft({ status: e.target.value as any })}
@@ -569,44 +831,186 @@ ${activeDraft.budgetBreakdown}
             </div>
           </div>
 
-          {/* Section Body Editor */}
-          <div className="flex-1 p-6 overflow-y-auto">
-            <div className="max-w-4xl mx-auto space-y-4">
-              <div className="flex items-center justify-between text-xs text-[#62685E] dark:text-[#A3B899] font-mono pb-1 border-b border-[#E4DCCB]/60 dark:border-[#233327]/60">
-                <span>
-                  {activeTab === "aims"
-                    ? "Section 1: Specific Aims & Primary Hypotheses (NIH / NSF format)"
-                    : activeTab === "significance"
-                    ? "Section 2: Scientific Significance, Unresolved Gaps & Innovation"
-                    : activeTab === "methodology"
-                    ? "Section 3: Research Strategy, Work Packages & Experimental Protocols"
-                    : "Section 4: Direct Personnel, Supplies & Institutional F&A Justification"}
-                </span>
-                <span className="text-[11px]">Auto-saved to secure local vault</span>
-              </div>
+          {/* Section Body Editor + Real-Time Collaborative Critiques Split */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Editor Surface with Cursor Tracking and Soft-Locking */}
+            <div
+              ref={editorContainerRef}
+              onMouseMove={handleMouseMove}
+              className="flex-1 p-6 overflow-y-auto relative"
+            >
+              {/* Remote Real-Time Cursors */}
+              <CursorLayer roomId={`draft:${activeDraft.id}`} containerRef={editorContainerRef} />
 
-              <textarea
-                rows={20}
-                value={
-                  activeTab === "aims"
-                    ? activeDraft.aims
-                    : activeTab === "significance"
-                    ? activeDraft.significance
-                    : activeTab === "methodology"
-                    ? activeDraft.methodology
-                    : activeDraft.budgetBreakdown
-                }
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (activeTab === "aims") updateActiveDraft({ aims: val });
-                  else if (activeTab === "significance") updateActiveDraft({ significance: val });
-                  else if (activeTab === "methodology") updateActiveDraft({ methodology: val });
-                  else updateActiveDraft({ budgetBreakdown: val });
-                }}
-                className="w-full p-4 rounded-xl border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#131C15] font-mono text-xs sm:text-sm text-[#202920] dark:text-[#EDEAE2] leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#3E6248] resize-none shadow-2xs"
-                placeholder="Draft section content..."
-              />
+              <div className="max-w-4xl mx-auto space-y-4">
+                <div className="flex items-center justify-between text-xs text-[#62685E] dark:text-[#A3B899] font-mono pb-1 border-b border-[#E4DCCB]/60 dark:border-[#233327]/60">
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {activeTab === "aims"
+                        ? "Section 1: Specific Aims & Primary Hypotheses (NIH / NSF format)"
+                        : activeTab === "significance"
+                        ? "Section 2: Scientific Significance, Unresolved Gaps & Innovation"
+                        : activeTab === "methodology"
+                        ? "Section 3: Research Strategy, Work Packages & Experimental Protocols"
+                        : "Section 4: Direct Personnel, Supplies & Institutional F&A Justification"}
+                    </span>
+                  </div>
+                  <span className="text-[11px]">Real-Time Collaborative Lock Active</span>
+                </div>
+
+                {/* Section Lock & Collaborative Textarea */}
+                <LockOverlay
+                  roomId={`draft:${activeDraft.id}`}
+                  sectionId={activeTab}
+                  currentUserId={currentUserId}
+                >
+                  <textarea
+                    rows={20}
+                    value={
+                      activeTab === "aims"
+                        ? activeDraft.aims
+                        : activeTab === "significance"
+                        ? activeDraft.significance
+                        : activeTab === "methodology"
+                        ? activeDraft.methodology
+                        : activeDraft.budgetBreakdown
+                    }
+                    onFocus={handleSectionFocus}
+                    onBlur={handleSectionBlur}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (activeTab === "aims") handleBroadcastDraftChange("aims", val);
+                      else if (activeTab === "significance") handleBroadcastDraftChange("significance", val);
+                      else if (activeTab === "methodology") handleBroadcastDraftChange("methodology", val);
+                      else handleBroadcastDraftChange("budgetBreakdown", val);
+                    }}
+                    className="w-full p-4 rounded-xl border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#131C15] font-mono text-xs sm:text-sm text-[#202920] dark:text-[#EDEAE2] leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#3E6248] resize-none shadow-2xs"
+                    placeholder="Draft section content..."
+                  />
+                </LockOverlay>
+              </div>
             </div>
+
+            {/* Collapsible Peer Review & Collaborative Critiques Panel */}
+            {isCommentsOpen && (
+              <aside className="w-80 lg:w-96 border-l border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#131C15] flex flex-col h-full overflow-hidden shrink-0">
+                <div className="p-4 border-b border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare size={15} className="text-[#3E6248] dark:text-[#4ADE80]" />
+                    <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#202920] dark:text-[#EDEAE2]">
+                      Peer Critiques
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCommentFilterSection((prev) => (prev === "ALL" ? activeTab : "ALL"))
+                      }
+                      className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#E4DCCB]/60 dark:bg-[#233327] text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2]"
+                    >
+                      {commentFilterSection === "ALL" ? "All Sections" : `Section: ${activeTab}`}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsCommentsOpen(false)}
+                      className="text-xs text-[#85877B] hover:text-[#202920] px-1"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
+                {/* Critiques List */}
+                <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                  {comments
+                    .filter((c) => c.draftId === activeDraft.id)
+                    .filter((c) => (commentFilterSection === "ALL" ? true : c.section === activeTab))
+                    .map((comm) => (
+                      <div
+                        key={comm.id}
+                        className={`p-3 rounded-xl border text-xs transition-colors ${
+                          comm.isResolved
+                            ? "bg-[#FAF7F0]/60 dark:bg-[#18231B]/40 border-[#E4DCCB]/60 dark:border-[#233327]/60 opacity-75"
+                            : "bg-white dark:bg-[#18231B] border-[#E4DCCB] dark:border-[#233327] shadow-2xs"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <div>
+                            <span className="font-bold text-[#202920] dark:text-[#EDEAE2] block leading-tight">
+                              {comm.authorName}
+                            </span>
+                            <span className="text-[10px] text-[#85877B] font-mono">
+                              {comm.authorRole} · {comm.createdAt}
+                            </span>
+                          </div>
+                          <span
+                            className={`text-[9px] font-mono px-1.5 py-0.5 rounded uppercase font-semibold ${
+                              comm.isResolved
+                                ? "bg-[#DCE6D7] text-[#3E6248] dark:bg-[#1A281E] dark:text-[#4ADE80]"
+                                : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                            }`}
+                          >
+                            {comm.isResolved ? "Resolved" : "Open"}
+                          </span>
+                        </div>
+
+                        <div className="text-[10px] font-mono text-[#3E6248] dark:text-[#4ADE80] mb-1 uppercase font-semibold">
+                          Anchor: {comm.section}
+                        </div>
+
+                        <p className="text-[11.5px] text-[#202920] dark:text-[#EDEAE2] leading-relaxed mb-2.5">
+                          {comm.content}
+                        </p>
+
+                        <div className="flex items-center justify-end">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleResolve(comm.id)}
+                            className="text-[10px] font-mono text-[#3E6248] dark:text-[#4ADE80] hover:underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <CheckCircle2 size={11} />
+                            <span>{comm.isResolved ? "Reopen" : "Mark Resolved"}</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+
+                  {comments.filter((c) => c.draftId === activeDraft.id).length === 0 && (
+                    <div className="p-6 text-center text-xs text-[#85877B] space-y-1">
+                      <p>No critiques logged yet.</p>
+                      <p className="text-[10px]">Add a section note below for peer review.</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Add Critique Form */}
+                <form
+                  onSubmit={handleAddComment}
+                  className="p-3 border-t border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] space-y-2"
+                >
+                  <div className="flex items-center justify-between text-[10px] font-mono text-[#85877B]">
+                    <span>Target: {activeTab.toUpperCase()}</span>
+                    <span>Broadcasting live</span>
+                  </div>
+                  <textarea
+                    rows={3}
+                    value={newCommentText}
+                    onChange={(e) => setNewCommentText(e.target.value)}
+                    placeholder={`Critique on ${activeTab} section...`}
+                    className="w-full p-2.5 rounded-lg border border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0] dark:bg-[#131C15] text-xs text-[#202920] dark:text-[#EDEAE2] font-mono resize-none focus:outline-none focus:ring-1 focus:ring-[#3E6248]"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!newCommentText.trim()}
+                    className="w-full py-1.5 rounded-lg bg-[#3E6248] hover:bg-[#202920] disabled:opacity-50 text-white text-xs font-mono font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                  >
+                    <CornerDownRight size={12} />
+                    <span>Broadcast Section Critique</span>
+                  </button>
+                </form>
+              </aside>
+            )}
           </div>
         </div>
       ) : (
