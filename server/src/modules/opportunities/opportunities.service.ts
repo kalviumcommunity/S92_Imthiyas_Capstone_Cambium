@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -16,6 +17,7 @@ import {
   FilterOpportunityDto,
   RecommendationQueryDto,
 } from './dto/opportunity.dto';
+import { MultiTierCacheService } from '../performance/multi-tier-cache.service';
 
 @Injectable()
 export class OpportunitiesService {
@@ -25,6 +27,8 @@ export class OpportunitiesService {
     @InjectRepository(Tag)
     private readonly tagRepo: Repository<Tag>,
     private readonly dataSource: DataSource,
+    @Optional()
+    private readonly cacheService?: MultiTierCacheService,
   ) {}
 
   /**
@@ -80,28 +84,36 @@ export class OpportunitiesService {
   }
 
   /**
-   * Aggregate opportunity statistics using a single relational query.
+   * Aggregate opportunity statistics using a single relational query (L1/L2 Cached).
    */
   async getOpportunityStats() {
-    const statsResult = await this.oppRepo
-      .createQueryBuilder('opp')
-      .select('COUNT(*)::int', 'total')
-      .addSelect(`COUNT(*) FILTER (WHERE opp.type = 'Grant')::int`, 'grants')
-      .addSelect(`COUNT(*) FILTER (WHERE opp.type = 'CFP')::int`, 'cfps')
-      .addSelect(`COUNT(*) FILTER (WHERE opp.type = 'Journal')::int`, 'journals')
-      .addSelect(`COUNT(*) FILTER (WHERE opp.type = 'Paper')::int`, 'papers')
-      .getRawOne();
+    const fetchStats = async () => {
+      const statsResult = await this.oppRepo
+        .createQueryBuilder('opp')
+        .select('COUNT(*)::int', 'total')
+        .addSelect(`COUNT(*) FILTER (WHERE opp.type = 'Grant')::int`, 'grants')
+        .addSelect(`COUNT(*) FILTER (WHERE opp.type = 'CFP')::int`, 'cfps')
+        .addSelect(`COUNT(*) FILTER (WHERE opp.type = 'Journal')::int`, 'journals')
+        .addSelect(`COUNT(*) FILTER (WHERE opp.type = 'Paper')::int`, 'papers')
+        .getRawOne();
 
-    return {
-      success: true,
-      stats: {
-        total: Number(statsResult?.total || 0),
-        grants: Number(statsResult?.grants || 0),
-        cfps: Number(statsResult?.cfps || 0),
-        journals: Number(statsResult?.journals || 0),
-        papers: Number(statsResult?.papers || 0),
-      },
+      return {
+        success: true,
+        stats: {
+          total: Number(statsResult?.total || 0),
+          grants: Number(statsResult?.grants || 0),
+          cfps: Number(statsResult?.cfps || 0),
+          journals: Number(statsResult?.journals || 0),
+          papers: Number(statsResult?.papers || 0),
+        },
+      };
     };
+
+    if (this.cacheService) {
+      return this.cacheService.wrap('opp:stats:global', fetchStats, 120, ['opportunities']);
+    }
+
+    return fetchStats();
   }
 
   /**
