@@ -1,8 +1,9 @@
-import { Controller, Get, Logger, ServiceUnavailableException } from '@nestjs/common';
+import { Controller, Get, Logger, ServiceUnavailableException, Optional } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
 import { DatabaseDiagnosticService } from './database/database-diagnostic.service';
 import { RedisService } from './common/redis/redis.service';
+import { CircuitBreakerService } from './common/resilience/circuit-breaker.service';
 
 @ApiTags('System')
 @Controller()
@@ -13,6 +14,8 @@ export class AppController {
     private readonly diagnosticService: DatabaseDiagnosticService,
     private readonly dataSource: DataSource,
     private readonly redisService: RedisService,
+    @Optional()
+    private readonly circuitBreakerService?: CircuitBreakerService,
   ) {}
 
   @Get('api/database/diagnostics')
@@ -35,6 +38,7 @@ export class AppController {
     }
 
     const redis = await this.redisService.getHealthInfo();
+    const circuitBreakers = this.circuitBreakerService?.getAllBreakers() || {};
 
     return {
       status: 'ok',
@@ -44,7 +48,37 @@ export class AppController {
       timestamp: new Date().toISOString(),
       database: 'connected',
       redis: redis.status === 'CONNECTED' ? 'connected' : 'degraded',
+      circuitBreakers,
       environment: process.env.NODE_ENV || 'production',
+    };
+  }
+
+  @Get(['health/liveness', 'api/v1/health/liveness'])
+  @ApiOperation({ summary: 'Kubernetes & Docker liveness probe verifying HTTP runtime responsiveness' })
+  @ApiResponse({ status: 200, description: 'Liveness status: ALIVE' })
+  getLiveness() {
+    return {
+      status: 'UP',
+      service: 'Cambium Core Platform API',
+      timestamp: new Date().toISOString(),
+      uptimeSeconds: Math.floor(process.uptime()),
+    };
+  }
+
+  @Get(['health/readiness', 'api/v1/health/readiness'])
+  @ApiOperation({ summary: 'Kubernetes readiness probe verifying DB connectivity and circuit breaker health' })
+  @ApiResponse({ status: 200, description: 'Readiness status: READY' })
+  async getReadiness() {
+    return this.getLivenessAndReadiness();
+  }
+
+  @Get('api/v1/health/circuit-breakers')
+  @ApiOperation({ summary: 'Inspect circuit breaker states, failure thresholds, and recovery metrics' })
+  @ApiResponse({ status: 200, description: 'Active circuit breaker registry telemetry' })
+  getCircuitBreakers() {
+    return {
+      timestamp: new Date().toISOString(),
+      breakers: this.circuitBreakerService?.getAllBreakers() || {},
     };
   }
 
