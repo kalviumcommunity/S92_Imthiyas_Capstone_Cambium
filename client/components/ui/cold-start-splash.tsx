@@ -50,13 +50,11 @@ export function ColdStartSplash({ onComplete, minDurationMs = 1200 }: ColdStartS
       <div className="relative z-10 flex flex-col items-center max-w-sm w-full px-6">
         {/* Breathing Logo Container */}
         <div className="relative mb-6">
-          <div className="absolute -inset-3 rounded-full bg-[#3E6248]/10 blur-md animate-pulse" />
-          <div className="w-14 h-14 rounded-full bg-[#FAF7F0] border border-[#E4DCCB] p-1 flex items-center justify-center shadow-md relative z-10 overflow-hidden">
+          <div className="w-16 h-16 flex items-center justify-center relative z-10">
             <img
-              src="/public_logo/cambium-logo-light.svg"
+              src="/public_logo/cambium-logo-dark.svg"
               alt="CAMBIUM Research Mark"
-              className="w-full h-full object-contain animate-spin-slow transition-transform"
-              style={{ animationDuration: "12s" }}
+              className="w-full h-full object-contain drop-shadow-[0_0_16px_rgba(74,222,128,0.35)] transition-transform"
             />
           </div>
         </div>
