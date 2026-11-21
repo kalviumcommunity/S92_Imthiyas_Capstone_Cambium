@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useGoogleLogin } from "@react-oauth/google";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Lock } from "lucide-react";
 import { GoogleIcon, OrcidIcon } from "@/components/auth/AuthIcons";
 import { InstitutionalSsoModal } from "@/components/auth/InstitutionalSsoModal";
 import { OrcidLoginModal } from "@/components/auth/OrcidLoginModal";
@@ -234,7 +234,14 @@ export default function SignInPage() {
         </button>
       </div>
 
-      {/* Error message */}
+      {/* Notice & Error messaging */}
+      {searchParams.get("notice") === "auth_required" && !error && (
+        <div className="text-[12.5px] font-sans text-[#3E6248] dark:text-[#4ADE80] text-center m-0 p-3 bg-[#DCE6D7]/40 dark:bg-[#1A281E] rounded-lg border border-[#3E6248]/30 dark:border-[#4ADE80]/30 flex items-center justify-center gap-2">
+          <Lock className="w-3.5 h-3.5 shrink-0" />
+          <span>Institutional authentication is required to access your research workspace. Please sign in to proceed.</span>
+        </div>
+      )}
+
       {error && (
         <div className="text-[13px] font-sans text-[#B33D35] dark:text-[#F87171] text-center m-0 p-3 bg-[#FBF1F0] dark:bg-[#2B1B1A] rounded-lg border border-[#B33D35]/30">
           {error}

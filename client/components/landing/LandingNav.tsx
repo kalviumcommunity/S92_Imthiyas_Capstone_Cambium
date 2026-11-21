@@ -5,10 +5,14 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import CambiumLogo from "@/components/CambiumLogo";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 
 export function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
+  const displayName = user?.fullName || user?.name || (user?.email ? user.email.split("@")[0] : "Scholar");
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
@@ -45,15 +49,28 @@ export function LandingNav() {
 
         {/* Right actions */}
         <div className="hidden md:flex items-center gap-4">
-          <Link
-            href="/sign-in"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors tracking-tight"
-          >
-            Sign in
-          </Link>
-          <Button asChild variant="primary">
-            <Link href="/sign-up">Create your research identity</Link>
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <span className="text-xs font-mono text-[#62685E] dark:text-[#A3B899] truncate max-w-[140px]">
+                {displayName}
+              </span>
+              <Button asChild variant="primary">
+                <Link href="/dashboard">Enter Dashboard →</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors tracking-tight"
+              >
+                Sign in
+              </Link>
+              <Button asChild variant="primary">
+                <Link href="/sign-up">Create your research identity</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -80,16 +97,28 @@ export function LandingNav() {
             </Link>
           ))}
           <div className="h-px bg-border my-2" />
-          <Link
-            href="/sign-in"
-            className="text-sm font-medium text-foreground"
-            onClick={() => setMenuOpen(false)}
-          >
-            Sign in
-          </Link>
-          <Button asChild variant="primary" className="w-full">
-            <Link href="/sign-up">Create your research identity</Link>
-          </Button>
+          {isAuthenticated ? (
+            <Button asChild variant="primary" className="w-full">
+              <Link href="/dashboard" onClick={() => setMenuOpen(false)}>
+                Enter Dashboard →
+              </Link>
+            </Button>
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                className="text-sm font-medium text-foreground"
+                onClick={() => setMenuOpen(false)}
+              >
+                Sign in
+              </Link>
+              <Button asChild variant="primary" className="w-full">
+                <Link href="/sign-up" onClick={() => setMenuOpen(false)}>
+                  Create your research identity
+                </Link>
+              </Button>
+            </>
+          )}
         </div>
       )}
     </header>

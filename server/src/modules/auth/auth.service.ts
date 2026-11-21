@@ -10,7 +10,7 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
-import { User } from '../users/entities/user.entity';
+import { User, UserRole } from '../users/entities/user.entity';
 import { ResearchInterest } from '../users/entities/research-interest.entity';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
@@ -249,11 +249,19 @@ export class AuthService {
       fullName = email.split('@')[0];
     }
 
-    let user = await this.userRepo
-      .createQueryBuilder('u')
-      .leftJoinAndSelect('u.researchInterests', 'interest')
-      .where('LOWER(u.email) = :email', { email })
-      .getOne();
+    let user: User | null = null;
+    try {
+      user = await this.userRepo
+        .createQueryBuilder('u')
+        .leftJoinAndSelect('u.researchInterests', 'interest')
+        .where('LOWER(u.email) = :email', { email })
+        .getOne();
+    } catch {
+      user = await this.userRepo
+        .createQueryBuilder('u')
+        .where('LOWER(u.email) = :email', { email })
+        .getOne();
+    }
 
     if (!user) {
       const salt = await bcrypt.genSalt(10);
@@ -267,22 +275,35 @@ export class AuthService {
         count++;
       }
 
-      const newUser = this.userRepo.create({
-        username: uniqueUsername,
-        email,
-        fullName,
-        passwordHash,
-        institution: 'Independent Scholar',
-        researchInterests: [],
-      });
-
-      user = await this.userRepo.save(newUser);
+      try {
+        const newUser = this.userRepo.create({
+          username: uniqueUsername,
+          email,
+          fullName,
+          passwordHash,
+          institution: 'Independent Scholar',
+          role: UserRole.RESEARCHER,
+          researchInterests: [],
+        });
+        user = await this.userRepo.save(newUser);
+      } catch {
+        const newUser = this.userRepo.create({
+          username: uniqueUsername,
+          email,
+          fullName,
+          passwordHash,
+          institution: 'Independent Scholar',
+          role: UserRole.RESEARCHER,
+        });
+        user = await this.userRepo.save(newUser);
+      }
     } else if (fullName && (user.fullName === 'Google User' || user.fullName === 'Verified Scholar' || !user.fullName)) {
       user.fullName = fullName;
       await this.userRepo.save(user);
     }
 
-    const tokens = this.generateTokenPair(user.id, user.email, user.username, user.role);
+    const effectiveRole = user.role || UserRole.RESEARCHER;
+    const tokens = this.generateTokenPair(user.id, user.email, user.username, effectiveRole);
 
     return {
       success: true,
@@ -295,7 +316,7 @@ export class AuthService {
         fullName: user.fullName,
         name: user.fullName,
         email: user.email,
-        role: user.role,
+        role: effectiveRole,
         institution: user.institution,
         photo: photoUrl || undefined,
         researchInterests: user.researchInterests ? user.researchInterests.map((i) => i.name) : [],
@@ -401,10 +422,17 @@ export class AuthService {
   }
 
   async getMe(userId: string) {
-    const user = await this.userRepo.findOne({
-      where: { id: userId },
-      relations: { researchInterests: true },
-    });
+    let user: User | null = null;
+    try {
+      user = await this.userRepo.findOne({
+        where: { id: userId },
+        relations: { researchInterests: true },
+      });
+    } catch {
+      user = await this.userRepo.findOne({
+        where: { id: userId },
+      });
+    }
 
     if (!user) {
       throw new NotFoundException('User not found');

@@ -67,20 +67,24 @@ def build_realistic_cutout_logos():
     final_mask[424:H, :] = False
     final_mask[0:150, 0:70] = False
 
-    # 4. Generate smooth antialiased alpha channel
+    # 4. Fill all internal holes to ensure the shell body is 100% solid (no jagged hollow chambers)
+    from scipy.ndimage import binary_fill_holes
+    solid_mask = binary_fill_holes(final_mask)
+
+    # 5. Generate smooth antialiased alpha channel: 100% solid interior, smooth outer contour
+    dist_in = distance_transform_edt(solid_mask)
     alpha = np.zeros((H, W), dtype=float)
-    alpha[final_mask] = np.clip((diff[final_mask] - 8) / 25.0, 0.35, 1.0) * 255.0
-    dist_in = distance_transform_edt(final_mask)
-    alpha[dist_in >= 1.5] = 255.0
+    alpha[solid_mask] = 255.0
     alpha_smooth = gaussian_filter(alpha, sigma=0.6)
-    alpha_smooth[~final_mask] = 0.0
+    alpha_smooth[dist_in >= 1.5] = 255.0
+    alpha_smooth[dist_in == 0] = 0.0
 
     clean_rgba = np.zeros((H, W, 4), dtype=np.uint8)
     clean_rgba[:, :, :3] = cleaned
     clean_rgba[:, :, 3] = np.clip(alpha_smooth, 0, 255).astype(np.uint8)
 
-    # 5. Crop tightly to the true shape with 2px antialias padding
-    ys, xs = np.where(final_mask)
+    # 6. Crop tightly to the true shape with 2px antialias padding
+    ys, xs = np.where(solid_mask)
     crop_ymin = max(0, ys.min() - 2)
     crop_ymax = min(H, ys.max() + 3)
     crop_xmin = max(0, xs.min() - 2)

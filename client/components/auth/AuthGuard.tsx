@@ -24,6 +24,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     if (isExpired) {
       localStorage.removeItem("cambium_token");
+      localStorage.removeItem("cambium_access_token");
       localStorage.removeItem("cambium_user");
       localStorage.removeItem("cambium_session_expiry");
       document.cookie = "cambium_token=; path=/; max-age=0; SameSite=Lax";
@@ -31,12 +32,18 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     const hasValidToken = Boolean((token || storedToken) && !isExpired);
 
-    if (!hasValidToken) {
+    if (hasValidToken) {
+      // Keep session cookie synchronized for Next.js edge middleware
+      const activeToken = token || storedToken;
+      if (activeToken && !document.cookie.includes("cambium_token=")) {
+        const maxAge = 30 * 24 * 60 * 60;
+        document.cookie = `cambium_token=${activeToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
+      }
+      setIsAuthorized(true);
+    } else {
       const fullPath = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : "");
       const redirectUrl = encodeURIComponent(fullPath || "/dashboard");
       router.replace(`/sign-in?redirect=${redirectUrl}&notice=auth_required`);
-    } else {
-      setIsAuthorized(true);
     }
   }, [isAuthenticated, token, pathname, searchParams, router]);
 

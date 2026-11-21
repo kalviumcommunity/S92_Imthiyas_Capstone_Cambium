@@ -11,6 +11,7 @@ import { useTheme } from '@/lib/theme-provider'
 import { getNaturalScholarContributionLevel, getScholarContributionDetails, SCHOLAR_ACTIVITY_BADGES } from '@/lib/scholarHeatmap'
 import { HexContributionGraph } from '@/components/portfolio/HexContributionGraph'
 import { fetchScholarlyWorks, fetchScholarlyResearchers, fetchTrendingTopics, type ScholarlyWork } from '@/lib/scholarly-api'
+import { useAuthStore } from '@/lib/store/useAuthStore'
 
 // ─── Design System Tokens (Cambium Master Living Materials System) ────────────
 // ─── Design System Tokens (Cambium Master Living Materials System — 10/10 Production) ───
@@ -82,14 +83,16 @@ function getServerReplayQuerySnapshot() {
 
 // ─── Navigation (Mathematically Aligned Optical Grid & WCAG 2.2 Touch Targets) ───
 function Nav() {
-  const [scrolled, setScrolled] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', handler, { passive: true })
-    return () => window.removeEventListener('scroll', handler)
-  }, [])
+    const handler = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handler, { passive: true });
+    return () => window.removeEventListener('scroll', handler);
+  }, []);
 
   return (
     <header className="w-full border-b border-[#E4DCCB] dark:border-[#233327] bg-[#FAF7F0]/90 dark:bg-[#0E140F]/90 backdrop-blur-md sticky top-0 z-50 transition-all duration-300">
@@ -118,20 +121,38 @@ function Nav() {
         {/* Action Threshold with Cambium Aligned Theme Toggle */}
         <div className="hidden md:flex items-center gap-4">
           <ThemeToggle />
-          <Link
-            href="/sign-in"
-            prefetch={true}
-            className="font-sans text-[14px] font-medium text-[#4A5246] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] transition-colors no-underline py-2 px-2 inline-flex items-center min-h-[36px] min-w-[24px]"
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/sign-up"
-            prefetch={true}
-            className="bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] px-5 py-2.5 rounded-full font-sans text-xs font-semibold tracking-wide uppercase shadow-sm shadow-[#3E6248]/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center justify-center min-h-[36px] text-center no-underline border border-[#66866A]/30 dark:border-[#4ADE80]/30"
-          >
-            Create Identity
-          </Link>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-3">
+              <span className="font-sans text-[13px] font-medium text-[#4A5246] dark:text-[#A3B899] truncate max-w-[150px]">
+                {user?.fullName?.split(" ")[0] || "Scholar"}
+              </span>
+              <Link
+                href="/dashboard"
+                prefetch={true}
+                className="bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] px-5 py-2.5 rounded-full font-sans text-xs font-semibold tracking-wide uppercase shadow-sm shadow-[#3E6248]/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center gap-1.5 justify-center min-h-[36px] text-center no-underline border border-[#66866A]/30 dark:border-[#4ADE80]/30"
+              >
+                <span>Enter Dashboard</span>
+                <span className="text-[13px]">→</span>
+              </Link>
+            </div>
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                prefetch={true}
+                className="font-sans text-[14px] font-medium text-[#4A5246] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] transition-colors no-underline py-2 px-2 inline-flex items-center min-h-[36px] min-w-[24px]"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/sign-up"
+                prefetch={true}
+                className="bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] px-5 py-2.5 rounded-full font-sans text-xs font-semibold tracking-wide uppercase shadow-sm shadow-[#3E6248]/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center justify-center min-h-[36px] text-center no-underline border border-[#66866A]/30 dark:border-[#4ADE80]/30"
+              >
+                Create Identity
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile menu button with 44x44px touch target */}
@@ -167,8 +188,32 @@ function Nav() {
               <span className="text-xs font-mono uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">Appearance Mode</span>
               <ThemeToggle />
             </div>
-            <Link href="/sign-in" className="text-sm font-medium text-[#202920] dark:text-[#EDEAE2] no-underline">Sign in</Link>
-            <Link href="/sign-up" className="bg-[#3E6248] dark:bg-[#4ADE80] text-[#FAF7F0] dark:text-[#0E140F] px-4 py-2.5 rounded-full text-xs font-semibold text-center uppercase no-underline">Create Identity</Link>
+            {isAuthenticated ? (
+              <Link
+                href="/dashboard"
+                onClick={() => setMenuOpen(false)}
+                className="bg-[#3E6248] dark:bg-[#4ADE80] text-[#FAF7F0] dark:text-[#0E140F] py-3 rounded-full text-center text-xs font-semibold uppercase tracking-wider no-underline block"
+              >
+                Enter Dashboard →
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  onClick={() => setMenuOpen(false)}
+                  className="text-sm font-medium text-[#202920] dark:text-[#EDEAE2] no-underline block py-1"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/sign-up"
+                  onClick={() => setMenuOpen(false)}
+                  className="bg-[#3E6248] dark:bg-[#4ADE80] text-[#FAF7F0] dark:text-[#0E140F] py-3 rounded-full text-center text-xs font-semibold uppercase tracking-wider no-underline block"
+                >
+                  Create Identity
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -457,6 +502,7 @@ function EcosystemGraph({ dark, selectedCategory = 'all' }: { dark?: boolean; se
 function Hero() {
   const router = useRouter();
   const [heroQuery, setHeroQuery] = useState("");
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -552,19 +598,39 @@ function Hero() {
             </form>
 
             <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto pt-1">
-              <Link
-                href="/sign-up"
-                className="w-full sm:w-auto bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] px-8 py-3.5 rounded-xl font-sans text-sm font-semibold tracking-tight transition-all shadow-md shadow-[#3E6248]/25 hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2 group no-underline border border-[#66866A]/40 dark:border-[#4ADE80]/40"
-              >
-                <span>Get started — it's free</span>
-                <ArrowUpRight className="w-4 h-4 text-[#FAF7F0]/80 dark:text-[#0E140F]/80 group-hover:text-[#FAF7F0] dark:group-hover:text-[#0E140F] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </Link>
-              <a
-                href="#knowledge-network"
-                className="w-full sm:w-auto border border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80] text-[#202920] dark:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#131C15] px-8 py-3.5 rounded-xl font-sans text-sm font-medium transition-colors bg-[#FAF7F0] dark:bg-[#0E140F] flex items-center justify-center no-underline"
-              >
-                Explore Cambium
-              </a>
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="w-full sm:w-auto bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] px-8 py-3.5 rounded-xl font-sans text-sm font-semibold tracking-tight transition-all shadow-md shadow-[#3E6248]/25 hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2 group no-underline border border-[#66866A]/40 dark:border-[#4ADE80]/40"
+                  >
+                    <span>Enter Dashboard</span>
+                    <ArrowUpRight className="w-4 h-4 text-[#FAF7F0]/80 dark:text-[#0E140F]/80 group-hover:text-[#FAF7F0] dark:group-hover:text-[#0E140F] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </Link>
+                  <Link
+                    href="/workspace"
+                    className="w-full sm:w-auto border border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80] text-[#202920] dark:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#131C15] px-8 py-3.5 rounded-xl font-sans text-sm font-medium transition-colors bg-[#FAF7F0] dark:bg-[#0E140F] flex items-center justify-center no-underline"
+                  >
+                    Resume Workspace
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-up"
+                    className="w-full sm:w-auto bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-[#FAF7F0] dark:text-[#0E140F] px-8 py-3.5 rounded-xl font-sans text-sm font-semibold tracking-tight transition-all shadow-md shadow-[#3E6248]/25 hover:shadow-lg hover:-translate-y-0.5 flex items-center justify-center gap-2 group no-underline border border-[#66866A]/40 dark:border-[#4ADE80]/40"
+                  >
+                    <span>Get started — it's free</span>
+                    <ArrowUpRight className="w-4 h-4 text-[#FAF7F0]/80 dark:text-[#0E140F]/80 group-hover:text-[#FAF7F0] dark:group-hover:text-[#0E140F] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </Link>
+                  <a
+                    href="#knowledge-network"
+                    className="w-full sm:w-auto border border-[#E4DCCB] dark:border-[#233327] hover:border-[#3E6248] dark:hover:border-[#4ADE80] text-[#202920] dark:text-[#EDEAE2] hover:bg-[#F2EBDD] dark:hover:bg-[#131C15] px-8 py-3.5 rounded-xl font-sans text-sm font-medium transition-colors bg-[#FAF7F0] dark:bg-[#0E140F] flex items-center justify-center no-underline"
+                  >
+                    Explore Cambium
+                  </a>
+                </>
+              )}
             </div>
           </div>
         </div>
