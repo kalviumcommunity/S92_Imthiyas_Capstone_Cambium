@@ -144,7 +144,7 @@ export default function GlobalSidebar() {
   };
 
   // User display metadata
-  const rawName = user?.fullName || user?.name || user?.username || "Scholar";
+  const rawName = user?.fullName || user?.name || user?.username || (user?.email ? user.email.split("@")[0] : "Scholar");
   const displayName = rawName.replace(/\s*\([^)]*\)/g, "").trim() || "Scholar";
   const displaySubtitle = user?.role
     ? `${user.role} · ${user.institution || "Cambium Research"}`
@@ -152,7 +152,7 @@ export default function GlobalSidebar() {
     ? user.institution
     : user?.email
     ? user.email
-    : "Verified Scholar";
+    : "Independent Scholar";
   const initials = displayName
     .split(" ")
     .map((n) => n[0])
@@ -369,8 +369,8 @@ export default function GlobalSidebar() {
           <LanguageSelector compact={!isOpen} dropdownAlign={!isOpen ? "flyout-right" : "auto"} />
         </div>
 
-        {/* Tier Status & Quota Pill */}
-        {isOpen ? (
+        {/* Tier Status & Quota Pill (Expanded Only) */}
+        {isOpen && (
           <div className="px-2 py-1 flex items-center justify-between">
             <Link
               href="/billing"
@@ -395,21 +395,14 @@ export default function GlobalSidebar() {
               Quota →
             </Link>
           </div>
-        ) : (
-          <Link
-            href="/billing"
-            className="w-11 h-3 mx-auto flex items-center justify-center my-0.5 no-underline"
-            title={`Active Plan: ${currentPlan.toUpperCase()} (Click for Billing & Compute)`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
-          </Link>
         )}
 
         {/* Live Network & Edge Telemetry Pill */}
-        <div className="px-1 py-1 flex justify-center">
+        <div className={`transition-all ${isOpen ? "px-1 py-1 flex justify-center" : "w-11 h-11 mx-auto flex items-center justify-center my-0.5"}`}>
           <NetworkStatusPill
             className={isOpen ? "w-full justify-center" : "mx-auto"}
             showLatency={isOpen}
+            compact={!isOpen}
           />
         </div>
 

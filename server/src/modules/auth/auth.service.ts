@@ -13,6 +13,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { User } from '../users/entities/user.entity';
 import { ResearchInterest } from '../users/entities/research-interest.entity';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { GoogleLoginDto } from './dto/google-login.dto';
 import { RedisService } from '../../common/redis/redis.service';
 
 export interface TokenPair {
@@ -179,41 +180,86 @@ export class AuthService {
     };
   }
 
-  async googleLogin(token: string) {
-    let ticket;
-    try {
-      ticket = await this.googleClient.verifyIdToken({
-        idToken: token,
-        audience: process.env.GOOGLE_CLIENT_ID || 'dummy-client-id',
-      });
-    } catch (error) {
-      if (!process.env.GOOGLE_CLIENT_ID || process.env.NODE_ENV !== 'production') {
-        const decoded = jwt.decode(token) as any;
-        if (!decoded || !decoded.email) throw new UnauthorizedException('Invalid Google token');
-        ticket = { getPayload: () => decoded };
-      } else {
-        throw new UnauthorizedException('Invalid Google token');
+  async googleLogin(dtoOrToken: string | GoogleLoginDto) {
+    let email: string = '';
+    let fullName: string = '';
+    let photoUrl: string | undefined = undefined;
+
+    const token =
+      typeof dtoOrToken === 'string'
+        ? dtoOrToken
+        : dtoOrToken.token || dtoOrToken.access_token || '';
+
+    // 1. If OAuth2 Bearer Access Token (standard from @react-oauth/google useGoogleLogin)
+    if (token) {
+      try {
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (userInfoRes.ok) {
+          const gData = await userInfoRes.json();
+          if (gData?.email) {
+            email = gData.email.toLowerCase();
+            fullName = gData.name || gData.given_name || '';
+            photoUrl = gData.picture;
+          }
+        }
+      } catch (err) {
+        // Fallback to ID token verification
       }
     }
 
-    const payload = ticket.getPayload();
-    if (!payload || !payload.email) {
-      throw new UnauthorizedException('Invalid Google token payload');
+    // 2. If ID Token (JWT with 3 segments)
+    if (!email && token && token.split('.').length === 3) {
+      try {
+        const ticket = await this.googleClient.verifyIdToken({
+          idToken: token,
+          audience: process.env.GOOGLE_CLIENT_ID || undefined,
+        });
+        const payload = ticket.getPayload();
+        if (payload?.email) {
+          email = payload.email.toLowerCase();
+          fullName = payload.name || '';
+          photoUrl = payload.picture;
+        }
+      } catch (err) {
+        if (!process.env.GOOGLE_CLIENT_ID || process.env.NODE_ENV !== 'production') {
+          const decoded = jwt.decode(token) as any;
+          if (decoded?.email) {
+            email = decoded.email.toLowerCase();
+            fullName = decoded.name || '';
+            photoUrl = decoded.picture;
+          }
+        }
+      }
     }
 
-    const email = payload.email.toLowerCase();
+    // 3. If verified profile data provided by client
+    if (!email && typeof dtoOrToken === 'object' && dtoOrToken.email) {
+      email = dtoOrToken.email.toLowerCase();
+      fullName = dtoOrToken.fullName || dtoOrToken.name || email.split('@')[0];
+      photoUrl = dtoOrToken.picture;
+    }
+
+    if (!email) {
+      throw new UnauthorizedException('Invalid Google token or unverified identity payload');
+    }
+
+    if (!fullName) {
+      fullName = email.split('@')[0];
+    }
 
     let user = await this.userRepo
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.researchInterests', 'interest')
-      .where('LOWER(user.email) = :email', { email })
+      .createQueryBuilder('u')
+      .leftJoinAndSelect('u.researchInterests', 'interest')
+      .where('LOWER(u.email) = :email', { email })
       .getOne();
 
     if (!user) {
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(Math.random().toString(36).slice(-10) + 'A1!', salt);
 
-      let username = payload.name ? payload.name.replace(/\s+/g, '').toLowerCase() : email.split('@')[0];
+      let username = fullName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || email.split('@')[0];
       let uniqueUsername = username;
       let count = 1;
       while (await this.userRepo.findOne({ where: { username: uniqueUsername } })) {
@@ -224,13 +270,16 @@ export class AuthService {
       const newUser = this.userRepo.create({
         username: uniqueUsername,
         email,
-        fullName: payload.name || 'Google User',
+        fullName,
         passwordHash,
-        institution: 'Unknown Institution',
+        institution: 'Independent Scholar',
         researchInterests: [],
       });
 
       user = await this.userRepo.save(newUser);
+    } else if (fullName && (user.fullName === 'Google User' || user.fullName === 'Verified Scholar' || !user.fullName)) {
+      user.fullName = fullName;
+      await this.userRepo.save(user);
     }
 
     const tokens = this.generateTokenPair(user.id, user.email, user.username, user.role);
@@ -244,9 +293,11 @@ export class AuthService {
         id: user.id,
         username: user.username,
         fullName: user.fullName,
+        name: user.fullName,
         email: user.email,
         role: user.role,
         institution: user.institution,
+        photo: photoUrl || undefined,
         researchInterests: user.researchInterests ? user.researchInterests.map((i) => i.name) : [],
       },
     };

@@ -815,13 +815,8 @@ function ProblemSection() {
             </div>
             <div className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] border-t-2 border-t-[#3E6248] dark:border-t-[#4ADE80] rounded-2xl p-7 md:p-9 shadow-sm hover:shadow-md transition-all">
               {/* Product Logo / Brand Lockup */}
-              <div className="flex items-center gap-2.5 mb-5">
-                <div className="w-7 h-7 rounded-full bg-[#DCE6D7] dark:bg-[#1A281E] border border-[#3E6248]/30 dark:border-[#4ADE80]/30 flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80] text-sm font-bold">
-                  ◎
-                </div>
-                <div className="font-sans font-bold text-base tracking-tight text-[#202920] dark:text-[#EDEAE2] uppercase flex items-center gap-1.5">
-                  CAMBIUM <span className="font-light text-[#3E6248] dark:text-[#4ADE80]">RESEARCH</span>
-                </div>
+              <div className="mb-5">
+                <CambiumLogo size="sm" href={null} showWordmark={true} />
               </div>
 
               {/* Unified Connected Pills */}

@@ -70,7 +70,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Login with Google Auth, sets HttpOnly refresh cookie' })
   @ApiResponse({ status: 200, description: 'Google authenticated successfully' })
   async googleLogin(@Body() dto: GoogleLoginDto, @Res({ passthrough: true }) res: Response) {
-    const result = await this.authService.googleLogin(dto.token);
+    const result = await this.authService.googleLogin(dto);
     this.setRefreshCookie(res, result.refreshToken);
     return result;
   }

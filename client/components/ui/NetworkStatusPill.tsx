@@ -18,11 +18,13 @@ import { getPendingSyncMutations } from "@/lib/storage/offline-store";
 interface NetworkStatusPillProps {
   className?: string;
   showLatency?: boolean;
+  compact?: boolean;
 }
 
 export function NetworkStatusPill({
   className = "",
   showLatency = true,
+  compact = false,
 }: NetworkStatusPillProps) {
   const { connectionState, latencyMs, pingGateway } = useSocket({ namespace: "/chat" });
   const [pendingCount, setPendingCount] = useState<number>(0);
@@ -92,10 +94,14 @@ export function NetworkStatusPill({
         onClick={() => setIsModalOpen(true)}
         title={badge.title}
         aria-label={badge.title}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border transition-all hover:scale-105 cursor-pointer shadow-2xs ${badge.pillClass} ${className}`}
+        className={
+          compact
+            ? `w-11 h-11 mx-auto flex items-center justify-center rounded-xl transition-all duration-200 hover:bg-[#F2EBDD] dark:hover:bg-[#18231B] text-[#62685E] dark:text-[#A3B899] cursor-pointer ${className}`
+            : `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border transition-all hover:scale-105 cursor-pointer shadow-2xs ${badge.pillClass} ${className}`
+        }
       >
         <span className={`w-2 h-2 rounded-full shrink-0 ${badge.dotClass}`} aria-hidden="true" />
-        <span className="font-semibold tracking-tight">{badge.label}</span>
+        {!compact && <span className="font-semibold tracking-tight">{badge.label}</span>}
       </button>
 
       {/* Network Telemetry & Diagnostics Dialog */}

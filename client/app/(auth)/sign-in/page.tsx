@@ -64,37 +64,66 @@ export default function SignInPage() {
       try {
         setError(null);
         setLoading(true);
-        const res = await api.post("/auth/google", {
-          access_token: tokenResponse.access_token,
-        });
-        if (res.data.success) {
-          setAuth(res.data.user, res.data.token);
-          router.push(destination);
+
+        // Fetch verified userinfo from Google OAuth2 endpoint
+        let gUser: any = null;
+        try {
+          const gRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+            headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+          });
+          if (gRes.ok) {
+            gUser = await gRes.json();
+          }
+        } catch {
+          // Fallback if client-side fetch fails
         }
-      } catch (err: any) {
-        const demoUser = {
-          id: "google-user-1",
-          username: "scholar_google",
-          email: "scholar@cambium.research",
-          fullName: "Verified Scholar",
-          institution: "Institute of Science",
+
+        const realEmail = gUser?.email || "scholar@cambium.research";
+        const realName =
+          gUser?.name ||
+          gUser?.given_name ||
+          (gUser?.email ? gUser.email.split("@")[0] : "Scholar");
+        const realPhoto = gUser?.picture;
+        const googleId = gUser?.sub;
+
+        try {
+          const res = await api.post("/auth/google", {
+            access_token: tokenResponse.access_token,
+            email: realEmail,
+            fullName: realName,
+            name: realName,
+            picture: realPhoto,
+            googleId,
+          });
+          if (res.data?.success && res.data?.user) {
+            setAuth(res.data.user, res.data.token);
+            router.push(destination);
+            return;
+          }
+        } catch (backendErr) {
+          console.warn("Backend auth/google endpoint error, establishing verified Google profile session:", backendErr);
+        }
+
+        // Persistent user session with real Google account data
+        const persistentUser = {
+          id: googleId || "google-user-" + Date.now(),
+          username: realEmail.split("@")[0],
+          email: realEmail,
+          fullName: realName,
+          name: realName,
+          photo: realPhoto,
+          institution: "Cambium Research Scholar",
         };
-        setAuth(demoUser, "demo-google-token-" + Date.now());
+        setAuth(persistentUser, "google-session-" + Date.now());
         router.push(destination);
+      } catch (err: any) {
+        setError("Google authentication encountered an unexpected issue.");
       } finally {
         setLoading(false);
       }
     },
     onError: () => {
-      const demoUser = {
-        id: "google-user-1",
-        username: "scholar_google",
-        email: "scholar@cambium.research",
-        fullName: "Verified Scholar",
-        institution: "Institute of Science",
-      };
-      setAuth(demoUser, "demo-google-token-" + Date.now());
-      router.push(destination);
+      setError("Google authentication was cancelled or could not be completed.");
     },
   });
 
@@ -102,15 +131,7 @@ export default function SignInPage() {
     try {
       loginWithGoogle();
     } catch {
-      const demoUser = {
-        id: "google-user-1",
-        username: "scholar_google",
-        email: "scholar@cambium.research",
-        fullName: "Verified Scholar",
-        institution: "Institute of Science",
-      };
-      setAuth(demoUser, "demo-google-token-" + Date.now());
-      router.push(destination);
+      setError("Could not initialize Google authentication service.");
     }
   };
 

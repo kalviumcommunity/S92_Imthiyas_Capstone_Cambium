@@ -137,16 +137,29 @@ def build_realistic_cutout_logos():
     ico_destinations = [
         os.path.join(public_logo_dir, "favicon.ico"),
         os.path.join(public_dir, "favicon.ico"),
-        os.path.join(dest_public_logo_dir, "favicon.ico")
+        os.path.join(dest_public_logo_dir, "favicon.ico"),
+        os.path.join(app_dir, "favicon.ico"),
     ]
     for ico_dest in ico_destinations:
-        resized_images[0].save(
+        master_trans.save(
             ico_dest,
             format="ICO",
-            sizes=[(16, 16), (32, 32), (48, 48), (64, 64)],
-            append_images=resized_images[1:]
+            sizes=[(16, 16), (32, 32), (48, 48), (64, 64)]
         )
-    print("Saved transparent multi-res favicon.ico")
+    print("Saved transparent multi-res favicon.ico to public and app dirs")
+
+    # Save Next.js App Router icon.png and apple-icon.png
+    icon_32 = master_trans.resize((32, 32), Image.Resampling.LANCZOS)
+    icon_32.save(os.path.join(app_dir, "icon.png"), "PNG")
+    icon_32.save(os.path.join(public_dir, "icon.png"), "PNG")
+
+    icon_180 = master_trans.resize((180, 180), Image.Resampling.LANCZOS)
+    icon_180.save(os.path.join(app_dir, "apple-icon.png"), "PNG")
+    icon_180.save(os.path.join(public_dir, "apple-icon.png"), "PNG")
+
+    icon_192 = master_trans.resize((192, 192), Image.Resampling.LANCZOS)
+    icon_192.save(os.path.join(public_dir, "icon-192.png"), "PNG")
+    print("Saved Next.js App Router icon.png and apple-icon.png")
 
     # 9. Create Self-Contained Realistic SVG with Cut-Out 3D Nautilus Shell
     # Use 256px resolution PNG for crisp fidelity in SVG

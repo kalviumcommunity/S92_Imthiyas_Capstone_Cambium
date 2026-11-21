@@ -117,12 +117,15 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
+      { url: "/icon.png", sizes: "32x32", type: "image/png" },
+      { url: "/public_logo/cambium-icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/public_logo/cambium-icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/public_logo/favicon.svg", type: "image/svg+xml" },
       { url: "/public_logo/favicon-light.svg", type: "image/svg+xml", media: "(prefers-color-scheme: light)" },
       { url: "/public_logo/favicon-dark.svg", type: "image/svg+xml", media: "(prefers-color-scheme: dark)" },
     ],
-    shortcut: "/public_logo/favicon.svg",
-    apple: "/public_logo/favicon-dark.svg",
+    shortcut: "/icon.png",
+    apple: "/apple-icon.png",
   },
 };
 

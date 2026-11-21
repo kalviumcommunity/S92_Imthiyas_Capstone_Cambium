@@ -51,6 +51,12 @@ export const useAuthStore = create<AuthState>((set) => {
       if (storedUser) {
         try {
           initialUser = JSON.parse(storedUser);
+          if (initialUser && (initialUser.fullName === "Verified Scholar" || initialUser.name === "Verified Scholar")) {
+            initialUser.fullName = initialUser.email && !initialUser.email.includes("scholar@cambium")
+              ? initialUser.email.split("@")[0]
+              : "Scholar";
+            initialUser.name = initialUser.fullName;
+          }
         } catch {
           initialUser = null;
         }

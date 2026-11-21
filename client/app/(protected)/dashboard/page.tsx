@@ -388,7 +388,7 @@ function TopBar() {
   const [isFocused, setIsFocused] = useState(false);
   const user = useAuthStore((state) => state.user);
 
-  const displayName = user?.fullName || user?.name || user?.username || "Scholar";
+  const displayName = user?.fullName || user?.name || user?.username || (user?.email ? user.email.split("@")[0] : "Scholar");
   const userInitials = displayName
     .split(" ")
     .map((w: string) => w[0])
@@ -400,7 +400,9 @@ function TopBar() {
     ? `${user.role} · ${user.institution || "Cambium Research"}`
     : user?.institution
     ? user.institution
-    : "Verified Scholar";
+    : user?.email
+    ? user.email
+    : "Independent Scholar";
 
   const handleSearchSubmit = (e?: React.FormEvent, customQuery?: string) => {
     if (e) e.preventDefault();
@@ -567,7 +569,7 @@ function MainContent() {
   const [activeTab, setActiveTab] = useState("For You");
   const [attentionCards, setAttentionCards] = useState<AttentionCardData[]>(ATTENTION_CARDS);
   const user = useAuthStore((state) => state.user);
-  const displayName = user?.fullName || user?.name || "Imthiyas";
+  const displayName = user?.fullName || user?.name || user?.username || (user?.email ? user.email.split("@")[0] : "Imthiyas");
   const userInterest = user?.interests && user.interests.length > 0 ? user.interests[0] : "climate artificial intelligence";
 
   useEffect(() => {
