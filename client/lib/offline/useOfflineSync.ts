@@ -86,16 +86,27 @@ export function useOfflineSync() {
 
     void loadCounts();
 
-    // Register Service Worker
+    // Register Service Worker with active update polling
     if ("serviceWorker" in navigator && process.env.NODE_ENV !== "test") {
       navigator.serviceWorker
         .register("/sw.js")
         .then((registration) => {
           console.log("[ServiceWorker] Registered with scope:", registration.scope);
+          // Check for immediate SW updates
+          registration.update().catch(() => {});
         })
         .catch((err) => {
           console.warn("[ServiceWorker] Registration failed:", err);
         });
+
+      // Reload once when a new service worker takes control so the scholar sees live bundles
+      let hasReloaded = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (!hasReloaded) {
+          hasReloaded = true;
+          window.location.reload();
+        }
+      });
 
       // Listen to messages from SW
       navigator.serviceWorker.addEventListener("message", (event) => {

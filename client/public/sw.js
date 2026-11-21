@@ -3,16 +3,8 @@
 // Enterprise PWA Caching & Field Researcher Offline Strategy
 // ====================================================================
 
-const CACHE_NAME = "cambium-cache-v2";
+const CACHE_NAME = "cambium-cache-v3-realtime";
 const STATIC_ASSETS = [
-  "/",
-  "/dashboard",
-  "/opportunities",
-  "/graph",
-  "/compliance",
-  "/lab",
-  "/os",
-  "/manifest.json",
   "/favicon.svg",
   "/favicon-light.svg",
   "/favicon-dark.svg",
@@ -68,17 +60,14 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static assets (images, fonts, scripts): Cache-First with Network fallback
+  // Static assets (images, fonts, scripts): Network-First to guarantee latest branding & code
   if (
     url.pathname.startsWith("/_next/static/") ||
-    url.pathname.match(/\.(png|svg|jpg|jpeg|gif|woff|woff2|ttf|css)$/)
+    url.pathname.match(/\.(png|svg|jpg|jpeg|gif|woff|woff2|ttf|css|ico)$/)
   ) {
     event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        return fetch(event.request).then((networkResponse) => {
+      fetch(event.request)
+        .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -86,8 +75,8 @@ self.addEventListener("fetch", (event) => {
             });
           }
           return networkResponse;
-        });
-      })
+        })
+        .catch(() => caches.match(event.request))
     );
     return;
   }
