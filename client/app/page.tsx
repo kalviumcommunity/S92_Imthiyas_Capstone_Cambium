@@ -1426,9 +1426,36 @@ function WorkspaceSection() {
   ]
 
   return (
-    <section id="workspace" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '112px 24px', position: 'relative' }}>
-      {/* Subtle organic ambient glow */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
+    <section
+      id="workspace"
+      className="relative overflow-hidden"
+      style={{
+        background: C.darkBg,
+        borderTop: '1px solid rgba(46,125,79,0.35)',
+        borderBottom: '1px solid rgba(46,125,79,0.35)',
+        padding: '112px 24px',
+        position: 'relative',
+      }}
+    >
+      {/* Living Materials Classical Botanical Oil Canvas Backdrop */}
+      <div
+        className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-opacity duration-700"
+        style={{
+          backgroundImage: "url('/backgrounds/cambium-botanical-oil-canvas.webp')",
+          opacity: 0.88,
+        }}
+      />
+
+      {/* Atmospheric Chiaroscuro Vignette & Edge Fades (Dutch Master Landscape Lighting) */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `
+            linear-gradient(to bottom, ${C.darkBg} 0%, rgba(17,25,19,0.35) 15%, rgba(17,25,19,0.1) 50%, rgba(17,25,19,0.4) 85%, ${C.darkBg} 100%),
+            radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(17,25,19,0.72) 100%)
+          `,
+        }}
+      />
 
       <div style={{ maxWidth: 1320, margin: '0 auto', position: 'relative', zIndex: 10 }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
@@ -1436,17 +1463,17 @@ function WorkspaceSection() {
             <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
             01 / Literature Synthesis & Live Research Horizon
           </div>
-          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em' }} className="text-[#F5F4F0] mb-4">
+          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em' }} className="text-[#F5F4F0] mb-4 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
             Your research has a home. Discover, synthesize, and organize.
           </h2>
-          <p className="text-[16.5px] text-[rgba(245,244,240,0.72)] max-w-[660px] mx-auto leading-relaxed">
+          <p className="text-[16.5px] text-[rgba(245,244,240,0.85)] max-w-[660px] mx-auto leading-relaxed drop-shadow-[0_1px_8px_rgba(0,0,0,0.7)]">
             An authentic glimpse into your live scholar console: synthesis pipelines, active grant deadlines, emerging preprints, and collaborative vectors unified in one cohesive space.
           </p>
         </div>
 
         {/* Authentic Live Research Desk with Uniform Outline and Subtle Shadow */}
         <div className="w-full overflow-x-auto pb-4">
-          <div className="min-w-[1060px] max-w-[1320px] mx-auto rounded-2xl border border-[rgba(255,255,255,0.14)] bg-[#FAF7F0] overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.16),0_0_24px_rgba(0,0,0,0.22),0_4px_16px_rgba(0,0,0,0.18)] relative">
+          <div className="min-w-[1060px] max-w-[1320px] mx-auto rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[#FAF7F0] overflow-hidden shadow-[0_24px_70px_rgba(0,0,0,0.65),0_4px_20px_rgba(0,0,0,0.35),0_0_0_1px_rgba(255,255,255,0.12)] relative">
             {/* Top Header Bar */}
             <div className="px-5 py-3.5 bg-[#FAF7F0] dark:bg-[#131C15] border-b border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between gap-4">
               {/* Left Brand / Desk Identifier */}
