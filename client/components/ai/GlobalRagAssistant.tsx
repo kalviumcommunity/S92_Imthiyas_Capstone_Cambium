@@ -153,7 +153,7 @@ export function GlobalRagAssistant() {
           onClick={() => setIsOpen(true)}
           title="Open Cambium Scholarly RAG Copilot"
           aria-label="Open Cambium Scholarly RAG Copilot"
-          className="fixed bottom-6 right-[144px] max-sm:bottom-[76px] max-sm:right-6 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-[#3E6248] dark:bg-[#1E3A26] text-white shadow-xl hover:bg-[#204033] dark:hover:bg-[#284E34] hover:scale-105 transition-all duration-200 border border-[#FAF7F0]/20 dark:border-[#4ADE80]/30 cursor-pointer group"
+          className="fixed bottom-6 right-6 max-sm:bottom-[76px] max-sm:right-6 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-[#3E6248] dark:bg-[#1E3A26] text-white shadow-xl hover:bg-[#204033] dark:hover:bg-[#284E34] hover:scale-105 transition-all duration-200 border border-[#FAF7F0]/20 dark:border-[#4ADE80]/30 cursor-pointer group"
         >
           <Sparkles className="w-4 h-4 text-emerald-300 animate-pulse" />
           <span className="font-sans text-xs font-semibold tracking-wide">Ask Cambium RAG AI</span>

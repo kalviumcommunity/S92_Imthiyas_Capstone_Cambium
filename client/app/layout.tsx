@@ -4,7 +4,6 @@ import { QueryProvider } from "@/lib/query-provider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
-import { UniversalThemeGearbox } from "@/components/ui/theme-toggle";
 import OfflineSyncBanner from "@/components/OfflineSyncBanner";
 import { CookieConsent } from "@/components/CookieConsent";
 import "./globals.css";
@@ -218,7 +217,6 @@ export default function RootLayout({
             <ThemeProvider>
               <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "dummy-client-id"}>
                 {children}
-                <UniversalThemeGearbox />
                 <OfflineSyncBanner />
                 <CookieConsent />
               </GoogleOAuthProvider>

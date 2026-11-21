@@ -3460,57 +3460,6 @@ function Footer() {
   )
 }
 
-// ─── Human-Crafted Application Framework Component ───────────────────────────
-function StructuralSystem() {
-  const [open, setOpen] = useState(true)
-
-  if (!open) {
-    return (
-      <button
-        suppressHydrationWarning
-        onClick={() => setOpen(true)}
-        className="fixed bottom-[74px] right-6 z-40 bg-[#FAF7F0]/95 dark:bg-[#18231B]/95 text-[#3E6248] dark:text-[#4ADE80] p-2.5 rounded-full shadow-lg border border-[#E4DCCB] dark:border-[#28382C] hover:scale-105 hover:border-[#3E6248] dark:hover:border-[#4ADE80] transition-all cursor-pointer backdrop-blur-md"
-        title="View Identity System"
-        aria-label="View Identity System"
-      >
-        <User className="w-4 h-4" />
-      </button>
-    )
-  }
-
-  return (
-    <div className="fixed bottom-24 right-6 z-40 flex flex-col items-end w-[min(20rem,calc(100vw-2.5rem))] select-none print:hidden">
-      <div className="bg-[#FAF7F0]/95 dark:bg-[#18231B]/95 text-[#202920] dark:text-[#EDEAE2] rounded-xl p-2.5 shadow-lg border border-[#E4DCCB] dark:border-[#28382C] flex items-center justify-between gap-2.5 w-full backdrop-blur-md transition-all duration-200 hover:border-[#3E6248]/40 dark:hover:border-[#4ADE80]/40">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 shrink-0 flex items-center justify-center bg-[#E4DCCB]/50 dark:bg-[#202D23] rounded-lg text-[#3E6248] dark:text-[#4ADE80] border border-[#3E6248]/20 dark:border-[#4ADE80]/20">
-            <User className="w-3.5 h-3.5" />
-          </div>
-          <div className="flex flex-col min-w-0">
-            <span className="font-sans text-[10px] font-semibold tracking-[0.08em] uppercase text-[#3E6248] dark:text-[#4ADE80]">
-              Research tools
-            </span>
-            <span className="font-sans text-[11px] leading-4 text-[#62685E] dark:text-[#A3B899]">
-              Profiles, publications, and collaboration.
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center shrink-0">
-          <button
-            suppressHydrationWarning
-            onClick={() => setOpen(false)}
-            className="text-[#85877B] hover:text-[#202920] dark:hover:text-[#FAF7F0] p-1.5 rounded-full hover:bg-[#E4DCCB]/40 dark:hover:bg-[#202D23] transition-colors cursor-pointer"
-            title="Dismiss"
-            aria-label="Dismiss research tools notice"
-          >
-            ✕
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ─── App ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const hasReplayQuery = useSyncExternalStore(
@@ -3551,7 +3500,6 @@ export default function App() {
       <TestimonialsSection />
       <CTASection />
       <Footer />
-      <StructuralSystem />
     </div>
   )
 }
