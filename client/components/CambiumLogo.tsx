@@ -33,16 +33,40 @@ export function CambiumMark({
   theme?: "light" | "dark" | "forest" | "auto";
   className?: string;
 }) {
+  const isForcedLight = theme === "light";
+  const isForcedDark = theme === "dark" || theme === "forest";
+
   return (
     <div
       style={{ width: size, height: size, minWidth: size, minHeight: size }}
       className={`flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105 ${className}`}
     >
-      <img
-        src="/public_logo/cambium-logo-dark.svg"
-        alt="CAMBIUM RESEARCH Mark"
-        className="w-full h-full object-contain block transition-transform"
-      />
+      {isForcedLight ? (
+        <img
+          src="/public_logo/cambium-logo-light.svg"
+          alt="CAMBIUM RESEARCH Mark"
+          className="w-full h-full object-contain block transition-transform"
+        />
+      ) : isForcedDark ? (
+        <img
+          src="/public_logo/cambium-logo-dark.svg"
+          alt="CAMBIUM RESEARCH Mark"
+          className="w-full h-full object-contain block transition-transform"
+        />
+      ) : (
+        <>
+          <img
+            src="/public_logo/cambium-logo-light.svg"
+            alt="CAMBIUM RESEARCH Mark"
+            className="w-full h-full object-contain block transition-transform dark:hidden"
+          />
+          <img
+            src="/public_logo/cambium-logo-dark.svg"
+            alt="CAMBIUM RESEARCH Mark"
+            className="w-full h-full object-contain hidden transition-transform dark:block"
+          />
+        </>
+      )}
     </div>
   );
 }
