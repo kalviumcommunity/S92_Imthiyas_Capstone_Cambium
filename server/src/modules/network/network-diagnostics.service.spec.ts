@@ -28,7 +28,16 @@ describe('NetworkDiagnosticsService', () => {
     expect(ip).toBe('198.51.100.42');
   });
 
-  it('should return complete network diagnostics payload', () => {
+  it('should return complete network diagnostics payload including live ChatGateway stats', () => {
+    const mockGateway: any = {
+      getDiagnosticsSummary: () => ({
+        activeRooms: 3,
+        trackedPresenceMembers: 7,
+        activeSectionLocks: 2,
+      }),
+    };
+    const svcWithGateway = new NetworkDiagnosticsService(mockGateway);
+
     const req = {
       headers: {
         'x-forwarded-for': '192.0.2.1',
@@ -39,7 +48,7 @@ describe('NetworkDiagnosticsService', () => {
       secure: false,
     };
 
-    const diagnostics = service.getDiagnostics(req);
+    const diagnostics = svcWithGateway.getDiagnostics(req);
 
     expect(diagnostics.status).toBe('OPTIMAL');
     expect(diagnostics.clientConnection.ip).toBe('192.0.2.1');
@@ -47,5 +56,8 @@ describe('NetworkDiagnosticsService', () => {
     expect(diagnostics.clientConnection.protocol).toBe('HTTP/2.0');
     expect(diagnostics.server.nodeVersion).toBeDefined();
     expect(diagnostics.server.memoryRssMb).toBeGreaterThan(0);
+    expect(diagnostics.websocketGateway.activeRooms).toBe(3);
+    expect(diagnostics.websocketGateway.trackedPresenceMembers).toBe(7);
+    expect(diagnostics.websocketGateway.activeSectionLocks).toBe(2);
   });
 });

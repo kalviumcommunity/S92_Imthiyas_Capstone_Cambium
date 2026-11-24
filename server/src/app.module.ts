@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getDatabaseConfig } from './config/database.config';
 import { AppController } from './app.controller';
@@ -33,6 +33,7 @@ import { IdempotencyInterceptor } from './common/interceptors/idempotency.interc
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { EtagInterceptor } from './modules/network/etag.interceptor';
 import { GracefulDegradationInterceptor } from './common/resilience/graceful-degradation.interceptor';
+import { NetworkRateLimiterGuard } from './modules/network/network-rate-limiter.guard';
 
 import { DatabaseDiagnosticService } from './database/database-diagnostic.service';
 
@@ -70,6 +71,10 @@ import { DatabaseDiagnosticService } from './database/database-diagnostic.servic
   controllers: [AppController],
   providers: [
     DatabaseDiagnosticService,
+    {
+      provide: APP_GUARD,
+      useClass: NetworkRateLimiterGuard,
+    },
     {
       provide: APP_INTERCEPTOR,
       useClass: TelemetryInterceptor,

@@ -1,15 +1,4 @@
-function resolveApiBase(): string {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
-  }
-  if (typeof window !== "undefined") {
-    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    if (!isLocal) {
-      return "https://cambium-api-ufj3.onrender.com/api";
-    }
-  }
-  return "http://localhost:5000/api";
-}
+import { apiFetch, resolveApiBase, resolveApiV1Base, generateRequestId } from "./http-client";
 
 export const API_BASE = resolveApiBase();
 
@@ -18,7 +7,7 @@ function getAuthHeaders(): HeadersInit {
     "Content-Type": "application/json",
   };
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("cambium_token");
+    const token = localStorage.getItem("cambium_token") || localStorage.getItem("cambium_access_token");
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
@@ -715,18 +704,12 @@ export interface PersistentNotificationItem {
 }
 
 function getApiV1Base(): string {
-  const clean = API_BASE.replace(/\/$/, "");
-  if (clean.endsWith("/v1")) return clean;
-  if (clean.endsWith("/api")) return `${clean}/v1`;
-  return `${clean}/api/v1`;
+  return resolveApiV1Base();
 }
 
 export async function getProjectComments(projectId: string): Promise<WorkspaceCommentItem[]> {
   try {
-    const res = await fetch(`${getApiV1Base()}/projects/${projectId}/comments`, {
-      headers: getAuthHeaders(),
-      credentials: "include",
-    });
+    const res = await apiFetch(`${getApiV1Base()}/projects/${projectId}/comments`);
     if (!res.ok) return [];
     const json = await res.json();
     return Array.isArray(json) ? json : json.data || [];
@@ -739,10 +722,9 @@ export async function addProjectComment(
   projectId: string,
   payload: { content: string; sectionId?: string; parentId?: string }
 ): Promise<WorkspaceCommentItem> {
-  const res = await fetch(`${getApiV1Base()}/projects/${projectId}/comments`, {
+  const res = await apiFetch(`${getApiV1Base()}/projects/${projectId}/comments`, {
     method: "POST",
-    headers: getAuthHeaders(),
-    credentials: "include",
+    idempotencyKey: generateRequestId(),
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -756,10 +738,8 @@ export async function resolveProjectComment(
   projectId: string,
   commentId: string
 ): Promise<WorkspaceCommentItem> {
-  const res = await fetch(`${getApiV1Base()}/projects/${projectId}/comments/${commentId}/resolve`, {
+  const res = await apiFetch(`${getApiV1Base()}/projects/${projectId}/comments/${commentId}/resolve`, {
     method: "PUT",
-    headers: getAuthHeaders(),
-    credentials: "include",
   });
   if (!res.ok) {
     throw new Error(`Failed to resolve comment (${res.status})`);
@@ -770,10 +750,7 @@ export async function resolveProjectComment(
 
 export async function getMyWorkspaceProjects(): Promise<any[]> {
   try {
-    const res = await fetch(`${getApiV1Base()}/projects`, {
-      headers: getAuthHeaders(),
-      credentials: "include",
-    });
+    const res = await apiFetch(`${getApiV1Base()}/projects`);
     if (!res.ok) return [];
     const json = await res.json();
     return Array.isArray(json) ? json : json.data || [];
@@ -787,10 +764,9 @@ export async function createWorkspaceProject(payload: {
   description?: string;
   visibility?: "PUBLIC" | "LAB_ONLY" | "PRIVATE";
 }): Promise<any> {
-  const res = await fetch(`${getApiV1Base()}/projects`, {
+  const res = await apiFetch(`${getApiV1Base()}/projects`, {
     method: "POST",
-    headers: getAuthHeaders(),
-    credentials: "include",
+    idempotencyKey: generateRequestId(),
     body: JSON.stringify(payload),
   });
   const json = await res.json();
@@ -799,10 +775,9 @@ export async function createWorkspaceProject(payload: {
 }
 
 export async function acceptWorkspaceInvitation(projectId: string): Promise<any> {
-  const res = await fetch(`${getApiV1Base()}/projects/${projectId}/invitations/accept`, {
+  const res = await apiFetch(`${getApiV1Base()}/projects/${projectId}/invitations/accept`, {
     method: "POST",
-    headers: getAuthHeaders(),
-    credentials: "include",
+    idempotencyKey: generateRequestId(),
   });
   const json = await res.json();
   if (!res.ok) throw new Error(json.message || "Failed to accept invitation");
@@ -810,10 +785,9 @@ export async function acceptWorkspaceInvitation(projectId: string): Promise<any>
 }
 
 export async function declineWorkspaceInvitation(projectId: string): Promise<any> {
-  const res = await fetch(`${getApiV1Base()}/projects/${projectId}/invitations/decline`, {
+  const res = await apiFetch(`${getApiV1Base()}/projects/${projectId}/invitations/decline`, {
     method: "POST",
-    headers: getAuthHeaders(),
-    credentials: "include",
+    idempotencyKey: generateRequestId(),
   });
   const json = await res.json();
   if (!res.ok) throw new Error(json.message || "Failed to decline invitation");
@@ -832,10 +806,7 @@ export async function getMyNotifications(params?: {
   if (params?.unreadOnly) query.set("unreadOnly", "true");
   if (params?.type) query.set("type", params.type);
 
-  const res = await fetch(`${getApiV1Base()}/notifications?${query.toString()}`, {
-    headers: getAuthHeaders(),
-    credentials: "include",
-  });
+  const res = await apiFetch(`${getApiV1Base()}/notifications?${query.toString()}`);
   if (!res.ok) return { data: [], total: 0, unreadCount: 0 };
   const json = await res.json();
   return {
@@ -847,10 +818,7 @@ export async function getMyNotifications(params?: {
 
 export async function getUnreadNotificationCount(): Promise<number> {
   try {
-    const res = await fetch(`${getApiV1Base()}/notifications/count`, {
-      headers: getAuthHeaders(),
-      credentials: "include",
-    });
+    const res = await apiFetch(`${getApiV1Base()}/notifications/count`);
     if (!res.ok) return 0;
     const json = await res.json();
     return typeof json.count === "number" ? json.count : 0;
@@ -860,28 +828,22 @@ export async function getUnreadNotificationCount(): Promise<number> {
 }
 
 export async function markNotificationRead(id: string): Promise<void> {
-  const res = await fetch(`${getApiV1Base()}/notifications/${id}/read`, {
+  const res = await apiFetch(`${getApiV1Base()}/notifications/${id}/read`, {
     method: "PUT",
-    headers: getAuthHeaders(),
-    credentials: "include",
   });
   if (!res.ok) throw new Error("Failed to mark notification read");
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
-  const res = await fetch(`${getApiV1Base()}/notifications/read-all`, {
+  const res = await apiFetch(`${getApiV1Base()}/notifications/read-all`, {
     method: "PUT",
-    headers: getAuthHeaders(),
-    credentials: "include",
   });
   if (!res.ok) throw new Error("Failed to mark all notifications read");
 }
 
 export async function deleteNotificationItem(id: string): Promise<void> {
-  const res = await fetch(`${getApiV1Base()}/notifications/${id}`, {
+  const res = await apiFetch(`${getApiV1Base()}/notifications/${id}`, {
     method: "DELETE",
-    headers: getAuthHeaders(),
-    credentials: "include",
   });
   if (!res.ok) throw new Error("Failed to dismiss notification");
 }

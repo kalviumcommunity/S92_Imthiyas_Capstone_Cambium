@@ -10,13 +10,14 @@ describe('NetworkRateLimiterGuard', () => {
     guard = new NetworkRateLimiterGuard();
   });
 
-  const createMockContext = (ip = '198.51.100.1'): ExecutionContext => {
-    const headers: Record<string, string> = { 'x-real-ip': ip };
+  const createMockContext = (ip = '198.51.100.1', extraHeaders: Record<string, string> = {}): ExecutionContext => {
+    const headers: Record<string, string> = { 'x-real-ip': ip, ...extraHeaders };
     const responseHeaders: Record<string, string> = {};
 
     return {
+      getType: () => 'http',
       switchToHttp: () => ({
-        getRequest: () => ({ headers, socket: {} }),
+        getRequest: () => ({ headers, socket: {}, url: '/api/v1/projects' }),
         getResponse: () => ({
           setHeader: (name: string, value: string) => {
             responseHeaders[name.toLowerCase()] = value;
@@ -32,6 +33,17 @@ describe('NetworkRateLimiterGuard', () => {
     const context = createMockContext();
     const canActivate = guard.canActivate(context);
     expect(canActivate).toBe(true);
+  });
+
+  it('should prevent rate-limit bypass via spoofed x-user-id header', () => {
+    const ip = '203.0.113.99';
+    for (let i = 0; i < 120; i++) {
+      guard.canActivate(createMockContext(ip, { 'x-user-id': `spoofed-${i}` }));
+    }
+
+    expect(() =>
+      guard.canActivate(createMockContext(ip, { 'x-user-id': 'spoofed-new' })),
+    ).toThrowError(HttpException);
   });
 
   it('should throw 429 Too Many Requests when request burst exceeds configured limit', () => {

@@ -1,8 +1,20 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { TelemetryService } from './telemetry.service';
+import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../modules/auth/guards/roles.guard';
+import { Roles } from '../../modules/auth/decorators/roles.decorator';
+import { UserRole } from '../../modules/users/entities/user.entity';
 
 @ApiTags('Telemetry & Observability')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(
+  UserRole.SUPER_ADMIN,
+  UserRole.RD_DIRECTOR,
+  UserRole.UNIVERSITY_LEADERSHIP,
+  UserRole.COMPLIANCE_OFFICER,
+)
 @Controller('api/telemetry')
 export class TelemetryController {
   constructor(private readonly telemetryService: TelemetryService) {}

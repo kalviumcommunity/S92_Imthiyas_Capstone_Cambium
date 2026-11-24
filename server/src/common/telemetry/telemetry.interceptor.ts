@@ -5,14 +5,17 @@ import {
   CallHandler,
   Optional,
   Inject,
+  Logger,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
+import { randomUUID } from 'crypto';
 import { TelemetryService } from './telemetry.service';
 
 @Injectable()
 export class TelemetryInterceptor implements NestInterceptor {
   private readonly telemetryService: TelemetryService;
+  private readonly logger = new Logger(TelemetryInterceptor.name);
 
   constructor(
     @Optional()
@@ -34,8 +37,15 @@ export class TelemetryInterceptor implements NestInterceptor {
     const req = context.switchToHttp().getRequest();
     const res = context.switchToHttp().getResponse();
 
+    const incomingReqId = req.headers['x-request-id'];
+    const requestId =
+      typeof incomingReqId === 'string' && incomingReqId.trim().length > 0
+        ? incomingReqId.trim().slice(0, 64)
+        : randomUUID();
+    req.requestId = requestId;
+
     const parentTraceparent = req.headers['traceparent'] || req.headers['x-traceparent'];
-    const path = req.route?.path || req.url || 'unknown';
+    const path = req.route?.path || req.url?.split('?')[0] || 'unknown';
     const method = req.method || 'GET';
 
     const { span, end, setAttribute } = this.telemetryService.startSpan(
@@ -45,16 +55,14 @@ export class TelemetryInterceptor implements NestInterceptor {
         kind: 'SERVER',
         attributes: {
           'http.method': method,
-          'http.target': req.url,
           'http.route': path,
-          'http.user_agent': req.headers['user-agent'] || 'unknown',
-          'http.client_ip': req.ip || req.connection?.remoteAddress,
+          'cambium.request_id': requestId,
         },
       },
     );
 
-    // Inject W3C TraceContext into response headers
     if (res && typeof res.setHeader === 'function') {
+      res.setHeader('X-Request-Id', requestId);
       res.setHeader('x-trace-id', span.traceId);
       res.setHeader('x-span-id', span.spanId);
       res.setHeader('traceparent', this.telemetryService.formatTraceparent(span.traceId, span.spanId));
@@ -64,7 +72,20 @@ export class TelemetryInterceptor implements NestInterceptor {
       tap(() => {
         const statusCode = res.statusCode || 200;
         setAttribute('http.status_code', statusCode);
-        end(statusCode >= 400 ? 'ERROR' : 'OK');
+        const completed = end(statusCode >= 400 ? 'ERROR' : 'OK');
+        if (statusCode >= 500 || (completed.durationMs ?? 0) > 1500) {
+          this.logger.log(
+            JSON.stringify({
+              level: statusCode >= 500 ? 'error' : 'warn',
+              requestId,
+              traceId: span.traceId,
+              method,
+              route: path,
+              statusCode,
+              durationMs: completed.durationMs,
+            }),
+          );
+        }
       }),
       catchError((err) => {
         const statusCode = err.status || 500;

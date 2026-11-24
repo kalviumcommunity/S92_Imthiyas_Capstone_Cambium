@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ChatGateway } from '../chat/chat.gateway';
 
 export interface NetworkDiagnosticsPayload {
@@ -23,6 +23,7 @@ export interface NetworkDiagnosticsPayload {
     status: 'ACTIVE' | 'STANDBY';
     activeRooms: number;
     trackedPresenceMembers: number;
+    activeSectionLocks: number;
     adapter: 'Redis' | 'In-Memory Fallback';
   };
 }
@@ -31,7 +32,7 @@ export interface NetworkDiagnosticsPayload {
 export class NetworkDiagnosticsService {
   private readonly logger = new Logger(NetworkDiagnosticsService.name);
 
-  constructor(private readonly chatGateway?: ChatGateway) {}
+  constructor(@Optional() private readonly chatGateway?: ChatGateway) {}
 
   getClientIp(req: any): string {
     const forwarded = req.headers['x-forwarded-for'];
@@ -48,7 +49,12 @@ export class NetworkDiagnosticsService {
     const forwardedFor = req.headers['x-forwarded-for'] as string | undefined;
     const realIp = req.headers['x-real-ip'] as string | undefined;
     const userAgent = req.headers['user-agent'] as string | undefined;
-    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+    const isSecure = Boolean(req.secure || req.headers['x-forwarded-proto'] === 'https');
+    const wsStats = this.chatGateway?.getDiagnosticsSummary?.() || {
+      activeRooms: 0,
+      trackedPresenceMembers: 0,
+      activeSectionLocks: 0,
+    };
 
     return {
       status: 'OPTIMAL',
@@ -69,10 +75,11 @@ export class NetworkDiagnosticsService {
         isSecure,
       },
       websocketGateway: {
-        status: 'ACTIVE',
-        activeRooms: 0,
-        trackedPresenceMembers: 0,
-        adapter: process.env.REDIS_HOST ? 'Redis' : 'In-Memory Fallback',
+        status: this.chatGateway ? 'ACTIVE' : 'STANDBY',
+        activeRooms: wsStats.activeRooms,
+        trackedPresenceMembers: wsStats.trackedPresenceMembers,
+        activeSectionLocks: wsStats.activeSectionLocks,
+        adapter: process.env.REDIS_HOST || process.env.REDIS_URL ? 'Redis' : 'In-Memory Fallback',
       },
     };
   }

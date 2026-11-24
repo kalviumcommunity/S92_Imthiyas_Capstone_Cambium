@@ -100,11 +100,12 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
     BackgroundJob,
   ];
 
-  // PgBouncer pool sizing (50 clients per pod, sustaining 5,000+ cluster connections)
+  // Connection pool & query timeout sizing (safe for managed free-tier PG / PgBouncer)
   const poolExtra: Record<string, any> = {
-    max: parseInt(process.env.DB_POOL_MAX || '50', 10),
+    max: parseInt(process.env.DB_POOL_MAX || '20', 10),
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
+    statement_timeout: parseInt(process.env.DB_STATEMENT_TIMEOUT_MS || '15000', 10),
   };
   if (isSsl) {
     poolExtra.ssl = sslOption;
