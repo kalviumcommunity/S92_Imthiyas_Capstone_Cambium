@@ -84,20 +84,31 @@ export default function GlobalSidebar() {
   const [isHovered, setIsHovered] = useState(false);
   const [pinFallback, setPinFallback] = useState<boolean | null>(null);
   const [notifCount, setNotifCount] = useState(0);
-  const { isConnected: isSocketLive } = useSocket({ namespace: '/chat', autoConnect: true });
+  const { isConnected: isSocketLive, onEvent } = useSocket({ namespace: '/chat', autoConnect: true });
   const storedPin = useBrowserStorageValue("local", "cambium_sidebar_pinned");
   const isPinned = pinFallback ?? storedPin === "true";
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch live notification count from backend
+  // Fetch live notification count from backend and update on real-time socket push
   useEffect(() => {
     const fetchNotifCount = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-        const token = typeof window !== 'undefined' ? localStorage.getItem('cambium_access_token') : null;
+        const isLocal =
+          typeof window !== 'undefined' &&
+          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        const defaultApi = isLocal ? 'http://localhost:5000' : 'https://cambium-api-ufj3.onrender.com';
+        const rawUrl = (process.env.NEXT_PUBLIC_API_URL || defaultApi).replace(/\/$/, '');
+        const apiV1 = rawUrl.endsWith('/v1')
+          ? rawUrl
+          : `${rawUrl.replace(/\/api$/, '')}/api/v1`;
+        const token =
+          typeof window !== 'undefined'
+            ? localStorage.getItem('cambium_token') || localStorage.getItem('cambium_access_token')
+            : null;
         if (!token) return;
-        const res = await fetch(`${apiUrl}/api/notifications/count`, {
+        const res = await fetch(`${apiV1}/notifications/count`, {
           headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
           signal: AbortSignal.timeout(4000),
         });
         if (res.ok) {
@@ -105,13 +116,19 @@ export default function GlobalSidebar() {
           setNotifCount(typeof data.count === 'number' ? data.count : 0);
         }
       } catch {
-        // Non-blocking — backend may not be running in dev
+        // Non-blocking
       }
     };
     fetchNotifCount();
     const interval = setInterval(fetchNotifCount, 60_000);
-    return () => clearInterval(interval);
-  }, []);
+    const unsubNotif = onEvent('notification_created', () => {
+      setNotifCount((prev) => prev + 1);
+    });
+    return () => {
+      clearInterval(interval);
+      unsubNotif();
+    };
+  }, [onEvent]);
 
   const togglePin = () => {
     const next = !isPinned;

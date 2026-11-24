@@ -15,45 +15,75 @@ interface UseSocketReturn {
   socket: Socket | null;
   isConnected: boolean;
   connectionState: SocketConnectionState;
+  reconnectCount: number;
   latencyMs: number | null;
   pingGateway: () => Promise<number | null>;
   joinRoom: (room: string, user: { id: string; name: string; avatar?: string }) => void;
   leaveRoom: (room: string, userId?: string) => void;
   sendMessage: (room: string, message: string, sender: { id: string; name: string; avatar?: string }) => void;
   sendTyping: (room: string, userId: string, userName: string, isTyping: boolean) => void;
+  lockSection: (room: string, sectionId: string) => void;
+  unlockSection: (room: string, sectionId: string) => void;
   emitEvent: (event: string, data: any) => void;
   onEvent: (event: string, handler: (...args: any[]) => void) => () => void;
 }
 
 let globalSocket: Socket | null = null;
+const joinedRoomsRegistry = new Map<string, { id: string; name: string; avatar?: string }>();
+const seenEventIds = new Set<string>();
+
+function trackSeenEvent(eventId?: string): boolean {
+  if (!eventId) return false;
+  if (seenEventIds.has(eventId)) return true;
+  seenEventIds.add(eventId);
+  if (seenEventIds.size > 500) {
+    const first = seenEventIds.values().next().value;
+    if (first) seenEventIds.delete(first);
+  }
+  return false;
+}
 
 export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
   const { namespace = '/chat', autoConnect = true } = options;
   const [isConnected, setIsConnected] = useState(false);
   const [connectionState, setConnectionState] = useState<SocketConnectionState>('CONNECTING');
+  const [reconnectCount, setReconnectCount] = useState(0);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const hasConnectedOnceRef = useRef(false);
 
   useEffect(() => {
     if (!autoConnect) return;
 
     const isBrowser = typeof window !== 'undefined';
-    const isLocal = isBrowser && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const isLocal =
+      isBrowser &&
+      (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
     const defaultHost = isLocal ? 'http://localhost:5000' : 'https://cambium-api-ufj3.onrender.com';
     const rawUrl = process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_API_URL || defaultHost;
     const wsUrl = rawUrl.replace(/\/api(?:\/v1)?\/?$/, '');
-    const token = typeof window !== 'undefined' ? (localStorage.getItem('cambium_access_token') || localStorage.getItem('cambium_token')) : null;
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('cambium_token') || localStorage.getItem('cambium_access_token')
+        : null;
 
-    if (!globalSocket || !globalSocket.connected) {
+    if (!token) {
+      setConnectionState('OFFLINE');
+      setIsConnected(false);
+      return;
+    }
+
+    if (!globalSocket || (!globalSocket.connected && !globalSocket.active)) {
       globalSocket = io(`${wsUrl}${namespace}`, {
-        auth: token ? { token } : undefined,
+        auth: { token },
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 10000,
         randomizationFactor: 0.5,
-        reconnectionAttempts: 10,
+        reconnectionAttempts: 12,
         timeout: 10000,
+        withCredentials: true,
       });
     }
 
@@ -62,6 +92,16 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
     const handleConnect = () => {
       setIsConnected(true);
       setConnectionState('CONNECTED');
+
+      // Rejoin any active workspace rooms after connection recovery
+      for (const [room, user] of joinedRoomsRegistry.entries()) {
+        globalSocket?.emit('join_room', { room, user });
+      }
+
+      if (hasConnectedOnceRef.current) {
+        setReconnectCount((c) => c + 1);
+      }
+      hasConnectedOnceRef.current = true;
     };
 
     const handleDisconnect = (reason: string) => {
@@ -74,6 +114,11 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
     };
 
     const handleReconnectFailed = () => {
+      setConnectionState('OFFLINE');
+    };
+
+    const handleAuthError = () => {
+      setIsConnected(false);
       setConnectionState('OFFLINE');
     };
 
@@ -108,6 +153,7 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
     globalSocket.on('disconnect', handleDisconnect);
     globalSocket.on('reconnect_attempt', handleReconnectAttempt);
     globalSocket.on('reconnect_failed', handleReconnectFailed);
+    globalSocket.on('auth_error', handleAuthError);
     globalSocket.on('presence_update', handlePresenceUpdate);
 
     if (typeof window !== 'undefined') {
@@ -116,6 +162,7 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
     }
 
     if (globalSocket.connected) {
+      hasConnectedOnceRef.current = true;
       setIsConnected(true);
       setConnectionState('CONNECTED');
     }
@@ -125,6 +172,7 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
       globalSocket?.off('disconnect', handleDisconnect);
       globalSocket?.off('reconnect_attempt', handleReconnectAttempt);
       globalSocket?.off('reconnect_failed', handleReconnectFailed);
+      globalSocket?.off('auth_error', handleAuthError);
       globalSocket?.off('presence_update', handlePresenceUpdate);
 
       if (typeof window !== 'undefined') {
@@ -137,20 +185,27 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
   const pingGateway = useCallback(async (): Promise<number | null> => {
     const start = Date.now();
     try {
-      const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1').replace(/\/$/, '');
-      const res = await fetch(`${apiUrl}/network/ping`, { cache: 'no-store' });
+      const isBrowser = typeof window !== 'undefined';
+      const isLocal =
+        isBrowser &&
+        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+      const fallbackBase = isLocal
+        ? 'http://localhost:5000/api/v1'
+        : 'https://cambium-api-ufj3.onrender.com/api/v1';
+      const rawApi = (process.env.NEXT_PUBLIC_API_URL || fallbackBase).replace(/\/$/, '');
+      const base = rawApi.endsWith('/v1') ? rawApi : `${rawApi.replace(/\/api$/, '')}/api/v1`;
+      const res = await fetch(`${base}/network/ping`, { cache: 'no-store' });
       if (res.ok) {
         const roundtrip = Date.now() - start;
         setLatencyMs(roundtrip);
         return roundtrip;
       }
     } catch {
-      // Fallback local calculation
+      // Non-blocking ping failure
     }
     return null;
   }, []);
 
-  // Periodic latency measurement every 45s
   useEffect(() => {
     if (!isConnected) return;
     pingGateway();
@@ -159,19 +214,35 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
   }, [isConnected, pingGateway]);
 
   const joinRoom = useCallback((room: string, user: { id: string; name: string; avatar?: string }) => {
+    joinedRoomsRegistry.set(room, user);
     socketRef.current?.emit('join_room', { room, user });
   }, []);
 
-  const leaveRoom = useCallback((room: string, userId?: string) => {
-    socketRef.current?.emit('leave_room', { room, userId });
+  const leaveRoom = useCallback((room: string) => {
+    joinedRoomsRegistry.delete(room);
+    socketRef.current?.emit('leave_room', { room });
   }, []);
 
-  const sendMessage = useCallback((room: string, message: string, sender: { id: string; name: string; avatar?: string }) => {
-    socketRef.current?.emit('send_message', { room, message, sender });
+  const sendMessage = useCallback(
+    (room: string, message: string, _sender: { id: string; name: string; avatar?: string }) => {
+      socketRef.current?.emit('send_message', { room, message });
+    },
+    [],
+  );
+
+  const sendTyping = useCallback(
+    (room: string, _userId: string, _userName: string, isTyping: boolean) => {
+      socketRef.current?.emit('typing', { room, isTyping });
+    },
+    [],
+  );
+
+  const lockSection = useCallback((room: string, sectionId: string) => {
+    socketRef.current?.emit('lock_section', { room, sectionId });
   }, []);
 
-  const sendTyping = useCallback((room: string, userId: string, userName: string, isTyping: boolean) => {
-    socketRef.current?.emit('typing', { room, userId, userName, isTyping });
+  const unlockSection = useCallback((room: string, sectionId: string) => {
+    socketRef.current?.emit('unlock_section', { room, sectionId });
   }, []);
 
   const emitEvent = useCallback((event: string, data: any) => {
@@ -179,20 +250,31 @@ export function useSocket(options: UseSocketOptions = {}): UseSocketReturn {
   }, []);
 
   const onEvent = useCallback((event: string, handler: (...args: any[]) => void) => {
-    socketRef.current?.on(event, handler);
-    return () => { socketRef.current?.off(event, handler); };
+    const wrapped = (data: any, ...rest: any[]) => {
+      if (data && typeof data === 'object' && data.eventId && trackSeenEvent(data.eventId)) {
+        return;
+      }
+      handler(data, ...rest);
+    };
+    socketRef.current?.on(event, wrapped);
+    return () => {
+      socketRef.current?.off(event, wrapped);
+    };
   }, []);
 
   return {
     socket: socketRef.current,
     isConnected,
     connectionState,
+    reconnectCount,
     latencyMs,
     pingGateway,
     joinRoom,
     leaveRoom,
     sendMessage,
     sendTyping,
+    lockSection,
+    unlockSection,
     emitEvent,
     onEvent,
   };

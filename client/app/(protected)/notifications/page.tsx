@@ -35,97 +35,7 @@ const SparkleIcon = () => (
   </svg>
 );
 
-const initialNotifications: NotificationItem[] = [
-  {
-    id: 1,
-    read: false,
-    type: "collaboration",
-    category: "Peer Commentary",
-    title: "Comment on Foundation Models in Healthcare",
-    sender: "Dr. Elena Park",
-    senderRole: "Stanford Medicine · Lead AI Fellow",
-    avatarInitials: "EP",
-    avatarBg: "bg-[#DCE6D7] text-[#3E6248]",
-    summary: (
-      <span className="font-sans">
-        <strong className="font-semibold text-[#202920]">Dr. Elena Park</strong>{" "}
-        <span className="text-[#62685E]">commented on</span>{" "}
-        <strong className="font-semibold text-[#202920]">Foundation Models in Healthcare</strong>
-        <span className="text-[#62685E]">.</span>
-      </span>
-    ),
-    timestamp: "2m ago",
-    dateStr: "Today, 1:04 PM",
-    body: "I reviewed your draft on Section 3.4 (Domain shift resistance across clinical imaging benchmarks). The comparison table on page 14 is exceptionally well-structured and aligns with our multi-center cohort findings. Could we schedule a brief 15-minute sync to finalize the multi-institutional validation protocol before the preprint release on Thursday?",
-    actionLabel: "View Draft in Workspace",
-    actionHref: "/workspace",
-  },
-  {
-    id: 2,
-    read: false,
-    type: "system",
-    category: "Opportunity Match",
-    title: "NSF AI Research Fellowship (98.4% Match)",
-    sender: "Cambium Opportunity Engine",
-    senderRole: "Automated Scholarly Matching",
-    icon: <SparkleIcon />,
-    summary: (
-      <span className="font-sans">
-        <span className="text-[#62685E]">New grant match:</span>{" "}
-        <strong className="font-semibold text-[#202920]">NSF AI Research Fellowship</strong>
-        <span className="text-[#62685E]">.</span>
-      </span>
-    ),
-    timestamp: "1h ago",
-    dateStr: "Today, 12:15 PM",
-    body: "Your research vector has been matched with 98.4% relevance to the NSF AI Research Fellowship 2026. The committee seeks interdisciplinary inquiries combining federated architectures with healthcare reproducibility. Award funding: $175,000/yr for 3 years. Application closes in 42 days.",
-    actionLabel: "Inspect in Opportunity Hub",
-    actionHref: "/opportunities",
-  },
-  {
-    id: 3,
-    read: true,
-    type: "collaboration",
-    category: "Co-Author Invitation",
-    title: "Collaboration Accepted",
-    sender: "Dr. Arjun Rao",
-    senderRole: "Max Planck Institute · Associate PI",
-    avatarInitials: "AR",
-    avatarBg: "bg-[#F2EBDD] text-[#8A5A12]",
-    summary: (
-      <span className="font-sans">
-        <strong className="font-semibold text-[#202920]">Dr. Arjun Rao</strong>{" "}
-        <span className="text-[#62685E]">accepted your collaboration request.</span>
-      </span>
-    ),
-    timestamp: "Yesterday",
-    dateStr: "Oct 3, 2026 · 4:40 PM",
-    body: "Dr. Arjun Rao accepted your co-authorship invitation on 'Neuro-symbolic Clinical Synthesis'. Shared citation graphs, draft notes, and experiment telemetry are now synchronized between your workspaces.",
-    actionLabel: "Open Co-Author Space",
-    actionHref: "/workspace",
-  },
-  {
-    id: 4,
-    read: true,
-    type: "system",
-    category: "DOI Minting",
-    title: "DOI Minted: 10.1038/CAMBIUM-2026.04",
-    sender: "Crossref & Cambium Registrar",
-    senderRole: "Permanent Record System",
-    icon: <SparkleIcon />,
-    summary: (
-      <span className="font-sans">
-        <span className="text-[#62685E]">Permanent identifier registered:</span>{" "}
-        <strong className="font-semibold text-[#202920]">10.1038/CAMBIUM-2026.04</strong>
-      </span>
-    ),
-    timestamp: "2d ago",
-    dateStr: "Oct 2, 2026 · 9:18 AM",
-    body: "Your preprint 'Synthetic Biological Computation' has received its canonical DOI. Metadata records have been registered across Crossref, PubMed Central, and OpenAlex. Citation tracking is actively monitoring incoming references.",
-    actionLabel: "View in Publications Matrix",
-    actionHref: "/publications",
-  },
-];
+const initialNotifications: NotificationItem[] = [];
 
 function NotificationCard({
   notif,
@@ -246,18 +156,18 @@ export default function NotificationsPage() {
   const { toast } = useToast();
 
   // Connect to real-time distributed SSE & Socket bus
-  const { alerts, isSseConnected } = useRealtimeEvents();
+  const { alerts, isSseConnected, markAlertRead, clearAlerts, refreshAlerts } = useRealtimeEvents();
   const realtimeNotifications = useMemo(
     () =>
       alerts.map((alert) => ({
-        id: `sse:${alert.id}`,
+        id: alert.id,
         read: realtimeReadOverrides[alert.id] ?? alert.read,
-        type: alert.type === "deadline" ? "system" as const : "collaboration" as const,
+        type: alert.type === "collaboration" || alert.type === "mention" ? "collaboration" as const : "system" as const,
         category: alert.type.toUpperCase(),
         title: alert.title,
-        sender: "Cambium Event Stream",
-        senderRole: "Distributed SSE Bus",
-        avatarInitials: "SSE",
+        sender: "Cambium Notification Ledger",
+        senderRole: "Persistent Event Stream",
+        avatarInitials: "CB",
         avatarBg: "bg-[#DCE6D7] text-[#3E6248]",
         icon: <SparkleIcon />,
         summary: (
@@ -265,10 +175,10 @@ export default function NotificationsPage() {
             <strong className="font-semibold text-[#202920]">{alert.title}</strong>
           </span>
         ),
-        timestamp: "Just now",
-        dateStr: "Live Delivery",
+        timestamp: alert.timestamp ? new Date(alert.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Recent",
+        dateStr: alert.timestamp ? new Date(alert.timestamp).toLocaleDateString() : "Persisted Record",
         body: alert.message,
-        actionLabel: "Inspect Event",
+        actionLabel: "Open Related Workspace",
         actionHref: alert.link || "/dashboard",
       })),
     [alerts, realtimeReadOverrides]
@@ -278,68 +188,22 @@ export default function NotificationsPage() {
     [notifications, realtimeNotifications]
   );
 
-  const handleSimulateLiveEvent = () => {
-    const mockEvents: NotificationItem[] = [
-      {
-        id: Date.now(),
-        read: false,
-        type: "collaboration",
-        category: "Peer Review",
-        title: "New Structured COPE Review Submitted",
-        sender: "Dr. Marcus Thorne",
-        senderRole: "Harvard Medical School · Senior Reviewer",
-        avatarInitials: "MT",
-        avatarBg: "bg-[#DCE6D7] text-[#3E6248]",
-        summary: (
-          <span className="font-sans">
-            <strong className="font-semibold text-[#202920]">Dr. Marcus Thorne</strong>{" "}
-            <span className="text-[#62685E]">submitted a 4.9/5.0 COPE review on your preprint.</span>
-          </span>
-        ),
-        timestamp: "Just now",
-        dateStr: "Live SSE Dispatch",
-        body: "Dr. Marcus Thorne completed a verified COPE review on 'Multimodal Foundation Models in Clinical Imaging'. Methodology and reproducibility rated 5/5 with recommendations for preprint publication.",
-        actionLabel: "View in Community Feed",
-        actionHref: "/community",
-      },
-      {
-        id: Date.now() + 1,
-        read: false,
-        type: "system",
-        category: "Grant Match",
-        title: "NIH R01 Targeted Delivery Program (97.8% Fit)",
-        sender: "Cambium Discovery Engine",
-        senderRole: "Real-Time Opportunity Stream",
-        icon: <SparkleIcon />,
-        summary: (
-          <span className="font-sans">
-            <span className="text-[#62685E]">New opportunity alert:</span>{" "}
-            <strong className="font-semibold text-[#202920]">NIH R01 Nanoparticle Delivery</strong>
-          </span>
-        ),
-        timestamp: "Just now",
-        dateStr: "Live SSE Dispatch",
-        body: "Your vector profile matched with 97.8% cosine similarity to a new NIH R01 call with $2.5M total award ceiling. Submission window open for 45 days.",
-        actionLabel: "Inspect Opportunity",
-        actionHref: "/opportunities",
-      },
-    ];
-
-    const chosen = mockEvents[Math.floor(Math.random() * mockEvents.length)];
-    setNotifications((prev) => [chosen, ...prev]);
+  const handleRefreshInbox = async () => {
+    await refreshAlerts();
     toast({
-      title: `Live SSE Notification: ${chosen.title}`,
-      description: `Dispatched from ${chosen.sender} via /api/v1/events/stream`,
-      variant: "success",
+      title: "Inbox synchronized",
+      description: "Fetched latest persisted notifications from Cambium API.",
+      variant: "info",
     });
   };
 
-  const markAllRead = () => {
+  const markAllRead = async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     setRealtimeReadOverrides((prev) => ({
       ...prev,
       ...Object.fromEntries(alerts.map((alert) => [alert.id, true])),
     }));
+    await clearAlerts();
     toast({
       title: "All notifications marked as read",
       description: "Your inbox ledger has been synchronized.",
@@ -349,25 +213,21 @@ export default function NotificationsPage() {
 
   const toggleMarkRead = (e: React.MouseEvent, id: number | string) => {
     e.stopPropagation();
-    if (typeof id === "string" && id.startsWith("sse:")) {
-      const alertId = id.slice(4);
-      setRealtimeReadOverrides((prev) => ({
-        ...prev,
-        [alertId]: !(prev[alertId] ?? alerts.find((alert) => alert.id === alertId)?.read ?? false),
-      }));
-      return;
-    }
+    const idStr = String(id);
+    setRealtimeReadOverrides((prev) => ({
+      ...prev,
+      [idStr]: !(prev[idStr] ?? alerts.find((alert) => alert.id === idStr)?.read ?? false),
+    }));
+    markAlertRead(idStr);
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n))
     );
   };
 
   const handleSelect = (notif: NotificationItem) => {
-    // Automatically mark read when opened
-    if (typeof notif.id === "string" && notif.id.startsWith("sse:")) {
-      const alertId = notif.id.slice(4);
-      setRealtimeReadOverrides((prev) => ({ ...prev, [alertId]: true }));
-    }
+    const idStr = String(notif.id);
+    setRealtimeReadOverrides((prev) => ({ ...prev, [idStr]: true }));
+    markAlertRead(idStr);
     setNotifications((prev) =>
       prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
     );
@@ -431,12 +291,12 @@ export default function NotificationsPage() {
             <div className="h-5 w-px bg-[#E4DCCB] dark:bg-[#233327] hidden sm:block mx-0.5" />
             <div className="inline-flex items-center gap-1.5 bg-[#F4EFE6]/70 dark:bg-[#1F2E23]/60 p-1 rounded-full border border-[#E4DCCB] dark:border-[#233327]">
               <button
-                onClick={handleSimulateLiveEvent}
+                onClick={handleRefreshInbox}
                 className="text-[11px] px-3 py-1 rounded-full font-mono uppercase tracking-wider transition-all cursor-pointer border flex items-center gap-1.5 bg-white dark:bg-[#18231B] border-[#3E6248]/30 dark:border-[#4ADE80]/30 text-[#3E6248] dark:text-[#4ADE80] hover:bg-[#DCE6D7] dark:hover:bg-[#28382C] shadow-2xs whitespace-nowrap"
-                title="Trigger a simulated real-time SSE notification event"
+                title="Refresh notifications from database"
               >
-                <Sparkles size={11} className="text-[#3E6248] dark:text-[#4ADE80]" />
-                <span>Simulate Event</span>
+                <Activity size={11} className="text-[#3E6248] dark:text-[#4ADE80]" />
+                <span>Sync Inbox</span>
               </button>
               <button
                 onClick={() => setPreviewNullState(!previewNullState)}

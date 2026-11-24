@@ -378,3 +378,34 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 
 CREATE INDEX IF NOT EXISTS idx_chat_room ON chat_messages(room_id);
 CREATE INDEX IF NOT EXISTS idx_chat_sender ON chat_messages(sender_id);
+
+-- ------------------------------------------------------------------------------
+-- 16. ENHANCED NOTIFICATIONS & DURABLE POSTGRESQL JOB QUEUE (SPRINT 2 SYNC)
+-- ------------------------------------------------------------------------------
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS type VARCHAR(50) NOT NULL DEFAULT 'SYSTEM';
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS title VARCHAR(255);
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS project_id UUID;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS link VARCHAR(1000);
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS read_at TIMESTAMPTZ;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS dedup_key VARCHAR(160);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_notif_dedup_key ON notifications(dedup_key) WHERE dedup_key IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS background_jobs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    queue_name VARCHAR(120) NOT NULL,
+    job_name VARCHAR(120) NOT NULL,
+    idempotency_key VARCHAR(160),
+    payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    status VARCHAR(30) NOT NULL DEFAULT 'QUEUED',
+    attempts INT NOT NULL DEFAULT 0,
+    max_attempts INT NOT NULL DEFAULT 3,
+    run_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    started_at TIMESTAMPTZ,
+    completed_at TIMESTAMPTZ,
+    last_error TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_bg_jobs_status_run_at ON background_jobs(status, run_at ASC);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bg_jobs_idemp ON background_jobs(idempotency_key) WHERE idempotency_key IS NOT NULL;
