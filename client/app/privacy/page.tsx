@@ -1,10 +1,14 @@
 import React, { Suspense } from "react";
+import type { Metadata } from "next";
 import { LegalViewer } from "@/components/legal/LegalViewer";
 
-export const metadata = {
-  title: "Privacy Policy | Cambium Research",
+export const metadata: Metadata = {
+  title: "Privacy Policy",
   description:
-    "Learn how Cambium collects, processes, and protects your personal research data and scholarly interactions.",
+    "Learn how Cambium Research collects, processes, and protects personal scholar information, research telemetry, and data privacy rights.",
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 export default function PrivacyPage() {

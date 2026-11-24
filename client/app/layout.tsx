@@ -37,10 +37,7 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  process.env.NEXT_PUBLIC_APP_URL ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://cambium-research.vercel.app");
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cambium-research.vercel.app";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -54,31 +51,26 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "CAMBIUM RESEARCH — The Enterprise Research Operating System",
-    template: "%s — Cambium Research",
+    default: "Cambium Research · Knowledge compounds. Cambium connects it.",
+    template: "%s · Cambium Research",
   },
   description:
-    "Discover research opportunities, build verified academic identity, synthesize cross-disciplinary literature, and organize the knowledge behind your scholarship.",
+    "Discover 250M+ scientific publications, track active grants, and synthesize cross-disciplinary literature in one unified scholarly workspace.",
   applicationName: "Cambium Research",
   authors: [{ name: "Shaik Mohamed Imthiyas T", url: siteUrl }],
   creator: "Shaik Mohamed Imthiyas T",
   publisher: "Cambium Research",
   keywords: [
     "Cambium Research",
-    "Cambium Research Vercel",
     "Cambium",
-    "Shaik Mohamed Imthiyas T",
     "research opportunities",
     "grant discovery",
+    "literature synthesis",
     "open science",
-    "scholarly communication",
-    "preprints",
-    "citation radar",
+    "citation graph",
     "academic identity",
-    "IRB compliance",
-    "CRediT taxonomy",
-    "knowledge graph",
-    "scholar operating system",
+    "peer review",
+    "scholarly operating system",
   ],
   alternates: {
     canonical: "/",
@@ -93,23 +85,23 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteUrl,
     siteName: "Cambium Research",
-    title: "CAMBIUM RESEARCH — The Enterprise Research Operating System",
+    title: "Cambium Research · Knowledge compounds. Cambium connects it.",
     description:
-      "The Enterprise Research Operating System. Aggregating 250M+ open publications, funding calls, and verified scholar collaboration.",
+      "Discover 250M+ scientific publications, track active grants, and synthesize cross-disciplinary literature in one unified scholarly workspace.",
     images: [
       {
         url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "Cambium Research — The Enterprise Research Operating System",
+        alt: "Cambium Research · The Enterprise Research Operating System",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "CAMBIUM RESEARCH — The Enterprise Research Operating System",
+    title: "Cambium Research · Knowledge compounds. Cambium connects it.",
     description:
-      "Discover research opportunities, build verified academic identity, and synthesize cross-disciplinary literature.",
+      "Discover 250M+ scientific publications, track active grants, and synthesize cross-disciplinary literature in one unified scholarly workspace.",
     images: ["/opengraph-image"],
     creator: "@cambiumresearch",
   },
@@ -136,8 +128,9 @@ const jsonLd = {
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
       name: "Cambium Research",
-      alternateName: ["Cambium", "Cambium Research Vercel", "Cambium Platform"],
-      description: "Discover research opportunities, build verified academic identity, and organize the knowledge behind your scholarship.",
+      alternateName: ["Cambium", "Cambium OS"],
+      description:
+        "Discover 250M+ scientific publications, track active grants, and synthesize cross-disciplinary literature in one unified scholarly workspace.",
       publisher: {
         "@id": `${siteUrl}/#organization`,
       },
@@ -148,7 +141,11 @@ const jsonLd = {
       "@id": `${siteUrl}/#organization`,
       name: "Cambium Research",
       url: siteUrl,
-      logo: `${siteUrl}/public_logo/cambium-logo-dark.svg`,
+      logo: `${siteUrl}/icon.svg`,
+      sameAs: [
+        "https://github.com/shaikimthiyas/cambium-research", // TODO: replace with live URL
+        "https://www.linkedin.com/in/shaik-mohamed-imthiyas/", // TODO: replace with live URL
+      ],
       description: "AI-Powered Research Opportunity Discovery and Intelligence Platform for Global Scholarship.",
       founder: {
         "@type": "Person",

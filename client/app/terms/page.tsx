@@ -1,10 +1,14 @@
 import React, { Suspense } from "react";
+import type { Metadata } from "next";
 import { LegalViewer } from "@/components/legal/LegalViewer";
 
-export const metadata = {
-  title: "Terms of Service | Cambium Research",
+export const metadata: Metadata = {
+  title: "Terms of Service",
   description:
-    "Review the Terms of Service governing your access to and use of Cambium AI-powered Research Opportunity Discovery Platform.",
+    "Review the terms and conditions governing scholar access, collaborative research tools, and institutional subscriptions on Cambium Research.",
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 export default function TermsPage() {

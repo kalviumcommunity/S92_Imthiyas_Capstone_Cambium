@@ -1,10 +1,14 @@
 import React, { Suspense } from "react";
+import type { Metadata } from "next";
 import { LegalViewer } from "@/components/legal/LegalViewer";
 
-export const metadata = {
-  title: "AI & Research Information Disclaimer | Cambium Research",
+export const metadata: Metadata = {
+  title: "Scholarly Disclaimer",
   description:
-    "Review the operational disclosures, verification standards, and limitations of AI-generated scholarly research outputs on Cambium.",
+    "Review operational disclosures, evidence verification standards, and AI methodology limitations across Cambium Research scientific tools.",
+  alternates: {
+    canonical: "/disclaimer",
+  },
 };
 
 export default function DisclaimerPage() {
