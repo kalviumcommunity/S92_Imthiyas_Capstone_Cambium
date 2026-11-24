@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -20,7 +20,15 @@ import {
   UploadCloud,
   FileCheck,
 } from "lucide-react";
-import { uploadArtifact, UploadedArtifact } from "@/lib/api";
+import {
+  uploadArtifact,
+  UploadedArtifact,
+  getFundingAccounts,
+  getExpenseRequests,
+  createExpenseRequest,
+  approveExpenseRequest,
+  rejectExpenseRequest,
+} from "@/lib/api";
 
 interface GrantAward {
   id: string;
@@ -87,7 +95,51 @@ export default function GrantManagementPage() {
   const [uploadedIRB, setUploadedIRB] = useState<UploadedArtifact | null>(null);
   const [isUploadingIRB, setIsUploadingIRB] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [liveAccounts, setLiveAccounts] = useState<any[]>([]);
+  const [liveExpenses, setLiveExpenses] = useState<any[]>([]);
+  const [expenseTitle, setExpenseTitle] = useState("");
+  const [expenseVendor, setExpenseVendor] = useState("");
+  const [expenseAmount, setExpenseAmount] = useState("");
+  const [selectedAccountId, setSelectedAccountId] = useState("");
   const irbInputRef = React.useRef<HTMLInputElement>(null);
+
+  const loadLiveFunding = useCallback(async () => {
+    const [accounts, expenses] = await Promise.all([
+      getFundingAccounts(),
+      getExpenseRequests(),
+    ]);
+    if (accounts.length > 0) {
+      setLiveAccounts(accounts);
+      setSelectedAccountId((curr) => curr || accounts[0].id);
+    }
+    setLiveExpenses(expenses);
+  }, []);
+
+  useEffect(() => {
+    loadLiveFunding();
+  }, [loadLiveFunding]);
+
+  const handleCommitExpense = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedAccountId || !expenseTitle.trim() || !Number(expenseAmount)) return;
+    try {
+      await createExpenseRequest({
+        fundingAccountId: selectedAccountId,
+        title: expenseTitle.trim(),
+        vendorName: expenseVendor.trim() || undefined,
+        amount: Number(expenseAmount),
+      });
+      setExpenseTitle("");
+      setExpenseVendor("");
+      setExpenseAmount("");
+      setToastMessage("Purchase commitment recorded in governance ledger.");
+      setTimeout(() => setToastMessage(null), 3500);
+      await loadLiveFunding();
+    } catch (err: any) {
+      setToastMessage(err?.message || "Failed to commit purchase request");
+      setTimeout(() => setToastMessage(null), 3500);
+    }
+  };
 
   const handlePublishCFP = () => {
     const cfp = {
@@ -279,6 +331,125 @@ export default function GrantManagementPage() {
                 <p className="text-xs text-[#62685E] mt-2 mb-0">Verified deliverable milestones completed.</p>
               </div>
             </div>
+
+            {/* Institutional Live Funding & Expenditure Governance Ledger (when live accounts exist) */}
+            {liveAccounts.length > 0 && (
+              <div className="bg-white border border-[#E4DCCB] rounded-3xl p-6 space-y-5 shadow-2xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E4DCCB] pb-4">
+                  <div>
+                    <h3 className="font-serif text-lg font-normal text-[#202920] m-0">
+                      Institutional Research Funding Governance (Live PostgreSQL Ledger)
+                    </h3>
+                    <p className="text-xs text-[#62685E] m-0 mt-1">
+                      Separates Requested, Approved, Sanctioned, Received, Committed, Spent, and Available balances.
+                    </p>
+                  </div>
+                  <span className="font-mono text-[11px] px-3 py-1 rounded-full bg-[#DCE6D7] text-[#3E6248] font-semibold">
+                    Auditable Research-Finance Ledger
+                  </span>
+                </div>
+
+                {liveAccounts.map((acc) => {
+                  const sanctioned = Number(acc.sanctionedAmount || 0);
+                  const committed = Number(acc.committedAmount || 0);
+                  const spent = Number(acc.spentAmount || 0);
+                  const available = Math.max(0, sanctioned - committed - spent);
+                  return (
+                    <div key={acc.id} className="p-4 rounded-2xl bg-[#FAF7F0] border border-[#E4DCCB] space-y-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <span className="font-mono text-xs font-bold text-[#3E6248] mr-2">{acc.grantNumber}</span>
+                          <span className="font-serif text-base text-[#202920]">{acc.title}</span>
+                        </div>
+                        <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-white border border-[#E4DCCB] text-[#202920]">
+                          {acc.financialState} · {acc.currency}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+                        <div className="p-2.5 rounded-xl bg-white border border-[#E4DCCB]">
+                          <div className="text-[#85877B]">Sanctioned</div>
+                          <div className="text-sm font-bold text-[#202920]">{acc.currency} {sanctioned.toLocaleString()}</div>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-white border border-[#E4DCCB]">
+                          <div className="text-[#85877B]">Spent (Actual)</div>
+                          <div className="text-sm font-bold text-[#3E6248]">{acc.currency} {spent.toLocaleString()}</div>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-white border border-[#E4DCCB]">
+                          <div className="text-[#85877B]">Committed</div>
+                          <div className="text-sm font-bold text-[#8A5A12]">{acc.currency} {committed.toLocaleString()}</div>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-white border border-[#E4DCCB]">
+                          <div className="text-[#85877B]">Available</div>
+                          <div className="text-sm font-bold text-[#293E30]">{acc.currency} {available.toLocaleString()}</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <form onSubmit={handleCommitExpense} className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2">
+                  <input
+                    value={expenseTitle}
+                    onChange={(e) => setExpenseTitle(e.target.value)}
+                    placeholder="Purchase request description..."
+                    className="px-3 py-2 rounded-xl border border-[#E4DCCB] text-xs font-sans bg-[#FAF7F0]"
+                  />
+                  <input
+                    value={expenseVendor}
+                    onChange={(e) => setExpenseVendor(e.target.value)}
+                    placeholder="Vendor / Supplier"
+                    className="px-3 py-2 rounded-xl border border-[#E4DCCB] text-xs font-sans bg-[#FAF7F0]"
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    value={expenseAmount}
+                    onChange={(e) => setExpenseAmount(e.target.value)}
+                    placeholder="Amount"
+                    className="px-3 py-2 rounded-xl border border-[#E4DCCB] text-xs font-mono bg-[#FAF7F0]"
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded-xl bg-[#3E6248] hover:bg-[#293E30] text-[#FAF7F0] text-xs font-semibold cursor-pointer"
+                  >
+                    Commit Purchase Request
+                  </button>
+                </form>
+
+                {liveExpenses.length > 0 && (
+                  <div className="space-y-2 pt-2">
+                    {liveExpenses.slice(0, 5).map((ex) => (
+                      <div key={ex.id} className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB] text-xs">
+                        <div>
+                          <span className="font-semibold text-[#202920]">{ex.title}</span>
+                          {ex.vendorName && <span className="text-[#62685E] ml-2">· {ex.vendorName}</span>}
+                          <span className="font-mono ml-2 text-[#3E6248] font-bold">{Number(ex.amount).toLocaleString()}</span>
+                          <span className="font-mono ml-2 px-2 py-0.5 rounded-full bg-white border border-[#E4DCCB]">{ex.status}</span>
+                        </div>
+                        {ex.status === "COMMITTED" && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => approveExpenseRequest(ex.id).then(loadLiveFunding).catch(() => {})}
+                              className="px-2.5 py-1 rounded-lg bg-[#3E6248] text-white font-mono text-[11px] cursor-pointer"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => rejectExpenseRequest(ex.id, "Declined in review").then(loadLiveFunding).catch(() => {})}
+                              className="px-2.5 py-1 rounded-lg border border-[#B33D35]/40 text-[#B33D35] font-mono text-[11px] cursor-pointer"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Detailed Award Table */}
             <div className="bg-white border border-[#E4DCCB] rounded-3xl overflow-hidden shadow-2xs">

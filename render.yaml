@@ -13,7 +13,7 @@ services:
     plan: starter
     rootDir: server
     buildCommand: npm install && npm run build
-    startCommand: npm run start:prod
+    startCommand: (npm run schema:apply || true) && npm run start:prod
     healthCheckPath: /health
     autoDeploy: true
     envVars:

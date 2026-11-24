@@ -33,6 +33,17 @@ import { WorkspaceComment } from '../modules/projects/entities/workspace-comment
 import { ResearchContribution } from '../modules/contributions/entities/research-contribution.entity';
 import { ChatMessage } from '../modules/chat/entities/chat-message.entity';
 import { BackgroundJob } from '../database/entities/background-job.entity';
+import { Organization } from '../modules/institution/entities/organization.entity';
+import { Department } from '../modules/institution/entities/department.entity';
+import { Proposal } from '../modules/institution/entities/proposal.entity';
+import { ProposalRevision } from '../modules/institution/entities/proposal-revision.entity';
+import { ProposalReview } from '../modules/institution/entities/proposal-review.entity';
+import { FundingAccount } from '../modules/institution/entities/funding-account.entity';
+import { BudgetLineItem } from '../modules/institution/entities/budget-line-item.entity';
+import { ExpenseRequest } from '../modules/institution/entities/expense-request.entity';
+import { ProjectMilestone } from '../modules/institution/entities/project-milestone.entity';
+import { ProjectRisk } from '../modules/institution/entities/project-risk.entity';
+import { ComplianceProtocol } from '../modules/institution/entities/compliance-protocol.entity';
 
 export const getDatabaseConfig = (): TypeOrmModuleOptions => {
   const isProd = process.env.NODE_ENV === 'production';
@@ -98,6 +109,17 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
     ResearchContribution,
     ChatMessage,
     BackgroundJob,
+    Organization,
+    Department,
+    Proposal,
+    ProposalRevision,
+    ProposalReview,
+    FundingAccount,
+    BudgetLineItem,
+    ExpenseRequest,
+    ProjectMilestone,
+    ProjectRisk,
+    ComplianceProtocol,
   ];
 
   // Connection pool & query timeout sizing (safe for managed free-tier PG / PgBouncer)

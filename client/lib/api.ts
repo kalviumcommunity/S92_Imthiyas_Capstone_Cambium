@@ -847,3 +847,211 @@ export async function deleteNotificationItem(id: string): Promise<void> {
   });
   if (!res.ok) throw new Error("Failed to dismiss notification");
 }
+
+// 8. Institutional Command Centre, Proposals, Funding & Compliance APIs (Sprint 4)
+export async function getInstitutionOverview(): Promise<any | null> {
+  try {
+    const res = await apiFetch(`${getApiV1Base()}/institution/overview`);
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function exportInstitutionReport(): Promise<any | null> {
+  const res = await apiFetch(`${getApiV1Base()}/institution/export`);
+  if (!res.ok) throw new Error("Failed to export institutional governance report");
+  return res.json();
+}
+
+export async function getFundingAccounts(): Promise<any[]> {
+  try {
+    const res = await apiFetch(`${getApiV1Base()}/funding/accounts`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function createFundingAccount(payload: {
+  grantNumber: string;
+  funderName: string;
+  title: string;
+  sanctionedAmount: number;
+  currency?: string;
+}): Promise<any> {
+  const res = await apiFetch(`${getApiV1Base()}/funding/accounts`, {
+    method: "POST",
+    idempotencyKey: generateRequestId(),
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to register funding account");
+  return json.data;
+}
+
+export async function getExpenseRequests(): Promise<any[]> {
+  try {
+    const res = await apiFetch(`${getApiV1Base()}/funding/expenses`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function createExpenseRequest(payload: {
+  fundingAccountId: string;
+  title: string;
+  vendorName?: string;
+  invoiceRef?: string;
+  amount: number;
+}): Promise<any> {
+  const res = await apiFetch(`${getApiV1Base()}/funding/expenses`, {
+    method: "POST",
+    idempotencyKey: generateRequestId(),
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to submit purchase request");
+  return json.data;
+}
+
+export async function approveExpenseRequest(id: string): Promise<any> {
+  const res = await apiFetch(`${getApiV1Base()}/funding/expenses/${id}/approve`, {
+    method: "POST",
+    idempotencyKey: generateRequestId(),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to approve expense request");
+  return json.data;
+}
+
+export async function rejectExpenseRequest(id: string, reason?: string): Promise<any> {
+  const res = await apiFetch(`${getApiV1Base()}/funding/expenses/${id}/reject`, {
+    method: "POST",
+    idempotencyKey: generateRequestId(),
+    body: JSON.stringify({ reason }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to reject expense request");
+  return json.data;
+}
+
+export async function getComplianceProtocols(): Promise<any[]> {
+  try {
+    const res = await apiFetch(`${getApiV1Base()}/compliance/protocols`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function submitComplianceProtocol(payload: {
+  protocolNumber: string;
+  title: string;
+  boardName: string;
+  committeeType?: "IRB" | "IAEC" | "BIOSAFETY" | "DMP" | "COI";
+  riskCategory?: "Exempt" | "Expedited" | "Full Board Review";
+}): Promise<any> {
+  const res = await apiFetch(`${getApiV1Base()}/compliance/protocols`, {
+    method: "POST",
+    idempotencyKey: generateRequestId(),
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to submit compliance protocol");
+  return json.data;
+}
+
+export async function reviewComplianceProtocol(
+  id: string,
+  payload: { status: string; reviewNotes?: string },
+): Promise<any> {
+  const res = await apiFetch(`${getApiV1Base()}/compliance/protocols/${id}/review`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to review protocol");
+  return json.data;
+}
+
+export async function getMilestones(projectId?: string): Promise<any[]> {
+  try {
+    const q = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    const res = await apiFetch(`${getApiV1Base()}/milestones${q}`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function createMilestone(payload: {
+  projectId: string;
+  title: string;
+  deliverable?: string;
+  dueDate?: string;
+}): Promise<any> {
+  const res = await apiFetch(`${getApiV1Base()}/milestones`, {
+    method: "POST",
+    idempotencyKey: generateRequestId(),
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to create milestone");
+  return json.data;
+}
+
+export async function completeMilestone(id: string): Promise<any> {
+  const res = await apiFetch(`${getApiV1Base()}/milestones/${id}/complete`, {
+    method: "PUT",
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to complete milestone");
+  return json.data;
+}
+
+export async function getProposals(): Promise<any[]> {
+  try {
+    const res = await apiFetch(`${getApiV1Base()}/proposals`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data || [];
+  } catch {
+    return [];
+  }
+}
+
+export async function createProposal(payload: Record<string, any>): Promise<any> {
+  const res = await apiFetch(`${getApiV1Base()}/proposals`, {
+    method: "POST",
+    idempotencyKey: generateRequestId(),
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to create proposal");
+  return json.data;
+}
+
+export async function updateProposal(id: string, payload: Record<string, any>): Promise<any> {
+  const res = await apiFetch(`${getApiV1Base()}/proposals/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok) {
+    const err: any = new Error(json.message || "Failed to update proposal");
+    err.status = res.status;
+    throw err;
+  }
+  return json.data;
+}

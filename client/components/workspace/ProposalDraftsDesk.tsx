@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useSocket } from "@/lib/hooks/useSocket";
 import { useAuthStore } from "@/lib/store/useAuthStore";
+import { getProposals, updateProposal } from "@/lib/api";
 import { PresenceBar } from "./PresenceBar";
 import { LockOverlay } from "./LockOverlay";
 import { CursorLayer } from "./CursorLayer";
@@ -74,6 +75,7 @@ const DEFAULT_COMMENTS: DraftComment[] = [
 
 export interface ProposalDraft {
   id: string;
+  version?: number;
   title: string;
   funder: string;
   program: string;
@@ -205,11 +207,71 @@ export function ProposalDraftsDesk({ injectedDraft }: ProposalDraftsDeskProps) {
     }
   }, [injectedDraft]);
 
-  // Persist to localStorage whenever drafts change
+  // Sync live proposals from PostgreSQL when authenticated
+  useEffect(() => {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("cambium_token") || localStorage.getItem("cambium_access_token")
+        : null;
+    if (!token) return;
+
+    let mounted = true;
+    getProposals().then((live) => {
+      if (!mounted || !Array.isArray(live) || live.length === 0) return;
+      const mapped: ProposalDraft[] = live.map((p: any) => ({
+        id: p.id,
+        version: p.version,
+        title: p.title,
+        funder: p.funder || "Institutional / Sponsor",
+        program: p.program || "Research Initiative",
+        budget: p.requestedAmount ? `${p.currency || "INR"} ${Number(p.requestedAmount).toLocaleString()}` : "TBD",
+        deadline: p.deadline ? String(p.deadline).slice(0, 10) : "2027-01-31",
+        status: p.status === "INTERNAL_REVIEW" || p.status === "SUPERVISOR_REVIEW"
+          ? "INTERNAL_REVIEW"
+          : p.status === "APPROVED" || p.status === "SUBMITTED"
+          ? "READY_TO_SUBMIT"
+          : "DRAFTING",
+        lastEdited: p.updatedAt ? new Date(p.updatedAt).toLocaleDateString() : "Persisted",
+        aims: p.aims || "",
+        significance: p.significance || "",
+        methodology: p.methodology || "",
+        budgetBreakdown: p.budgetBreakdownText || "",
+        keywords: Array.isArray(p.keywords) ? p.keywords : [],
+      }));
+      setDrafts(mapped);
+      setSelectedId((curr) => (mapped.some((m) => m.id === curr) ? curr : mapped[0].id));
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Persist to localStorage & backend PostgreSQL (if UUID draft) whenever drafts change
   const saveDraftsToStorage = (updated: ProposalDraft[]) => {
     setDrafts(updated);
     if (typeof window !== "undefined") {
       localStorage.setItem("cambium_workspace_drafts_v2", JSON.stringify(updated));
+    }
+    const target = updated.find((d) => d.id === selectedId);
+    if (target && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(target.id)) {
+      updateProposal(target.id, {
+        title: target.title,
+        aims: target.aims,
+        significance: target.significance,
+        methodology: target.methodology,
+        budgetBreakdownText: target.budgetBreakdown,
+        version: target.version,
+      })
+        .then((saved) => {
+          if (saved?.version) {
+            setDrafts((prev) =>
+              prev.map((d) => (d.id === target.id ? { ...d, version: saved.version } : d)),
+            );
+          }
+        })
+        .catch(() => {
+          // Version conflict or transient offline preserved in local storage
+        });
     }
   };
 

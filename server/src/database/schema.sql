@@ -409,3 +409,193 @@ CREATE TABLE IF NOT EXISTS background_jobs (
 
 CREATE INDEX IF NOT EXISTS idx_bg_jobs_status_run_at ON background_jobs(status, run_at ASC);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_bg_jobs_idemp ON background_jobs(idempotency_key) WHERE idempotency_key IS NOT NULL;
+
+-- ------------------------------------------------------------------------------
+-- 17. INSTITUTIONAL ENTERPRISE RESEARCH OS TABLES (SPRINT 4 SYNC)
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS organizations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(255) NOT NULL,
+    short_code VARCHAR(40) UNIQUE NOT NULL,
+    ror_id VARCHAR(64),
+    city VARCHAR(120),
+    country VARCHAR(120),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS departments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    code VARCHAR(40) NOT NULL,
+    head_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    annual_budget_cap NUMERIC(14,2) NOT NULL DEFAULT 0,
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_dept_org ON departments(organization_id);
+
+CREATE TABLE IF NOT EXISTS proposals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID,
+    department_id UUID,
+    project_id UUID,
+    opportunity_id UUID,
+    lead_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    funder VARCHAR(255),
+    program VARCHAR(255),
+    requested_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
+    deadline TIMESTAMPTZ,
+    status VARCHAR(40) NOT NULL DEFAULT 'DRAFTING',
+    aims TEXT NOT NULL DEFAULT '',
+    significance TEXT NOT NULL DEFAULT '',
+    methodology TEXT NOT NULL DEFAULT '',
+    timeline_summary TEXT NOT NULL DEFAULT '',
+    budget_breakdown_text TEXT NOT NULL DEFAULT '',
+    keywords JSONB NOT NULL DEFAULT '[]'::jsonb,
+    version INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_prop_dept ON proposals(department_id);
+CREATE INDEX IF NOT EXISTS idx_prop_lead ON proposals(lead_user_id);
+
+CREATE TABLE IF NOT EXISTS proposal_revisions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    proposal_id UUID NOT NULL REFERENCES proposals(id) ON DELETE CASCADE,
+    version INT NOT NULL,
+    edited_by_id UUID NOT NULL,
+    summary_of_changes VARCHAR(500) NOT NULL,
+    snapshot JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_proprev_prop ON proposal_revisions(proposal_id);
+
+CREATE TABLE IF NOT EXISTS proposal_reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    proposal_id UUID NOT NULL REFERENCES proposals(id) ON DELETE CASCADE,
+    reviewer_id UUID NOT NULL,
+    stage VARCHAR(40) NOT NULL,
+    decision VARCHAR(40) NOT NULL,
+    rubric_score INT,
+    comments TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_propview_prop ON proposal_reviews(proposal_id);
+
+CREATE TABLE IF NOT EXISTS funding_accounts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID,
+    department_id UUID,
+    project_id UUID,
+    proposal_id UUID,
+    pi_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    grant_number VARCHAR(120) UNIQUE NOT NULL,
+    funder_name VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
+    financial_state VARCHAR(30) NOT NULL DEFAULT 'SANCTIONED',
+    requested_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+    approved_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+    sanctioned_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+    received_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+    committed_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+    spent_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+    fiscal_year VARCHAR(20) NOT NULL DEFAULT '2026-27',
+    closed_at TIMESTAMPTZ,
+    version INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_fa_dept ON funding_accounts(department_id);
+CREATE INDEX IF NOT EXISTS idx_fa_pi ON funding_accounts(pi_user_id);
+
+CREATE TABLE IF NOT EXISTS budget_line_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    funding_account_id UUID NOT NULL REFERENCES funding_accounts(id) ON DELETE CASCADE,
+    category VARCHAR(80) NOT NULL,
+    allocated_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+    committed_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+    spent_amount NUMERIC(14,2) NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_bli_fa ON budget_line_items(funding_account_id);
+
+CREATE TABLE IF NOT EXISTS expense_requests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    funding_account_id UUID NOT NULL REFERENCES funding_accounts(id) ON DELETE CASCADE,
+    budget_line_item_id UUID REFERENCES budget_line_items(id) ON DELETE SET NULL,
+    department_id UUID,
+    project_id UUID,
+    requester_id UUID NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    vendor_name VARCHAR(255),
+    invoice_ref VARCHAR(255),
+    amount NUMERIC(14,2) NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'COMMITTED',
+    approved_by_id UUID,
+    approved_at TIMESTAMPTZ,
+    rejection_reason TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_er_fa ON expense_requests(funding_account_id);
+CREATE INDEX IF NOT EXISTS idx_er_dept ON expense_requests(department_id);
+
+CREATE TABLE IF NOT EXISTS project_milestones (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES group_projects(id) ON DELETE CASCADE,
+    department_id UUID,
+    owner_id UUID NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    deliverable TEXT NOT NULL DEFAULT '',
+    due_date TIMESTAMPTZ,
+    status VARCHAR(30) NOT NULL DEFAULT 'PLANNED',
+    progress_percent INT NOT NULL DEFAULT 0,
+    approved_by_id UUID,
+    approved_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_pmil_project ON project_milestones(project_id);
+
+CREATE TABLE IF NOT EXISTS project_risks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES group_projects(id) ON DELETE CASCADE,
+    owner_id UUID NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    severity VARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
+    mitigation_plan TEXT NOT NULL DEFAULT '',
+    status VARCHAR(20) NOT NULL DEFAULT 'OPEN',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_prisk_project ON project_risks(project_id);
+
+CREATE TABLE IF NOT EXISTS compliance_protocols (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID,
+    department_id UUID,
+    project_id UUID,
+    pi_user_id UUID NOT NULL,
+    protocol_number VARCHAR(80) UNIQUE NOT NULL,
+    committee_type VARCHAR(30) NOT NULL DEFAULT 'IRB',
+    title VARCHAR(255) NOT NULL,
+    board_name VARCHAR(255) NOT NULL,
+    risk_category VARCHAR(40) NOT NULL DEFAULT 'Expedited',
+    status VARCHAR(40) NOT NULL DEFAULT 'SUBMITTED',
+    expiration_date TIMESTAMPTZ,
+    participating_sites_count INT NOT NULL DEFAULT 1,
+    evidence_url VARCHAR(1000),
+    reviewed_by_id UUID,
+    reviewed_at TIMESTAMPTZ,
+    review_notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_cp_dept ON compliance_protocols(department_id);
+CREATE INDEX IF NOT EXISTS idx_cp_pi ON compliance_protocols(pi_user_id);

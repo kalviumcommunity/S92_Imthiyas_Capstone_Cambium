@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useOptimisticLab, LabProjectEntity } from "@/lib/hooks/useOptimisticQueries";
+import { getInstitutionOverview, exportInstitutionReport } from "@/lib/api";
 import {
   Building2,
   Users,
@@ -126,6 +127,30 @@ const LAB_MEMBERS: LabMember[] = [
 export default function UniversityLabWorkspacePage() {
   const [activeTab, setActiveTab] = useState<"projects" | "compute" | "members">("projects");
   const { projects, addProject, updateProjectStage, isAdding } = useOptimisticLab();
+  const [commandCentre, setCommandCentre] = useState<any | null>(null);
+
+  useEffect(() => {
+    getInstitutionOverview().then((ov) => {
+      if (ov?.success) setCommandCentre(ov);
+    });
+  }, []);
+
+  const handleExportReport = async () => {
+    try {
+      const report = await exportInstitutionReport();
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `cambium_institutional_report_${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // Non-blocking
+    }
+  };
 
   const [selectedDeptId, setSelectedDeptId] = useState<string>(() => {
     if (typeof window !== "undefined") {
@@ -260,6 +285,49 @@ export default function UniversityLabWorkspacePage() {
             </button>
           </div>
         </div>
+
+        {/* Institutional Command Centre Live Telemetry (when authenticated) */}
+        {commandCentre && (
+          <div className="p-5 rounded-2xl bg-[#FAF7F0] border border-[#66866A]/40 shadow-2xs space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#3E6248] animate-pulse" />
+                <span className="font-mono text-xs uppercase tracking-wider font-bold text-[#3E6248]">
+                  Institutional Command Centre · Scope: {commandCentre.scope}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleExportReport}
+                className="px-3 py-1 rounded-full bg-white border border-[#E4DCCB] text-[#202920] font-mono text-[11px] hover:bg-[#DCE6D7] cursor-pointer"
+              >
+                Export Institutional JSON Report
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs font-mono">
+              <div className="p-3 rounded-xl bg-white border border-[#E4DCCB]">
+                <div className="text-[#85877B]">Active Projects</div>
+                <div className="text-lg font-bold text-[#202920]">{commandCentre.metrics?.activeProjects ?? 0}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-white border border-[#E4DCCB]">
+                <div className="text-[#85877B]">Proposals In Review</div>
+                <div className="text-lg font-bold text-[#202920]">{commandCentre.metrics?.proposalsUnderReview ?? 0}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-white border border-[#E4DCCB]">
+                <div className="text-[#85877B]">Grant Success Rate</div>
+                <div className="text-lg font-bold text-[#3E6248]">{commandCentre.metrics?.grantSuccessRatePercent ?? 0}%</div>
+              </div>
+              <div className="p-3 rounded-xl bg-white border border-[#E4DCCB]">
+                <div className="text-[#85877B]">Delayed Milestones</div>
+                <div className="text-lg font-bold text-[#8A5A12]">{commandCentre.metrics?.delayedOrAtRiskMilestones ?? 0}</div>
+              </div>
+              <div className="p-3 rounded-xl bg-white border border-[#E4DCCB]">
+                <div className="text-[#85877B]">Approved Protocols</div>
+                <div className="text-lg font-bold text-[#3E6248]">{commandCentre.metrics?.approvedProtocols ?? 0}</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Lab Metrics Dashboard Banner */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

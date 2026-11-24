@@ -28,6 +28,7 @@ import { BillingModule } from './modules/billing/billing.module';
 import { NetworkModule } from './modules/network/network.module';
 import { ResilienceModule } from './common/resilience/resilience.module';
 import { PerformanceModule } from './modules/performance/performance.module';
+import { InstitutionModule } from './modules/institution/institution.module';
 import { TelemetryInterceptor } from './common/telemetry/telemetry.interceptor';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -67,6 +68,7 @@ import { DatabaseDiagnosticService } from './database/database-diagnostic.servic
     NetworkModule,
     ResilienceModule,
     PerformanceModule,
+    InstitutionModule,
   ],
   controllers: [AppController],
   providers: [
