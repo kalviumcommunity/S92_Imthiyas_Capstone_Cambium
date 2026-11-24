@@ -7,14 +7,16 @@ import {
   Body,
   Param,
   Query,
-  Req,
   UsePipes,
   ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CommunityService } from './community.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { JwtAuthGuard, AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('Academic Community')
 @Controller(['community', 'api/community', 'api/v1/community'])
@@ -39,65 +41,71 @@ export class CommunityController {
   }
 
   @Post('posts')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Publish new verified academic post' })
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  async createPost(@Body() dto: CreatePostDto, @Req() req: any) {
-    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
-    return this.communityService.createPost(userId, dto);
+  async createPost(@Body() dto: CreatePostDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.communityService.createPost(user.id, dto);
   }
 
   @Post('posts/:id/comments')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Add a peer discussion comment to a post' })
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   async addComment(
     @Param('id') postId: string,
     @Body() dto: CreateCommentDto,
-    @Req() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
-    return this.communityService.addComment(postId, userId, dto);
+    return this.communityService.addComment(postId, user.id, dto);
   }
 
   @Post('posts/:id/react')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle post endorsement, bookmark, or cite reaction' })
   async toggleReaction(
     @Param('id') postId: string,
     @Body('type') type: string,
-    @Req() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
-    return this.communityService.toggleReaction(postId, userId, type || 'like');
+    return this.communityService.toggleReaction(postId, user.id, type || 'like');
   }
 
   @Put('posts/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an existing academic post (Author only)' })
   async updatePost(
     @Param('id') postId: string,
     @Body() dto: Partial<CreatePostDto>,
-    @Req() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
-    return this.communityService.updatePost(postId, userId, dto);
+    return this.communityService.updatePost(postId, user.id, dto);
   }
 
   @Delete('posts/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete an academic post (Author only)' })
   async deletePost(
     @Param('id') postId: string,
-    @Req() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
-    return this.communityService.deletePost(postId, userId);
+    return this.communityService.deletePost(postId, user.id);
   }
 
   @Delete('posts/:id/comments/:commentId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a comment on an academic post' })
   async deleteComment(
     @Param('id') postId: string,
     @Param('commentId') commentId: string,
-    @Req() req: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    const userId = req.user?.id || req.headers['x-user-id'] || '00000000-0000-0000-0000-000000000001';
-    return this.communityService.deleteComment(postId, commentId, userId);
+    return this.communityService.deleteComment(postId, commentId, user.id);
   }
 }

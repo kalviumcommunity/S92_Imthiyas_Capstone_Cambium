@@ -7,12 +7,16 @@ import {
 } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { RedisService } from '../../../common/redis/redis.service';
+import { extractAccessTokenFromHeaders, getJwtSecret } from '../jwt.config';
 
 export interface AuthenticatedUser {
   id: string;
   email?: string;
   username?: string;
   role?: string;
+  organizationId?: string | null;
+  departmentId?: string | null;
+  subscriptionTier?: string;
   jti?: string;
 }
 
@@ -22,17 +26,19 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers['authorization'];
+    const token = extractAccessTokenFromHeaders(request.headers || {}, request.cookies);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Authentication required: no Bearer token provided');
+    if (!token) {
+      throw new UnauthorizedException('Authentication required: no valid access token provided');
     }
 
-    const token = authHeader.split(' ')[1];
-    const secret = process.env.JWT_SECRET || 'cambium_jwt_secret_key_2026';
+    const secret = getJwtSecret();
 
     try {
-      const decoded = jwt.verify(token, secret) as AuthenticatedUser;
+      const decoded = jwt.verify(token, secret) as AuthenticatedUser & { type?: string };
+      if (decoded.type && decoded.type !== 'access') {
+        throw new UnauthorizedException('Invalid token type: access token required');
+      }
 
       // Zero-Trust validation: check Redis jti blacklist
       if (decoded.jti && this.redisService) {

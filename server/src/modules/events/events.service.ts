@@ -102,11 +102,12 @@ export class EventsService {
       })),
     );
 
-    // 3. User-filtered or global event dispatching
+    // 3. Strictly scoped user-filtered or explicit global broadcast events
     const userEvents$ = this.eventSubject.asObservable().pipe(
       filter((event) => {
-        if (!event.userId) return true; // Global event
-        return !userId || event.userId === userId;
+        if (!event.userId) return true; // Explicit global broadcast
+        if (!userId) return false; // Never leak user-targeted events when subscriber identity is absent
+        return event.userId === userId;
       }),
     );
 

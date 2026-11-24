@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { OutboxEvent } from '../../database/entities/outbox-event.entity';
 import { EventsService } from '../../modules/events/events.service';
 import { ChatGateway } from '../../modules/chat/chat.gateway';
@@ -18,16 +18,16 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
     @Optional() private readonly eventsService?: EventsService,
     @Optional() private readonly chatGateway?: ChatGateway,
     @Optional() private readonly redisService?: RedisService,
+    @Optional() private readonly dataSource?: DataSource,
   ) {}
 
   onModuleInit() {
-    // Relay poller running every 4,000ms to guarantee zero event loss
     this.timer = setInterval(() => {
       this.processPendingBatch().catch((err) => {
         this.logger.error(`Error during outbox relay execution: ${err?.message}`);
       });
     }, 4000);
-    this.logger.log(' Transactional Outbox Relay Worker active');
+    this.logger.log('Transactional Outbox Relay Worker active');
   }
 
   onModuleDestroy() {
@@ -37,35 +37,38 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Process a batch of pending outbox events with row-level concurrency lock
+   * Claim and dispatch a batch of pending outbox events.
+   * Uses PostgreSQL FOR UPDATE SKIP LOCKED when DataSource is initialized so
+   * multiple API replicas never double-dispatch the same event.
    */
   async processPendingBatch(batchSize = 25): Promise<number> {
     if (this.isProcessing) return 0;
     this.isProcessing = true;
 
     try {
-      // Find up to batchSize PENDING events ordered by creation
-      const pendingEvents = await this.outboxRepo.find({
-        where: { status: 'PENDING' },
-        order: { createdAt: 'ASC' },
-        take: batchSize,
-      });
-
+      const pendingEvents = await this.claimPendingEvents(batchSize);
       if (pendingEvents.length === 0) {
         return 0;
       }
 
       for (const event of pendingEvents) {
         try {
-          event.status = 'PROCESSING';
-          await this.outboxRepo.save(event);
+          if (!this.dataSource?.isInitialized) {
+            event.status = 'PROCESSING';
+            await this.outboxRepo.save(event);
+          }
 
-          // 1. Dispatch to SSE Reactive Event Stream
+          const targetRoom =
+            event.payload?.room ||
+            (event.payload?.projectId ? `workspace:${event.payload.projectId}` : undefined);
+
           if (this.eventsService) {
             this.eventsService.emit({
               type: 'grant_alert',
+              id: event.id,
               userId: event.payload?.userId,
               data: {
+                eventId: event.id,
                 eventType: event.eventType,
                 aggregateType: event.aggregateType,
                 aggregateId: event.aggregateId,
@@ -78,18 +81,26 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
             }
           }
 
-          // 2. Dispatch to Distributed WebSocket Chat Room if collaboration event
-          if (this.chatGateway && event.payload?.room) {
-            this.chatGateway.server
-              ?.to(event.payload.room)
-              ?.emit('outbox_broadcast', {
+          if (this.chatGateway?.server) {
+            if (targetRoom) {
+              this.chatGateway.server.to(targetRoom).emit('outbox_broadcast', {
+                eventId: event.id,
+                eventType: event.eventType,
+                aggregateType: event.aggregateType,
+                aggregateId: event.aggregateId,
+                payload: event.payload,
+              });
+            }
+            if (event.payload?.userId) {
+              this.chatGateway.broadcastUserNotification?.(event.payload.userId, {
+                eventId: event.id,
                 eventType: event.eventType,
                 aggregateId: event.aggregateId,
                 payload: event.payload,
               });
+            }
           }
 
-          // 3. Dispatch to Redis L2 Cache / PubSub Bus
           if (this.redisService) {
             await this.redisService.set(
               `cambium:audit:${event.aggregateType}:${event.aggregateId}`,
@@ -98,17 +109,17 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
             );
           }
 
-          // Mark as successfully published
           event.status = 'PUBLISHED';
           event.processedAt = new Date();
           await this.outboxRepo.save(event);
-          this.logger.debug(` Outbox event [${event.id}] dispatched to streams and marked PUBLISHED`);
         } catch (err: any) {
           event.retryCount += 1;
           event.errorMessage = err?.message || String(err);
           event.status = event.retryCount >= 5 ? 'FAILED' : 'PENDING';
           await this.outboxRepo.save(event);
-          this.logger.warn(`Outbox event [${event.id}] dispatch failed (attempt ${event.retryCount}): ${err?.message}`);
+          this.logger.warn(
+            `Outbox event [${event.id}] dispatch failed (attempt ${event.retryCount}): ${err?.message}`,
+          );
         }
       }
 
@@ -116,5 +127,35 @@ export class OutboxRelayService implements OnModuleInit, OnModuleDestroy {
     } finally {
       this.isProcessing = false;
     }
+  }
+
+  private async claimPendingEvents(batchSize: number): Promise<OutboxEvent[]> {
+    if (this.dataSource && this.dataSource.isInitialized) {
+      return this.dataSource.transaction(async (manager) => {
+        const repo = manager.getRepository(OutboxEvent);
+        const events = await repo
+          .createQueryBuilder('evt')
+          .setLock('pessimistic_write')
+          .setOnLocked('skip_locked')
+          .where('evt.status = :status', { status: 'PENDING' })
+          .orderBy('evt.createdAt', 'ASC')
+          .take(batchSize)
+          .getMany();
+
+        if (events.length > 0) {
+          for (const evt of events) {
+            evt.status = 'PROCESSING';
+          }
+          await repo.save(events);
+        }
+        return events;
+      });
+    }
+
+    return this.outboxRepo.find({
+      where: { status: 'PENDING' },
+      order: { createdAt: 'ASC' },
+      take: batchSize,
+    });
   }
 }

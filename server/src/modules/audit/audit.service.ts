@@ -111,6 +111,7 @@ export class AuditService {
     offset?: number;
     action?: string;
     entityName?: string;
+    userId?: string;
   }): Promise<{ logs: any[]; total: number }> {
     const limit = Math.min(params.limit || 50, 100);
     const offset = params.offset || 0;
@@ -125,6 +126,9 @@ export class AuditService {
         }
         if (params.entityName) {
           query.andWhere('audit.entity_name = :entityName', { entityName: params.entityName });
+        }
+        if (params.userId) {
+          query.andWhere('audit.user_id = :userId', { userId: params.userId });
         }
 
         const [items, total] = await query
@@ -148,6 +152,9 @@ export class AuditService {
     }
     if (params.entityName) {
       items = items.filter((e) => e.entityName === params.entityName);
+    }
+    if (params.userId) {
+      items = items.filter((e) => e.userId === params.userId);
     }
 
     return {

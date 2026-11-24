@@ -31,6 +31,7 @@ import { ProjectMember } from '../modules/projects/entities/project-member.entit
 import { ProjectActivityLog } from '../modules/projects/entities/project-activity-log.entity';
 import { WorkspaceComment } from '../modules/projects/entities/workspace-comment.entity';
 import { ResearchContribution } from '../modules/contributions/entities/research-contribution.entity';
+import { ChatMessage } from '../modules/chat/entities/chat-message.entity';
 
 export const getDatabaseConfig = (): TypeOrmModuleOptions => {
   const isProd = process.env.NODE_ENV === 'production';
@@ -94,6 +95,7 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
     ProjectActivityLog,
     WorkspaceComment,
     ResearchContribution,
+    ChatMessage,
   ];
 
   // PgBouncer pool sizing (50 clients per pod, sustaining 5,000+ cluster connections)

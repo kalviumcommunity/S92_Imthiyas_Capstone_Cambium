@@ -1,69 +1,43 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { firstValueFrom, take, toArray } from 'rxjs';
 import { EventsService } from './events.service';
-import { take } from 'rxjs/operators';
 
-describe('EventsService', () => {
-  let eventsService: EventsService;
+describe('EventsService (SSE Isolation & Security)', () => {
+  let service: EventsService;
 
   beforeEach(() => {
-    eventsService = new EventsService();
+    service = new EventsService();
   });
 
-  it('should emit initial handshake event on stream subscription', async () => {
-    const stream$ = eventsService.getStream('scholar-alice');
+  it('should never leak user-targeted events to anonymous/unspecified streams', async () => {
+    const received: any[] = [];
+    const sub = service.getStream(undefined).subscribe((ev) => received.push(ev));
 
-    return new Promise<void>((resolve) => {
-      stream$.pipe(take(1)).subscribe((event) => {
-        const data = event.data as any;
-        expect(event.type).toBe('handshake');
-        expect(data).toBeDefined();
-        expect(data.status).toBe('CONNECTED');
-        expect(data.subscribedUser).toBe('scholar-alice');
-        resolve();
-      });
-    });
+    service.dispatchNotification('user-secret-1', { message: 'Confidential grant alert' });
+    service.emit({ type: 'grant_alert', data: { title: 'Public NSF announcement' } });
+
+    await new Promise((r) => setTimeout(r, 20));
+    sub.unsubscribe();
+
+    const messages = received.map((r) => JSON.stringify(r));
+    expect(messages.some((m) => m.includes('Confidential grant alert'))).toBe(false);
+    expect(messages.some((m) => m.includes('Public NSF announcement'))).toBe(true);
   });
 
-  it('should dispatch targeted notification event to subscribed scholar', async () => {
-    const stream$ = eventsService.getStream('scholar-bob');
+  it('should deliver user-targeted events strictly to the matching authenticated user', async () => {
+    const aliceEvents: any[] = [];
+    const bobEvents: any[] = [];
 
-    return new Promise<void>((resolve) => {
-      // Subscribe and skip handshake
-      let eventCount = 0;
-      stream$.subscribe((event) => {
-        eventCount++;
-        if (eventCount === 2) {
-          const data = event.data as any;
-          expect(event.type).toBe('notification');
-          expect(data.title).toBe('Quantum Grant Call');
-          resolve();
-        }
-      });
+    const subA = service.getStream('alice').subscribe((ev) => aliceEvents.push(ev));
+    const subB = service.getStream('bob').subscribe((ev) => bobEvents.push(ev));
 
-      // Dispatch event
-      eventsService.dispatchNotification('scholar-bob', {
-        title: 'Quantum Grant Call',
-        message: 'Application open now',
-      });
-    });
-  });
+    service.dispatchNotification('alice', { title: 'Alice Private Invite' });
 
-  it('should dispatch unread badge count updates', async () => {
-    const stream$ = eventsService.getStream('scholar-charlie');
+    await new Promise((r) => setTimeout(r, 20));
+    subA.unsubscribe();
+    subB.unsubscribe();
 
-    return new Promise<void>((resolve) => {
-      let count = 0;
-      stream$.subscribe((event) => {
-        count++;
-        if (count === 2) {
-          const data = event.data as any;
-          expect(event.type).toBe('badge_count');
-          expect(data.unreadCount).toBe(7);
-          resolve();
-        }
-      });
-
-      eventsService.dispatchBadgeCount('scholar-charlie', 7);
-    });
+    expect(aliceEvents.some((e) => JSON.stringify(e).includes('Alice Private Invite'))).toBe(true);
+    expect(bobEvents.some((e) => JSON.stringify(e).includes('Alice Private Invite'))).toBe(false);
   });
 });

@@ -252,4 +252,57 @@ describe('ProjectsService', () => {
     expect(res.success).toBe(true);
     expect(mockProjectRepo.remove).toHaveBeenCalled();
   });
+
+  it('should allow invited collaborator to accept invitation and emit USER_JOINED_WORKSPACE outbox event', async () => {
+    mockMemberRepo.findOne.mockResolvedValueOnce({
+      id: 'mem-2',
+      projectId: 'proj-1',
+      userId: 'u-2',
+      creditRole: CRediTRole.CO_AUTHOR,
+      status: 'INVITED',
+      project: { id: 'proj-1', ownerId: 'u-1', title: 'Multimodal NIH Grant' },
+      user: { id: 'u-2', fullName: 'Dr. Collab' },
+    });
+
+    const res = await service.respondToInvitation('proj-1', 'u-2', true);
+    expect(res.success).toBe(true);
+    expect(res.data.status).toBe('ACCEPTED');
+    expect(mockOutboxService.emit).toHaveBeenCalledWith(
+      'project_members',
+      'mem-2',
+      'USER_JOINED_WORKSPACE',
+      expect.objectContaining({ projectId: 'proj-1', room: 'workspace:proj-1' }),
+    );
+  });
+
+  it('should allow Lead PI / Owner to update collaborator CRediT role and reject non-lead attempts', async () => {
+    mockMemberRepo.findOne.mockResolvedValueOnce({
+      id: 'mem-2',
+      projectId: 'proj-1',
+      userId: 'u-2',
+      creditRole: CRediTRole.CO_AUTHOR,
+      status: 'ACCEPTED',
+    });
+
+    const res = await service.updateMemberRole('proj-1', 'u-1', 'u-2', CRediTRole.CO_PI);
+    expect(res.success).toBe(true);
+    expect(res.data.creditRole).toBe(CRediTRole.CO_PI);
+
+    await expect(
+      service.updateMemberRole('proj-1', 'u-outsider', 'u-2', CRediTRole.CO_PI),
+    ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('should block unauthorized users from accessing LAB_ONLY workspaces', async () => {
+    mockProjectRepo.findOne.mockResolvedValueOnce({
+      id: 'proj-lab',
+      ownerId: 'u-1',
+      visibility: 'LAB_ONLY',
+      members: [{ userId: 'u-1', status: 'ACCEPTED' }],
+    });
+
+    await expect(service.getProjectDetails('proj-lab', 'u-outsider')).rejects.toThrow(
+      ForbiddenException,
+    );
+  });
 });

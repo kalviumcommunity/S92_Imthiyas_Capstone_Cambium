@@ -31,7 +31,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProduction || process.env.COOKIE_SAME_SITE === 'none',
       sameSite: (process.env.COOKIE_SAME_SITE as any) || (process.env.NODE_ENV === 'production' ? 'none' : 'lax'),
-      path: '/api/auth',
+      path: '/api',
       maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
   }
@@ -41,7 +41,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production' || process.env.COOKIE_SAME_SITE === 'none',
       sameSite: (process.env.COOKIE_SAME_SITE as any) || (process.env.NODE_ENV === 'production' ? 'none' : 'lax'),
-      path: '/api/auth',
+      path: '/api',
     });
   }
 

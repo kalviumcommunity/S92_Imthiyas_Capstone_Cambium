@@ -5,7 +5,6 @@ import {
   Delete,
   Body,
   Param,
-  Req,
   HttpCode,
   HttpStatus,
   UseGuards,
@@ -17,28 +16,20 @@ import { JwtAuthGuard, AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('Bookmarks')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller(['api/bookmarks', 'api/v1/bookmarks'])
 export class BookmarksController {
   constructor(private readonly bookmarksService: BookmarksService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all bookmarks with populated users and opportunities' })
-  @ApiResponse({ status: 200, description: 'List of all bookmarks' })
-  async getBookmarks() {
-    return this.bookmarksService.findAll();
-  }
-
-  @Get('user/:userId')
-  @ApiOperation({ summary: 'Get bookmarks for a specific user' })
-  @ApiParam({ name: 'userId', description: 'User UUID' })
-  @ApiResponse({ status: 200, description: 'User bookmarks' })
-  async getUserBookmarks(@Param('userId') userId: string) {
-    return this.bookmarksService.findByUserId(userId);
+  @ApiOperation({ summary: 'Get bookmarks for authenticated scholar' })
+  @ApiResponse({ status: 200, description: 'List of user bookmarks' })
+  async getBookmarks(@CurrentUser() user: AuthenticatedUser) {
+    return this.bookmarksService.findByUserId(user.id);
   }
 
   @Get('my/list')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get bookmarks for current authenticated user' })
   @ApiResponse({ status: 200, description: 'Current user bookmarks' })
   async getMyBookmarks(@CurrentUser() user: AuthenticatedUser) {
@@ -46,8 +37,6 @@ export class BookmarksController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a new bookmark' })
   @ApiResponse({ status: 201, description: 'Opportunity bookmarked successfully' })
@@ -55,15 +44,11 @@ export class BookmarksController {
     @Body() dto: CreateBookmarkDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    if (!dto.user && user?.id) {
-      dto.user = user.id;
-    }
+    dto.user = user.id;
     return this.bookmarksService.create(dto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete bookmark by ID' })
   @ApiParam({ name: 'id', description: 'Bookmark UUID' })
   @ApiResponse({ status: 200, description: 'Bookmark removed successfully' })
@@ -72,15 +57,11 @@ export class BookmarksController {
   }
 
   @Delete('opportunity/:opportunityId')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete bookmark by opportunity ID for current authenticated user' })
   async deleteBookmarkByOpportunity(
     @Param('opportunityId') opportunityId: string,
     @CurrentUser() user: AuthenticatedUser,
-    @Req() req: any,
   ) {
-    const userId = user?.id || req.headers?.['x-user-id'] || '00000000-0000-0000-0000-000000000001';
-    return this.bookmarksService.removeByOpportunity(userId, opportunityId);
+    return this.bookmarksService.removeByOpportunity(user.id, opportunityId);
   }
 }

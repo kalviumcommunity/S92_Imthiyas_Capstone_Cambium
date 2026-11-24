@@ -15,6 +15,11 @@ import { Bookmark } from '../../bookmarks/entities/bookmark.entity';
 import { Notification } from '../../notifications/entities/notification.entity';
 
 export enum UserRole {
+  SUPER_ADMIN = 'SuperAdmin',
+  UNIVERSITY_LEADERSHIP = 'UniversityLeadership',
+  RD_DIRECTOR = 'R&DDirector',
+  FINANCE_OFFICER = 'FinanceOfficer',
+  DEPARTMENT_HEAD = 'DepartmentHead',
   PI = 'PI',
   RESEARCHER = 'Researcher',
   FELLOW = 'Fellow',
@@ -50,6 +55,14 @@ export class User {
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   institution?: string;
+
+  @Index()
+  @Column({ name: 'organization_id', type: 'uuid', nullable: true })
+  organizationId?: string | null;
+
+  @Index()
+  @Column({ name: 'department_id', type: 'uuid', nullable: true })
+  departmentId?: string | null;
 
   @ManyToMany(() => ResearchInterest, (interest) => interest.users, {
     cascade: ['insert', 'update'],

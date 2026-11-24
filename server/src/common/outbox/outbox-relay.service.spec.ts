@@ -42,6 +42,7 @@ describe('OutboxRelayService', () => {
       server: {
         to: vi.fn().mockReturnValue({ emit: vi.fn() }),
       },
+      broadcastUserNotification: vi.fn(),
     };
 
     mockRedisService = {

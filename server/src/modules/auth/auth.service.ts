@@ -15,6 +15,7 @@ import { ResearchInterest } from '../users/entities/research-interest.entity';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { RedisService } from '../../common/redis/redis.service';
+import { getJwtSecret, getJwtRefreshSecret } from './jwt.config';
 
 export interface TokenPair {
   accessToken: string;
@@ -28,6 +29,8 @@ export interface JwtTokenPayload {
   email?: string;
   username?: string;
   role?: string;
+  organizationId?: string | null;
+  departmentId?: string | null;
   jti: string;
   type: 'access' | 'refresh';
   iat?: number;
@@ -36,8 +39,8 @@ export interface JwtTokenPayload {
 
 @Injectable()
 export class AuthService {
-  private readonly jwtSecret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('JWT_SECRET is required in production') })() : 'cambium_dev_jwt_secret_DO_NOT_USE_IN_PRODUCTION');
-  private readonly jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('JWT_REFRESH_SECRET is required in production') })() : 'cambium_dev_refresh_secret_DO_NOT_USE_IN_PRODUCTION');
+  private readonly jwtSecret = getJwtSecret();
+  private readonly jwtRefreshSecret = getJwtRefreshSecret();
   private readonly googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy-client-id');
 
   constructor(
@@ -77,7 +80,14 @@ export class AuthService {
     });
 
     const saved = await this.userRepo.save(user);
-    const tokens = this.generateTokenPair(saved.id, saved.email, saved.username, saved.role);
+    const tokens = this.generateTokenPair(
+      saved.id,
+      saved.email,
+      saved.username,
+      saved.role,
+      saved.organizationId,
+      saved.departmentId,
+    );
 
     return {
       success: true,
@@ -91,6 +101,8 @@ export class AuthService {
         email: saved.email,
         role: saved.role,
         institution: saved.institution,
+        organizationId: saved.organizationId || null,
+        departmentId: saved.departmentId || null,
         researchInterests: saved.researchInterests.map((i) => i.name),
         createdAt: saved.createdAt,
       },
@@ -161,7 +173,14 @@ export class AuthService {
       // Non-blocking
     }
 
-    const tokens = this.generateTokenPair(user.id, user.email, user.username, user.role);
+    const tokens = this.generateTokenPair(
+      user.id,
+      user.email,
+      user.username,
+      user.role,
+      user.organizationId,
+      user.departmentId,
+    );
 
     return {
       success: true,
@@ -175,6 +194,8 @@ export class AuthService {
         email: user.email,
         role: user.role,
         institution: user.institution,
+        organizationId: user.organizationId || null,
+        departmentId: user.departmentId || null,
         researchInterests: user.researchInterests ? user.researchInterests.map((i) => i.name) : [],
       },
     };
@@ -303,7 +324,14 @@ export class AuthService {
     }
 
     const effectiveRole = user.role || UserRole.RESEARCHER;
-    const tokens = this.generateTokenPair(user.id, user.email, user.username, effectiveRole);
+    const tokens = this.generateTokenPair(
+      user.id,
+      user.email,
+      user.username,
+      effectiveRole,
+      user.organizationId,
+      user.departmentId,
+    );
 
     return {
       success: true,
@@ -318,6 +346,8 @@ export class AuthService {
         email: user.email,
         role: effectiveRole,
         institution: user.institution,
+        organizationId: user.organizationId || null,
+        departmentId: user.departmentId || null,
         photo: photoUrl || undefined,
         researchInterests: user.researchInterests ? user.researchInterests.map((i) => i.name) : [],
       },
@@ -366,7 +396,14 @@ export class AuthService {
     }
 
     // Issue brand new token pair
-    const newTokens = this.generateTokenPair(user.id, user.email, user.username, user.role);
+    const newTokens = this.generateTokenPair(
+      user.id,
+      user.email,
+      user.username,
+      user.role,
+      user.organizationId,
+      user.departmentId,
+    );
 
     return {
       success: true,
@@ -380,6 +417,8 @@ export class AuthService {
         email: user.email,
         role: user.role,
         institution: user.institution,
+        organizationId: user.organizationId || null,
+        departmentId: user.departmentId || null,
         researchInterests: user.researchInterests ? user.researchInterests.map((i) => i.name) : [],
       },
     };
@@ -455,7 +494,14 @@ export class AuthService {
   /**
    * Generates short-lived access token (15m) and long-lived refresh token (7d)
    */
-  generateTokenPair(userId: string, email?: string, username?: string, role?: string): TokenPair {
+  generateTokenPair(
+    userId: string,
+    email?: string,
+    username?: string,
+    role?: string,
+    organizationId?: string | null,
+    departmentId?: string | null,
+  ): TokenPair {
     const accessJti = randomUUID();
     const refreshJti = randomUUID();
 
@@ -465,6 +511,8 @@ export class AuthService {
         email,
         username,
         role,
+        organizationId: organizationId || null,
+        departmentId: departmentId || null,
         jti: accessJti,
         type: 'access',
       },
@@ -478,6 +526,8 @@ export class AuthService {
         email,
         username,
         role,
+        organizationId: organizationId || null,
+        departmentId: departmentId || null,
         jti: refreshJti,
         type: 'refresh',
       },

@@ -336,3 +336,45 @@ CREATE INDEX IF NOT EXISTS idx_contrib_actor_date ON research_contributions(acto
 CREATE INDEX IF NOT EXISTS idx_contrib_actor_type ON research_contributions(actor_id, event_type);
 CREATE INDEX IF NOT EXISTS idx_contrib_actor_output ON research_contributions(actor_id, output_ref);
 CREATE INDEX IF NOT EXISTS idx_contrib_actor_source_ext ON research_contributions(actor_id, source, external_id);
+
+-- ------------------------------------------------------------------------------
+-- 15. WORKSPACE THREADED COMMENTS, CHAT MESSAGES & TENANT COLUMNS (SPRINT 1 SYNC)
+-- ------------------------------------------------------------------------------
+ALTER TABLE users ADD COLUMN IF NOT EXISTS organization_id UUID;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS department_id UUID;
+CREATE INDEX IF NOT EXISTS idx_users_org ON users(organization_id);
+CREATE INDEX IF NOT EXISTS idx_users_dept ON users(department_id);
+
+ALTER TABLE group_projects ADD COLUMN IF NOT EXISTS version INT NOT NULL DEFAULT 1;
+
+CREATE TABLE IF NOT EXISTS workspace_comments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES group_projects(id) ON DELETE CASCADE,
+    author_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    section_id VARCHAR(100),
+    parent_id UUID,
+    content TEXT NOT NULL,
+    is_resolved BOOLEAN NOT NULL DEFAULT FALSE,
+    resolved_by_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    resolved_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_wc_project ON workspace_comments(project_id);
+CREATE INDEX IF NOT EXISTS idx_wc_author ON workspace_comments(author_id);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    room_id VARCHAR(255) NOT NULL,
+    sender_id VARCHAR(255) NOT NULL,
+    sender_name VARCHAR(255) NOT NULL,
+    sender_avatar VARCHAR(500),
+    content TEXT NOT NULL,
+    attachments JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_room ON chat_messages(room_id);
+CREATE INDEX IF NOT EXISTS idx_chat_sender ON chat_messages(sender_id);
