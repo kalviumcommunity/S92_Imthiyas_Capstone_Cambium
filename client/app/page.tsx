@@ -1284,6 +1284,7 @@ function IdentitySection() {
                     showLegend={true}
                     showCategories={true}
                     showDayLabels={false}
+                    monthsCount={10}
                   />
                 </div>
               )}
@@ -1442,44 +1443,44 @@ function WorkspaceSection() {
         className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-opacity duration-700"
         style={{
           backgroundImage: "url('/backgrounds/cambium-botanical-oil-canvas.webp')",
-          opacity: 0.88,
+          opacity: 0.9,
         }}
       />
 
-      {/* Atmospheric Chiaroscuro Vignette & Edge Fades (Dutch Master Landscape Lighting) */}
+      {/* Atmospheric Chiaroscuro Vignette & Edge Fades (Dutch Master Woodland Depth) */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
-            linear-gradient(to bottom, ${C.darkBg} 0%, rgba(17,25,19,0.35) 15%, rgba(17,25,19,0.1) 50%, rgba(17,25,19,0.4) 85%, ${C.darkBg} 100%),
-            radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(17,25,19,0.72) 100%)
+            linear-gradient(to bottom, ${C.darkBg} 0%, rgba(17,25,19,0.52) 14%, rgba(17,25,19,0.28) 50%, rgba(17,25,19,0.58) 86%, ${C.darkBg} 100%),
+            radial-gradient(ellipse at 50% 56%, rgba(10,16,12,0.52) 0%, rgba(12,19,14,0.34) 48%, rgba(8,13,9,0.78) 100%)
           `,
         }}
       />
 
       <div style={{ maxWidth: 1320, margin: '0 auto', position: 'relative', zIndex: 10 }}>
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-3">
+        <div style={{ textAlign: 'center', marginBottom: 42 }}>
+          <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-3 drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)]">
             <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
             01 / Literature Synthesis & Live Research Horizon
           </div>
-          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em' }} className="text-[#F5F4F0] mb-4 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+          <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em' }} className="text-[#F5F4F0] mb-4 drop-shadow-[0_3px_16px_rgba(0,0,0,0.85)]">
             Your research has a home. Discover, synthesize, and organize.
           </h2>
-          <p className="text-[16.5px] text-[rgba(245,244,240,0.85)] max-w-[660px] mx-auto leading-relaxed drop-shadow-[0_1px_8px_rgba(0,0,0,0.7)]">
+          <p className="text-[16.5px] text-[rgba(245,244,240,0.88)] max-w-[660px] mx-auto leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
             An authentic glimpse into your live scholar console: synthesis pipelines, active grant deadlines, emerging preprints, and collaborative vectors unified in one cohesive space.
           </p>
         </div>
 
-        {/* Authentic Live Research Desk with Uniform Outline and Subtle Shadow */}
-        <div className="w-full overflow-x-auto pb-4">
-          <div className="min-w-[1060px] max-w-[1320px] mx-auto rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[#FAF7F0] overflow-hidden shadow-[0_24px_70px_rgba(0,0,0,0.65),0_4px_20px_rgba(0,0,0,0.35),0_0_0_1px_rgba(255,255,255,0.12)] relative">
+        {/* Authentic Live Research Desk with Elevated Depth Shadows & Edge Distinction */}
+        <div className="w-full overflow-x-auto pb-8 pt-2 px-2">
+          <div className="min-w-[1060px] max-w-[1320px] mx-auto rounded-2xl border border-[rgba(250,247,240,0.32)] dark:border-[#2C4231] bg-[#FAF7F0] dark:bg-[#131C15] overflow-hidden shadow-[0_42px_105px_-12px_rgba(3,9,5,0.92),0_20px_48px_-8px_rgba(3,9,5,0.72),0_0_0_1px_rgba(250,247,240,0.22)] dark:shadow-[0_44px_110px_-10px_rgba(0,0,0,0.95),0_0_0_1px_rgba(74,222,128,0.22)] relative">
             {/* Top Header Bar */}
             <div className="px-5 py-3.5 bg-[#FAF7F0] dark:bg-[#131C15] border-b border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between gap-4">
               {/* Left Brand / Desk Identifier */}
               <div className="flex items-center gap-2.5 shrink-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#3E6248] animate-pulse" />
-                <span className="font-mono text-xs font-bold tracking-wider text-[#202920] uppercase">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
+                <span className="font-mono text-xs font-bold tracking-wider text-[#202920] dark:text-[#EDEAE2] uppercase">
                   LIVE RESEARCH DESK
                 </span>
               </div>
@@ -1492,7 +1493,7 @@ function WorkspaceSection() {
                     router.push(`/discover?q=${encodeURIComponent(searchQuery.trim())}`);
                   }
                 }}
-                className="flex-1 max-w-xl mx-auto flex items-center bg-white border border-[#E4DCCB] rounded-full px-4 py-2 shadow-xs hover:shadow-sm focus-within:border-[#3E6248] focus-within:ring-2 focus-within:ring-[#3E6248]/20 transition-all gap-2.5"
+                className="flex-1 max-w-xl mx-auto flex items-center bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#253629] rounded-full px-4 py-2 shadow-xs hover:shadow-sm focus-within:border-[#3E6248] dark:focus-within:border-[#4ADE80] focus-within:ring-2 focus-within:ring-[#3E6248]/20 transition-all gap-2.5"
               >
                 <Search size={15} className="text-[#85877B] shrink-0" />
                 <input
@@ -1500,19 +1501,19 @@ function WorkspaceSection() {
                   placeholder="Search 240M+ papers, researchers, topics, grants..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent border-none outline-none text-xs text-[#202920] placeholder-[#85877B] font-sans"
+                  className="w-full bg-transparent border-none outline-none text-xs text-[#202920] dark:text-[#EDEAE2] placeholder-[#85877B] font-sans"
                 />
                 {searchQuery ? (
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    className="text-xs text-[#85877B] hover:text-[#202920] p-0.5"
+                    className="text-xs text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] p-0.5"
                     title="Clear search"
                   >
                     ✕
                   </button>
                 ) : (
-                  <kbd className="font-mono text-[10px] text-[#85877B] bg-[#FAF7F0] border border-[#E4DCCB] px-1.5 py-0.5 rounded shrink-0">
+                  <kbd className="font-mono text-[10px] text-[#85877B] bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] px-1.5 py-0.5 rounded shrink-0">
                     ⌘K
                   </kbd>
                 )}
@@ -1521,26 +1522,26 @@ function WorkspaceSection() {
               {/* Right Icons & User Profile Badge */}
               <div className="flex items-center gap-4 shrink-0">
                 <button
-                  className="p-1.5 text-[#62685E] hover:text-[#202920] transition-colors relative cursor-pointer"
+                  className="p-1.5 text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] transition-colors relative cursor-pointer"
                   title="Notifications"
                   onClick={() => setActiveAction('Viewing notifications: 3 unread items')}
                 >
                   <Bell size={16} />
-                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#3E6248]" />
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
                 </button>
                 <button
-                  className="p-1.5 text-[#62685E] hover:text-[#202920] transition-colors cursor-pointer"
+                  className="p-1.5 text-[#62685E] dark:text-[#A3B899] hover:text-[#202920] dark:hover:text-[#EDEAE2] transition-colors cursor-pointer"
                   title="AI Copilot"
                   onClick={() => setActiveAction('Cambium AI Assistant active')}
                 >
                   <Sparkles size={16} />
                 </button>
-                <div className="flex items-center gap-2.5 pl-2 border-l border-[#E4DCCB]">
-                  <div className="w-8 h-8 rounded-full bg-[#DCE6D7] border border-[#3E6248]/30 flex items-center justify-center font-bold text-xs text-[#202920]">
+                <div className="flex items-center gap-2.5 pl-2 border-l border-[#E4DCCB] dark:border-[#233327]">
+                  <div className="w-8 h-8 rounded-full bg-[#DCE6D7] dark:bg-[#1D2D21] border border-[#3E6248]/30 dark:border-[#4ADE80]/30 flex items-center justify-center font-bold text-xs text-[#202920] dark:text-[#EDEAE2]">
                     IM
                   </div>
                   <div className="text-left">
-                    <div className="text-xs font-bold text-[#202920] leading-tight">Imthiyas</div>
+                    <div className="text-xs font-bold text-[#202920] dark:text-[#EDEAE2] leading-tight">Imthiyas</div>
                     <div className="text-[10px] text-[#85877B] font-mono leading-tight">MIT CSAIL · Postdoc</div>
                   </div>
                 </div>
@@ -1626,10 +1627,10 @@ function WorkspaceSection() {
                 <div>
                   {/* Greeting (Wednesday, October 7 — Photo 2 Match) */}
                   <div className="mb-6">
-                    <h3 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-[38px] font-normal text-[#202920] tracking-tight leading-tight m-0">
-                      Good evening, <span className="italic font-serif text-[#3E6248]">Imthiyas.</span>
+                    <h3 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-[38px] font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight leading-tight m-0">
+                      Good evening, <span className="italic font-serif text-[#3E6248] dark:text-[#4ADE80]">Imthiyas.</span>
                     </h3>
-                    <p className="font-sans text-xs md:text-sm text-[#62685E] mt-1.5 mb-0">
+                    <p className="font-sans text-xs md:text-sm text-[#62685E] dark:text-[#A3B899] mt-1.5 mb-0">
                       Here is your live research synthesis and active scholarly horizon for Wednesday, October 7.
                     </p>
                   </div>
@@ -1640,7 +1641,7 @@ function WorkspaceSection() {
                       <button
                         key={action.id}
                         onClick={() => setActiveAction(action.note)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#E4DCCB] bg-white text-xs font-semibold text-[#202920] hover:border-[#3E6248] hover:bg-[#F2EBDD] transition-all cursor-pointer shadow-2xs"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] text-xs font-semibold text-[#202920] dark:text-[#EDEAE2] hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:bg-[#F2EBDD] dark:hover:bg-[#1D2D21] transition-all cursor-pointer shadow-2xs"
                       >
                         {action.label}
                       </button>
@@ -1650,16 +1651,16 @@ function WorkspaceSection() {
                   {/* Needs Your Attention Section Header */}
                   <div className="flex items-center justify-between mb-3.5">
                     <div>
-                      <h4 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-xl font-normal text-[#202920] m-0">
+                      <h4 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-xl font-normal text-[#202920] dark:text-[#EDEAE2] m-0">
                         Needs your attention
                       </h4>
-                      <p className="text-xs text-[#85877B] m-0 mt-0.5">
+                      <p className="text-xs text-[#85877B] dark:text-[#8FA89B] m-0 mt-0.5">
                         High-confidence matches for your active research vectors
                       </p>
                     </div>
                     <Link
                       href="/opportunities"
-                      className="text-xs font-semibold text-[#3E6248] hover:text-[#202920] flex items-center gap-1 no-underline transition-colors"
+                      className="text-xs font-semibold text-[#3E6248] dark:text-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2] flex items-center gap-1 no-underline transition-colors"
                     >
                       View all 8 matches →
                     </Link>
@@ -1683,7 +1684,7 @@ function WorkspaceSection() {
                       return (
                         <div
                           key={card.id}
-                          className="bg-white border border-[#E4DCCB] rounded-xl p-5 hover:border-[#3E6248] transition-all flex flex-col justify-between shadow-xs group"
+                          className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#253629] rounded-xl p-5 hover:border-[#3E6248] dark:hover:border-[#4ADE80] transition-all flex flex-col justify-between shadow-xs group"
                         >
                           <div>
                             {/* Type & Match Pills */}
@@ -1692,8 +1693,8 @@ function WorkspaceSection() {
                                 {card.type}
                               </span>
                               <div className="flex items-center gap-2">
-                                <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-[#DCE6D7] text-[#3E6248] flex items-center gap-1">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248]" />
+                                <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold bg-[#DCE6D7] dark:bg-[#1D2D21] text-[#3E6248] dark:text-[#4ADE80] flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
                                   {card.match}
                                 </span>
                                 <button
@@ -1701,27 +1702,27 @@ function WorkspaceSection() {
                                     e.stopPropagation()
                                     toggleSave(card.id)
                                   }}
-                                  className="text-[#85877B] hover:text-[#202920] p-1 cursor-pointer"
+                                  className="text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] p-1 cursor-pointer"
                                   title={isSaved ? 'Saved' : 'Save'}
                                 >
-                                  <Bookmark size={13} className={isSaved ? 'fill-[#3E6248] text-[#3E6248]' : ''} />
+                                  <Bookmark size={13} className={isSaved ? 'fill-[#3E6248] text-[#3E6248] dark:fill-[#4ADE80] dark:text-[#4ADE80]' : ''} />
                                 </button>
                               </div>
                             </div>
 
                             {/* Card Title */}
-                            <h5 className="font-sans text-[14.5px] font-bold text-[#202920] tracking-tight leading-snug mb-2 group-hover:text-[#3E6248] transition-colors">
+                            <h5 className="font-sans text-[14.5px] font-bold text-[#202920] dark:text-[#EDEAE2] tracking-tight leading-snug mb-2 group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] transition-colors">
                               {card.title}
                             </h5>
 
                             {/* Card Description */}
-                            <p className="text-xs text-[#62685E] leading-relaxed mb-4">
+                            <p className="text-xs text-[#62685E] dark:text-[#A3B899] leading-relaxed mb-4">
                               {card.desc}
                             </p>
                           </div>
 
                           {/* Card Footer */}
-                          <div className="pt-3 border-t border-[#FAF7F0] flex items-center justify-between text-[11px] font-sans text-[#85877B]">
+                          <div className="pt-3 border-t border-[#FAF7F0] dark:border-[#233327] flex items-center justify-between text-[11px] font-sans text-[#85877B]">
                             {card.footer ? (
                               <span>{card.footer}</span>
                             ) : (
@@ -1732,7 +1733,7 @@ function WorkspaceSection() {
                             )}
                             <Link
                               href={card.href}
-                              className="text-[#3E6248] hover:text-[#202920] font-sans font-semibold underline underline-offset-2 no-underline shrink-0 ml-2"
+                              className="text-[#3E6248] dark:text-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2] font-sans font-semibold underline underline-offset-2 no-underline shrink-0 ml-2"
                             >
                               Explore ↗
                             </Link>
@@ -1744,9 +1745,9 @@ function WorkspaceSection() {
                 </div>
 
                 {/* Sub-bar synchronization ledger */}
-                <div className="pt-4 mt-4 border-t border-[#E4DCCB]/60 flex items-center justify-between text-[11px] text-[#85877B]">
+                <div className="pt-4 mt-4 border-t border-[#E4DCCB]/60 dark:border-[#233327] flex items-center justify-between text-[11px] text-[#85877B]">
                   <span>Scholarly Ledger synchronized with MIT CSAIL, NSF, and arXiv registries</span>
-                  <Link href="/dashboard" className="text-[#3E6248] hover:text-[#202920] font-semibold no-underline">
+                  <Link href="/dashboard" className="text-[#3E6248] dark:text-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2] font-semibold no-underline">
                     Open Full Live Research Desk (/dashboard) ↗
                   </Link>
                 </div>
@@ -1758,27 +1759,27 @@ function WorkspaceSection() {
                   {/* Upcoming Deadlines */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E]">
+                      <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                         UPCOMING DEADLINES
                       </span>
-                      <Link href="/opportunities" className="text-[11px] text-[#85877B] hover:text-[#202920] no-underline font-medium">
+                      <Link href="/opportunities" className="text-[11px] text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] no-underline font-medium">
                         Calendar →
                       </Link>
                     </div>
 
                     <div className="flex flex-col gap-2.5">
                       {[
-                        { month: 'SEP', day: '14', title: 'NeurIPS Paper Deadline', time: '11:59 PM AoE', badge: 'DEADLINE', badgeBg: 'bg-[#FDF1EE]', badgeColor: 'text-[#B33D35]' },
-                        { month: 'SEP', day: '18', title: 'Lab Meeting — Climate Models', time: '2:00 PM · Zoom', badge: 'MEETING', badgeBg: 'bg-[#DCE6D7]', badgeColor: 'text-[#3E6248]' },
-                        { month: 'SEP', day: '22', title: 'EMNLP Early Submission', time: '5:00 PM PST', badge: 'DEADLINE', badgeBg: 'bg-[#FDF1EE]', badgeColor: 'text-[#B33D35]' },
+                        { month: 'SEP', day: '14', title: 'NeurIPS Paper Deadline', time: '11:59 PM AoE', badge: 'DEADLINE', badgeBg: 'bg-[#FDF1EE] dark:bg-[#2B1715]', badgeColor: 'text-[#B33D35] dark:text-[#F87171]' },
+                        { month: 'SEP', day: '18', title: 'Lab Meeting — Climate Models', time: '2:00 PM · Zoom', badge: 'MEETING', badgeBg: 'bg-[#DCE6D7] dark:bg-[#1D2D21]', badgeColor: 'text-[#3E6248] dark:text-[#4ADE80]' },
+                        { month: 'SEP', day: '22', title: 'EMNLP Early Submission', time: '5:00 PM PST', badge: 'DEADLINE', badgeBg: 'bg-[#FDF1EE] dark:bg-[#2B1715]', badgeColor: 'text-[#B33D35] dark:text-[#F87171]' },
                       ].map((d) => (
-                        <div key={d.title} className="bg-white border border-[#E4DCCB] rounded-lg p-2.5 flex items-center gap-3 shadow-2xs hover:border-[#3E6248] transition-colors">
-                          <div className="w-9 h-11 bg-[#FAF7F0] border border-[#E4DCCB] rounded flex flex-col items-center justify-center shrink-0">
+                        <div key={d.title} className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#253629] rounded-lg p-2.5 flex items-center gap-3 shadow-2xs hover:border-[#3E6248] dark:hover:border-[#4ADE80] transition-colors">
+                          <div className="w-9 h-11 bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] rounded flex flex-col items-center justify-center shrink-0">
                             <span className="text-[9px] font-mono font-bold text-[#85877B] leading-none">{d.month}</span>
-                            <span className="text-sm font-bold text-[#202920] leading-none mt-0.5">{d.day}</span>
+                            <span className="text-sm font-bold text-[#202920] dark:text-[#EDEAE2] leading-none mt-0.5">{d.day}</span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-xs font-semibold text-[#202920] truncate">{d.title}</div>
+                            <div className="text-xs font-semibold text-[#202920] dark:text-[#EDEAE2] truncate">{d.title}</div>
                             <div className="text-[10.5px] text-[#85877B]">{d.time}</div>
                           </div>
                           <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0 ${d.badgeBg} ${d.badgeColor}`}>
@@ -1792,10 +1793,10 @@ function WorkspaceSection() {
                   {/* Scholars You May Know */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E]">
+                      <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                         SCHOLARS YOU MAY KNOW
                       </span>
-                      <Link href="/community" className="text-[11px] text-[#85877B] hover:text-[#202920] no-underline font-medium">
+                      <Link href="/community" className="text-[11px] text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] no-underline font-medium">
                         Explore →
                       </Link>
                     </div>
@@ -1808,13 +1809,13 @@ function WorkspaceSection() {
                       ].map((s) => {
                         const isConnected = connectedScholars[s.name]
                         return (
-                          <div key={s.name} className="flex items-center justify-between gap-2 bg-white border border-[#E4DCCB] rounded-lg p-2 shadow-2xs">
+                          <div key={s.name} className="flex items-center justify-between gap-2 bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#253629] rounded-lg p-2 shadow-2xs">
                             <div className="flex items-center gap-2 min-w-0">
                               <div className={`w-7 h-7 rounded-full ${s.bg} text-white font-bold text-[10px] flex items-center justify-center shrink-0`}>
                                 {s.initials}
                               </div>
                               <div className="min-w-0">
-                                <div className="text-xs font-bold text-[#202920] truncate">{s.name}</div>
+                                <div className="text-xs font-bold text-[#202920] dark:text-[#EDEAE2] truncate">{s.name}</div>
                                 <div className="text-[10px] text-[#85877B] truncate">{s.role}</div>
                               </div>
                             </div>
@@ -1822,8 +1823,8 @@ function WorkspaceSection() {
                               onClick={() => toggleConnect(s.name)}
                               className={`text-[11px] font-semibold px-2 py-1 rounded transition-colors cursor-pointer shrink-0 ${
                                 isConnected
-                                  ? 'bg-[#DCE6D7] text-[#3E6248]'
-                                  : 'bg-[#FAF7F0] hover:bg-[#EAE5D9] text-[#202920] border border-[#E4DCCB]'
+                                  ? 'bg-[#DCE6D7] dark:bg-[#1D2D21] text-[#3E6248] dark:text-[#4ADE80]'
+                                  : 'bg-[#FAF7F0] dark:bg-[#131C15] hover:bg-[#EAE5D9] dark:hover:bg-[#1D2D21] text-[#202920] dark:text-[#EDEAE2] border border-[#E4DCCB] dark:border-[#253629]'
                               }`}
                             >
                               {isConnected ? 'Requested ✓' : '+ Connect'}
@@ -1836,7 +1837,7 @@ function WorkspaceSection() {
 
                   {/* Curated Vectors */}
                   <div>
-                    <div className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E] mb-2.5">
+                    <div className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899] mb-2.5">
                       CURATED VECTORS
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -1848,10 +1849,10 @@ function WorkspaceSection() {
                         <Link
                           key={v.label}
                           href={v.href}
-                          className="text-xs text-[#202920] hover:text-[#3E6248] py-1 px-2 rounded hover:bg-white flex items-center justify-between transition-colors no-underline group"
+                          className="text-xs text-[#202920] dark:text-[#EDEAE2] hover:text-[#3E6248] dark:hover:text-[#4ADE80] py-1 px-2 rounded hover:bg-white dark:hover:bg-[#18231B] flex items-center justify-between transition-colors no-underline group"
                         >
                           <span className="truncate">{v.label}</span>
-                          <ExternalLink size={12} className="text-[#85877B] group-hover:text-[#3E6248] shrink-0" />
+                          <ExternalLink size={12} className="text-[#85877B] group-hover:text-[#3E6248] dark:group-hover:text-[#4ADE80] shrink-0" />
                         </Link>
                       ))}
                     </div>
@@ -2785,40 +2786,246 @@ function getBarkContourPath(cx: number, cy: number, r: number) {
 
 // ─── Ecosystem Map Section (Botanical Wood Cross-Section & Living Cambium Meristem) ───
 function EcosystemMapSection() {
-  const [activeEntity, setActiveEntity] = useState<string | null>(null)
+  const [hoveredEntity, setHoveredEntity] = useState<string | null>(null)
+  const [pinnedEntity, setPinnedEntity] = useState<string | null>(null)
+  const activeEntity = hoveredEntity ?? pinnedEntity
 
-  // 10 Research Entities positioned organically across 4 concentric annual wood growth rings
+  const CX = 520
+  const CY = 420
+
+  // 7 Concentric Botanical Growth Rings (+3 extra internal orbits over the original 4)
+  const growthRings = [
+    { id: 'r1', name: 'Heartwood Pith', radius: 104, seed: 1, roughness: 0.78, isCambium: false },
+    { id: 'r2', name: 'Primary Xylem', radius: 152, seed: 2, roughness: 0.85, isCambium: false },
+    { id: 'r3', name: 'Secondary Xylem', radius: 200, seed: 3, roughness: 0.92, isCambium: false },
+    { id: 'r4', name: 'Living Cambium Zone', radius: 248, seed: 5, roughness: 1.02, isCambium: true },
+    { id: 'r5', name: 'Vascular Phloem', radius: 294, seed: 7, roughness: 1.06, isCambium: false },
+    { id: 'r6', name: 'Outer Sapwood', radius: 338, seed: 8, roughness: 1.12, isCambium: false },
+    { id: 'r7', name: 'Canopy Horizon', radius: 374, seed: 11, roughness: 1.16, isCambium: false },
+  ]
+
+  // 16 Research Entities distributed cleanly across all 7 orbits (+6 new entities, zero pill dot overlap)
   const entities = [
-    // Ring 1 / Inner Heartwood (Foundational seed thinking & core domains)
-    { id: 'notes', label: 'Notes', botanical: 'Germinal Seeds', ring: 'Heartwood Pith', radius: 112, x: 489, y: 231, delay: '0s' },
-    { id: 'topics', label: 'Topics', botanical: 'Discipline Trunks', ring: 'Heartwood Pith', radius: 118, x: 326, y: 393, delay: '-0.5s' },
+    // Ring 1 / Heartwood Pith (r = 104)
+    {
+      id: 'notes',
+      label: 'Notes',
+      botanical: 'Germinal Seeds',
+      ringId: 'r1',
+      ring: 'Heartwood Pith (Ring 1)',
+      x: 597,
+      y: 350,
+      href: '/workspace',
+      summary: 'Atomic markdown field notes, lab reflections, and literature margin annotations anchored to primary sources.',
+      connections: ['Hypotheses', 'Topics', 'Papers'],
+    },
+    {
+      id: 'hypotheses',
+      label: 'Hypotheses',
+      botanical: 'Seed Meristem',
+      ringId: 'r1',
+      ring: 'Heartwood Pith (Ring 1)',
+      x: 440,
+      y: 487,
+      href: '/graph',
+      summary: 'Falsifiable propositions linked directly to supporting axioms, counter-evidence, and active bench trials.',
+      connections: ['Notes', 'Protocols', 'Datasets'],
+    },
 
-    // Ring 2 / Secondary Wood (Empirical data, labs, researchers)
-    { id: 'datasets', label: 'Datasets', botanical: 'Empirical Substrate', ring: 'Secondary Xylem', radius: 170, x: 312, y: 171, delay: '-0.8s' },
-    { id: 'people', label: 'People', botanical: 'Symbiotic Network', ring: 'Secondary Xylem', radius: 176, x: 580, y: 356, delay: '-1s' },
-    { id: 'labs', label: 'Labs', botanical: 'Root Environments', ring: 'Secondary Xylem', radius: 172, x: 485, y: 464, delay: '-3s' },
+    // Ring 2 / Primary Xylem (r = 152) — Added Orbit
+    {
+      id: 'topics',
+      label: 'Topics',
+      botanical: 'Discipline Trunks',
+      ringId: 'r2',
+      ring: 'Primary Xylem (Ring 2)',
+      x: 391,
+      y: 339,
+      href: '/discover',
+      summary: 'Hierarchical domain taxonomies bridging clinical imaging, molecular systems, and computational theory.',
+      connections: ['Datasets', 'Notes', 'Conferences'],
+    },
+    {
+      id: 'protocols',
+      label: 'Protocols',
+      botanical: 'Experimental Roots',
+      ringId: 'r2',
+      ring: 'Primary Xylem (Ring 2)',
+      x: 600,
+      y: 549,
+      href: '/workspace',
+      summary: 'Versioned SOPs, assay checklists, IRB documentation, and reproducible step-by-step experimental recipes.',
+      connections: ['Hypotheses', 'Labs', 'Peer Reviews'],
+    },
 
-    // Ring 3 / Living Vascular Cambium Zone (Active shoots & formal dissemination records)
-    { id: 'projects', label: 'Projects', botanical: 'Vascular Shoots', ring: 'Living Cambium Zone', radius: 222, x: 624, y: 253, delay: '-2s' },
-    { id: 'journals', label: 'Journals', botanical: 'Codified Rings', ring: 'Living Cambium Zone', radius: 220, x: 198, y: 367, delay: '-1.5s' },
+    // Ring 3 / Secondary Xylem (r = 200)
+    {
+      id: 'datasets',
+      label: 'Datasets',
+      botanical: 'Empirical Substrate',
+      ringId: 'r3',
+      ring: 'Secondary Xylem (Ring 3)',
+      x: 445,
+      y: 235,
+      href: '/datasets',
+      summary: 'Immutable DOI-backed corpora, cohorts, and training benchmarks wired straight into reproducible notebooks.',
+      connections: ['Topics', 'Code & Models', 'Funding'],
+    },
+    {
+      id: 'people',
+      label: 'People',
+      botanical: 'Symbiotic Network',
+      ringId: 'r3',
+      ring: 'Secondary Xylem (Ring 3)',
+      x: 716,
+      y: 462,
+      href: '/community',
+      summary: 'ORCID-verified co-authors, PIs, doctoral fellows, and domain reviewers mapped across institutional clusters.',
+      connections: ['Projects', 'Labs', 'Patents & IP'],
+    },
+    {
+      id: 'labs',
+      label: 'Labs',
+      botanical: 'Root Environments',
+      ringId: 'r3',
+      ring: 'Secondary Xylem (Ring 3)',
+      x: 499,
+      y: 619,
+      href: '/institution',
+      summary: 'University R&D centres, shared compute clusters, wet-lab cores, and multi-department consortia.',
+      connections: ['People', 'Protocols', 'Journals'],
+    },
 
-    // Ring 4 / Outer Sapwood & Canopy Horizon (Outward scholarship, funding, global venues)
-    { id: 'papers', label: 'Papers', botanical: 'Annual Foliage', ring: 'Canopy Horizon', radius: 258, x: 410, y: 52, delay: '0s' },
-    { id: 'conferences', label: 'Conferences', botanical: 'Cross-Pollination', ring: 'Canopy Horizon', radius: 256, x: 163, y: 244, delay: '-2.5s' },
-    { id: 'funding', label: 'Funding', botanical: 'Metabolic Sap', ring: 'Canopy Horizon', radius: 252, x: 204, y: 165, delay: '-3.5s' },
+    // Ring 4 / Active Cambium Zone (r = 248) — Glowing Vascular Cambium Layer
+    {
+      id: 'projects',
+      label: 'Projects',
+      botanical: 'Vascular Shoots',
+      ringId: 'r4',
+      ring: 'Living Cambium Zone (Ring 4)',
+      x: 747,
+      y: 319,
+      href: '/workspace',
+      summary: 'Multi-milestone research workspaces uniting manuscripts, datasets, collaborators, and funding deliverables.',
+      connections: ['Preprints', 'People', 'Funding'],
+    },
+    {
+      id: 'preprints',
+      label: 'Preprints',
+      botanical: 'Early Buds',
+      ringId: 'r4',
+      ring: 'Living Cambium Zone (Ring 4)',
+      x: 621,
+      y: 193,
+      href: '/discover',
+      summary: 'Rapid arXiv, bioRxiv, and medRxiv disbursements synced automatically with citation velocity telemetry.',
+      connections: ['Projects', 'Papers', 'Peer Reviews'],
+    },
+    {
+      id: 'code',
+      label: 'Code & Models',
+      botanical: 'Structural Fibers',
+      ringId: 'r4',
+      ring: 'Living Cambium Zone (Ring 4)',
+      x: 279,
+      y: 480,
+      href: '/portfolio',
+      summary: 'Open-source repositories, weights checkpoints, evaluation harnesses, and software citations.',
+      connections: ['Datasets', 'Journals', 'Hypotheses'],
+    },
+
+    // Ring 5 / Vascular Phloem (r = 294) — Added Orbit
+    {
+      id: 'journals',
+      label: 'Journals',
+      botanical: 'Codified Rings',
+      ringId: 'r5',
+      ring: 'Vascular Phloem (Ring 5)',
+      x: 316,
+      y: 631,
+      href: '/discover',
+      summary: 'Peer-reviewed serials, editorial call deadlines, impact trajectories, and open-access indexing metadata.',
+      connections: ['Code & Models', 'Labs', 'Papers'],
+    },
+    {
+      id: 'reviews',
+      label: 'Peer Reviews',
+      botanical: 'Canopy Pruning',
+      ringId: 'r5',
+      ring: 'Vascular Phloem (Ring 5)',
+      x: 684,
+      y: 664,
+      href: '/portfolio',
+      summary: 'COPE-verified referee reports, rebuttal threads, and methodological audits with cryptographic attribution.',
+      connections: ['Preprints', 'Protocols', 'Patents & IP'],
+    },
+
+    // Ring 6 / Outer Sapwood (r = 338) — Added Orbit
+    {
+      id: 'conferences',
+      label: 'Conferences',
+      botanical: 'Cross-Pollination',
+      ringId: 'r6',
+      ring: 'Outer Sapwood (Ring 6)',
+      x: 185,
+      y: 373,
+      href: '/opportunities',
+      summary: 'Live CFPs, workshop tracks, symposium proceedings, and submission countdown calendars.',
+      connections: ['Topics', 'Funding', 'Preprints'],
+    },
+    {
+      id: 'patents',
+      label: 'Patents & IP',
+      botanical: 'Protective Bark',
+      ringId: 'r6',
+      ring: 'Outer Sapwood (Ring 6)',
+      x: 818,
+      y: 579,
+      href: '/institution',
+      summary: 'Invention disclosures, translational tech-transfer filings, and institutional commercialization ledgers.',
+      connections: ['People', 'Peer Reviews', 'Funding'],
+    },
+
+    // Ring 7 / Canopy Horizon (r = 374)
+    {
+      id: 'papers',
+      label: 'Papers',
+      botanical: 'Annual Foliage',
+      ringId: 'r7',
+      ring: 'Canopy Horizon (Ring 7)',
+      x: 520,
+      y: 46,
+      href: '/reader',
+      summary: 'Archival manuscripts read inside the AI Scholar Reader with equation synthesis and citation graph extraction.',
+      connections: ['Preprints', 'Journals', 'Notes'],
+    },
+    {
+      id: 'funding',
+      label: 'Funding',
+      botanical: 'Metabolic Sap',
+      ringId: 'r7',
+      ring: 'Canopy Horizon (Ring 7)',
+      x: 251,
+      y: 160,
+      href: '/funding-calls',
+      summary: 'Targeted federal grants, philanthropic fellowships, institutional seed pools, and eligibility matching.',
+      connections: ['Projects', 'Conferences', 'Patents & IP'],
+    },
   ]
 
-  // Intermediate passive medullary wood rays (realistic wood cross-section grain)
-  const passiveRays = [
-    [410, 310, 410, 35],
-    [410, 310, 600, 120],
-    [410, 310, 680, 310],
-    [410, 310, 580, 500],
-    [410, 310, 410, 585],
-    [410, 310, 240, 500],
-    [410, 310, 135, 310],
-    [410, 310, 240, 120],
-  ]
+  const activeData = entities.find((e) => e.id === activeEntity) ?? null
+
+  // Intermediate passive medullary wood rays (authentic radial xylem grain across enlarged trunk)
+  const passiveRays = Array.from({ length: 16 }, (_, idx) => {
+    const angle = (idx / 16) * Math.PI * 2 + 0.14
+    const rEnd = 390
+    return [
+      CX,
+      CY,
+      Math.round(CX + rEnd * Math.cos(angle)),
+      Math.round(CY + rEnd * Math.sin(angle)),
+    ]
+  })
 
   return (
     <section id="ecosystem" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '112px 24px', position: 'relative' }}>
@@ -2830,177 +3037,175 @@ function EcosystemMapSection() {
         <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-4xl md:text-6xl font-normal leading-[1.08] tracking-[-0.03em] text-[#F5F4F0] mb-4">
           Everything connects.
         </h2>
-        <p className="text-[17px] text-[rgba(250,249,246,0.72)] mb-14 max-w-[620px] mx-auto leading-relaxed">
+        <p className="text-[17px] text-[rgba(250,249,246,0.72)] mb-12 max-w-[660px] mx-auto leading-relaxed">
           In botanical nature, the cambium layer is the living meristem of the tree — dividing cells to form annual growth rings and pumping nutrient-rich sap outward to nourish the entire canopy. Cambium Research works identically: nourishing your ideas, linking your artifacts, and expanding your scholarly horizon year after year.
         </p>
 
-        {/* Botanical Cut-Tree Stem Wood Cross-Section Graphic (Static, Authentic, Natural Dendrochronology) */}
-        <div style={{ maxWidth: 840, margin: '0 auto', minHeight: 620, position: 'relative' }}>
+        {/* Enlarged Botanical Cut-Tree Stem Wood Cross-Section Graphic (7 Growth Orbits & 16 Scholarly Nodes) */}
+        <div style={{ maxWidth: 1020, margin: '0 auto', position: 'relative' }}>
           <svg
-            viewBox="0 0 820 620"
-            style={{ width: '100%', height: '100%', overflow: 'visible' }}
-            aria-label="Botanical cut tree stem wood cross-section showing authentic annual growth rings and living cambium meristem layer"
+            viewBox="0 0 1040 840"
+            style={{ width: '100%', height: 'auto', maxHeight: 820, overflow: 'visible' }}
+            aria-label="Botanical cut tree stem wood cross-section showing seven concentric annual growth rings and sixteen scholarly entities"
           >
             <defs>
-              {/* Radial gradient for the warm heartwood pith */}
               <radialGradient id="treePithGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#FAF7F0" stopOpacity="0.25" />
-                <stop offset="50%" stopColor="#B89A78" stopOpacity="0.12" />
+                <stop offset="0%" stopColor="#FAF7F0" stopOpacity="0.24" />
+                <stop offset="50%" stopColor="#B89A78" stopOpacity="0.11" />
                 <stop offset="100%" stopColor="#18231B" stopOpacity="0" />
               </radialGradient>
 
-              {/* Natural wood cross-section timber shading */}
               <radialGradient id="woodTrunkShading" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#251D16" stopOpacity="0.96" />
-                <stop offset="28%" stopColor="#211A13" stopOpacity="0.96" />
-                <stop offset="60%" stopColor="#1B1510" stopOpacity="0.98" />
-                <stop offset="85%" stopColor="#140F0B" stopOpacity="0.99" />
+                <stop offset="0%" stopColor="#271F17" stopOpacity="0.97" />
+                <stop offset="28%" stopColor="#211A13" stopOpacity="0.97" />
+                <stop offset="58%" stopColor="#1B1510" stopOpacity="0.98" />
+                <stop offset="84%" stopColor="#140F0B" stopOpacity="0.99" />
                 <stop offset="100%" stopColor="#0D0A08" stopOpacity="1" />
               </radialGradient>
 
-              {/* Heartwood grain gradient */}
               <radialGradient id="heartwoodTone" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#2E2319" stopOpacity="0.8" />
-                <stop offset="70%" stopColor="#221A12" stopOpacity="0.4" />
+                <stop offset="0%" stopColor="#2E2319" stopOpacity="0.82" />
+                <stop offset="70%" stopColor="#221A12" stopOpacity="0.42" />
                 <stop offset="100%" stopColor="#140F0B" stopOpacity="0" />
               </radialGradient>
             </defs>
 
-            {/* 1. Realistic Cut-Tree Bark Trunk Silhouette (Natural Undulating Edge) */}
+            {/* 1. Realistic Cut-Tree Bark Trunk Silhouette (Enlarged r = 398) */}
             <path
-              d={getBarkContourPath(410, 310, 282)}
+              d={getBarkContourPath(CX, CY, 398)}
               fill="url(#woodTrunkShading)"
               stroke="#3D2E20"
-              strokeWidth="4"
-              strokeDasharray="16 3 8 4 24 2"
-              opacity="0.92"
+              strokeWidth="4.5"
+              strokeDasharray="18 4 9 4 26 3"
+              opacity="0.94"
             />
-            {/* Outer bark fissures and texture */}
             <path
-              d={getBarkContourPath(410, 310, 276)}
+              d={getBarkContourPath(CX, CY, 390)}
               fill="none"
               stroke="#2A1F16"
               strokeWidth="2.5"
-              opacity="0.8"
+              opacity="0.82"
             />
             <path
-              d={getTreeRingPath(410, 310, 268, 9, 1.2)}
+              d={getTreeRingPath(CX, CY, 383, 13, 1.2)}
               fill="none"
-              stroke="rgba(196, 172, 140, 0.20)"
+              stroke="rgba(196, 172, 140, 0.22)"
               strokeWidth="1.2"
             />
 
-            {/* 2. Natural Wood Grain Micro-Rings (Annual Growth Dendrochronology) */}
-            {[72, 92, 138, 154, 188, 204, 238].map((grainRadius, idx) => (
+            {/* 2. Subtle Secondary Micro-Growth Grain Rings */}
+            {[78, 128, 176, 224, 271, 316, 356].map((grainRadius, idx) => (
               <path
                 key={`micro-ring-${idx}`}
-                d={getTreeRingPath(410, 310, grainRadius, idx * 3 + 1, 0.75)}
+                d={getTreeRingPath(CX, CY, grainRadius, idx * 3 + 2, 0.72)}
                 fill="none"
-                stroke="rgba(216, 202, 178, 0.10)"
+                stroke="rgba(216, 202, 178, 0.11)"
                 strokeWidth="0.8"
               />
             ))}
 
-            {/* 3. Core Concentric Annual Growth Rings (Solid, continuous, organic lines like real wood) */}
-            {/* Ring 1: Heartwood Pith Boundary (r ~115) */}
-            <path
-              d={getTreeRingPath(410, 310, 115, 1, 0.85)}
-              fill="none"
-              stroke={activeEntity === 'notes' || activeEntity === 'topics' ? '#4ADE80' : 'rgba(214, 196, 170, 0.28)'}
-              strokeWidth={activeEntity === 'notes' || activeEntity === 'topics' ? '2' : '1.2'}
-              style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }}
-            />
+            {/* 3. Seven Core Concentric Annual Growth Orbits */}
+            {growthRings.map((ring) => {
+              const isRingHighlighted = activeData?.ringId === ring.id
+              const strokeColor = isRingHighlighted
+                ? '#4ADE80'
+                : ring.isCambium
+                ? '#3E6248'
+                : 'rgba(214, 196, 170, 0.28)'
+              return (
+                <path
+                  key={ring.id}
+                  d={getTreeRingPath(CX, CY, ring.radius, ring.seed, ring.roughness)}
+                  fill="none"
+                  stroke={strokeColor}
+                  strokeWidth={isRingHighlighted ? '2.4' : ring.isCambium ? '2' : '1.25'}
+                  opacity={isRingHighlighted ? '0.98' : ring.isCambium ? '0.78' : '0.9'}
+                  style={{ transition: 'stroke 0.3s, stroke-width 0.3s, opacity 0.3s' }}
+                />
+              )
+            })}
 
-            {/* Ring 2: Secondary Xylem / Deep Sapwood (r ~172) */}
-            <path
-              d={getTreeRingPath(410, 310, 172, 2, 0.95)}
-              fill="none"
-              stroke={activeEntity === 'datasets' || activeEntity === 'people' || activeEntity === 'labs' ? '#4ADE80' : 'rgba(214, 196, 170, 0.26)'}
-              strokeWidth={activeEntity === 'datasets' || activeEntity === 'people' || activeEntity === 'labs' ? '2' : '1.2'}
-              style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }}
-            />
-
-            {/* Ring 3: THE LIVING VASCULAR CAMBIUM LAYER (Solid, natural, organic botanical ring) */}
-            <path
-              d={getTreeRingPath(410, 310, 222, 5, 1.1)}
-              fill="none"
-              stroke={activeEntity === 'projects' || activeEntity === 'journals' ? '#4ADE80' : '#3E6248'}
-              strokeWidth={activeEntity === 'projects' || activeEntity === 'journals' ? '2.2' : '1.8'}
-              opacity={activeEntity === 'projects' || activeEntity === 'journals' ? '0.95' : '0.70'}
-              style={{ transition: 'stroke 0.3s, stroke-width 0.3s, opacity 0.3s' }}
-            />
-
-            {/* Ring 4: Outer Sapwood Horizon (r ~256) */}
-            <path
-              d={getTreeRingPath(410, 310, 256, 4, 1.15)}
-              fill="none"
-              stroke={activeEntity === 'papers' || activeEntity === 'conferences' || activeEntity === 'funding' ? '#4ADE80' : 'rgba(214, 196, 170, 0.28)'}
-              strokeWidth={activeEntity === 'papers' || activeEntity === 'conferences' || activeEntity === 'funding' ? '2' : '1.2'}
-              style={{ transition: 'stroke 0.3s, stroke-width 0.3s' }}
-            />
-
-            {/* 4. Natural Medullary Wood Rays (Radial timber grain cutting through annual rings) */}
+            {/* 4. Natural Medullary Wood Rays */}
             {passiveRays.map(([x1, y1, x2, y2], idx) => (
               <line
                 key={`passive-ray-${idx}`}
                 x1={x1} y1={y1} x2={x2} y2={y2}
-                stroke="rgba(214, 196, 170, 0.12)"
+                stroke="rgba(214, 196, 170, 0.11)"
                 strokeWidth="1"
               />
             ))}
 
-            {/* 5. Authentic Natural Radial Wood Checks / Drying Cracks */}
-            <line x1="410" y1="260" x2="410" y2="230" stroke="rgba(25,18,12,0.85)" strokeWidth="1.5" strokeLinecap="round" />
-            <line x1="445" y1="335" x2="475" y2="355" stroke="rgba(25,18,12,0.85)" strokeWidth="1.5" strokeLinecap="round" />
-            <line x1="375" y1="335" x2="345" y2="355" stroke="rgba(25,18,12,0.85)" strokeWidth="1.2" strokeLinecap="round" />
-            <line x1="440" y1="285" x2="470" y2="270" stroke="rgba(25,18,12,0.85)" strokeWidth="1.2" strokeLinecap="round" />
+            {/* 5. Natural Radial Heartwood Checks */}
+            <line x1={CX} y1={CY - 54} x2={CX} y2={CY - 92} stroke="rgba(25,18,12,0.85)" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1={CX + 38} y1={CY + 28} x2={CX + 72} y2={CY + 52} stroke="rgba(25,18,12,0.85)" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1={CX - 38} y1={CY + 28} x2={CX - 70} y2={CY + 52} stroke="rgba(25,18,12,0.85)" strokeWidth="1.2" strokeLinecap="round" />
+            <line x1={CX + 34} y1={CY - 28} x2={CX + 68} y2={CY - 45} stroke="rgba(25,18,12,0.85)" strokeWidth="1.2" strokeLinecap="round" />
 
-            {/* 6. Static Radial Medullary Conduits to Research Entities */}
+            {/* 6. Radial Medullary Conduits & Cross-Orbit Highlight Lines */}
             {entities.map((node) => {
               const isActive = activeEntity === node.id
+              const isRelated = activeData?.connections.includes(node.label)
               return (
                 <line
                   key={`ray-${node.id}`}
-                  x1="410" y1="310" x2={node.x} y2={node.y}
-                  stroke={isActive ? '#3E6248' : 'rgba(196, 172, 140, 0.16)'}
-                  strokeWidth={isActive ? '1.5' : '0.9'}
+                  x1={CX}
+                  y1={CY}
+                  x2={node.x}
+                  y2={node.y}
+                  stroke={isActive ? '#4ADE80' : isRelated ? 'rgba(74,222,128,0.5)' : 'rgba(196, 172, 140, 0.16)'}
+                  strokeWidth={isActive ? '2.1' : isRelated ? '1.3' : '0.9'}
                   style={{ transition: 'stroke 0.25s, stroke-width 0.25s' }}
                 />
               )
             })}
 
+            {/* Secondary connection chord lines for active entity */}
+            {activeData &&
+              entities
+                .filter((other) => activeData.connections.includes(other.label))
+                .map((target) => (
+                  <line
+                    key={`chord-${activeData.id}-${target.id}`}
+                    x1={activeData.x}
+                    y1={activeData.y}
+                    x2={target.x}
+                    y2={target.y}
+                    stroke="#4ADE80"
+                    strokeWidth="1.35"
+                    strokeDasharray="4 4"
+                    opacity="0.72"
+                  />
+                ))}
+
             {/* 7. Center Core: Heartwood Pith & Living Cambium Meristem Hub */}
-            <ellipse cx="410" cy="310" rx="90" ry="90" fill="url(#treePithGlow)" />
-            <ellipse cx="410" cy="310" rx="70" ry="70" fill="url(#heartwoodTone)" />
+            <ellipse cx={CX} cy={CY} rx="92" ry="92" fill="url(#treePithGlow)" />
+            <ellipse cx={CX} cy={CY} rx="72" ry="72" fill="url(#heartwoodTone)" />
 
             <g
-              style={{ cursor: 'pointer', transition: 'transform 0.3s ease', transformOrigin: '410px 310px' }}
+              onClick={() => setPinnedEntity(null)}
+              style={{ cursor: 'pointer', transition: 'transform 0.3s ease', transformOrigin: `${CX}px ${CY}px` }}
               className="hover:scale-105"
             >
-              {/* Heartwood outer organic ring */}
               <path
-                d={getTreeRingPath(410, 310, 56, 0, 0.6)}
+                d={getTreeRingPath(CX, CY, 58, 0, 0.6)}
                 fill="none"
                 stroke="#3E6248"
-                strokeWidth="1.5"
-                opacity="0.75"
+                strokeWidth="1.6"
+                opacity="0.8"
               />
-
-              {/* Heartwood Pith Disk in Living Materials Parchment */}
               <circle
-                cx="410" cy="310" r="50"
+                cx={CX}
+                cy={CY}
+                r="52"
                 fill="#FAF7F0"
                 stroke="#3E6248"
                 strokeWidth="2.5"
-                style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))' }}
+                style={{ filter: 'drop-shadow(0 8px 26px rgba(0,0,0,0.55))' }}
               />
-
-              {/* Official Cambium Golden Spiral Logo */}
-              <image href="/public_logo/cambium-logo-light.svg" x="389" y="270" width="42" height="42" />
-
-              {/* Core Typography */}
+              <image href="/public_logo/cambium-logo-light.svg" x={CX - 21} y={CY - 41} width="42" height="42" />
               <text
-                x="410" y="327"
+                x={CX}
+                y={CY + 17}
                 textAnchor="middle"
                 fontFamily="'Instrument Sans', sans-serif"
                 fontSize="10"
@@ -3011,7 +3216,8 @@ function EcosystemMapSection() {
                 CAMBIUM
               </text>
               <text
-                x="410" y="338"
+                x={CX}
+                y={CY + 28}
                 textAnchor="middle"
                 fontFamily="'Instrument Sans', sans-serif"
                 fontSize="7"
@@ -3023,9 +3229,15 @@ function EcosystemMapSection() {
               </text>
             </g>
 
-            {/* 8. The 10 Research Entities (Static, Natural, Crisp) */}
-            {entities.map(({ id, label, botanical, x, y }) => {
+            {/* 8. The 16 Research Entities (Clean Pill Nodes — No Overlapping Leading Dots) */}
+            {entities.map((entity) => {
+              const { id, label, botanical, x, y } = entity
               const isActive = activeEntity === id
+              const isPinned = pinnedEntity === id
+              const isRelated = activeData?.connections.includes(label)
+              const pillWidth = Math.max(108, label.length * 7.8 + 26)
+              const pillHeight = 38
+
               return (
                 <g
                   key={id}
@@ -3035,59 +3247,64 @@ function EcosystemMapSection() {
                     transformOrigin: `${x}px ${y}px`,
                   }}
                   className="hover:scale-105"
-                  onMouseEnter={() => setActiveEntity(id)}
-                  onMouseLeave={() => setActiveEntity(null)}
+                  onMouseEnter={() => setHoveredEntity(id)}
+                  onMouseLeave={() => setHoveredEntity(null)}
+                  onClick={() => setPinnedEntity((prev) => (prev === id ? null : id))}
                 >
-                  {/* Sand Background Pill Badge with Wood Bark Border */}
+                  {(isActive || isPinned) && (
+                    <rect
+                      x={x - pillWidth / 2 - 4}
+                      y={y - pillHeight / 2 - 4}
+                      width={pillWidth + 8}
+                      height={pillHeight + 8}
+                      rx={23}
+                      ry={23}
+                      fill="none"
+                      stroke="#4ADE80"
+                      strokeWidth="1.5"
+                      opacity="0.7"
+                    />
+                  )}
                   <rect
-                    x={x - 48}
-                    y={y - 18}
-                    width="96"
-                    height="36"
-                    rx="18"
-                    ry="18"
-                    fill="#FAF7F0"
-                    stroke={isActive ? '#3E6248' : '#B8B2A7'}
-                    strokeWidth={isActive ? '2' : '1.5'}
+                    x={x - pillWidth / 2}
+                    y={y - pillHeight / 2}
+                    width={pillWidth}
+                    height={pillHeight}
+                    rx={19}
+                    ry={19}
+                    fill={isActive ? '#FFFFFF' : '#FAF7F0'}
+                    stroke={isActive ? '#4ADE80' : isRelated ? '#3E6248' : '#C2BBA9'}
+                    strokeWidth={isActive ? '2.2' : isRelated ? '1.8' : '1.4'}
                     style={{
                       transition: 'stroke 0.25s, fill 0.25s',
-                      filter: isActive ? 'drop-shadow(0 6px 20px rgba(62,98,72,0.4))' : 'drop-shadow(0 4px 14px rgba(0,0,0,0.4))',
+                      filter: isActive
+                        ? 'drop-shadow(0 8px 24px rgba(74,222,128,0.42))'
+                        : 'drop-shadow(0 4px 14px rgba(0,0,0,0.42))',
                     }}
                   />
 
-                  {/* Chlorophyll green active indicator node */}
-                  <circle
-                    cx={x - 32}
-                    cy={y}
-                    r="3"
-                    fill={isActive ? '#4ADE80' : '#3E6248'}
-                    style={{ transition: 'fill 0.25s' }}
-                  />
-
-                  {/* Primary Entity Name */}
                   <text
-                    x={x + 4}
+                    x={x}
                     y={y - 2}
                     textAnchor="middle"
                     fontFamily="'Instrument Sans', sans-serif"
-                    fontSize="11"
+                    fontSize="11.5"
                     fontWeight="700"
                     fill="#202920"
-                    letterSpacing="0.02em"
+                    letterSpacing="0.015em"
                   >
                     {label}
                   </text>
 
-                  {/* Botanical Growth Role */}
                   <text
-                    x={x + 4}
-                    y={y + 9}
+                    x={x}
+                    y={y + 10.5}
                     textAnchor="middle"
                     fontFamily="'Instrument Sans', sans-serif"
-                    fontSize="7.5"
+                    fontSize="7.6"
                     fontWeight="600"
-                    fill={isActive ? '#3E6248' : '#62685E'}
-                    letterSpacing="0.04em"
+                    fill={isActive ? '#293E30' : '#62685E'}
+                    letterSpacing="0.03em"
                   >
                     {botanical}
                   </text>
@@ -3095,25 +3312,81 @@ function EcosystemMapSection() {
               )
             })}
           </svg>
+
+          {/* Interactive Node Popup / Inspector Console (Triggered on Hover or Click-to-Pin) */}
+          <div className="mt-4 min-h-[104px] flex items-center justify-center">
+            {activeData ? (
+              <div className="w-full max-w-[780px] rounded-2xl bg-[rgba(19,28,21,0.94)] border border-[#4ADE80]/35 px-6 py-4 text-left shadow-[0_20px_50px_rgba(0,0,0,0.55)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="font-mono text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#4ADE80]/15 text-[#4ADE80] border border-[#4ADE80]/30">
+                      {activeData.ring}
+                    </span>
+                    <span className="font-mono text-[10px] text-[#A3B899]">
+                      Botanical Analog: {activeData.botanical}
+                    </span>
+                    {pinnedEntity === activeData.id && (
+                      <span className="font-mono text-[9.5px] text-[#4ADE80]/80">
+                        · Pinned (click hub or pill to clear)
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-[#FAF7F0] font-serif m-0">
+                    {activeData.label}
+                  </h3>
+                  <p className="text-xs text-[#C6D5C0] leading-relaxed m-0 max-w-xl">
+                    {activeData.summary}
+                  </p>
+                  <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                    <span className="text-[10px] font-mono text-[#8FA89B] uppercase mr-1">Connected Conduits:</span>
+                    {activeData.connections.map((connLabel) => {
+                      const target = entities.find((e) => e.label === connLabel)
+                      return (
+                        <button
+                          key={connLabel}
+                          type="button"
+                          onClick={() => target && setPinnedEntity(target.id)}
+                          className="text-[10.5px] font-medium px-2 py-0.5 rounded-full bg-[#1D2D21] hover:bg-[#2B4231] text-[#DCE6D7] border border-[#3E6248]/50 cursor-pointer transition-colors"
+                        >
+                          {connLabel}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+                <Link
+                  href={activeData.href}
+                  className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#4ADE80] hover:bg-[#22C55E] text-[#0E140F] font-sans text-xs font-semibold no-underline transition-colors self-start sm:self-center"
+                >
+                  Open {activeData.label} ↗
+                </Link>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-[rgba(24,35,27,0.72)] border border-[rgba(74,222,128,0.2)] text-xs text-[#A3B899]">
+                <span className="w-2 h-2 rounded-full bg-[#4ADE80]" />
+                Hover or click any of the 16 scholarly nodes across 7 growth rings to trace live medullary conduits
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Botanical Dendrochronology Legend (Connecting nature's tree growth to Cambium research) */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 max-w-[840px] mx-auto text-xs">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 max-w-[920px] mx-auto text-xs">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[rgba(24,35,27,0.85)] border border-[rgba(74,222,128,0.2)] text-[rgba(237,234,226,0.8)]">
             <span className="w-2 h-2 rounded-full bg-[#FAF7F0] border border-[#3E6248]" />
-            <strong className="text-[#FAF7F0]">Heartwood Pith:</strong> Core Research Identity
+            <strong className="text-[#FAF7F0]">Heartwood Pith:</strong> Core Hypotheses & Notes
           </div>
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[rgba(24,35,27,0.85)] border border-[rgba(74,222,128,0.2)] text-[rgba(237,234,226,0.8)]">
             <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
-            <strong className="text-[#4ADE80]">Living Cambium:</strong> Mitosis & Synthesis Engine
+            <strong className="text-[#4ADE80]">Living Cambium:</strong> Mitosis & Active Research
           </div>
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[rgba(24,35,27,0.85)] border border-[rgba(74,222,128,0.2)] text-[rgba(237,234,226,0.8)]">
             <span className="w-2.5 h-[1.5px] bg-[#4ADE80]" />
-            <strong className="text-[rgba(237,234,226,0.9)]">Medullary Rays:</strong> Continuous Sap & Nutrient Flow
+            <strong className="text-[rgba(237,234,226,0.9)]">Medullary Rays:</strong> Cross-Orbit Conduits
           </div>
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[rgba(24,35,27,0.85)] border border-[rgba(74,222,128,0.2)] text-[rgba(237,234,226,0.8)]">
             <span className="w-2 h-2 rounded-full border border-dashed border-[#B8B2A7]" />
-            <strong className="text-[rgba(237,234,226,0.9)]">Annual Growth Rings:</strong> Cumulative Scholarly Horizon
+            <strong className="text-[rgba(237,234,226,0.9)]">7 Annual Rings:</strong> Cumulative Scholarly Horizon
           </div>
         </div>
       </div>

@@ -25,6 +25,7 @@ export interface HexContributionGraphProps {
   categoryFilter?: string | null;
   onFilterCategory?: (category: string | null) => void;
   subtext?: string;
+  monthsCount?: number;
 }
 
 // 8 Attributable Research Categories matching the Authoritative Design Reference
@@ -45,18 +46,18 @@ export const RESEARCH_CATEGORIES = [
 const LEVEL_STYLES = [
   {
     level: 0,
-    className: "fill-[#EDE6DC] dark:fill-[#17231B] stroke-[#E0D7CB] dark:stroke-[#253629]",
-    badgeBg: "bg-[#EDE6DC] dark:bg-[#17231B]",
+    className: "fill-[#F1ECE2] dark:fill-[#16211A] stroke-[#E4DDD0] dark:stroke-[#223227]",
+    badgeBg: "bg-[#F1ECE2] dark:bg-[#16211A]",
   },
   {
     level: 1,
-    className: "fill-[#C2D8C6] dark:fill-[#1E3A26] stroke-[#B0CCA6] dark:stroke-[#2D5438]",
-    badgeBg: "bg-[#C2D8C6] dark:bg-[#1E3A26]",
+    className: "fill-[#C6DBC8] dark:fill-[#1E3A26] stroke-[#B4CEB7] dark:stroke-[#2D5438]",
+    badgeBg: "bg-[#C6DBC8] dark:bg-[#1E3A26]",
   },
   {
     level: 2,
-    className: "fill-[#82AB8E] dark:fill-[#2D583B] stroke-[#719B7D] dark:stroke-[#3E7750]",
-    badgeBg: "bg-[#82AB8E] dark:bg-[#2D583B]",
+    className: "fill-[#84AC8F] dark:fill-[#2D583B] stroke-[#729B7D] dark:stroke-[#3E7750]",
+    badgeBg: "bg-[#84AC8F] dark:bg-[#2D583B]",
   },
   {
     level: 3,
@@ -127,6 +128,7 @@ export function HexContributionGraph({
   categoryFilter = null,
   onFilterCategory,
   subtext,
+  monthsCount = 12,
 }: HexContributionGraphProps) {
   const [internalCategory, setInternalCategory] = useState<string | null>(null);
   const activeCategory = categoryFilter !== undefined ? categoryFilter : internalCategory;
@@ -164,67 +166,97 @@ export function HexContributionGraph({
         return x - Math.floor(x);
       };
 
-      // Realistic seasonal weights (Spring grant cycle, Fall paper deadlines, Summer reading breaks)
-      const MONTH_WEIGHTS = [0.85, 1.12, 1.24, 1.18, 0.92, 1.05, 0.72, 0.58, 0.94, 1.28, 1.22, 0.68];
+      // Realistic human-scale academic rhythm (~65-70% empty cells, irregular mid-level cadence):
+      // Jan-Mar: 3-5 faint sage isolated cells per month
+      // Apr-May: Spring conference/grant crunch (6-8 mixed cells with weekend/day-off gaps)
+      // Jun-Aug: Quiet summer reading break (1-3 faint isolated cells per month)
+      // Sep: Loose moderate Fall cluster (5-7 cells light-to-medium green)
+      // Oct-Dec: Sporadic tapering milestones (2-4 sparse cells)
+      const TARGET_ACTIVE_BY_MONTH = [4, 5, 4, 7, 8, 2, 1, 2, 6, 3, 4, 2];
 
       for (let m = 0; m < 12; m++) {
         const daysInMonth = new Date(Date.UTC(numericYear, m + 1, 0)).getUTCDate();
-        const mWeight = MONTH_WEIGHTS[m];
+        const targetActive = TARGET_ACTIVE_BY_MONTH[m] ?? 3;
+
+        // Deterministic scored candidate days prioritizing weekdays and natural spacing
+        const candidates: Array<{ day: number; dayOfYear: number; score: number }> = [];
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateObj = new Date(Date.UTC(numericYear, m, day));
+          const dayOfYear = Math.floor(
+            (dateObj.getTime() - Date.UTC(numericYear, 0, 1)) / 86400000
+          );
+          const dayOfWeek = (dateObj.getUTCDay() + 6) % 7; // 0=Mon, 6=Sun
+          const dayRand = seededHash(dayOfYear * 41 + day * 17 + m * 29);
+
+          // Strong preference against unbroken multi-day blocks; weekdays slightly favored
+          const clusterBias =
+            m === 3 || m === 4
+              ? (day >= 9 && day <= 24 ? 0.28 : 0.0)
+              : m === 8
+              ? (day >= 6 && day <= 19 ? 0.22 : 0.0)
+              : 0.0;
+          const weekendPenalty = dayOfWeek >= 5 ? -0.32 : 0.08;
+          candidates.push({
+            day,
+            dayOfYear,
+            score: dayRand + clusterBias + weekendPenalty,
+          });
+        }
+
+        // Select top non-cluttered days respecting authentic spacing (~65-70%+ empty honeycomb)
+        const ranked = [...candidates].sort((a, b) => b.score - a.score);
+        const pickedDays = new Map<number, 1 | 2 | 3 | 4>();
+        for (const cand of ranked) {
+          if (pickedDays.size >= targetActive) break;
+          // Reject 3+ consecutive day chains to avoid artificial unbroken streaks
+          const prev1 = pickedDays.has(cand.day - 1);
+          const prev2 = pickedDays.has(cand.day - 2);
+          const next1 = pickedDays.has(cand.day + 1);
+          const next2 = pickedDays.has(cand.day + 2);
+          if ((prev1 && prev2) || (next1 && next2) || (prev1 && next1)) continue;
+
+          const intensityRoll = seededHash(cand.dayOfYear * 97 + 11);
+          let lvl: 1 | 2 | 3 | 4 = 1;
+          if (m === 3 || m === 4) {
+            // Apr & May crunch: mix of pale sage through deep forest green spots
+            if (intensityRoll > 0.72) lvl = 4;
+            else if (intensityRoll > 0.45) lvl = 3;
+            else if (intensityRoll > 0.22) lvl = 2;
+            else lvl = 1;
+          } else if (m === 8) {
+            // Sep: light to medium green loose cluster
+            if (intensityRoll > 0.75) lvl = 3;
+            else if (intensityRoll > 0.38) lvl = 2;
+            else lvl = 1;
+          } else if (m >= 5 && m <= 7) {
+            // Jun-Aug summer break: faint isolated marks only
+            lvl = 1;
+          } else {
+            // Jan-Mar, Oct-Dec: mostly faint sage with rare level 2
+            lvl = intensityRoll > 0.80 ? 2 : 1;
+          }
+          pickedDays.set(cand.day, lvl);
+        }
 
         for (let day = 1; day <= daysInMonth; day++) {
           const dateObj = new Date(Date.UTC(numericYear, m, day));
           const dateStr = dateObj.toISOString().slice(0, 10);
-          const dayOfYear = Math.floor(
-            (dateObj.getTime() - Date.UTC(numericYear, 0, 1)) / 86400000
-          );
-          const w = Math.floor(dayOfYear / 7);
-          const dayOfWeek = (dateObj.getUTCDay() + 6) % 7; // 0=Mon, 6=Sun
-
-          // Seeded daily variation + weekly research sprint cluster
-          const dayRand = seededHash(dayOfYear * 37 + day * 13);
-          const sprintWave = Math.sin(dayOfYear * 0.38) * 0.45 + Math.cos(w * 0.72) * 0.35;
-          const streakAffinity = (dayRand * 0.45 + (sprintWave + 0.8) * 0.55) * mWeight;
-
-          // Weekend scholarly dampening (weekends feature fewer, more focused sessions)
-          const isWeekend = dayOfWeek >= 5;
-          const weekendFactor = isWeekend ? (dayRand > 0.65 ? 0.85 : 0.4) : 1.0;
-          const score = streakAffinity * weekendFactor;
-
-          let level: 0 | 1 | 2 | 3 | 4 = 0;
-          let count = 0;
+          const lvl = pickedDays.get(day) ?? 0;
           const assignedCats: string[] = [];
 
-          // Authentic human distribution with natural streaks, breaks, and balanced contrast:
-          // ~34% Level 0 (Parchment rest / literature reading)
-          // ~26% Level 1 (Light Sage: peer reviews, quick notes)
-          // ~22% Level 2 (Medium Foliage: benchmark experiments, analysis)
-          // ~12% Level 3 (Forest Green: manuscript drafts, preprint releases)
-          // ~6%  Level 4 (Canopy Pine: major grant awards & journal publications)
-          if (score > 1.28) {
-            level = 4;
-            count = 4 + (day % 3);
-            assignedCats.push(allCatKeys[0], allCatKeys[1], allCatKeys[5]);
-          } else if (score > 1.02) {
-            level = 3;
-            count = 3;
-            assignedCats.push(allCatKeys[1], allCatKeys[3]);
-          } else if (score > 0.72) {
-            level = 2;
-            count = 2;
-            assignedCats.push(allCatKeys[2], allCatKeys[4], allCatKeys[6]);
-          } else if (score > 0.42) {
-            level = 1;
-            count = 1;
-            assignedCats.push(allCatKeys[day % allCatKeys.length]);
-          } else {
-            level = 0;
-            count = 0;
+          if (lvl > 0) {
+            const c1 = allCatKeys[(m * 3 + day) % allCatKeys.length];
+            assignedCats.push(c1);
+            if (lvl >= 3) {
+              const c2 = allCatKeys[(m * 3 + day + 3) % allCatKeys.length];
+              if (c2 !== c1) assignedCats.push(c2);
+            }
           }
 
           map.set(dateStr, {
             date: dateStr,
-            count,
-            level,
+            count: lvl === 0 ? 0 : lvl === 1 ? 1 : lvl === 2 ? 2 : lvl === 3 ? 3 : 4 + (day % 2),
+            level: lvl,
             categories: assignedCats,
           });
         }
@@ -258,7 +290,8 @@ export function HexContributionGraph({
     return counts;
   }, [dataMap]);
 
-  // Build the 12 Monthly-Separated Flat-Topped Honeycomb Tessellation Clusters
+  // Build Monthly-Separated Flat-Topped Honeycomb Tessellation Clusters (default 12 months, optional monthsCount crop)
+  const visibleMonths = Math.max(1, Math.min(12, monthsCount));
   const { cells, monthLabels, totalWidth, totalHeight } = useMemo(() => {
     const leftMargin = showDayLabels ? 30.0 : 12.0;
     const allCells: Array<{
@@ -278,7 +311,7 @@ export function HexContributionGraph({
 
     let currentX = leftMargin;
 
-    for (let m = 0; m < 12; m++) {
+    for (let m = 0; m < visibleMonths; m++) {
       const daysInMonth = new Date(Date.UTC(numericYear, m + 1, 0)).getUTCDate();
       const firstDate = new Date(Date.UTC(numericYear, m, 1));
       const firstDow = (firstDate.getUTCDay() + 6) % 7; // 0 = Mon ... 6 = Sun
@@ -352,7 +385,7 @@ export function HexContributionGraph({
       totalWidth: Math.ceil(calculatedWidth),
       totalHeight: Math.ceil(calculatedHeight),
     };
-  }, [numericYear, dataMap, showDayLabels]);
+  }, [numericYear, dataMap, showDayLabels, visibleMonths]);
 
   const handleToggleCategory = (catId: string) => {
     const next = activeCategory === catId ? null : catId;
@@ -402,7 +435,11 @@ export function HexContributionGraph({
           width={totalWidth}
           height={totalHeight}
           viewBox={`0 0 ${totalWidth} ${totalHeight}`}
-          className="select-none overflow-visible block min-w-[720px] max-w-full"
+          className={
+            visibleMonths <= 10
+              ? "select-none overflow-visible block w-full h-auto"
+              : "select-none overflow-visible block min-w-[720px] max-w-full"
+          }
         >
           {/* Day of Week Labels (Optional Mon, Wed, Fri) */}
           {showDayLabels && (
