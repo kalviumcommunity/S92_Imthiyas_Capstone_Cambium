@@ -3,7 +3,7 @@
 // Enterprise PWA Caching & Field Researcher Offline Strategy
 // ====================================================================
 
-const CACHE_NAME = "cambium-cache-v4-rigid-branding";
+const CACHE_NAME = "cambium-cache-v5-pro-nautilus";
 const STATIC_ASSETS = [
   "/favicon.svg",
   "/favicon-light.svg",
