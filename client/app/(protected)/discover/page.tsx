@@ -1862,6 +1862,15 @@ function DiscoverContent() {
     setShowCitationModal(true);
   }, []);
 
+  // Live Scholarly Data State (OpenAlex, Europe PMC, arXiv, Crossref, DOAJ, Open Library, Zenodo)
+  const [livePapers, setLivePapers] = useState<ScholarlyWork[]>([]);
+  const [liveResearchers, setLiveResearchers] = useState<ScholarlyAuthor[]>([]);
+  const [liveTopics, setLiveTopics] = useState<ScholarlyTopic[]>([]);
+  const [liveBooks, setLiveBooks] = useState<ScholarlyBook[]>([]);
+  const [liveArtifacts, setLiveArtifacts] = useState<ResearchArtifact[]>([]);
+  const [activeQuery, setActiveQuery] = useState("");
+  const [isSearchingLive, setIsSearchingLive] = useState(false);
+
   useEffect(() => {
     if (urlQuery) {
       setActiveQuery(urlQuery);
@@ -1881,15 +1890,6 @@ function DiscoverContent() {
   }, []);
 
   const user = useAuthStore((state) => state.user);
-
-  // Live Scholarly Data State (OpenAlex, Europe PMC, arXiv, Crossref, DOAJ, Open Library, Zenodo)
-  const [livePapers, setLivePapers] = useState<ScholarlyWork[]>([]);
-  const [liveResearchers, setLiveResearchers] = useState<ScholarlyAuthor[]>([]);
-  const [liveTopics, setLiveTopics] = useState<ScholarlyTopic[]>([]);
-  const [liveBooks, setLiveBooks] = useState<ScholarlyBook[]>([]);
-  const [liveArtifacts, setLiveArtifacts] = useState<ResearchArtifact[]>([]);
-  const [activeQuery, setActiveQuery] = useState("");
-  const [isSearchingLive, setIsSearchingLive] = useState(false);
 
   const showToast = useCallback((message: string) => {
     setToast({ message, visible: true });

@@ -74,6 +74,54 @@ function AgenticReaderContent() {
     affiliations: "Department of EECS, MIT, Cambridge, MA · Cambium Research Lab",
   });
 
+  const [messages, setMessages] = useState<SynthesisMessage[]>([
+    {
+      id: "m-1",
+      sender: "agent",
+      agentRole: "Methodology Auditor",
+      content:
+        "I have parsed and indexed **'Neuro-Symbolic Deductive Inference Over Large Chemical Spaces'** (Cell Systems, 2025; 18 pages). Full text chunked into 84 dense semantic vectors. Grounding certainty is verified at 99.8% against the preprint's mathematical proofs and supplementary dataset S1.",
+      citations: [
+        {
+          page: 2,
+          section: "§1.3 Mathematical Formulation",
+          line: "L42-58",
+          snippet: "Let M be the generative chemical diffusion manifold parameterized by θ...",
+        },
+      ],
+      timestamp: "10:42 AM",
+    },
+    {
+      id: "m-2",
+      sender: "user",
+      content:
+        "Audit the validity of Equation 4. Does the logical projection operator preserve sub-polynomial convergence guarantees, or is there a vulnerability to combinatorial explosion?",
+      timestamp: "10:44 AM",
+    },
+    {
+      id: "m-3",
+      sender: "agent",
+      agentRole: "Methodology Auditor",
+      content:
+        "The authors enforce tractability in **Theorem 2 (§3.2, p. 7)** by restricting the Horn-clause fragment to k-bounded treewidth Horn clauses ($k \\le 3$).\n\n1. **Proof Integrity:** The reduction to 2-SAT during each Langevin step guarantees $\\mathcal{O}(N \\log N)$ asymptotic time complexity.\n2. **Critical Edge Case:** If stereochemical chirality rules exceed 4 simultaneous chiral centers, the solver falls back to approximated belief propagation, introducing a ~3.2% relaxation error noted in Appendix C.4.\n3. **Empirical Grounding:** Validated over 140,000 synthesized ligands on Enamine REAL database.",
+      citations: [
+        {
+          page: 7,
+          section: "§3.2 Horn-Clause Treewidth Bounds",
+          line: "L142-148",
+          snippet: "Theorem 2 (Bounded Treewidth Invariance): For all Horn theories with treewidth tw(G) ≤ 3, the projection operator Π converges in polynomial steps...",
+        },
+        {
+          page: 14,
+          section: "Appendix C.4 Approximation Bounds",
+          line: "L310-318",
+          snippet: "Stereocenter chirality constraints exceeding |C| > 4 utilize loopy belief propagation...",
+        },
+      ],
+      timestamp: "10:45 AM",
+    },
+  ]);
+
   // Automatically fetch live paper when navigated with ?title= or ?doi=
   useEffect(() => {
     if (paramTitle || paramDoi) {
@@ -204,53 +252,6 @@ function AgenticReaderContent() {
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
-  const [messages, setMessages] = useState<SynthesisMessage[]>([
-    {
-      id: "m-1",
-      sender: "agent",
-      agentRole: "Methodology Auditor",
-      content:
-        "I have parsed and indexed **'Neuro-Symbolic Deductive Inference Over Large Chemical Spaces'** (Cell Systems, 2025; 18 pages). Full text chunked into 84 dense semantic vectors. Grounding certainty is verified at 99.8% against the preprint's mathematical proofs and supplementary dataset S1.",
-      citations: [
-        {
-          page: 2,
-          section: "§1.3 Mathematical Formulation",
-          line: "L42-58",
-          snippet: "Let M be the generative chemical diffusion manifold parameterized by θ...",
-        },
-      ],
-      timestamp: "10:42 AM",
-    },
-    {
-      id: "m-2",
-      sender: "user",
-      content:
-        "Audit the validity of Equation 4. Does the logical projection operator preserve sub-polynomial convergence guarantees, or is there a vulnerability to combinatorial explosion?",
-      timestamp: "10:44 AM",
-    },
-    {
-      id: "m-3",
-      sender: "agent",
-      agentRole: "Methodology Auditor",
-      content:
-        "The authors enforce tractability in **Theorem 2 (§3.2, p. 7)** by restricting the Horn-clause fragment to k-bounded treewidth Horn clauses ($k \\le 3$).\n\n1. **Proof Integrity:** The reduction to 2-SAT during each Langevin step guarantees $\\mathcal{O}(N \\log N)$ asymptotic time complexity.\n2. **Critical Edge Case:** If stereochemical chirality rules exceed 4 simultaneous chiral centers, the solver falls back to approximated belief propagation, introducing a ~3.2% relaxation error noted in Appendix C.4.\n3. **Empirical Grounding:** Validated over 140,000 synthesized ligands on Enamine REAL database.",
-      citations: [
-        {
-          page: 7,
-          section: "§3.2 Horn-Clause Treewidth Bounds",
-          line: "L142-148",
-          snippet: "Theorem 2 (Bounded Treewidth Invariance): For all Horn theories with treewidth tw(G) ≤ 3, the projection operator Π converges in polynomial steps...",
-        },
-        {
-          page: 14,
-          section: "Appendix C.4 Approximation Bounds",
-          line: "L310-318",
-          snippet: "Stereocenter chirality constraints exceeding |C| > 4 utilize loopy belief propagation...",
-        },
-      ],
-      timestamp: "10:45 AM",
-    },
-  ]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

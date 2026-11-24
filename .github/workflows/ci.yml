@@ -2,9 +2,9 @@ name: Cambium Enterprise CI/CD Pipeline
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [main, master, develop, feature/final-project-submission]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, feature/final-project-submission]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

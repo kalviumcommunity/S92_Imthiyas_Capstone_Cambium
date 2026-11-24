@@ -102,8 +102,8 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => {
   let initialCurrency: Currency = "USD";
   let initialTokensUsed = 8450;
   let initialTokensTotal = 10000;
-  let initialLabMembers = 3;
-  let initialMaxMembers = 8;
+  const initialLabMembers = 3;
+  const initialMaxMembers = 8;
   let initialPaymentMethod: PaymentMethodInfo | null = {
     type: "card",
     label: "University Purchasing Card",
