@@ -149,24 +149,24 @@ export function PlatformCollageSection() {
       id="inside-cambium"
       className="relative overflow-hidden bg-[#070C09] border-t border-[rgba(74,222,128,0.18)] py-24 sm:py-32"
     >
-      {/* Nocturnal Chiaroscuro Botanical Oil Canvas Backdrop */}
+      {/* Nocturnal Chiaroscuro Botanical Oil Canvas Backdrop (Visible Painterly Depth) */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: "url('/backgrounds/cambium-collage-nocturne-canvas.webp')",
-          opacity: 0.72,
+          opacity: 0.92,
         }}
       />
 
-      {/* Deep Dark Chiaroscuro Scrim & Corner Shadows (Elevates Floating Windows) */}
+      {/* Balanced Chiaroscuro Scrim & Subtle Edge Vignette (Keeps Forest Art Visible While Elevating Cards) */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
         style={{
           background: `
-            linear-gradient(to bottom, rgba(6,10,7,0.84) 0%, rgba(6,10,7,0.44) 22%, rgba(6,10,7,0.48) 78%, rgba(6,10,7,0.88) 100%),
-            radial-gradient(ellipse 75% 65% at 50% 54%, rgba(5,9,6,0.46) 0%, rgba(4,7,5,0.86) 100%)
+            linear-gradient(to bottom, rgba(6,10,7,0.68) 0%, rgba(6,10,7,0.24) 18%, rgba(6,10,7,0.26) 82%, rgba(6,10,7,0.72) 100%),
+            radial-gradient(ellipse 72% 62% at 50% 54%, rgba(5,9,6,0.22) 0%, rgba(4,7,5,0.64) 100%)
           `,
         }}
       />
@@ -183,14 +183,72 @@ export function PlatformCollageSection() {
             <br />
             Engineered for entire institutions.
           </h2>
-          <p className="font-sans text-sm sm:text-base text-[#C6D5C0] max-w-2xl mx-auto leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
+          <p className="font-sans text-sm sm:text-base text-[#DCE6D7] max-w-2xl mx-auto leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
             Every proposal draft, citation graph, peer-review ledger, AI paper audit, and grant compliance trail — running in one connected workspace. Click any surface to inspect it live.
           </p>
         </div>
 
-        {/* ── WIDE EDGE-BLEED FLOATING COLLAGE (Spans wider than 100% viewport on desktop, framed cleanly at 80% zoom) ── */}
-        <div className="w-full lg:w-[114vw] lg:max-w-[1740px] lg:relative lg:left-1/2 lg:-translate-x-1/2">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 lg:gap-7 items-start">
+        {/* ── CENTERED CORE 7-PANEL SHOWCASE (100% Uncropped) + FLANKING EDGE-BLEED AMBIENT WINGS ── */}
+        <div className="relative max-w-[1220px] mx-auto">
+          {/* Left Edge-Bleed Ambient Wing Cards (Non-crucial secondary status cards half-peeking off left edge) */}
+          <div
+            aria-hidden="true"
+            className="hidden xl:flex flex-col gap-5 w-[260px] absolute -left-[284px] top-16 opacity-85 pointer-events-none select-none"
+          >
+            <div className="rounded-2xl bg-[#111A14]/90 border border-[#253629] shadow-[0_28px_70px_rgba(0,0,0,0.85)] p-4">
+              <div className="font-mono text-[10px] text-[#4ADE80] mb-1.5">ORCID · SYNCED</div>
+              <div className="font-sans text-xs font-semibold text-[#EDEAE2]">0000-0002-1825-0097</div>
+              <div className="mt-2 h-1.5 w-full rounded-full bg-[#19281D] overflow-hidden">
+                <div className="h-full w-4/5 bg-[#4ADE80]/70 rounded-full" />
+              </div>
+              <div className="font-mono text-[9.5px] text-[#8FA89B] mt-2">Verified Scholar Provenance</div>
+            </div>
+
+            <div className="rounded-2xl bg-[#111A14]/90 border border-[#253629] shadow-[0_28px_70px_rgba(0,0,0,0.85)] p-4">
+              <div className="font-mono text-[10px] text-[#8FA89B] mb-2">ARXIV PREPRINT RADAR</div>
+              <div className="space-y-2">
+                <div className="rounded-lg bg-[#0C120E] border border-[#203025] px-2.5 py-2 text-[10.5px] text-[#EDEAE2]">
+                  cs.CV · Sparse Clinical MRI
+                </div>
+                <div className="rounded-lg bg-[#0C120E] border border-[#203025] px-2.5 py-2 text-[10.5px] text-[#A3B899]">
+                  q-bio.QM · Multi-Cohort Graph
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-[#111A14]/90 border border-[#253629] shadow-[0_28px_70px_rgba(0,0,0,0.85)] p-4">
+              <div className="font-mono text-[10px] text-[#8FA89B] mb-1">REALTIME PRESENCE</div>
+              <div className="font-sans text-xs text-[#EDEAE2]">3 active lab collaborators</div>
+            </div>
+          </div>
+
+          {/* Right Edge-Bleed Ambient Wing Cards (Non-crucial secondary status cards half-peeking off right edge) */}
+          <div
+            aria-hidden="true"
+            className="hidden xl:flex flex-col gap-5 w-[260px] absolute -right-[284px] top-10 opacity-85 pointer-events-none select-none"
+          >
+            <div className="rounded-2xl bg-[#111A14]/90 border border-[#253629] shadow-[0_28px_70px_rgba(0,0,0,0.85)] p-4">
+              <div className="font-mono text-[10px] text-[#4ADE80] mb-1.5">BIBTEX QUEUE</div>
+              <div className="font-mono text-[10.5px] text-[#C6D5C0] bg-[#0C120E] border border-[#203025] rounded-lg p-2">
+                @article&#123;imthiyas2026,<br />
+                &nbsp;&nbsp;title=&#123;Sparse MRI&#125;<br />
+                &#125;
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-[#111A14]/90 border border-[#253629] shadow-[0_28px_70px_rgba(0,0,0,0.85)] p-4">
+              <div className="font-mono text-[10px] text-[#8FA89B] mb-1.5">GDPR ART. 20 EXPORT</div>
+              <div className="font-sans text-xs font-semibold text-[#EDEAE2]">Schema.org Person JSON-LD</div>
+              <div className="font-mono text-[9.5px] text-[#4ADE80] mt-1.5">Ready · 0 PII Leaks</div>
+            </div>
+
+            <div className="rounded-2xl bg-[#111A14]/90 border border-[#253629] shadow-[0_28px_70px_rgba(0,0,0,0.85)] p-4">
+              <div className="font-mono text-[10px] text-[#8FA89B] mb-1">OUTBOX RELAY</div>
+              <div className="font-sans text-xs text-[#EDEAE2]">SSE &amp; Queue Workers Healthy</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
             {/* LEFT COLUMN (Cols 1-4): Proposal Drafts Desk + Rich Text Citation Editor */}
             <div className="lg:col-span-4 flex flex-col gap-6 lg:mt-10">
               {/* Panel 1: Proposal Drafts Desk (/workspace) */}
