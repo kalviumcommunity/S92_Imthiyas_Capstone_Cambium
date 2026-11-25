@@ -9,6 +9,8 @@ import {
   Header,
   HttpStatus,
   HttpCode,
+  ForbiddenException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import type { Response } from 'express';
@@ -50,6 +52,12 @@ export class SamlController {
     @Body('SAMLResponse') samlResponse: string,
     @Res({ passthrough: true }) res: Response,
   ) {
+    if (process.env.NODE_ENV === 'production' && !process.env.SAML_IDP_CERT) {
+      throw new UnauthorizedException(
+        'SAML 2.0 Assertion Consumer Service requires configured IdP certificate signature verification in production.',
+      );
+    }
+
     let rawXml = samlResponse;
     // Check if response is base64 encoded
     if (!samlResponse.trim().startsWith('<')) {
@@ -58,6 +66,10 @@ export class SamlController {
       } catch {
         rawXml = samlResponse;
       }
+    }
+
+    if (process.env.SAML_IDP_CERT && !/<ds:Signature[\s>]/i.test(rawXml)) {
+      throw new UnauthorizedException('SAML assertion is missing required XML digital signature (<ds:Signature>).');
     }
 
     const attrs = this.samlService.parseSamlAssertion(rawXml);
@@ -72,7 +84,8 @@ export class SamlController {
       maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
 
-    return result;
+    const { refreshToken: _omitted, ...safeResult } = result;
+    return safeResult;
   }
 
   @Post('mock-idp')
@@ -91,6 +104,10 @@ export class SamlController {
     @Body() body: { eppn?: string; fullName?: string; affiliation?: string },
     @Res({ passthrough: true }) res: Response,
   ) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new ForbiddenException('Mock SAML IdP endpoint is disabled in production.');
+    }
+
     const mockXml = this.samlService.generateMockIdpAssertion({
       eppn: body.eppn || 'elena.rodriguez@stanford.edu',
       fullName: body.fullName || 'Dr. Elena Rodriguez',
@@ -109,6 +126,7 @@ export class SamlController {
       maxAge: REFRESH_COOKIE_MAX_AGE_MS,
     });
 
-    return result;
+    const { refreshToken: _omitted, ...safeResult } = result;
+    return safeResult;
   }
 }

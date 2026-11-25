@@ -3,6 +3,7 @@ import {
   BadRequestException,
   NotFoundException,
   PayloadTooLargeException,
+  ForbiddenException,
   Logger,
 } from '@nestjs/common';
 import * as fs from 'fs';
@@ -42,7 +43,6 @@ export const ALLOWED_MIME_TYPES = new Set([
   'application/x-bibtex',
   'application/x-latex',
   'application/json',
-  'application/octet-stream', // Fallback for raw .bib / .tex on some browsers
 ]);
 
 export const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50 Megabytes
@@ -118,6 +118,59 @@ export class UploadService {
         `File extension "${ext}" is not supported. Allowed formats: ${Array.from(ALLOWED_FILE_EXTENSIONS).join(', ')}`,
       );
     }
+
+    if (file.mimetype && !ALLOWED_MIME_TYPES.has(file.mimetype.toLowerCase())) {
+      throw new BadRequestException(
+        `MIME type "${file.mimetype}" is not permitted for research artifacts`,
+      );
+    }
+  }
+
+  /**
+   * Inspects file magic bytes and rejects executables/polyglots disguised with safe extensions.
+   */
+  validateMagicBytes(ext: string, buffer: Buffer): void {
+    if (!buffer || buffer.length === 0) {
+      throw new BadRequestException('Cannot validate empty artifact buffer');
+    }
+
+    const head = buffer.subarray(0, 16);
+    const asciiHead = head.toString('utf8');
+
+    // Block Windows PE (MZ), Linux ELF, Mach-O, and shell scripts regardless of claimed extension
+    if (
+      (head[0] === 0x4d && head[1] === 0x5a) || // MZ executable
+      (head[0] === 0x7f && head[1] === 0x45 && head[2] === 0x4c && head[3] === 0x46) || // \x7fELF
+      asciiHead.startsWith('#!') ||
+      /<script/i.test(asciiHead)
+    ) {
+      throw new BadRequestException(
+        'Security policy violation: disguised executable or script payload rejected',
+      );
+    }
+
+    if (ext === '.pdf' && !buffer.subarray(0, 5).equals(Buffer.from('%PDF-'))) {
+      throw new BadRequestException(
+        'Invalid PDF signature: file header does not start with %PDF-',
+      );
+    }
+
+    if (
+      (ext === '.docx' || ext === '.xlsx') &&
+      !(head[0] === 0x50 && head[1] === 0x4b && head[2] === 0x03 && head[3] === 0x04)
+    ) {
+      throw new BadRequestException(
+        `Invalid ${ext} signature: OOXML container header mismatch`,
+      );
+    }
+
+    if (ext === '.json') {
+      try {
+        JSON.parse(buffer.toString('utf8'));
+      } catch {
+        throw new BadRequestException('Invalid JSON payload');
+      }
+    }
   }
 
   /**
@@ -136,6 +189,9 @@ export class UploadService {
   ): Promise<UploadedArtifactMetadata> {
     this.validateFile(file);
 
+    const ext = path.extname(file.originalname).toLowerCase();
+    this.validateMagicBytes(ext, file.buffer);
+
     const sanitizedName = this.sanitizeFilename(file.originalname);
     const id = randomUUID();
     const storedFileName = `${id}-${sanitizedName}`;
@@ -150,11 +206,11 @@ export class UploadService {
       originalName: file.originalname,
       sanitizedName,
       storedFileName,
-      mimeType: file.mimetype || 'application/octet-stream',
+      mimeType: file.mimetype || 'application/pdf',
       sizeBytes: file.size,
       sha256Hash,
       uploadedAt: new Date().toISOString(),
-      uploaderId: uploaderId || 'anonymous-scholar',
+      uploaderId: uploaderId || 'system-internal',
       filePath: destinationPath,
     };
 
@@ -165,31 +221,40 @@ export class UploadService {
   }
 
   /**
-   * Retrieves artifact metadata by ID
+   * Retrieves artifact metadata by ID with optional owner/admin access check
    */
-  getArtifactMetadata(id: string): UploadedArtifactMetadata {
+  getArtifactMetadata(id: string, requesterId?: string, isAdmin = false): UploadedArtifactMetadata {
     const meta = this.metadataStore.get(id);
     if (!meta || !fs.existsSync(meta.filePath)) {
       throw new NotFoundException(`Research artifact with ID "${id}" was not found`);
+    }
+    if (requesterId && !isAdmin && meta.uploaderId !== requesterId) {
+      throw new ForbiddenException('Access denied: cannot access another scholar artifact');
     }
     return meta;
   }
 
   /**
-   * Returns all uploaded artifact records
+   * Returns uploaded artifact records scoped to caller unless Admin
    */
-  listArtifacts(): UploadedArtifactMetadata[] {
-    return Array.from(this.metadataStore.values()).map((item) => ({
-      ...item,
-      filePath: undefined as any, // Do not expose absolute internal server filesystem paths in API listings
-    }));
+  listArtifacts(requesterId?: string, isAdmin = false): UploadedArtifactMetadata[] {
+    return Array.from(this.metadataStore.values())
+      .filter((item) => !requesterId || isAdmin || item.uploaderId === requesterId)
+      .map((item) => ({
+        ...item,
+        filePath: undefined as any, // Do not expose absolute internal server filesystem paths in API listings
+      }));
   }
 
   /**
-   * Deletes an uploaded artifact from storage
+   * Deletes an uploaded artifact from storage with ownership enforcement
    */
-  async deleteArtifact(id: string): Promise<{ success: boolean; id: string }> {
-    const meta = this.getArtifactMetadata(id);
+  async deleteArtifact(
+    id: string,
+    requesterId?: string,
+    isAdmin = false,
+  ): Promise<{ success: boolean; id: string }> {
+    const meta = this.getArtifactMetadata(id, requesterId, isAdmin);
 
     try {
       if (fs.existsSync(meta.filePath)) {

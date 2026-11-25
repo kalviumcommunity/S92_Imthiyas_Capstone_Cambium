@@ -1,10 +1,13 @@
 name: Cambium Enterprise CI/CD Pipeline
 
+permissions:
+  contents: read
+
 on:
   push:
-    branches: [main, master, develop, feature/final-project-submission]
+    branches: [main, master, develop, feature/final-project-submission, feat/**]
   pull_request:
-    branches: [main, master, feature/final-project-submission]
+    branches: [main, master, feature/final-project-submission, feat/**]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -54,6 +57,12 @@ jobs:
           NODE_ENV: test
           JWT_SECRET: ci_test_jwt_secret_key_2026
           REDIS_URL: redis://localhost:6379
+
+      - name: Execute Adversarial Security Regression Suite
+        run: npx vitest run src/security/adversarial-security.spec.ts
+        env:
+          NODE_ENV: test
+          JWT_SECRET: ci_test_jwt_secret_key_2026
 
   # ============================================================================
   # 2. Client Quality Gate: Lint, TypeCheck, Next.js 16 Static Build
@@ -124,15 +133,22 @@ jobs:
         run: npm run test:jest
 
   # ============================================================================
-  # 4. Zero-Vulnerability Production Dependency Audit Gate
+  # 4. Zero-Vulnerability Production Dependency & Secret Audit Gate
   # ============================================================================
   security-audit:
-    name: Production Dependency Security Audit
+    name: Production Dependency & Secret Security Audit
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan Repository History for Leaked Secrets (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js 20.x
         uses: actions/setup-node@v4

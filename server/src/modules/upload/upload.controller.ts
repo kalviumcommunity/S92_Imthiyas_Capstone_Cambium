@@ -11,6 +11,8 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,20 +21,30 @@ import {
   ApiConsumes,
   ApiBody,
   ApiParam,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import * as fs from 'fs';
 import { UploadService, UploadedArtifactMetadata } from './upload.service';
 import { PdfOcrService } from './ocr/pdf-ocr.service';
+import { JwtAuthGuard, AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UserRole } from '../users/entities/user.entity';
 
 @ApiTags('Research Artifacts & File Uploads')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller(['api/upload', 'api/v1/upload'])
 export class UploadController {
   constructor(
     private readonly uploadService: UploadService,
     private readonly ocrService: PdfOcrService,
   ) {}
+
+  private isAdmin(user: AuthenticatedUser): boolean {
+    return user.role === UserRole.SUPER_ADMIN;
+  }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -54,16 +66,17 @@ export class UploadController {
   })
   @ApiResponse({
     status: 201,
-    description: 'File validated, hashed with SHA-256, and persisted',
+    description: 'File validated, hashed with SHA-256, and persisted under caller ownership',
   })
   async uploadSingle(
     @UploadedFile() file: any,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ success: boolean; data: UploadedArtifactMetadata }> {
     if (!file) {
       throw new BadRequestException('Form field "file" is required');
     }
 
-    const saved = await this.uploadService.saveArtifact(file);
+    const saved = await this.uploadService.saveArtifact(file, user.id);
     return {
       success: true,
       data: {
@@ -80,6 +93,7 @@ export class UploadController {
   @ApiConsumes('multipart/form-data')
   async uploadBatch(
     @UploadedFiles() files: any[],
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ success: boolean; count: number; data: UploadedArtifactMetadata[] }> {
     if (!files || files.length === 0) {
       throw new BadRequestException('At least one file must be provided in field "files"');
@@ -87,7 +101,7 @@ export class UploadController {
 
     const savedList: UploadedArtifactMetadata[] = [];
     for (const f of files) {
-      const saved = await this.uploadService.saveArtifact(f);
+      const saved = await this.uploadService.saveArtifact(f, user.id);
       savedList.push({
         ...saved,
         filePath: undefined as any,
@@ -102,10 +116,12 @@ export class UploadController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all uploaded research artifact records and hashes' })
-  @ApiResponse({ status: 200, description: 'List of artifact metadata' })
-  listArtifacts(): { success: boolean; count: number; data: UploadedArtifactMetadata[] } {
-    const list = this.uploadService.listArtifacts();
+  @ApiOperation({ summary: 'List caller-owned uploaded research artifact records and hashes' })
+  @ApiResponse({ status: 200, description: 'List of owned artifact metadata' })
+  listArtifacts(
+    @CurrentUser() user: AuthenticatedUser,
+  ): { success: boolean; count: number; data: UploadedArtifactMetadata[] } {
+    const list = this.uploadService.listArtifacts(user.id, this.isAdmin(user));
     return {
       success: true,
       count: list.length,
@@ -114,16 +130,22 @@ export class UploadController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Download or stream an uploaded research artifact by ID' })
+  @ApiOperation({ summary: 'Download or stream an owned research artifact by ID' })
   @ApiParam({ name: 'id', description: 'Artifact UUID' })
-  downloadArtifact(@Param('id') id: string, @Res() res: Response): void {
-    const meta = this.uploadService.getArtifactMetadata(id);
+  downloadArtifact(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Res() res: Response,
+  ): void {
+    const meta = this.uploadService.getArtifactMetadata(id, user.id, this.isAdmin(user));
 
     res.setHeader('Content-Type', meta.mimeType);
     res.setHeader('Content-Length', meta.sizeBytes);
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename="${meta.sanitizedName}"`,
+      `attachment; filename="${meta.sanitizedName}"; filename*=UTF-8''${encodeURIComponent(meta.sanitizedName)}`,
     );
     res.setHeader('X-Artifact-SHA256', meta.sha256Hash);
 
@@ -133,10 +155,13 @@ export class UploadController {
 
   @Post(':id/ocr')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Asynchronously extract multi-column text and tables from artifact via worker thread' })
+  @ApiOperation({ summary: 'Extract multi-column text and tables from owned artifact via worker thread' })
   @ApiParam({ name: 'id', description: 'Artifact UUID' })
-  async extractTablesFromArtifact(@Param('id') id: string) {
-    const meta = this.uploadService.getArtifactMetadata(id);
+  async extractTablesFromArtifact(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const meta = this.uploadService.getArtifactMetadata(id, user.id, this.isAdmin(user));
     let buffer: Buffer;
 
     try {
@@ -155,11 +180,12 @@ export class UploadController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete an uploaded research artifact and remove file from disk' })
+  @ApiOperation({ summary: 'Delete an owned uploaded research artifact from disk' })
   @ApiParam({ name: 'id', description: 'Artifact UUID' })
   async deleteArtifact(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ success: boolean; id: string }> {
-    return this.uploadService.deleteArtifact(id);
+    return this.uploadService.deleteArtifact(id, user.id, this.isAdmin(user));
   }
 }

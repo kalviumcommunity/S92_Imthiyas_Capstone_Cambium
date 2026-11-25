@@ -1,9 +1,13 @@
-import { Controller, Get, Logger, ServiceUnavailableException, Optional } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Logger, ServiceUnavailableException, Optional, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
 import { DatabaseDiagnosticService } from './database/database-diagnostic.service';
 import { RedisService } from './common/redis/redis.service';
 import { CircuitBreakerService, BreakerMetrics } from './common/resilience/circuit-breaker.service';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { RolesGuard } from './modules/auth/guards/roles.guard';
+import { Roles } from './modules/auth/decorators/roles.decorator';
+import { UserRole } from './modules/users/entities/user.entity';
 
 @ApiTags('System')
 @Controller()
@@ -19,6 +23,9 @@ export class AppController {
   ) {}
 
   @Get('api/database/diagnostics')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.COMPLIANCE_OFFICER)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Inspect PostgreSQL 16 pgvector HNSW health, PgBouncer pool stats, and table metrics' })
   @ApiResponse({ status: 200, description: 'Structured database diagnostic telemetry' })
   async getDatabaseDiagnostics() {

@@ -35,7 +35,9 @@ export class JwtAuthGuard implements CanActivate {
     const secret = getJwtSecret();
 
     try {
-      const decoded = jwt.verify(token, secret) as AuthenticatedUser & { type?: string };
+      const decoded = jwt.verify(token, secret, {
+        algorithms: ['HS256'],
+      }) as AuthenticatedUser & { type?: string };
       if (decoded.type && decoded.type !== 'access') {
         throw new UnauthorizedException('Invalid token type: access token required');
       }

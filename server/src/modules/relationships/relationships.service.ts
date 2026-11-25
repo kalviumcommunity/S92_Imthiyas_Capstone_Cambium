@@ -36,9 +36,12 @@ export class RelationshipsService {
       throw new NotFoundException('User not found');
     }
 
+    const { passwordHash: _ph, ...safeUser } = user;
+    void _ph;
+
     return {
       success: true,
-      data: user,
+      data: safeUser,
     };
   }
 
@@ -54,15 +57,24 @@ export class RelationshipsService {
 
     const bookmarks = await this.bookmarkRepo.find({
       where: { opportunityId },
-      relations: { user: true },
     });
+
+    const creatorSummary = opportunity.createdBy
+      ? {
+          id: opportunity.createdBy.id,
+          username: opportunity.createdBy.username,
+          fullName: opportunity.createdBy.fullName,
+        }
+      : null;
 
     return {
       success: true,
       data: {
-        opportunity,
+        opportunity: {
+          ...opportunity,
+          createdBy: creatorSummary,
+        },
         bookmarkedByCount: bookmarks.length,
-        bookmarkedByUsers: bookmarks.map((b) => b.user),
       },
     };
   }
@@ -70,20 +82,26 @@ export class RelationshipsService {
   async getRelationshipOverview() {
     const users = await this.userRepo.find({
       take: 5,
+      select: {
+        id: true,
+        username: true,
+        fullName: true,
+        role: true,
+        institution: true,
+      },
       relations: {
         researchInterests: true,
-        bookmarks: { opportunity: true },
       },
     });
 
     const bookmarks = await this.bookmarkRepo.find({
       take: 5,
-      relations: { user: true, opportunity: true },
+      relations: { opportunity: true },
     });
 
     const notifications = await this.notifRepo.find({
       take: 5,
-      relations: { user: true, opportunity: true },
+      relations: { opportunity: true },
     });
 
     return {

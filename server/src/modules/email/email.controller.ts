@@ -1,10 +1,17 @@
-import { Controller, Post, Get, Body, HttpCode, HttpStatus, Inject } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Controller, Post, Get, Body, HttpCode, HttpStatus, Inject, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { EmailService } from './email.service';
 import { OpportunitiesService } from '../opportunities/opportunities.service';
 import { DeadlineDigestWorker } from './workers/deadline-digest.worker';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 
 @ApiTags('Scholar Communications (Email)')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.SUPER_ADMIN)
 @Controller('api/v1/email')
 export class EmailController {
   constructor(

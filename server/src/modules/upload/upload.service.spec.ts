@@ -100,9 +100,24 @@ describe('UploadService (Curriculum M2.14 File Upload Verification)', () => {
 
   describe('Storage, SHA-256 Hashing & Lifecycle', () => {
     const sampleContent = Buffer.from(
-      'CAMBIUM RESEARCH ARTIFACT: Genomic Foundation Model Weights & Benchmark Metrics',
+      '%PDF-1.4\nCAMBIUM RESEARCH ARTIFACT: Genomic Foundation Model Weights & Benchmark Metrics',
     );
     let createdArtifactId: string;
+
+    it('should reject disguised executables claiming .pdf extension (magic byte defence)', async () => {
+      const fakeExe = Buffer.from('MZ\x90\x00\x03\x00\x00\x00malicious_binary');
+      await expect(
+        service.saveArtifact(
+          {
+            originalname: 'disguised.pdf',
+            buffer: fakeExe,
+            size: fakeExe.length,
+            mimetype: 'application/pdf',
+          },
+          'user-pi-101',
+        ),
+      ).rejects.toThrow(BadRequestException);
+    });
 
     it('should calculate valid SHA-256 hash', () => {
       const hash = service.calculateHash(sampleContent);

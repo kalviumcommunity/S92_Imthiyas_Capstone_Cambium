@@ -49,10 +49,20 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new user account with rotating refresh cookie' })
   @ApiResponse({ status: 201, description: 'User registered with JWT and HttpOnly refresh cookie' })
+  private sanitizeAuthResponse<T extends { refreshToken?: string }>(result: T): Omit<T, 'refreshToken'> {
+    const safe = { ...result };
+    delete safe.refreshToken;
+    return safe;
+  }
+
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Register a new user account with rotating refresh cookie' })
+  @ApiResponse({ status: 201, description: 'User registered with JWT and HttpOnly refresh cookie' })
   async register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.register(dto);
     this.setRefreshCookie(res, result.refreshToken);
-    return result;
+    return this.sanitizeAuthResponse(result);
   }
 
   @Post('login')
@@ -62,7 +72,7 @@ export class AuthController {
   async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.login(dto);
     this.setRefreshCookie(res, result.refreshToken);
-    return result;
+    return this.sanitizeAuthResponse(result);
   }
 
   @Post('google')
@@ -72,7 +82,7 @@ export class AuthController {
   async googleLogin(@Body() dto: GoogleLoginDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.authService.googleLogin(dto);
     this.setRefreshCookie(res, result.refreshToken);
-    return result;
+    return this.sanitizeAuthResponse(result);
   }
 
   @Post('refresh')
@@ -90,7 +100,7 @@ export class AuthController {
 
     const result = await this.authService.refreshSession(token);
     this.setRefreshCookie(res, result.refreshToken);
-    return result;
+    return this.sanitizeAuthResponse(result);
   }
 
   @Post('logout')

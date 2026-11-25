@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
-import { randomUUID } from 'crypto';
+import { randomUUID, randomBytes } from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 import { User, UserRole } from '../users/entities/user.entity';
 import { ResearchInterest } from '../users/entities/research-interest.entity';
@@ -59,13 +59,12 @@ export class AuthService {
       .getOne();
 
     if (existing) {
-      if (existing.username.toLowerCase() === dto.username.toLowerCase()) {
-        throw new BadRequestException('Username is already taken');
-      }
-      throw new BadRequestException('User with this email already exists');
+      throw new BadRequestException(
+        'Registration unavailable with the provided account details',
+      );
     }
 
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(12);
     const passwordHash = await bcrypt.hash(dto.password, salt);
 
     const interests = await this.resolveInterests(dto.researchInterests);
@@ -211,59 +210,45 @@ export class AuthService {
         ? dtoOrToken
         : dtoOrToken.token || dtoOrToken.access_token || '';
 
-    // 1. If OAuth2 Bearer Access Token (standard from @react-oauth/google useGoogleLogin)
-    if (token) {
+    // 1. OAuth2 Bearer Access Token verified via authoritative Google userinfo endpoint
+    if (token && token.split('.').length !== 3) {
       try {
         const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (userInfoRes.ok) {
           const gData = await userInfoRes.json();
-          if (gData?.email) {
-            email = gData.email.toLowerCase();
+          if (gData?.email && gData?.email_verified !== false) {
+            email = String(gData.email).toLowerCase();
             fullName = gData.name || gData.given_name || '';
             photoUrl = gData.picture;
           }
         }
-      } catch (err) {
-        // Fallback to ID token verification
+      } catch {
+        // Fall through cleanly to rejection
       }
     }
 
-    // 2. If ID Token (JWT with 3 segments)
-    if (!email && token && token.split('.').length === 3) {
+    // 2. Cryptographically verified OIDC ID Token via Google OAuth2Client (no unsigned decode fallback)
+    if (!email && token && token.split('.').length === 3 && process.env.GOOGLE_CLIENT_ID) {
       try {
         const ticket = await this.googleClient.verifyIdToken({
           idToken: token,
-          audience: process.env.GOOGLE_CLIENT_ID || undefined,
+          audience: process.env.GOOGLE_CLIENT_ID,
         });
         const payload = ticket.getPayload();
-        if (payload?.email) {
+        if (payload?.email && payload?.email_verified) {
           email = payload.email.toLowerCase();
           fullName = payload.name || '';
           photoUrl = payload.picture;
         }
-      } catch (err) {
-        if (!process.env.GOOGLE_CLIENT_ID || process.env.NODE_ENV !== 'production') {
-          const decoded = jwt.decode(token) as any;
-          if (decoded?.email) {
-            email = decoded.email.toLowerCase();
-            fullName = decoded.name || '';
-            photoUrl = decoded.picture;
-          }
-        }
+      } catch {
+        // Invalid/forged ID token rejected below
       }
     }
 
-    // 3. If verified profile data provided by client
-    if (!email && typeof dtoOrToken === 'object' && dtoOrToken.email) {
-      email = dtoOrToken.email.toLowerCase();
-      fullName = dtoOrToken.fullName || dtoOrToken.name || email.split('@')[0];
-      photoUrl = dtoOrToken.picture;
-    }
-
     if (!email) {
-      throw new UnauthorizedException('Invalid Google token or unverified identity payload');
+      throw new UnauthorizedException('Invalid or unverified Google identity token');
     }
 
     if (!fullName) {
@@ -285,8 +270,8 @@ export class AuthService {
     }
 
     if (!user) {
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(Math.random().toString(36).slice(-10) + 'A1!', salt);
+      const salt = await bcrypt.genSalt(12);
+      const passwordHash = await bcrypt.hash(randomBytes(32).toString('hex'), salt);
 
       let username = fullName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || email.split('@')[0];
       let uniqueUsername = username;
@@ -365,8 +350,10 @@ export class AuthService {
 
     let decoded: JwtTokenPayload;
     try {
-      decoded = jwt.verify(refreshToken, this.jwtRefreshSecret) as JwtTokenPayload;
-    } catch (err: any) {
+      decoded = jwt.verify(refreshToken, this.jwtRefreshSecret, {
+        algorithms: ['HS256'],
+      }) as JwtTokenPayload;
+    } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 

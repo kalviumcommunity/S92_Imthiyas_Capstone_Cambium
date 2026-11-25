@@ -1,8 +1,15 @@
-import { Controller, Post, Get, Body, HttpCode, HttpStatus, Query, Inject } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { Controller, Post, Get, Body, HttpCode, HttpStatus, Query, Inject, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { IngestionService } from './ingestion.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../users/entities/user.entity';
 
 @ApiTags('Academic Crawlers & Ingestion (BullMQ)')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.SUPER_ADMIN)
 @Controller('api/v1/ingestion')
 export class IngestionController {
   constructor(

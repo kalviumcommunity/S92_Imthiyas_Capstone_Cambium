@@ -5,6 +5,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 import { User } from './entities/user.entity';
 import { ResearchInterest } from './entities/research-interest.entity';
 import { CreateUserDto, UpdateUserDto, AddInterestsDto } from './dto/user.dto';
@@ -18,6 +20,12 @@ export class UsersService {
     private readonly interestRepo: Repository<ResearchInterest>,
   ) {}
 
+  private sanitizeUser(user: User) {
+    const { passwordHash: _ph, ...safe } = user;
+    void _ph;
+    return safe;
+  }
+
   async findAll() {
     const users = await this.userRepo.find({
       relations: {
@@ -29,7 +37,7 @@ export class UsersService {
     return {
       success: true,
       count: users.length,
-      data: users,
+      data: users.map((u) => this.sanitizeUser(u)),
     };
   }
 
@@ -49,7 +57,7 @@ export class UsersService {
 
     return {
       success: true,
-      data: user,
+      data: this.sanitizeUser(user),
     };
   }
 
@@ -61,13 +69,16 @@ export class UsersService {
 
     const interests = await this.resolveInterests(dto.researchInterests);
 
-    const generatedUsername = dto.email.split('@')[0] + Math.floor(Math.random() * 1000);
+    const generatedUsername =
+      dto.email.split('@')[0].replace(/[^a-zA-Z0-9._-]/g, '').slice(0, 32) +
+      randomBytes(3).toString('hex');
+    const passwordHash = await bcrypt.hash(randomBytes(32).toString('hex'), 12);
 
     const user = this.userRepo.create({
       username: generatedUsername,
       email: dto.email,
       fullName: dto.fullName,
-      passwordHash: 'INITIAL_SSO_PLACEHOLDER',
+      passwordHash,
       institution: dto.institution,
       researchInterests: interests,
     });
@@ -76,7 +87,7 @@ export class UsersService {
     return {
       success: true,
       message: 'User created successfully',
-      data: saved,
+      data: this.sanitizeUser(saved),
     };
   }
 
@@ -103,7 +114,7 @@ export class UsersService {
     return {
       success: true,
       message: 'Research interests updated successfully',
-      data: saved,
+      data: this.sanitizeUser(saved),
     };
   }
 
@@ -129,7 +140,7 @@ export class UsersService {
     return {
       success: true,
       message: 'User profile updated successfully',
-      data: saved,
+      data: this.sanitizeUser(saved),
     };
   }
 

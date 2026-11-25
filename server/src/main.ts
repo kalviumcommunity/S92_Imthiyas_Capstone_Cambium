@@ -23,6 +23,12 @@ if (fs.existsSync(localEnv)) {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const expressApp = app.getHttpAdapter().getInstance() as {
+    set?: (k: string, v: unknown) => void;
+    disable?: (k: string) => void;
+  };
+  expressApp.set?.('trust proxy', 1);
+  expressApp.disable?.('x-powered-by');
 
   // Express payload body limits to prevent memory exhaustion / DoS
   app.use(json({ limit: '2mb' }));
@@ -109,8 +115,10 @@ async function bootstrap() {
     .addCookieAuth('cambium_refresh_token')
     .build();
 
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, document);
+  if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SWAGGER === 'true') {
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
   const port = process.env.PORT || 5000;
   const httpServer = await app.listen(port, '0.0.0.0');

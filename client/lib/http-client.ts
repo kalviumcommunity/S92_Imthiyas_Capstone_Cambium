@@ -57,13 +57,14 @@ async function performTokenRefresh(): Promise<string | null> {
   inflightRefreshPromise = (async () => {
     try {
       const refreshUrl = `${resolveApiV1Base()}/auth/refresh`;
-      const storedRefresh =
-        typeof window !== "undefined" ? localStorage.getItem("cambium_refresh_token") : null;
+      // Refresh credentials travel strictly via HttpOnly cookie (never persisted in localStorage)
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("cambium_refresh_token");
+      }
       const res = await fetch(refreshUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Request-Id": generateRequestId() },
         credentials: "include",
-        body: storedRefresh ? JSON.stringify({ refreshToken: storedRefresh }) : undefined,
       });
 
       if (!res.ok) return null;
@@ -72,9 +73,6 @@ async function performTokenRefresh(): Promise<string | null> {
       if (newToken && typeof window !== "undefined") {
         localStorage.setItem("cambium_token", newToken);
         localStorage.setItem("cambium_access_token", newToken);
-        if (json?.refreshToken) {
-          localStorage.setItem("cambium_refresh_token", json.refreshToken);
-        }
         return newToken;
       }
       return null;

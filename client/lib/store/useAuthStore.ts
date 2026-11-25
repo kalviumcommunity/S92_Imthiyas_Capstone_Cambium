@@ -115,6 +115,7 @@ export const useAuthStore = create<AuthState>((set) => {
       if (typeof window !== "undefined") {
         localStorage.removeItem("cambium_token");
         localStorage.removeItem("cambium_access_token");
+        localStorage.removeItem("cambium_refresh_token");
         localStorage.removeItem("cambium_user");
         localStorage.removeItem("cambium_session_expiry");
         localStorage.removeItem("cambium_onboarding_completed");

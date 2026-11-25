@@ -5,13 +5,18 @@ import {
   HttpCode,
   HttpStatus,
   UsePipes,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { LlmAutocompleteService, AutocompleteResult } from './llm-autocomplete.service';
 import { AutocompleteDto } from './dto/autocomplete.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { NetworkRateLimiterGuard } from '../network/network-rate-limiter.guard';
 
 @ApiTags('AI Intelligence & Autocomplete')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, NetworkRateLimiterGuard)
 @Controller('api/v1/ai')
 export class AiAutocompleteController {
   constructor(private readonly autocompleteService: LlmAutocompleteService) {}

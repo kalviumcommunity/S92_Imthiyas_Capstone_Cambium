@@ -65,10 +65,10 @@ export class NetworkRateLimiterGuard implements CanActivate {
     const windowMs = (options?.windowSeconds ?? this.defaultWindowSeconds) * 1000;
     const now = Date.now();
 
-    // Key ONLY by authenticated JWT user ID or verified IP (never trust client x-user-id header)
+    // Key ONLY by authenticated JWT user ID or verified IP (never trust client x-user-id header;
+    // prefer Express req.ip resolved under trust proxy = 1 over raw spoofable headers)
     const clientIp =
-      req.headers?.['x-forwarded-for']?.split(',')[0]?.trim() ||
-      req.headers?.['x-real-ip'] ||
+      req.ip ||
       req.socket?.remoteAddress ||
       '127.0.0.1';
     const verifiedUserId = req.user?.id;

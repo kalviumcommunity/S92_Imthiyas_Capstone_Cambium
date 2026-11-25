@@ -1,7 +1,8 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, Inject, UseGuards, Sse } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { AssistantService, AssistantChatRequest } from './assistant.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { SubscriptionGuard, RequiresSubscription } from '../auth/guards/subscription.guard';
 
 interface MessageEvent {
@@ -12,6 +13,8 @@ interface MessageEvent {
 }
 
 @ApiTags('AI Research Assistant (Agentic RAG)')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, SubscriptionGuard)
 @Controller(['api/v1/assistant', 'api/assistant'])
 export class AssistantController {
   constructor(
@@ -21,7 +24,6 @@ export class AssistantController {
 
   @Post('chat')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(SubscriptionGuard)
   @RequiresSubscription('pro')
   @ApiOperation({
     summary: 'Multi-turn Agentic RAG chat with tool calling (eligibility verification, grant matching, proposal extraction)',
@@ -56,7 +58,6 @@ export class AssistantController {
 
   @Post('stream')
   @Sse()
-  @UseGuards(SubscriptionGuard)
   @RequiresSubscription('pro')
   @ApiOperation({ summary: 'Stream Agentic RAG responses token-by-token via Server-Sent Events (SSE)' })
   streamChat(@Body() body: AssistantChatRequest): Observable<MessageEvent> {

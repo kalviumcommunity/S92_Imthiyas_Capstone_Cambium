@@ -32,19 +32,51 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
-    // Robust CSP: Supports both Next.js HMR Fast Refresh WebSockets in dev and strict Zero-Trust production
-    const connectSrc =
-      "connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:* wss: https:";
+    const isProd = process.env.NODE_ENV === "production";
+    const apiOrigin = process.env.NEXT_PUBLIC_API_URL
+      ? (() => {
+          try {
+            return new URL(process.env.NEXT_PUBLIC_API_URL).origin;
+          } catch {
+            return "";
+          }
+        })()
+      : "";
+
+    // Robust CSP: Restrictive allowlist in production; permits Next.js HMR & local endpoints in dev
+    const connectSrc = isProd
+      ? [
+          "connect-src 'self'",
+          apiOrigin,
+          "https://*.onrender.com",
+          "https://*.supabase.co",
+          "wss://*.supabase.co",
+          "https://accounts.google.com",
+          "https://api.openalex.org",
+          "https://api.crossref.org",
+          "https://export.arxiv.org",
+          "https://eutils.ncbi.nlm.nih.gov",
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : "connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:* wss: https:";
+
+    const scriptSrc = isProd
+      ? "script-src 'self' 'unsafe-inline' blob: https://accounts.google.com https://apis.google.com"
+      : "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://accounts.google.com https://apis.google.com";
 
     const cspHeader = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://accounts.google.com https://apis.google.com",
+      scriptSrc,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com blob:",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: https: blob:",
       connectSrc,
       "frame-src 'self' https://accounts.google.com",
       "frame-ancestors 'none'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
     ].join("; ");
 
     return [
