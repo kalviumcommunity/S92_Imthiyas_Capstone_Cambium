@@ -2,18 +2,6 @@
 
 import React, { useCallback, useState, useEffect, useRef } from "react";
 import { ArrowRight } from "lucide-react";
-import { useHydrated } from "@/lib/hooks/use-hydrated";
-import { useBrowserStorageValue, writeBrowserStorageValue } from "@/lib/hooks/use-browser-storage";
-
-const INTRO_SEEN_KEY = "cambium_intro_seen";
-
-function markIntroSeen() {
-  try {
-    writeBrowserStorageValue("session", INTRO_SEEN_KEY, "true");
-  } catch {
-    // ignore
-  }
-}
 
 interface CambiumIntroPreloaderProps {
   onComplete?: () => void;
@@ -56,23 +44,34 @@ export function CambiumIntroPreloader({
   const [progress, setProgress] = useState(0);
   const [step, setStep] = useState(0); // 0: Genesis spiral, 1: Connecting Nodes, 2: Typography Assembly, 3: Resolved
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const hydrated = useHydrated();
-  const seen = useBrowserStorageValue("session", INTRO_SEEN_KEY) === "true";
-  const visible = !dismissed && (forceShow || (hydrated && (!seen || fadingOut)));
+  const finishTimerRef = useRef<number | null>(null);
+  const completedRef = useRef(false);
+  const visible = !dismissed || (forceShow && !fadingOut);
 
-  // Total duration: ~4.5 seconds on screen before silky fade-out
-  const TOTAL_DURATION_MS = 4500;
-  const FADE_OUT_DURATION_MS = 1000;
+  // Quicker, snappier welcome sequence (~2.2s active + 450ms silky fade-out)
+  const TOTAL_DURATION_MS = 2200;
+  const FADE_OUT_DURATION_MS = 450;
+
+  const finalize = useCallback(
+    (fadeMs: number) => {
+      if (completedRef.current) return;
+      completedRef.current = true;
+      setFadingOut(true);
+      if (finishTimerRef.current) {
+        window.clearTimeout(finishTimerRef.current);
+      }
+      finishTimerRef.current = window.setTimeout(() => {
+        setDismissed(true);
+        onComplete?.();
+      }, fadeMs);
+    },
+    [onComplete]
+  );
 
   // Handle Skip (button or Escape key)
   const handleSkip = useCallback(() => {
-    markIntroSeen();
-    setFadingOut(true);
-    setTimeout(() => {
-      setDismissed(true);
-      if (onComplete) onComplete();
-    }, 200);
-  }, [onComplete]);
+    finalize(180);
+  }, [finalize]);
 
   // Keyboard shortcut listener for Esc key
   useEffect(() => {
@@ -82,42 +81,53 @@ export function CambiumIntroPreloader({
       }
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      if (finishTimerRef.current) {
+        window.clearTimeout(finishTimerRef.current);
+      }
+    };
   }, [handleSkip]);
 
-  // Timer & progress stepper
+  // Smooth rAF-driven progress & phase stepper (immune to interval drift)
   useEffect(() => {
-    if (!visible) return;
-    const startTime = Date.now();
+    if (!visible || dismissed) return;
+    const prefersReduced =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const totalMs = prefersReduced ? 700 : TOTAL_DURATION_MS;
+    const startTime = performance.now();
+    let rafId = 0;
 
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const pct = Math.min(100, Math.floor((elapsed / (TOTAL_DURATION_MS - 300)) * 100));
+    const tick = (now: number) => {
+      if (completedRef.current) return;
+      const elapsed = now - startTime;
+      const pct = Math.min(100, Math.floor((elapsed / (totalMs - 120)) * 100));
       setProgress(pct);
 
-      if (elapsed < 1200) {
+      if (elapsed < totalMs * 0.25) {
         setStep(0);
-      } else if (elapsed < 2400) {
+      } else if (elapsed < totalMs * 0.52) {
         setStep(1);
-      } else if (elapsed < 3600) {
+      } else if (elapsed < totalMs * 0.78) {
         setStep(2);
       } else {
         setStep(3);
       }
 
-      if (elapsed >= TOTAL_DURATION_MS) {
-        clearInterval(interval);
-        markIntroSeen();
-        setFadingOut(true);
-        setTimeout(() => {
-          setDismissed(true);
-          if (onComplete) onComplete();
-        }, FADE_OUT_DURATION_MS);
+      if (elapsed >= totalMs) {
+        setProgress(100);
+        finalize(FADE_OUT_DURATION_MS);
+        return;
       }
-    }, 25);
+      rafId = window.requestAnimationFrame(tick);
+    };
 
-    return () => clearInterval(interval);
-  }, [onComplete, visible]);
+    rafId = window.requestAnimationFrame(tick);
+    return () => {
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, [visible, dismissed, finalize]);
 
   // Procedural Roots & Nodes Canvas Animation
   useEffect(() => {
@@ -526,8 +536,8 @@ export function CambiumIntroPreloader({
     <div
       className={`fixed inset-0 z-[10000] bg-[#141A14] text-[#FAF7F0] flex flex-col justify-between p-6 sm:p-12 overflow-hidden select-none font-sans ${
         fadingOut
-          ? "opacity-0 scale-[1.01] pointer-events-none transition-all duration-1000 ease-in-out"
-          : "opacity-100 scale-100 transition-all duration-700 ease-out"
+          ? "opacity-0 scale-[1.01] pointer-events-none transition-all duration-500 ease-in-out"
+          : "opacity-100 scale-100 transition-all duration-300 ease-out"
       }`}
     >
       {/* Precision Procedural Roots and Nodes Canvas Layer */}
