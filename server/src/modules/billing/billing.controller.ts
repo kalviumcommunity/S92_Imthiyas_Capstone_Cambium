@@ -1,39 +1,47 @@
-import { Controller, Post, Get, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, UseGuards, Req } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { BillingService } from './billing.service';
-import { SubscriptionTier } from './entities/subscription.entity';
+import { SubscribeDto } from './dto/subscribe.dto';
 
-@Controller('billing')
+@ApiTags('Billing & Subscriptions')
+@ApiBearerAuth()
+@Controller(['billing', 'api/billing', 'api/v1/billing'])
 @UseGuards(JwtAuthGuard)
 export class BillingController {
   constructor(private readonly billingService: BillingService) {}
 
   @Post('subscribe')
-  async subscribe(
-    @Body() body: { tier: SubscriptionTier; cycle: 'monthly' | 'annual'; paymentMethodId?: string },
-    @Req() req: any,
-  ) {
+  @ApiOperation({ summary: 'Create or upgrade scholar subscription inside atomic transaction' })
+  async subscribe(@Body() dto: SubscribeDto, @Req() req: any) {
     const userId = req.user?.id || req.user?.userId;
-    return this.billingService.createOrUpdateSubscription(userId, {
-      tier: body.tier || SubscriptionTier.PRO,
-      cycle: body.cycle || 'monthly',
-      paymentMethodId: body.paymentMethodId,
-    });
+    return this.billingService.createOrUpdateSubscription(userId, dto);
   }
 
   @Get('invoices')
-  async getInvoices(@Req() req: any) {
+  @ApiOperation({ summary: 'List paginated invoices for authenticated user' })
+  async getInvoices(
+    @Req() req: any,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
     const userId = req.user?.id || req.user?.userId;
-    return this.billingService.getInvoices(userId);
+    return this.billingService.getInvoices(
+      userId,
+      limit ? Number(limit) : 50,
+      offset ? Number(offset) : 0,
+    );
   }
 
   @Get('subscription')
+  @ApiOperation({ summary: 'Get active subscription status for authenticated user' })
   async getSubscription(@Req() req: any) {
     const userId = req.user?.id || req.user?.userId;
     return this.billingService.getSubscription(userId);
   }
 
   @Post('cancel')
+  @ApiOperation({ summary: 'Schedule cancellation of active subscription' })
   async cancelSubscription(@Req() req: any) {
     const userId = req.user?.id || req.user?.userId;
     return this.billingService.cancelSubscription(userId);

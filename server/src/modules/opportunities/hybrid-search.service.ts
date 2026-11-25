@@ -56,8 +56,9 @@ export class HybridSearchService {
     count: number;
     results: ScoredOpportunity[];
   }> {
-    const { query, limit = 20, type, funder } = options;
-    const cleanQuery = query.trim();
+    const { query, limit: rawLimit = 20, type, funder } = options;
+    const limit = Math.min(Math.max(Math.floor(Number(rawLimit) || 20), 1), 100);
+    const cleanQuery = (query || '').trim();
 
     if (!cleanQuery) {
       const fallbackList = await this.oppRepo.find({

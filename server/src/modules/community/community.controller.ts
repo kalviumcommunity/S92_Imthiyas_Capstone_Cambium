@@ -10,10 +10,12 @@ import {
   UsePipes,
   ValidationPipe,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CommunityService } from './community.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { JwtAuthGuard, AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -31,12 +33,13 @@ export class CommunityController {
     @Query('tag') tag?: string,
     @Query('limit') limit?: number,
   ) {
-    return this.communityService.getFeed({ type, tag, limit: limit ? Number(limit) : 20 });
+    const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 50);
+    return this.communityService.getFeed({ type, tag, limit: safeLimit });
   }
 
   @Get('posts/:id')
   @ApiOperation({ summary: 'Retrieve detailed post with comments and reactions' })
-  async getPost(@Param('id') id: string) {
+  async getPost(@Param('id', ParseUUIDPipe) id: string) {
     return this.communityService.getPostById(id);
   }
 
@@ -44,7 +47,7 @@ export class CommunityController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Publish new verified academic post' })
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   async createPost(@Body() dto: CreatePostDto, @CurrentUser() user: AuthenticatedUser) {
     return this.communityService.createPost(user.id, dto);
   }
@@ -53,9 +56,9 @@ export class CommunityController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Add a peer discussion comment to a post' })
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   async addComment(
-    @Param('id') postId: string,
+    @Param('id', ParseUUIDPipe) postId: string,
     @Body() dto: CreateCommentDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
@@ -67,7 +70,7 @@ export class CommunityController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Toggle post endorsement, bookmark, or cite reaction' })
   async toggleReaction(
-    @Param('id') postId: string,
+    @Param('id', ParseUUIDPipe) postId: string,
     @Body('type') type: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
@@ -78,9 +81,10 @@ export class CommunityController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update an existing academic post (Author only)' })
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }))
   async updatePost(
-    @Param('id') postId: string,
-    @Body() dto: Partial<CreatePostDto>,
+    @Param('id', ParseUUIDPipe) postId: string,
+    @Body() dto: UpdatePostDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.communityService.updatePost(postId, user.id, dto);
@@ -91,7 +95,7 @@ export class CommunityController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete an academic post (Author only)' })
   async deletePost(
-    @Param('id') postId: string,
+    @Param('id', ParseUUIDPipe) postId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.communityService.deletePost(postId, user.id);
@@ -102,8 +106,8 @@ export class CommunityController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a comment on an academic post' })
   async deleteComment(
-    @Param('id') postId: string,
-    @Param('commentId') commentId: string,
+    @Param('id', ParseUUIDPipe) postId: string,
+    @Param('commentId', ParseUUIDPipe) commentId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.communityService.deleteComment(postId, commentId, user.id);

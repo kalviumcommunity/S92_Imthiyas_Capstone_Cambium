@@ -8,12 +8,14 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { BookmarksService } from './bookmarks.service';
 import { CreateBookmarkDto } from './dto/bookmark.dto';
 import { JwtAuthGuard, AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UserRole } from '../users/entities/user.entity';
 
 @ApiTags('Bookmarks')
 @ApiBearerAuth()
@@ -49,17 +51,24 @@ export class BookmarksController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete bookmark by ID' })
+  @ApiOperation({ summary: 'Delete bookmark by ID (owner or SuperAdmin only)' })
   @ApiParam({ name: 'id', description: 'Bookmark UUID' })
   @ApiResponse({ status: 200, description: 'Bookmark removed successfully' })
-  async deleteBookmark(@Param('id') id: string) {
-    return this.bookmarksService.remove(id);
+  async deleteBookmark(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.bookmarksService.remove(
+      id,
+      user.id,
+      user.role === UserRole.SUPER_ADMIN,
+    );
   }
 
   @Delete('opportunity/:opportunityId')
   @ApiOperation({ summary: 'Delete bookmark by opportunity ID for current authenticated user' })
   async deleteBookmarkByOpportunity(
-    @Param('opportunityId') opportunityId: string,
+    @Param('opportunityId', ParseUUIDPipe) opportunityId: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.bookmarksService.removeByOpportunity(user.id, opportunityId);

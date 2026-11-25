@@ -70,31 +70,35 @@ export class IngestionService implements OnModuleInit {
     this.logger.log(` Starting automated academic crawler pipeline for source: [${source}] (Limit: ${limit})`);
 
     const candidates: CrawledOpportunity[] = [];
+    const safeLimit = Math.min(Math.max(Number(limit) || 10, 1), 50);
 
+    const tasks: Array<{ name: string; run: () => Promise<CrawledOpportunity[]> }> = [];
     if (source === 'grants_gov' || source === 'all') {
-      const grants = await this.grantsGovCrawler.crawl(limit);
-      candidates.push(...grants);
+      tasks.push({ name: 'GrantsGovCrawler', run: () => this.grantsGovCrawler.crawl(safeLimit) });
     }
-
     if (source === 'openalex' || source === 'all') {
-      const papers = await this.openAlexCrawler.crawl(limit);
-      candidates.push(...papers);
+      tasks.push({ name: 'OpenAlexCrawler', run: () => this.openAlexCrawler.crawl(safeLimit) });
     }
-
     if (source === 'arxiv' || source === 'all') {
-      const arxivPapers = await this.arxivCrawler.crawl(limit);
-      candidates.push(...arxivPapers);
+      tasks.push({ name: 'ArxivCrawler', run: () => this.arxivCrawler.crawl(safeLimit) });
     }
-
     if (source === 'crossref' || source === 'all') {
-      const crossrefPapers = await this.crossrefCrawler.crawl(limit);
-      candidates.push(...crossrefPapers);
+      tasks.push({ name: 'CrossrefCrawler', run: () => this.crossrefCrawler.crawl(safeLimit) });
+    }
+    if (source === 'doaj' || source === 'all') {
+      tasks.push({ name: 'DoajCrawler', run: () => this.doajCrawler.crawl(safeLimit) });
     }
 
-    if (source === 'doaj' || source === 'all') {
-      const doajPapers = await this.doajCrawler.crawl(limit);
-      candidates.push(...doajPapers);
-    }
+    const settled = await Promise.allSettled(tasks.map((t) => t.run()));
+    settled.forEach((res, idx) => {
+      if (res.status === 'fulfilled') {
+        candidates.push(...res.value);
+      } else {
+        this.logger.warn(
+          `Crawler [${tasks[idx].name}] isolated failure: ${res.reason?.message || res.reason}`,
+        );
+      }
+    });
 
     let newlyIngested = 0;
     let skippedDuplicates = 0;

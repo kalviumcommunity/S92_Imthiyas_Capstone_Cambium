@@ -6,7 +6,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { FundingAccount, FinancialState } from './entities/funding-account.entity';
 import { BudgetLineItem } from './entities/budget-line-item.entity';
 import { ExpenseRequest } from './entities/expense-request.entity';
@@ -56,19 +56,29 @@ export class FundingService {
     }
 
     const accounts = await qb.getMany();
-    const enriched = await Promise.all(
-      accounts.map(async (acc) => {
-        const lineItems = await this.lineItemRepo.find({ where: { fundingAccountId: acc.id } });
-        const sanctioned = Number(acc.sanctionedAmount || 0);
-        const committed = Number(acc.committedAmount || 0);
-        const spent = Number(acc.spentAmount || 0);
-        return {
-          ...acc,
-          availableBalance: Math.max(0, sanctioned - committed - spent),
-          lineItems,
-        };
-      }),
-    );
+    const accountIds = accounts.map((a) => a.id);
+    const allLineItems =
+      accountIds.length > 0
+        ? await this.lineItemRepo.find({ where: { fundingAccountId: In(accountIds) } })
+        : [];
+    const itemsByAccount = new Map<string, BudgetLineItem[]>();
+    for (const item of allLineItems) {
+      const bucket = itemsByAccount.get(item.fundingAccountId) || [];
+      bucket.push(item);
+      itemsByAccount.set(item.fundingAccountId, bucket);
+    }
+
+    const enriched = accounts.map((acc) => {
+      const lineItems = itemsByAccount.get(acc.id) || [];
+      const sanctioned = Number(acc.sanctionedAmount || 0);
+      const committed = Number(acc.committedAmount || 0);
+      const spent = Number(acc.spentAmount || 0);
+      return {
+        ...acc,
+        availableBalance: Math.max(0, sanctioned - committed - spent),
+        lineItems,
+      };
+    });
 
     return { success: true, count: enriched.length, data: enriched };
   }
@@ -204,51 +214,58 @@ export class FundingService {
    * Atomically enforces budget invariant: committed + spent + amount <= sanctionedAmount.
    */
   async createExpenseRequest(user: AuthenticatedUser, dto: CreateExpenseRequestDto) {
-    const account = await this.accountRepo.findOne({ where: { id: dto.fundingAccountId } });
-    if (!account) throw new NotFoundException(`Funding account ${dto.fundingAccountId} not found.`);
-
-    assertTenantRecordAccess(
-      user,
-      {
-        organizationId: account.organizationId,
-        departmentId: account.departmentId,
-        ownerUserId: account.piUserId,
-      },
-      'funding account',
-    );
-
-    if (account.financialState === 'CLOSED') {
-      throw new BadRequestException('Cannot submit expenses against a CLOSED funding account.');
-    }
-
-    const sanctioned = Number(account.sanctionedAmount || 0);
-    const committed = Number(account.committedAmount || 0);
-    const spent = Number(account.spentAmount || 0);
-    const available = sanctioned - committed - spent;
-
-    if (dto.amount > available) {
-      throw new BadRequestException(
-        `Insufficient available funds: requested ${dto.amount}, available ${Math.max(0, available)}.`,
-      );
-    }
-
     const executeCommit = async (
       aRepo: Repository<FundingAccount>,
       eRepo: Repository<ExpenseRequest>,
       lRepo: Repository<BudgetLineItem>,
+      useWriteLock: boolean,
     ) => {
+      const account = await aRepo.findOne({
+        where: { id: dto.fundingAccountId },
+        ...(useWriteLock ? { lock: { mode: 'pessimistic_write' as const } } : {}),
+      });
+      if (!account) throw new NotFoundException(`Funding account ${dto.fundingAccountId} not found.`);
+
+      assertTenantRecordAccess(
+        user,
+        {
+          organizationId: account.organizationId,
+          departmentId: account.departmentId,
+          ownerUserId: account.piUserId,
+        },
+        'funding account',
+      );
+
+      if (account.financialState === 'CLOSED') {
+        throw new BadRequestException('Cannot submit expenses against a CLOSED funding account.');
+      }
+
+      const sanctioned = Number(account.sanctionedAmount || 0);
+      const committed = Number(account.committedAmount || 0);
+      const spent = Number(account.spentAmount || 0);
+      const available = sanctioned - committed - spent;
+
+      if (dto.amount > available) {
+        throw new BadRequestException(
+          `Insufficient available funds: requested ${dto.amount}, available ${Math.max(0, available)}.`,
+        );
+      }
+
       account.committedAmount = String(committed + dto.amount);
       await aRepo.save(account);
 
       if (dto.budgetLineItemId) {
-        const line = await lRepo.findOne({ where: { id: dto.budgetLineItemId, fundingAccountId: account.id } });
+        const line = await lRepo.findOne({
+          where: { id: dto.budgetLineItemId, fundingAccountId: account.id },
+          ...(useWriteLock ? { lock: { mode: 'pessimistic_write' as const } } : {}),
+        });
         if (line) {
           line.committedAmount = String(Number(line.committedAmount || 0) + dto.amount);
           await lRepo.save(line);
         }
       }
 
-      return eRepo.save(
+      const savedExpense = await eRepo.save(
         eRepo.create({
           fundingAccountId: account.id,
           budgetLineItemId: dto.budgetLineItemId || null,
@@ -262,28 +279,37 @@ export class FundingService {
           status: 'COMMITTED',
         }),
       );
+
+      return { savedExpense, account };
     };
 
-    const expense = this.dataSource
+    const { savedExpense } = this.dataSource
       ? await this.dataSource.transaction(async (m) => {
-          const saved = await executeCommit(
+          const res = await executeCommit(
             m.getRepository(FundingAccount),
             m.getRepository(ExpenseRequest),
             m.getRepository(BudgetLineItem),
+            true,
           );
           if (this.outboxService) {
-            await this.outboxService.emitWithinTransaction(m, 'expense_requests', saved.id, 'EXPENSE_COMMITTED', {
-              expenseId: saved.id,
-              fundingAccountId: account.id,
-              amount: saved.amount,
-              userId: user.id,
-            });
+            await this.outboxService.emitWithinTransaction(
+              m,
+              'expense_requests',
+              res.savedExpense.id,
+              'EXPENSE_COMMITTED',
+              {
+                expenseId: res.savedExpense.id,
+                fundingAccountId: res.account.id,
+                amount: res.savedExpense.amount,
+                userId: user.id,
+              },
+            );
           }
-          return saved;
+          return res;
         })
-      : await executeCommit(this.accountRepo, this.expenseRepo, this.lineItemRepo);
+      : await executeCommit(this.accountRepo, this.expenseRepo, this.lineItemRepo, false);
 
-    return { success: true, message: 'Purchase commitment recorded.', data: expense };
+    return { success: true, message: 'Purchase commitment recorded.', data: savedExpense };
   }
 
   /**
@@ -304,21 +330,28 @@ export class FundingService {
       throw new ForbiddenException('Only authorized Finance Officers or R&D Directors can approve expenses.');
     }
 
-    const expense = await this.expenseRepo.findOne({ where: { id: expenseId } });
-    if (!expense) throw new NotFoundException(`Expense request ${expenseId} not found.`);
-    if (expense.status === 'APPROVED_PAID' || expense.status === 'REJECTED') {
-      throw new BadRequestException(`Expense request is already finalized (${expense.status}).`);
-    }
-
-    const account = await this.accountRepo.findOne({ where: { id: expense.fundingAccountId } });
-    if (!account) throw new NotFoundException('Parent funding account not found.');
-
-    const amount = Number(expense.amount);
     const executeSettle = async (
       aRepo: Repository<FundingAccount>,
       eRepo: Repository<ExpenseRequest>,
       lRepo: Repository<BudgetLineItem>,
+      useWriteLock: boolean,
     ) => {
+      const expense = await eRepo.findOne({
+        where: { id: expenseId },
+        ...(useWriteLock ? { lock: { mode: 'pessimistic_write' as const } } : {}),
+      });
+      if (!expense) throw new NotFoundException(`Expense request ${expenseId} not found.`);
+      if (expense.status === 'APPROVED_PAID' || expense.status === 'REJECTED') {
+        throw new BadRequestException(`Expense request is already finalized (${expense.status}).`);
+      }
+
+      const account = await aRepo.findOne({
+        where: { id: expense.fundingAccountId },
+        ...(useWriteLock ? { lock: { mode: 'pessimistic_write' as const } } : {}),
+      });
+      if (!account) throw new NotFoundException('Parent funding account not found.');
+
+      const amount = Number(expense.amount);
       const nextCommitted = Math.max(0, Number(account.committedAmount || 0) - amount);
       account.committedAmount = String(nextCommitted);
       if (approve) {
@@ -327,7 +360,10 @@ export class FundingService {
       await aRepo.save(account);
 
       if (expense.budgetLineItemId) {
-        const line = await lRepo.findOne({ where: { id: expense.budgetLineItemId } });
+        const line = await lRepo.findOne({
+          where: { id: expense.budgetLineItemId },
+          ...(useWriteLock ? { lock: { mode: 'pessimistic_write' as const } } : {}),
+        });
         if (line) {
           line.committedAmount = String(Math.max(0, Number(line.committedAmount || 0) - amount));
           if (approve) {
@@ -341,34 +377,36 @@ export class FundingService {
       expense.approvedById = approver.id;
       expense.approvedAt = new Date();
       expense.rejectionReason = approve ? null : rejectionReason || 'Rejected during finance audit';
-      return eRepo.save(expense);
+      const saved = await eRepo.save(expense);
+      return { saved, account, requesterId: expense.requesterId };
     };
 
-    const settled = this.dataSource
+    const { saved } = this.dataSource
       ? await this.dataSource.transaction(async (m) => {
-          const saved = await executeSettle(
+          const res = await executeSettle(
             m.getRepository(FundingAccount),
             m.getRepository(ExpenseRequest),
             m.getRepository(BudgetLineItem),
+            true,
           );
           if (this.outboxService) {
             await this.outboxService.emitWithinTransaction(
               m,
               'expense_requests',
-              saved.id,
+              res.saved.id,
               approve ? 'EXPENSE_APPROVED_PAID' : 'EXPENSE_REJECTED',
               {
-                expenseId: saved.id,
-                fundingAccountId: account.id,
-                userId: expense.requesterId,
-                amount: saved.amount,
+                expenseId: res.saved.id,
+                fundingAccountId: res.account.id,
+                userId: res.requesterId,
+                amount: res.saved.amount,
               },
             );
           }
-          return saved;
+          return res;
         })
-      : await executeSettle(this.accountRepo, this.expenseRepo, this.lineItemRepo);
+      : await executeSettle(this.accountRepo, this.expenseRepo, this.lineItemRepo, false);
 
-    return { success: true, data: settled };
+    return { success: true, data: saved };
   }
 }

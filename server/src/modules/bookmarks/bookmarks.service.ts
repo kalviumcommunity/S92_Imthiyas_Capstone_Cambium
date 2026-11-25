@@ -2,6 +2,8 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -65,23 +67,33 @@ export class BookmarksService {
       opportunityId: dto.opportunity,
     });
 
-    const saved = await this.bookmarkRepo.save(bookmark);
-
-    return {
-      success: true,
-      message: 'Opportunity bookmarked successfully',
-      data: saved,
-    };
+    try {
+      const saved = await this.bookmarkRepo.save(bookmark);
+      return {
+        success: true,
+        message: 'Opportunity bookmarked successfully',
+        data: saved,
+      };
+    } catch (err: any) {
+      if (err?.code === '23505' || err?.driverError?.code === '23505') {
+        throw new ConflictException('Opportunity already bookmarked by this user');
+      }
+      throw err;
+    }
   }
 
   /**
-   * Deletes a bookmark. Foreign keys handle referential integrity automatically.
+   * Deletes a bookmark after verifying ownership.
    */
-  async remove(id: string) {
+  async remove(id: string, requesterId?: string, isAdmin = false) {
     const bookmark = await this.bookmarkRepo.findOne({ where: { id } });
 
     if (!bookmark) {
       throw new NotFoundException('Bookmark not found');
+    }
+
+    if (requesterId && !isAdmin && bookmark.userId !== requesterId) {
+      throw new ForbiddenException('Access denied: cannot remove another scholar bookmark');
     }
 
     await this.bookmarkRepo.remove(bookmark);
