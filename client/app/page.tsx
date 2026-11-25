@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import CambiumLogo from '@/components/CambiumLogo'
 import { ArrowUpRight, User, AlertCircle, Sparkles, Check, Flame, Bookmark, FileText, Compass, Search, ExternalLink, ShieldCheck, Bell, Calendar as CalendarIcon, Plus, LayoutGrid, Shield, Database, Building2, Key, BookOpen, MessageSquare, HelpCircle, Settings, Share2, Heart } from 'lucide-react'
 import { CambiumIntroPreloader } from '@/components/landing/CambiumIntroPreloader'
+import { PlatformCollageSection } from '@/components/landing/PlatformCollageSection'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useTheme } from '@/lib/theme-provider'
 import { getNaturalScholarContributionLevel, getScholarContributionDetails, SCHOLAR_ACTIVITY_BADGES } from '@/lib/scholarHeatmap'
@@ -3796,6 +3797,7 @@ export default function App() {
       <CollaborationSection />
       <IntelligenceSection />
       <PortfolioSection />
+      <PlatformCollageSection />
       <EcosystemMapSection />
       <TestimonialsSection />
       <CTASection />
