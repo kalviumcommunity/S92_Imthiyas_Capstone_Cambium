@@ -1,5 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsArray, IsDateString, IsUrl } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsArray,
+  IsDateString,
+  IsInt,
+  Min,
+  Max,
+  MaxLength,
+  ArrayMaxSize,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 import { OpportunityType } from '../entities/research-opportunity.entity';
 
 export class CreateOpportunityDto {
@@ -92,7 +105,23 @@ export class FilterOpportunityDto {
   @ApiPropertyOptional({ description: 'Filter by specific taxonomy tag' })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   tag?: string;
+
+  @ApiPropertyOptional({ default: 1, minimum: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ default: 50, minimum: 1, maximum: 100 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number;
 }
 
 export class RecommendationQueryDto {

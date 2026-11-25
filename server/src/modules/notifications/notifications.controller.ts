@@ -11,6 +11,7 @@ import {
   HttpStatus,
   UseGuards,
   ForbiddenException,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
@@ -85,7 +86,7 @@ export class NotificationsController {
   @ApiOperation({ summary: 'Mark single notification as read (ownership enforced)' })
   @ApiParam({ name: 'id', description: 'Notification UUID' })
   async markNotificationAsRead(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.notifService.markAsRead(id, user.id);
@@ -114,7 +115,7 @@ export class NotificationsController {
   @ApiOperation({ summary: 'Delete or dismiss single notification by ID (ownership enforced)' })
   @ApiParam({ name: 'id', description: 'Notification UUID' })
   async deleteNotification(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.notifService.remove(id, user.id);

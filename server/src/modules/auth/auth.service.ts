@@ -128,12 +128,23 @@ export class AuthService {
 
     let user: User | null = null;
     try {
-      // Direct lookup with relations
+      // Direct lookup with explicit credential select + relations (passwordHash has select:false by default)
       user = await this.userRepo.findOne({
         where: [
           { username: identifier },
           { email: identifier },
         ],
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          passwordHash: true,
+          fullName: true,
+          role: true,
+          institution: true,
+          organizationId: true,
+          departmentId: true,
+        },
         relations: { researchInterests: true },
       });
 
@@ -141,6 +152,7 @@ export class AuthService {
       if (!user) {
         user = await this.userRepo
           .createQueryBuilder('u')
+          .addSelect('u.passwordHash')
           .leftJoinAndSelect('u.researchInterests', 'interest')
           .where('LOWER(u.username) = :identifier', { identifier })
           .orWhere('LOWER(u.email) = :identifier', { identifier })
@@ -153,6 +165,17 @@ export class AuthService {
           { username: identifier },
           { email: identifier },
         ],
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          passwordHash: true,
+          fullName: true,
+          role: true,
+          institution: true,
+          organizationId: true,
+          departmentId: true,
+        },
       });
     }
 

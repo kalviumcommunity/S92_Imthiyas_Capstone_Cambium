@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  BadRequestException,
   Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -207,6 +208,7 @@ export class ProposalsService {
   async submitForReview(id: string, user: AuthenticatedUser, stage: ProposalStatus = 'SUPERVISOR_REVIEW') {
     const proposal = await this.proposalRepo.findOne({ where: { id } });
     if (!proposal) throw new NotFoundException(`Proposal ${id} not found.`);
+
     assertTenantRecordAccess(
       user,
       {
@@ -216,6 +218,16 @@ export class ProposalsService {
       },
       'research proposal',
     );
+
+    if (proposal.status !== 'DRAFTING' && proposal.status !== 'REVISION_REQUESTED') {
+      throw new BadRequestException(
+        `Invalid state transition: proposal in status ${proposal.status} cannot be submitted to ${stage}.`,
+      );
+    }
+
+    if (stage !== 'SUPERVISOR_REVIEW' && stage !== 'INTERNAL_REVIEW') {
+      throw new BadRequestException(`Unsupported review submission stage: ${stage}.`);
+    }
 
     proposal.status = stage;
     const saved = await this.proposalRepo.save(proposal);
@@ -244,6 +256,16 @@ export class ProposalsService {
 
     const proposal = await this.proposalRepo.findOne({ where: { id } });
     if (!proposal) throw new NotFoundException(`Proposal ${id} not found.`);
+
+    if (
+      proposal.status !== 'SUPERVISOR_REVIEW' &&
+      proposal.status !== 'INTERNAL_REVIEW' &&
+      proposal.status !== 'EXTERNAL_REVIEW'
+    ) {
+      throw new BadRequestException(
+        `Cannot record review decision while proposal is in ${proposal.status} state.`,
+      );
+    }
 
     if (reviewer.role === UserRole.DEPARTMENT_HEAD) {
       assertTenantRecordAccess(

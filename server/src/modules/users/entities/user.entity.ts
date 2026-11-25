@@ -40,7 +40,7 @@ export class User {
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
-  @Column({ name: 'password_hash', type: 'varchar', length: 255 })
+  @Column({ name: 'password_hash', type: 'varchar', length: 255, select: false })
   passwordHash: string;
 
   @Column({ name: 'full_name', type: 'varchar', length: 100 })

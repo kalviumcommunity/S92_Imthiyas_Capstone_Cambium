@@ -12,6 +12,7 @@ import {
   UseGuards,
   UseInterceptors,
   Inject,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { OpportunitiesService } from './opportunities.service';
@@ -25,6 +26,7 @@ import {
 import { OpportunityType } from './entities/research-opportunity.entity';
 import { JwtAuthGuard, AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UserRole } from '../users/entities/user.entity';
 import { EdgeCache } from '../../common/decorators/edge-cache.decorator';
 import { EdgeCacheInterceptor } from '../../common/interceptors/edge-cache.interceptor';
 import { CloudflarePurgeService } from '../../common/services/cloudflare-purge.service';
@@ -52,9 +54,10 @@ export class OpportunitiesController {
     @Query('type') type?: OpportunityType,
     @Query('funder') funder?: string,
   ) {
+    const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 100);
     return this.hybridSearchService.search({
       query: q,
-      limit: limit ? Number(limit) : 20,
+      limit: safeLimit,
       type,
       funder,
     });
@@ -118,7 +121,7 @@ export class OpportunitiesController {
   @ApiParam({ name: 'id', description: 'Opportunity UUID' })
   @ApiResponse({ status: 200, description: 'Opportunity details with ETag validation' })
   @ApiResponse({ status: 404, description: 'Opportunity not found' })
-  async getOpportunityById(@Param('id') id: string) {
+  async getOpportunityById(@Param('id', ParseUUIDPipe) id: string) {
     return this.oppService.findOne(id);
   }
 
@@ -164,14 +167,15 @@ export class OpportunitiesController {
   @Put(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update an existing research opportunity and purge edge cache' })
+  @ApiOperation({ summary: 'Update an existing research opportunity and purge edge cache (creator or SuperAdmin)' })
   @ApiParam({ name: 'id', description: 'Opportunity UUID' })
   @ApiResponse({ status: 200, description: 'Opportunity updated successfully' })
   async updateOpportunity(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateOpportunityDto,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    const updated = await this.oppService.update(id, dto);
+    const updated = await this.oppService.update(id, dto, user.id, user.role === UserRole.SUPER_ADMIN);
     this.cloudflarePurge.purgeTags(['cambium-catalog', 'grants-list', 'grant-detail']).catch(() => {});
     return updated;
   }
@@ -179,14 +183,20 @@ export class OpportunitiesController {
   @Put(':id/tags')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Add or update tags on a research opportunity' })
+  @ApiOperation({ summary: 'Add or update tags on a research opportunity (creator or SuperAdmin)' })
   @ApiParam({ name: 'id', description: 'Opportunity UUID' })
   async updateOpportunityTags(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body('tags') tags: string[] | string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     const tagsArray = Array.isArray(tags) ? tags : [tags];
-    const result = await this.oppService.updateTags(id, tagsArray);
+    const result = await this.oppService.updateTags(
+      id,
+      tagsArray,
+      user.id,
+      user.role === UserRole.SUPER_ADMIN,
+    );
     this.cloudflarePurge.purgeTags(['cambium-catalog', 'grants-list']).catch(() => {});
     return result;
   }
@@ -194,11 +204,14 @@ export class OpportunitiesController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete a research opportunity and purge edge cache' })
+  @ApiOperation({ summary: 'Delete a research opportunity and purge edge cache (creator or SuperAdmin)' })
   @ApiParam({ name: 'id', description: 'Opportunity UUID' })
   @ApiResponse({ status: 200, description: 'Opportunity deleted successfully' })
-  async deleteOpportunity(@Param('id') id: string) {
-    const result = await this.oppService.remove(id);
+  async deleteOpportunity(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const result = await this.oppService.remove(id, user.id, user.role === UserRole.SUPER_ADMIN);
     this.cloudflarePurge.purgeTags(['cambium-catalog', 'grants-list', 'grants-stats']).catch(() => {});
     return result;
   }

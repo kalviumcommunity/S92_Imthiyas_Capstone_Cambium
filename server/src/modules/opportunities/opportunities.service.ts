@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
   Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -35,11 +36,17 @@ export class OpportunitiesService {
    * Find all opportunities with TypeORM QueryBuilder and relational joins.
    */
   async findAll(filters: FilterOpportunityDto) {
+    const page = Math.max(Number(filters.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(filters.limit) || 50, 1), 100);
+    const offset = (page - 1) * limit;
+
     const qb = this.oppRepo
       .createQueryBuilder('opp')
       .leftJoinAndSelect('opp.tags', 'tag')
       .leftJoinAndSelect('opp.createdBy', 'creator')
-      .orderBy('opp.createdAt', 'DESC');
+      .orderBy('opp.createdAt', 'DESC')
+      .take(limit)
+      .skip(offset);
 
     if (filters.type) {
       qb.andWhere('opp.type = :type', { type: filters.type });
@@ -56,10 +63,14 @@ export class OpportunitiesService {
       );
     }
 
-    const [data, count] = await qb.getManyAndCount();
+    const [data, total] = await qb.getManyAndCount();
     return {
       success: true,
-      count,
+      count: data.length,
+      total,
+      page,
+      limit,
+      hasMore: offset + data.length < total,
       data,
     };
   }
@@ -119,12 +130,14 @@ export class OpportunitiesService {
   /**
    * Get upcoming deadlines using SQL timestamptz predicate.
    */
-  async getUpcomingDeadlines() {
+  async getUpcomingDeadlines(limit = 50) {
+    const cappedLimit = Math.min(Math.max(Number(limit) || 50, 1), 100);
     const opportunities = await this.oppRepo
       .createQueryBuilder('opp')
       .leftJoinAndSelect('opp.tags', 'tag')
       .where('opp.deadline >= CURRENT_TIMESTAMP')
       .orderBy('opp.deadline', 'ASC')
+      .take(cappedLimit)
       .getMany();
 
     return {
@@ -139,7 +152,7 @@ export class OpportunitiesService {
    * with fallback to relational tag intersection.
    */
   async getRecommendations(dto: RecommendationQueryDto) {
-    const limit = dto.limit || 10;
+    const limit = Math.min(Math.max(Number(dto.limit) || 10, 1), 50);
     const qb = this.oppRepo
       .createQueryBuilder('opp')
       .leftJoinAndSelect('opp.tags', 'tag');
@@ -205,16 +218,20 @@ export class OpportunitiesService {
     if (!Array.isArray(opportunitiesList) || opportunitiesList.length === 0) {
       throw new BadRequestException('Please provide an array of opportunities to insert');
     }
+    if (opportunitiesList.length > 100) {
+      throw new BadRequestException('Bulk opportunity insert is bounded to a maximum of 100 items per request.');
+    }
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
+      const txTagRepo = queryRunner.manager.getRepository(Tag);
       const createdEntities: ResearchOpportunity[] = [];
 
       for (const item of opportunitiesList) {
-        const tags = await this.resolveTags(item.tags);
+        const tags = await this.resolveTags(item.tags, txTagRepo);
         const opp = queryRunner.manager.create(ResearchOpportunity, {
           title: item.title,
           type: item.type,
@@ -246,9 +263,9 @@ export class OpportunitiesService {
   }
 
   /**
-   * Updates an opportunity and synchronizes relational tags.
+   * Updates an opportunity and synchronizes relational tags (creator or SuperAdmin only).
    */
-  async update(id: string, dto: UpdateOpportunityDto) {
+  async update(id: string, dto: UpdateOpportunityDto, requesterId?: string, isAdmin = false) {
     const opp = await this.oppRepo.findOne({
       where: { id },
       relations: { tags: true },
@@ -256,6 +273,10 @@ export class OpportunitiesService {
 
     if (!opp) {
       throw new NotFoundException('Research opportunity not found');
+    }
+
+    if (requesterId && !isAdmin && opp.createdById !== requesterId) {
+      throw new ForbiddenException('Only the creator or a SuperAdmin can update this research opportunity.');
     }
 
     if (dto.title !== undefined) opp.title = dto.title;
@@ -278,9 +299,9 @@ export class OpportunitiesService {
   }
 
   /**
-   * Adds or replaces tags on an existing opportunity.
+   * Adds or replaces tags on an existing opportunity (creator or SuperAdmin only).
    */
-  async updateTags(id: string, newTags: string[]) {
+  async updateTags(id: string, newTags: string[], requesterId?: string, isAdmin = false) {
     const opp = await this.oppRepo.findOne({
       where: { id },
       relations: { tags: true },
@@ -288,6 +309,10 @@ export class OpportunitiesService {
 
     if (!opp) {
       throw new NotFoundException('Research opportunity not found');
+    }
+
+    if (requesterId && !isAdmin && opp.createdById !== requesterId) {
+      throw new ForbiddenException('Only the creator or a SuperAdmin can modify tags on this opportunity.');
     }
 
     const resolved = await this.resolveTags(newTags);
@@ -307,12 +332,16 @@ export class OpportunitiesService {
   }
 
   /**
-   * Deletes an opportunity; dependent bookmarks and tags are handled via cascade and junction rules.
+   * Deletes an opportunity (creator or SuperAdmin only); dependent bookmarks and tags cascade.
    */
-  async remove(id: string) {
+  async remove(id: string, requesterId?: string, isAdmin = false) {
     const opp = await this.oppRepo.findOne({ where: { id } });
     if (!opp) {
       throw new NotFoundException('Research opportunity not found');
+    }
+
+    if (requesterId && !isAdmin && opp.createdById !== requesterId) {
+      throw new ForbiddenException('Only the creator or a SuperAdmin can delete this research opportunity.');
     }
 
     await this.oppRepo.remove(opp);
@@ -326,7 +355,7 @@ export class OpportunitiesService {
   /**
    * Helper: Resolves, normalizes, and deduplicates taxonomy tags in the database.
    */
-  private async resolveTags(rawTags?: string[]): Promise<Tag[]> {
+  private async resolveTags(rawTags?: string[], repo: Repository<Tag> = this.tagRepo): Promise<Tag[]> {
     if (!rawTags || !Array.isArray(rawTags) || rawTags.length === 0) {
       return [];
     }
@@ -336,10 +365,10 @@ export class OpportunitiesService {
       const trimmed = raw.trim();
       if (!trimmed) continue;
 
-      let tag = await this.tagRepo.findOne({ where: { name: trimmed } });
+      let tag = await repo.findOne({ where: { name: trimmed } });
       if (!tag) {
-        tag = this.tagRepo.create({ name: trimmed });
-        tag = await this.tagRepo.save(tag);
+        tag = repo.create({ name: trimmed });
+        tag = await repo.save(tag);
       }
       resolved.push(tag);
     }
