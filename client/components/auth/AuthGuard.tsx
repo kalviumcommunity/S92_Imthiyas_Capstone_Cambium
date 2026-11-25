@@ -17,24 +17,36 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Check token from store or directly from localStorage
-    const storedToken = localStorage.getItem("cambium_token");
+    // Check token expiry window & JWT exp claim consistently with Edge middleware
+    const storedToken = localStorage.getItem("cambium_token") || localStorage.getItem("cambium_access_token");
+    const activeToken = token || storedToken;
     const expiry = localStorage.getItem("cambium_session_expiry");
-    const isExpired = expiry ? Date.now() > Number(expiry) : false;
+    let isExpired = expiry ? Date.now() > Number(expiry) : false;
 
-    if (isExpired) {
-      localStorage.removeItem("cambium_token");
-      localStorage.removeItem("cambium_access_token");
-      localStorage.removeItem("cambium_user");
-      localStorage.removeItem("cambium_session_expiry");
-      document.cookie = "cambium_token=; path=/; max-age=0; SameSite=Lax";
+    if (activeToken && !isExpired) {
+      const parts = activeToken.split(".");
+      if (parts.length === 3) {
+        try {
+          const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+          const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+          const payload = JSON.parse(atob(padded)) as { exp?: number };
+          if (typeof payload.exp === "number" && payload.exp * 1000 <= Date.now()) {
+            isExpired = true;
+          }
+        } catch {
+          // Non-blocking fallback for non-JWT dev tokens
+        }
+      }
     }
 
-    const hasValidToken = Boolean((token || storedToken) && !isExpired);
+    if (isExpired) {
+      useAuthStore.getState().logout();
+    }
+
+    const hasValidToken = Boolean(activeToken && !isExpired);
 
     if (hasValidToken) {
       // Keep session cookie synchronized for Next.js edge middleware
-      const activeToken = token || storedToken;
       if (activeToken && !document.cookie.includes("cambium_token=")) {
         const maxAge = 30 * 24 * 60 * 60;
         document.cookie = `cambium_token=${activeToken}; path=/; max-age=${maxAge}; SameSite=Lax`;

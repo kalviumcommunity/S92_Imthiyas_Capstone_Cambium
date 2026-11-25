@@ -87,18 +87,20 @@ export async function chatWithAssistant(payload: {
   messages: Array<{ role: string; content: string }>;
   context?: any;
 }): Promise<any> {
-  const res = await fetch(`${API_BASE}/v1/assistant/chat`, {
+  const res = await apiFetch(`${API_BASE}/v1/assistant/chat`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Assistant chat failed");
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.message || "Assistant chat failed");
+  }
   return res.json();
 }
 
 export async function getOpportunityStats(): Promise<OpportunityStats> {
   try {
-    const res = await fetch(`${API_BASE}/research-opportunities/stats`);
+    const res = await apiFetch(`${API_BASE}/research-opportunities/stats`);
     if (!res.ok) return { total: 0, grants: 0, cfps: 0, journals: 0, papers: 0 };
     const json = await res.json();
     return json.stats || { total: 0, grants: 0, cfps: 0, journals: 0, papers: 0 };
@@ -116,9 +118,8 @@ export async function createOpportunity(data: {
   link?: string;
   tags?: string[];
 }): Promise<ResearchOpportunity> {
-  const res = await fetch(`${API_BASE}/research-opportunities`, {
+  const res = await apiFetch(`${API_BASE}/research-opportunities`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
   const json = await res.json();
@@ -127,39 +128,34 @@ export async function createOpportunity(data: {
 }
 
 export async function deleteOpportunity(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/research-opportunities/${id}`, {
+  const res = await apiFetch(`${API_BASE}/research-opportunities/${id}`, {
     method: "DELETE",
-    headers: getAuthHeaders(),
   });
   if (!res.ok) throw new Error("Failed to delete opportunity");
 }
 
 // 2. Bookmarks API
 export async function getMyBookmarks(): Promise<BookmarkItem[]> {
-  const res = await fetch(`${API_BASE}/bookmarks/my/list`, {
-    headers: getAuthHeaders(),
-  });
+  const res = await apiFetch(`${API_BASE}/bookmarks/my/list`);
   if (!res.ok) return [];
   const json = await res.json();
   return json.data || [];
 }
 
 export async function toggleBookmark(opportunityId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/bookmarks`, {
+  const res = await apiFetch(`${API_BASE}/bookmarks`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify({ opportunity: opportunityId }),
   });
   if (!res.ok) {
-    const json = await res.json();
+    const json = await res.json().catch(() => ({}));
     throw new Error(json.message || "Failed to bookmark");
   }
 }
 
 export async function removeBookmark(bookmarkId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/bookmarks/${bookmarkId}`, {
+  const res = await apiFetch(`${API_BASE}/bookmarks/${bookmarkId}`, {
     method: "DELETE",
-    headers: getAuthHeaders(),
   });
   if (!res.ok) throw new Error("Failed to remove bookmark");
 }
@@ -169,9 +165,9 @@ export async function loginUser(credentials: {
   usernameOrEmail: string;
   password: string;
 }) {
-  const res = await fetch(`${API_BASE}/auth/login`, {
+  const res = await apiFetch(`${API_BASE}/auth/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    skipAuthRefresh: true,
     body: JSON.stringify({
       username: credentials.usernameOrEmail,
       email: credentials.usernameOrEmail,
@@ -191,9 +187,9 @@ export async function registerUser(data: {
   institution?: string;
   researchInterests?: string[];
 }) {
-  const res = await fetch(`${API_BASE}/auth/register`, {
+  const res = await apiFetch(`${API_BASE}/auth/register`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    skipAuthRefresh: true,
     body: JSON.stringify(data),
   });
   const json = await res.json();
@@ -204,9 +200,9 @@ export async function registerUser(data: {
 const api = {
   get: async (endpoint: string, config?: any) => {
     const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const res = await fetch(`${API_BASE}${formatted}`, {
+    const res = await apiFetch(`${API_BASE}${formatted}`, {
       method: "GET",
-      headers: { ...getAuthHeaders(), ...(config?.headers || {}) },
+      headers: config?.headers,
     });
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
@@ -217,9 +213,9 @@ const api = {
   },
   post: async (endpoint: string, body: any, config?: any) => {
     const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const res = await fetch(`${API_BASE}${formatted}`, {
+    const res = await apiFetch(`${API_BASE}${formatted}`, {
       method: "POST",
-      headers: { ...getAuthHeaders(), ...(config?.headers || {}) },
+      headers: config?.headers,
       body: JSON.stringify(body),
     });
     if (!res.ok) {
@@ -231,9 +227,9 @@ const api = {
   },
   put: async (endpoint: string, body: any, config?: any) => {
     const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const res = await fetch(`${API_BASE}${formatted}`, {
+    const res = await apiFetch(`${API_BASE}${formatted}`, {
       method: "PUT",
-      headers: { ...getAuthHeaders(), ...(config?.headers || {}) },
+      headers: config?.headers,
       body: JSON.stringify(body),
     });
     if (!res.ok) {
@@ -245,9 +241,9 @@ const api = {
   },
   delete: async (endpoint: string, config?: any) => {
     const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const res = await fetch(`${API_BASE}${formatted}`, {
+    const res = await apiFetch(`${API_BASE}${formatted}`, {
       method: "DELETE",
-      headers: { ...getAuthHeaders(), ...(config?.headers || {}) },
+      headers: config?.headers,
     });
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));

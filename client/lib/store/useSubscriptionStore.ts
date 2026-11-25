@@ -49,6 +49,7 @@ export interface SubscriptionState {
   addTokens: (amount: number, costDisplay: string) => void;
   consumeTokens: (amount: number) => boolean;
   setLabName: (name: string) => void;
+  resetStore: () => void;
   checkFeatureAccess: (feature: "unlimited_drafts" | "deep_rag" | "team_collaboration" | "latex_export" | "merkle_audit" | "multi_site_irb") => FeatureAccessResult;
 }
 
@@ -282,6 +283,21 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => {
 
     setLabName: (name) => {
       set({ labName: name });
+    },
+
+    resetStore: () => {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+      set({
+        currentPlan: "free",
+        billingCycle: "monthly",
+        currency: "USD",
+        tokensUsed: 0,
+        tokensTotal: 2000,
+        paymentMethod: null,
+        invoices: [],
+      });
     },
 
     checkFeatureAccess: (feature) => {

@@ -176,35 +176,41 @@ export function ProposalDraftsDesk({ injectedDraft }: ProposalDraftsDeskProps) {
 
   // Handle injected draft from opportunities page
   useEffect(() => {
-    if (injectedDraft?.title) {
-      const existing = drafts.find((d) => d.title.toLowerCase() === injectedDraft.title?.toLowerCase());
+    if (!injectedDraft?.title) return;
+    const injectedTitle = injectedDraft.title;
+
+    setDrafts((prevDrafts) => {
+      const existing = prevDrafts.find(
+        (d) => d.title.toLowerCase() === injectedTitle.toLowerCase(),
+      );
       if (existing) {
         setSelectedId(existing.id);
-      } else {
-        const newDraft: ProposalDraft = {
-          id: `draft-inj-${Date.now()}`,
-          title: injectedDraft.title,
-          funder: injectedDraft.funder || "Federal Grant Agency",
-          program: "Targeted Research Initiative",
-          budget: injectedDraft.budget || "$750,000",
-          deadline: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-          status: "DRAFTING",
-          lastEdited: "Just now",
-          aims: `Specific Aim 1: Define baseline empirical methodology and formulate research objectives for ${injectedDraft.title}.\nSpecific Aim 2: Develop robust experimental framework and validation protocols.\nSpecific Aim 3: Benchmark findings and deliver open-access computational reproducibility package.`,
-          significance: `This research directly addresses the solicitation criteria published by ${injectedDraft.funder || "the sponsor"}, providing measurable breakthroughs in the domain.`,
-          methodology: `Our proposed methodology employs rigorous validation controls, multi-site reproducibility protocols, and FAIR data dissemination.`,
-          budgetBreakdown: `• Personnel: 60%\n• Direct Research Supplies & Compute: 25%\n• Travel & Publication: 5%\n• Institutional Overhead: 10%`,
-          keywords: ["Grant Proposal", "Specific Aims", "Novel Investigation"],
-        };
-
-        const updated = [newDraft, ...drafts];
-        setDrafts(updated);
-        setSelectedId(newDraft.id);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("cambium_workspace_drafts_v2", JSON.stringify(updated));
-        }
+        return prevDrafts;
       }
-    }
+
+      const newDraft: ProposalDraft = {
+        id: `draft-inj-${Date.now()}`,
+        title: injectedTitle,
+        funder: injectedDraft.funder || "Federal Grant Agency",
+        program: "Targeted Research Initiative",
+        budget: injectedDraft.budget || "$750,000",
+        deadline: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+        status: "DRAFTING",
+        lastEdited: "Just now",
+        aims: `Specific Aim 1: Define baseline empirical methodology and formulate research objectives for ${injectedTitle}.\nSpecific Aim 2: Develop robust experimental framework and validation protocols.\nSpecific Aim 3: Benchmark findings and deliver open-access computational reproducibility package.`,
+        significance: `This research directly addresses the solicitation criteria published by ${injectedDraft.funder || "the sponsor"}, providing measurable breakthroughs in the domain.`,
+        methodology: `Our proposed methodology employs rigorous validation controls, multi-site reproducibility protocols, and FAIR data dissemination.`,
+        budgetBreakdown: `• Personnel: 60%\n• Direct Research Supplies & Compute: 25%\n• Travel & Publication: 5%\n• Institutional Overhead: 10%`,
+        keywords: ["Grant Proposal", "Specific Aims", "Novel Investigation"],
+      };
+
+      const updated = [newDraft, ...prevDrafts];
+      setSelectedId(newDraft.id);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cambium_workspace_drafts_v2", JSON.stringify(updated));
+      }
+      return updated;
+    });
   }, [injectedDraft]);
 
   // Sync live proposals from PostgreSQL when authenticated

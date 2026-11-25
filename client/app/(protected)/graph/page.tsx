@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, Suspense } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -189,13 +189,6 @@ function SemanticGraphContent() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (urlQ) {
-      setSearchQuery(urlQ);
-      handleSyncLiveOpenAlex(urlQ);
-    }
-  }, [urlQ]);
-
   const matchingNodes = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase();
@@ -211,11 +204,13 @@ function SemanticGraphContent() {
   const [canvasAnnouncement, setCanvasAnnouncement] = useState<string>("");
   const [isLiveOpenAlexLoading, setIsLiveOpenAlexLoading] = useState<boolean>(false);
   const [isLiveSynced, setIsLiveSynced] = useState<boolean>(false);
+  const searchQueryRef = useRef<string>(searchQuery);
+  searchQueryRef.current = searchQuery;
 
-  const handleSyncLiveOpenAlex = async (queryText?: string) => {
+  const handleSyncLiveOpenAlex = useCallback(async (queryText?: string) => {
     setIsLiveOpenAlexLoading(true);
     try {
-      const q = (queryText || searchQuery || "neuro-symbolic foundation models").trim();
+      const q = (queryText || searchQueryRef.current || "neuro-symbolic foundation models").trim();
       const works = await fetchScholarlyWorks({ query: q, limit: 8 });
       if (!works || works.length === 0) return;
 
@@ -283,7 +278,14 @@ function SemanticGraphContent() {
     } finally {
       setIsLiveOpenAlexLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (urlQ) {
+      setSearchQuery(urlQ);
+      handleSyncLiveOpenAlex(urlQ);
+    }
+  }, [urlQ, handleSyncLiveOpenAlex]);
 
   const handleResetToBenchmark = () => {
     setNodes(INITIAL_NODES);

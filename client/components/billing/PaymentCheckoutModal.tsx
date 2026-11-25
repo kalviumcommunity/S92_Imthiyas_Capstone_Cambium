@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   CreditCard,
@@ -13,6 +13,7 @@ import {
   Sparkles,
   Zap,
   Info,
+  AlertCircle,
 } from "lucide-react";
 import {
   useSubscriptionStore,
@@ -21,6 +22,7 @@ import {
   type Currency,
   type PaymentMethodInfo,
 } from "@/lib/store/useSubscriptionStore";
+import { apiFetch, resolveApiBase } from "@/lib/http-client";
 
 interface PaymentCheckoutModalProps {
   isOpen: boolean;
@@ -57,6 +59,18 @@ export function PaymentCheckoutModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState<string>("");
   const [isCompleted, setIsCompleted] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !isProcessing) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen, isProcessing, onClose]);
 
   if (!isOpen) return null;
 
@@ -81,9 +95,10 @@ export function PaymentCheckoutModal({
 
   const handleExecutePayment = async () => {
     setIsProcessing(true);
+    setCheckoutError(null);
     setProcessingStep("Verifying academic credentials and routing...");
 
-    await new Promise((r) => setTimeout(r, 700));
+    await new Promise((r) => setTimeout(r, 400));
     setProcessingStep(
       channel === "card"
         ? "Authorizing university P-Card via 3D Secure / Stripe gateway..."
@@ -91,11 +106,6 @@ export function PaymentCheckoutModal({
         ? "Verifying instant UPI VPA handle & bank routing..."
         : "Validating federal grant PO voucher & university cost center..."
     );
-
-    await new Promise((r) => setTimeout(r, 800));
-    setProcessingStep("Provisioning dedicated high-throughput vector compute partition...");
-
-    await new Promise((r) => setTimeout(r, 600));
 
     let paymentInfo: PaymentMethodInfo = {
       type: "card",
@@ -118,38 +128,41 @@ export function PaymentCheckoutModal({
       };
     }
 
-    upgradePlan(targetPlan, cycle, paymentInfo);
-
-    // Sync subscription tier to backend (mock billing endpoint)
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const token = typeof window !== "undefined" ? localStorage.getItem("cambium_access_token") : null;
-      if (token) {
-        fetch(`${apiUrl}/api/billing/subscribe`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ tier: targetPlan, cycle }),
-        }).catch((err) => {
-          console.warn("[Billing] Backend sync warning (non-blocking):", err);
-        });
+      setProcessingStep("Confirming subscription activation with Cambium Billing API...");
+      const res = await apiFetch(`${resolveApiBase()}/billing/subscribe`, {
+        method: "POST",
+        body: JSON.stringify({ tier: targetPlan, cycle }),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson?.message || `Billing service returned HTTP ${res.status}.`);
       }
-    } catch {
-      // Non-blocking catch
-    }
 
-    setIsProcessing(false);
-    setIsCompleted(true);
-
-    if (onSuccess) {
-      onSuccess(targetPlan);
+      upgradePlan(targetPlan, cycle, paymentInfo);
+      setIsCompleted(true);
+      if (onSuccess) {
+        onSuccess(targetPlan);
+      }
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Unable to confirm subscription with backend billing service.";
+      setCheckoutError(msg);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="checkout-modal-title"
+    >
       <div className="bg-[#FAF7F0] dark:bg-[#131C15] border border-[#E4DCCB] dark:border-[#233327] rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Header */}
         <div className="px-6 py-5 border-b border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between bg-white/70 dark:bg-[#18231B]/70">
@@ -161,7 +174,7 @@ export function PaymentCheckoutModal({
               <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80]">
                 Enterprise Payment Gateway
               </div>
-              <h2 className="text-lg font-serif font-semibold text-[#202920] dark:text-[#EDEAE2] m-0 leading-tight">
+              <h2 id="checkout-modal-title" className="text-lg font-serif font-semibold text-[#202920] dark:text-[#EDEAE2] m-0 leading-tight">
                 Complete Subscription
               </h2>
             </div>
@@ -178,6 +191,15 @@ export function PaymentCheckoutModal({
 
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto space-y-6">
+          {checkoutError && (
+            <div
+              role="alert"
+              className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-xs text-red-700 dark:text-red-300"
+            >
+              <AlertCircle size={16} className="shrink-0 mt-0.5" />
+              <span>{checkoutError}</span>
+            </div>
+          )}
           {isCompleted ? (
             /* Success confirmation screen */
             <div className="py-8 text-center space-y-4">

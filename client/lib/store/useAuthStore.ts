@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { clearFrontendQueryCache } from "../query-client";
+import { useSubscriptionStore } from "./useSubscriptionStore";
 
 export interface UserProfile {
   id: string;
@@ -32,7 +34,16 @@ interface AuthState {
 
 const SESSION_WINDOW_DAYS = 30; // 30-day enterprise remember me window
 
-export const useAuthStore = create<AuthState>((set) => {
+export function clearScopedUserCaches(): void {
+  clearFrontendQueryCache();
+  useSubscriptionStore.getState().resetStore();
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("cambium_workspace_drafts_v2");
+    localStorage.removeItem("cambium_bookmarks");
+  }
+}
+
+export const useAuthStore = create<AuthState>((set, get) => {
   let initialToken: string | null = null;
   let initialUser: UserProfile | null = null;
 
@@ -69,6 +80,7 @@ export const useAuthStore = create<AuthState>((set) => {
     token: initialToken,
     isAuthenticated: Boolean(initialToken),
     setAuth: (user, token) => {
+      const prevUserId = get().user?.id;
       const sanitizedUser: UserProfile = user
         ? {
             ...user,
@@ -76,6 +88,10 @@ export const useAuthStore = create<AuthState>((set) => {
             name: user.name || user.fullName || user.username || "Scholar",
           }
         : ({} as UserProfile);
+
+      if (prevUserId && sanitizedUser.id && prevUserId !== sanitizedUser.id) {
+        clearScopedUserCaches();
+      }
 
       if (typeof window !== "undefined") {
         const maxAgeSeconds = SESSION_WINDOW_DAYS * 24 * 60 * 60;
@@ -112,6 +128,7 @@ export const useAuthStore = create<AuthState>((set) => {
       });
     },
     logout: () => {
+      clearScopedUserCaches();
       if (typeof window !== "undefined") {
         localStorage.removeItem("cambium_token");
         localStorage.removeItem("cambium_access_token");

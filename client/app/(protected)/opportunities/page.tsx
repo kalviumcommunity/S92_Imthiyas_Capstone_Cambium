@@ -630,6 +630,7 @@ function DetailPanel({
   onCite?: (opp: Opportunity) => void;
   onCheckEligibility?: (opp: Opportunity) => void;
 }) {
+  const router = useRouter();
   const [showTrackMenu, setShowTrackMenu] = useState(false);
 
   useEffect(() => {
@@ -685,7 +686,7 @@ function DetailPanel({
 
   const handleDraftProposal = () => {
     const url = `/workspace?createDraft=1&title=${encodeURIComponent(opp.title)}&funder=${encodeURIComponent(opp.org)}&budget=${encodeURIComponent(opp.funding || "$500,000")}`;
-    window.location.href = url;
+    router.push(url);
   };
 
   const related = ALL_OPPS.filter((o) => opp.relatedIds?.includes(o.id));
