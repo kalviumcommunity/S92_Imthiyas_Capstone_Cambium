@@ -1443,17 +1443,17 @@ function WorkspaceSection() {
         className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-opacity duration-700"
         style={{
           backgroundImage: "url('/backgrounds/cambium-botanical-oil-canvas.webp')",
-          opacity: 0.9,
+          opacity: 1,
         }}
       />
 
-      {/* Atmospheric Chiaroscuro Vignette & Edge Fades (Dutch Master Woodland Depth) */}
+      {/* Crisp Deep Chiaroscuro Edge Vignette (Zero Milky Top/Bottom Fade) */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
-            linear-gradient(to bottom, ${C.darkBg} 0%, rgba(17,25,19,0.52) 14%, rgba(17,25,19,0.28) 50%, rgba(17,25,19,0.58) 86%, ${C.darkBg} 100%),
-            radial-gradient(ellipse at 50% 56%, rgba(10,16,12,0.52) 0%, rgba(12,19,14,0.34) 48%, rgba(8,13,9,0.78) 100%)
+            linear-gradient(to bottom, rgba(5,9,6,0.48) 0%, transparent 10%, transparent 90%, rgba(5,9,6,0.52) 100%),
+            radial-gradient(ellipse at 50% 52%, rgba(5,9,6,0.16) 0%, rgba(5,9,6,0.34) 62%, rgba(4,7,5,0.68) 100%)
           `,
         }}
       />

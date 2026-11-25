@@ -166,17 +166,17 @@ export function HexContributionGraph({
         return x - Math.floor(x);
       };
 
-      // Realistic human-scale academic rhythm (~65-70% empty cells, irregular mid-level cadence):
-      // Jan-Mar: 3-5 faint sage isolated cells per month
-      // Apr-May: Spring conference/grant crunch (6-8 mixed cells with weekend/day-off gaps)
-      // Jun-Aug: Quiet summer reading break (1-3 faint isolated cells per month)
-      // Sep: Loose moderate Fall cluster (5-7 cells light-to-medium green)
-      // Oct-Dec: Sporadic tapering milestones (2-4 sparse cells)
-      const TARGET_ACTIVE_BY_MONTH = [4, 5, 4, 7, 8, 2, 1, 2, 6, 3, 4, 2];
+      // Beginner-to-intermediate active researcher rhythm (~65-70% open cells, natural seasonal clusters):
+      // Jan-Mar: 8-10 varied sage/foliage cells per month
+      // Apr-May: Spring conference/grant crunch (14-15 active cells across levels 1-4 with weekend breaks)
+      // Jun-Aug: Lighter summer reading & fieldwork (4-6 scattered cells per month)
+      // Sep: Active Fall launch cluster (12 cells across levels 1-3)
+      // Oct-Dec: Steady autumn/year-end cadence (7-10 cells)
+      const TARGET_ACTIVE_BY_MONTH = [8, 10, 9, 14, 15, 5, 4, 6, 12, 9, 10, 7];
 
       for (let m = 0; m < 12; m++) {
         const daysInMonth = new Date(Date.UTC(numericYear, m + 1, 0)).getUTCDate();
-        const targetActive = TARGET_ACTIVE_BY_MONTH[m] ?? 3;
+        const targetActive = TARGET_ACTIVE_BY_MONTH[m] ?? 7;
 
         // Deterministic scored candidate days prioritizing weekdays and natural spacing
         const candidates: Array<{ day: number; dayOfYear: number; score: number }> = [];
@@ -188,14 +188,13 @@ export function HexContributionGraph({
           const dayOfWeek = (dateObj.getUTCDay() + 6) % 7; // 0=Mon, 6=Sun
           const dayRand = seededHash(dayOfYear * 41 + day * 17 + m * 29);
 
-          // Strong preference against unbroken multi-day blocks; weekdays slightly favored
           const clusterBias =
             m === 3 || m === 4
-              ? (day >= 9 && day <= 24 ? 0.28 : 0.0)
+              ? (day >= 7 && day <= 25 ? 0.25 : 0.0)
               : m === 8
-              ? (day >= 6 && day <= 19 ? 0.22 : 0.0)
+              ? (day >= 5 && day <= 21 ? 0.20 : 0.0)
               : 0.0;
-          const weekendPenalty = dayOfWeek >= 5 ? -0.32 : 0.08;
+          const weekendPenalty = dayOfWeek >= 5 ? -0.26 : 0.10;
           candidates.push({
             day,
             dayOfYear,
@@ -203,37 +202,48 @@ export function HexContributionGraph({
           });
         }
 
-        // Select top non-cluttered days respecting authentic spacing (~65-70%+ empty honeycomb)
+        // Select active days allowing organic 2-3 day sprints while preventing artificial 4+ day walls
         const ranked = [...candidates].sort((a, b) => b.score - a.score);
         const pickedDays = new Map<number, 1 | 2 | 3 | 4>();
         for (const cand of ranked) {
           if (pickedDays.size >= targetActive) break;
-          // Reject 3+ consecutive day chains to avoid artificial unbroken streaks
           const prev1 = pickedDays.has(cand.day - 1);
           const prev2 = pickedDays.has(cand.day - 2);
+          const prev3 = pickedDays.has(cand.day - 3);
           const next1 = pickedDays.has(cand.day + 1);
           const next2 = pickedDays.has(cand.day + 2);
-          if ((prev1 && prev2) || (next1 && next2) || (prev1 && next1)) continue;
+          const next3 = pickedDays.has(cand.day + 3);
+          if (
+            (prev1 && prev2 && prev3) ||
+            (next1 && next2 && next3) ||
+            (prev1 && prev2 && next1) ||
+            (prev1 && next1 && next2)
+          ) {
+            continue;
+          }
 
           const intensityRoll = seededHash(cand.dayOfYear * 97 + 11);
           let lvl: 1 | 2 | 3 | 4 = 1;
           if (m === 3 || m === 4) {
-            // Apr & May crunch: mix of pale sage through deep forest green spots
+            // Apr & May crunch: varied sage through deep pine accents
             if (intensityRoll > 0.72) lvl = 4;
-            else if (intensityRoll > 0.45) lvl = 3;
-            else if (intensityRoll > 0.22) lvl = 2;
+            else if (intensityRoll > 0.44) lvl = 3;
+            else if (intensityRoll > 0.20) lvl = 2;
             else lvl = 1;
           } else if (m === 8) {
-            // Sep: light to medium green loose cluster
-            if (intensityRoll > 0.75) lvl = 3;
-            else if (intensityRoll > 0.38) lvl = 2;
+            // Sep: balanced light-to-deep medium cadence
+            if (intensityRoll > 0.80) lvl = 4;
+            else if (intensityRoll > 0.52) lvl = 3;
+            else if (intensityRoll > 0.25) lvl = 2;
             else lvl = 1;
           } else if (m >= 5 && m <= 7) {
-            // Jun-Aug summer break: faint isolated marks only
-            lvl = 1;
+            // Jun-Aug summer break: light scattered notes & reviews
+            lvl = intensityRoll > 0.68 ? 2 : 1;
           } else {
-            // Jan-Mar, Oct-Dec: mostly faint sage with rare level 2
-            lvl = intensityRoll > 0.80 ? 2 : 1;
+            // Jan-Mar, Oct-Dec: authentic beginner-intermediate mix
+            if (intensityRoll > 0.86) lvl = 3;
+            else if (intensityRoll > 0.48) lvl = 2;
+            else lvl = 1;
           }
           pickedDays.set(cand.day, lvl);
         }

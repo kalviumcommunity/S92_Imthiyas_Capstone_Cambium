@@ -3,7 +3,7 @@
 // Enterprise PWA Caching & Field Researcher Offline Strategy
 // ====================================================================
 
-const CACHE_NAME = "cambium-cache-v6-sprint05-live";
+const CACHE_NAME = "cambium-cache-v7-landing-polish";
 const STATIC_ASSETS = [
   "/favicon.svg",
   "/favicon-light.svg",
