@@ -7,6 +7,13 @@ import CambiumLogo from '@/components/CambiumLogo'
 import { ArrowUpRight, User, AlertCircle, Sparkles, Check, Flame, Bookmark, FileText, Compass, Search, ExternalLink, ShieldCheck, Bell, Calendar as CalendarIcon, Plus, LayoutGrid, Shield, Database, Building2, Key, BookOpen, MessageSquare, HelpCircle, Settings, Share2, Heart } from 'lucide-react'
 import { CambiumIntroPreloader } from '@/components/landing/CambiumIntroPreloader'
 import { PlatformCollageSection } from '@/components/landing/PlatformCollageSection'
+import {
+  CountUpMetric,
+  GuidedDeskPointer,
+  ScrollProgressBar,
+  ScrollReveal,
+  TypedPhrase,
+} from '@/components/landing/MotionPrimitives'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useTheme } from '@/lib/theme-provider'
 import { getNaturalScholarContributionLevel, getScholarContributionDetails, SCHOLAR_ACTIVITY_BADGES } from '@/lib/scholarHeatmap'
@@ -637,9 +644,11 @@ function Hero() {
         </div>
 
         {/* Scholarly Verification Ledger Strip (Stripe Press / Nature grade evidence metrics) */}
-        <div className="mt-10 lg:mt-12 pt-6 border-t border-[#E4DCCB] dark:border-[#233327] grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
+        <ScrollReveal variant="fade-up" delayMs={80} className="mt-10 lg:mt-12 pt-6 border-t border-[#E4DCCB] dark:border-[#233327] grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">250M+</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">
+              <CountUpMetric target={250} suffix="M+" />
+            </div>
             <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Indexed Publications</div>
             <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
               <span>OpenAlex · Europe PMC · Crossref</span>
@@ -647,7 +656,9 @@ function Hero() {
             </div>
           </div>
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">85,000+</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">
+              <CountUpMetric target={85000} suffix="+" />
+            </div>
             <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Active Opportunities</div>
             <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
               <span>NSF · NIH · ERC Grants</span>
@@ -655,7 +666,9 @@ function Hero() {
             </div>
           </div>
           <div>
-            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">100+</div>
+            <div className="font-serif text-2xl md:text-3xl font-normal text-[#202920] dark:text-[#EDEAE2]">
+              <CountUpMetric target={100} suffix="+" />
+            </div>
             <div className="font-sans text-xs uppercase tracking-wider text-[#3E6248] dark:text-[#4ADE80] font-semibold mt-1">Research Disciplines</div>
             <div className="font-mono text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5 flex items-center gap-1.5">
               <span>ORCID 2.0 Integration</span>
@@ -670,7 +683,7 @@ function Hero() {
               <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] inline-block" title="Direct Citation Links" />
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Scroll invitation to living knowledge network with live pipeline status */}
         <div className="mt-6 pt-4 flex items-center justify-between border-t border-[#E4DCCB]/60 dark:border-[#233327]/60 flex-wrap gap-3">
@@ -684,7 +697,15 @@ function Hero() {
           </a>
           <div className="flex items-center gap-2 font-mono text-[10.5px] text-[#85877B] dark:text-[#7E8B7B] uppercase tracking-wider">
             <span className="w-1.5 h-1.5 rounded-full bg-[#326B49] dark:bg-[#4ADE80] animate-pulse" />
-            <span>SCHOLARLY LEDGER: LIVE PIPELINE SYNCHRONIZED</span>
+            <TypedPhrase
+              phrases={[
+                "SCHOLARLY LEDGER: LIVE PIPELINE SYNCHRONIZED",
+                "OPENALEX · CROSSREF · ORCID 2.0 ACTIVE",
+                "57 ENTERPRISE ROUTES · ZERO SILOS",
+              ]}
+              typingSpeedMs={28}
+              pauseMs={2800}
+            />
           </div>
         </div>
       </div>
@@ -833,19 +854,19 @@ function ProblemSection() {
   return (
     <section className="bg-[#FAF7F0] dark:bg-[#0E140F] py-24 px-6 md:px-16 border-t border-[#E4DCCB] dark:border-[#233327] transition-colors duration-200">
       <div className="max-w-[1240px] mx-auto">
-        <div className="max-w-2xl mb-16">
+        <ScrollReveal variant="fade-up" className="max-w-2xl mb-16">
           <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal text-[#202920] dark:text-[#EDEAE2] tracking-tight leading-tight mb-5">
             Research shouldn&apos;t begin with twenty browser tabs.
           </h2>
           <p className="text-base md:text-lg text-[#62685E] dark:text-[#A3B899] leading-relaxed">
             Research information is scattered across publications, funding portals, conference websites, academic profiles, spreadsheets, documents, and communities.
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* Fragmented → Connected Comparison */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1.1fr] items-center gap-8 md:gap-12">
           {/* Left Column: Fragmented */}
-          <div>
+          <ScrollReveal variant="slide-left" delayMs={80}>
             <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-[#62685E] dark:text-[#A3B899] mb-5">
               FRAGMENTED
             </div>
@@ -853,7 +874,7 @@ function ProblemSection() {
               {fragmentedSources.map((s, idx) => (
                 <div
                   key={s}
-                  className={`bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-xl px-4 py-3.5 text-center text-xs font-semibold text-[#62685E] dark:text-[#A3B899] shadow-xs hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD]/50 dark:hover:bg-[#131C15]/50 transition-all cursor-default select-none ${
+                  className={`bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-xl px-4 py-3.5 text-center text-xs font-semibold text-[#62685E] dark:text-[#A3B899] shadow-xs hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:text-[#202920] dark:hover:text-[#EDEAE2] hover:bg-[#F2EBDD]/50 dark:hover:bg-[#131C15]/50 hover:-translate-y-0.5 active:scale-95 transition-all cursor-default select-none ${
                     idx === 6 ? 'col-span-1' : ''
                   }`}
                 >
@@ -861,10 +882,10 @@ function ProblemSection() {
                 </div>
               ))}
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Center Transition Indicator: Arrow */}
-          <div className="hidden lg:flex flex-col items-center justify-center px-4">
+          <ScrollReveal variant="pop-scale" delayMs={160} className="hidden lg:flex flex-col items-center justify-center px-4">
             <div className="flex items-center gap-3">
               <div className="w-16 h-[1.5px] bg-[#E4DCCB] dark:bg-[#233327]" />
               <div className="w-8 h-8 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] flex items-center justify-center text-[#3E6248] dark:text-[#4ADE80] text-sm font-bold shadow-xs">
@@ -872,10 +893,10 @@ function ProblemSection() {
               </div>
               <div className="w-16 h-[1.5px] bg-[#3E6248]/40 dark:bg-[#4ADE80]/40" />
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Right Column: Connected */}
-          <div>
+          <ScrollReveal variant="slide-right" delayMs={200}>
             <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-[#3E6248] dark:text-[#4ADE80] mb-5 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#3E6248] dark:bg-[#4ADE80]" />
               CONNECTED
@@ -903,7 +924,7 @@ function ProblemSection() {
                 Everything your research touches, in one living environment.
               </p>
             </div>
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>
@@ -996,18 +1017,21 @@ function LifecycleSection() {
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
 
       <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 10 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#4ADE80', textTransform: 'uppercase', marginBottom: 16 }}>
-          Scholarly Workflow Engine
-        </p>
-        <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal text-[#F5F4F0] tracking-tight mb-4">
-          One system for the entire research lifecycle.
-        </h2>
-        <p className="text-base text-[rgba(245,244,240,0.72)] mb-14 max-w-xl mx-auto leading-relaxed">
-          From first question to published work and beyond. Click any stage to inspect the scholarly pipeline.
-        </p>
+        <ScrollReveal variant="fade-up">
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', color: '#4ADE80', textTransform: 'uppercase', marginBottom: 16 }}>
+            Scholarly Workflow Engine
+          </p>
+          <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-3xl md:text-5xl font-normal text-[#F5F4F0] tracking-tight mb-4">
+            One system for the entire research lifecycle.
+          </h2>
+          <p className="text-base text-[rgba(245,244,240,0.72)] mb-14 max-w-xl mx-auto leading-relaxed">
+            From first question to published work and beyond. Click any stage to inspect the scholarly pipeline.
+          </p>
+        </ScrollReveal>
 
         {/* 7-Stage Stepper with State Tracking */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 0, marginBottom: 48 }}>
+        <ScrollReveal variant="fade-up" delayMs={100}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 0, marginBottom: 48 }}>
           {stages.map((stage, i) => {
             const isSelected = i === activeStage
             const isPast = i < activeStage
@@ -1052,10 +1076,12 @@ function LifecycleSection() {
               </div>
             )
           })}
-        </div>
+          </div>
+        </ScrollReveal>
 
         {/* Dynamic Stage Details Preview Panel (Luminous High-contrast Card) */}
-        <div className="max-w-3xl mx-auto bg-white border border-[#2A5A3B] border-t-4 border-t-[#4ADE80] rounded-2xl p-8 sm:p-10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.45),0_4px_16px_rgba(0,0,0,0.2)] text-left transition-all">
+        <ScrollReveal variant="pop-scale" delayMs={160}>
+          <div className="max-w-3xl mx-auto bg-white border border-[#2A5A3B] border-t-4 border-t-[#4ADE80] rounded-2xl p-8 sm:p-10 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.45),0_4px_16px_rgba(0,0,0,0.2)] text-left transition-all">
           <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
             <span className="text-[11px] font-mono font-bold tracking-wider text-[#264A35] uppercase bg-[#D9E5D6] px-3 py-1 rounded-md border border-[#264A35]/20">
               STAGE 0{activeStage + 1} OF 07 · {current.name.toUpperCase()}
@@ -1085,13 +1111,14 @@ function LifecycleSection() {
               </div>
               <Link
                 href={current.targetRoute}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#3E6248] hover:bg-[#293E30] text-white text-xs font-semibold uppercase tracking-wider no-underline transition-all shadow-xs"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#3E6248] hover:bg-[#293E30] active:scale-95 text-white text-xs font-semibold uppercase tracking-wider no-underline transition-all shadow-xs"
               >
                 Inspect Live Module: {current.targetLabel} ↗
               </Link>
             </div>
           </div>
-        </div>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   )
@@ -1102,10 +1129,10 @@ function IdentitySection() {
   const [activeTab, setActiveTab] = useState<'Heatmap' | 'Pinned' | 'Publications'>('Heatmap')
   const interests = ['Medical AI', 'Computer Vision', 'Foundation Models', 'Federated Learning']
   const metrics = [
-    { v: '27', l: 'Publications' },
-    { v: '1,842', l: 'Citations' },
-    { v: '14', l: 'h-index' },
-    { v: '34', l: 'Collaborators' },
+    { v: 27, l: 'Publications' },
+    { v: 1842, l: 'Citations' },
+    { v: 14, l: 'h-index' },
+    { v: 34, l: 'Collaborators' },
   ]
 
   // Organic, scattered scholarly contribution heatmap modeling real research momentum
@@ -1118,7 +1145,7 @@ function IdentitySection() {
       <div style={{ maxWidth: 1280, margin: '0 auto' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.25fr', gap: 72, alignItems: 'start' }}>
           {/* Left: copy */}
-          <div style={{ paddingTop: 24 }}>
+          <ScrollReveal variant="slide-left" className="pt-6">
             <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#3E6248] dark:text-[#4ADE80] mb-4">
               <span className="w-2 h-2 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
               02 / Academic Identity & Scholar Ledger
@@ -1145,14 +1172,15 @@ function IdentitySection() {
             </div>
             <Link
               href="/portfolio"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#3E6248] hover:bg-[#293E30] dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] font-sans text-xs font-semibold uppercase tracking-wider transition-all shadow-xs no-underline"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#3E6248] hover:bg-[#293E30] active:scale-95 dark:bg-[#4ADE80] dark:hover:bg-[#22C55E] text-white dark:text-[#0E140F] font-sans text-xs font-semibold uppercase tracking-wider transition-all shadow-xs no-underline"
             >
               Explore Live Scholar Portfolio Page ↗
             </Link>
-          </div>
+          </ScrollReveal>
 
           {/* Right: Authentic Scholar Portfolio Component (Matching /portfolio) */}
-          <div className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl overflow-hidden shadow-lg transition-all">
+          <ScrollReveal variant="pop-scale" delayMs={120}>
+            <div className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all">
             {/* Rich Geometric Cover Banner with Lattice Line Art */}
             <div style={{
               height: 120,
@@ -1246,7 +1274,9 @@ function IdentitySection() {
               <div className="grid grid-cols-4 border-t border-[#E4DCCB] dark:border-[#233327] mt-4 pt-3">
                 {metrics.map(({ v, l }, i) => (
                   <div key={l} className={`text-center py-1 ${i < metrics.length - 1 ? 'border-r border-[#E4DCCB] dark:border-[#233327]' : ''}`}>
-                    <div className="text-base font-bold text-[#202920] dark:text-[#EDEAE2] tracking-tight">{v}</div>
+                    <div className="text-base font-bold text-[#202920] dark:text-[#EDEAE2] tracking-tight">
+                      <CountUpMetric target={v} />
+                    </div>
                     <div className="text-[11px] text-[#85877B] dark:text-[#7E8B7B] mt-0.5">{l}</div>
                   </div>
                 ))}
@@ -1343,7 +1373,8 @@ function IdentitySection() {
                 </div>
               )}
             </div>
-          </div>
+            </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>
@@ -1362,6 +1393,8 @@ function WorkspaceSection() {
     'Sophia Chen': false,
   })
   const [showQuickNote, setShowQuickNote] = useState(false)
+  const [isDeskHovered, setIsDeskHovered] = useState(false)
+  const [tourStep, setTourStep] = useState<string | null>(null)
 
   const toggleSave = (id: string) => {
     setSavedCards(prev => ({ ...prev, [id]: !prev[id] }))
@@ -1460,10 +1493,20 @@ function WorkspaceSection() {
       />
 
       <div style={{ maxWidth: 1320, margin: '0 auto', position: 'relative', zIndex: 10 }}>
-        <div style={{ textAlign: 'center', marginBottom: 42 }}>
-          <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-3 drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)]">
+        <ScrollReveal variant="fade-up" className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-3 drop-shadow-[0_1px_6px_rgba(0,0,0,0.8)] min-h-[18px]">
             <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
-            01 / Literature Synthesis & Live Research Horizon
+            <span>01 /</span>
+            <TypedPhrase
+              phrases={[
+                "Literature Synthesis & Live Research Horizon",
+                "Live Scholar Console & Match Radar",
+                "Active Grants, Preprints & Deadlines",
+              ]}
+              typingSpeedMs={30}
+              pauseMs={2800}
+              loop={false}
+            />
           </div>
           <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 400, letterSpacing: '-0.03em' }} className="text-[#F5F4F0] mb-4 drop-shadow-[0_3px_16px_rgba(0,0,0,0.85)]">
             Your research has a home. Discover, synthesize, and organize.
@@ -1471,11 +1514,16 @@ function WorkspaceSection() {
           <p className="text-[16.5px] text-[rgba(245,244,240,0.88)] max-w-[660px] mx-auto leading-relaxed drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
             An authentic glimpse into your live scholar console: synthesis pipelines, active grant deadlines, emerging preprints, and collaborative vectors unified in one cohesive space.
           </p>
-        </div>
+        </ScrollReveal>
 
-        {/* Authentic Live Research Desk with Elevated Depth Shadows & Edge Distinction */}
-        <div className="w-full overflow-x-auto pb-8 pt-2 px-2">
-          <div className="min-w-[1060px] max-w-[1320px] mx-auto rounded-2xl border border-[rgba(250,247,240,0.32)] dark:border-[#2C4231] bg-[#FAF7F0] dark:bg-[#131C15] overflow-hidden shadow-[0_42px_105px_-12px_rgba(3,9,5,0.92),0_20px_48px_-8px_rgba(3,9,5,0.72),0_0_0_1px_rgba(250,247,240,0.22)] dark:shadow-[0_44px_110px_-10px_rgba(0,0,0,0.95),0_0_0_1px_rgba(74,222,128,0.22)] relative">
+        {/* Authentic Live Research Desk with Elevated Depth Shadows, Guided Pointer & Interactive State */}
+        <ScrollReveal variant="pop-scale" delayMs={100} className="w-full overflow-x-auto pb-8 pt-2 px-2">
+          <div
+            onMouseEnter={() => setIsDeskHovered(true)}
+            onMouseLeave={() => setIsDeskHovered(false)}
+            className="min-w-[1060px] max-w-[1320px] mx-auto rounded-2xl border border-[rgba(250,247,240,0.32)] dark:border-[#2C4231] bg-[#FAF7F0] dark:bg-[#131C15] overflow-hidden shadow-[0_42px_105px_-12px_rgba(3,9,5,0.92),0_20px_48px_-8px_rgba(3,9,5,0.72),0_0_0_1px_rgba(250,247,240,0.22)] dark:shadow-[0_44px_110px_-10px_rgba(0,0,0,0.95),0_0_0_1px_rgba(74,222,128,0.22)] relative"
+          >
+            <GuidedDeskPointer paused={isDeskHovered} onStepHighlight={setTourStep} />
             {/* Top Header Bar */}
             <div className="px-5 py-3.5 bg-[#FAF7F0] dark:bg-[#131C15] border-b border-[#E4DCCB] dark:border-[#233327] flex items-center justify-between gap-4">
               {/* Left Brand / Desk Identifier */}
@@ -1638,15 +1686,22 @@ function WorkspaceSection() {
 
                   {/* 4 Interactive Action Buttons (Photo 2 Match) */}
                   <div className="flex items-center gap-2 flex-wrap mb-7">
-                    {actionPills.map((action) => (
-                      <button
-                        key={action.id}
-                        onClick={() => setActiveAction(action.note)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] text-xs font-semibold text-[#202920] dark:text-[#EDEAE2] hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:bg-[#F2EBDD] dark:hover:bg-[#1D2D21] transition-all cursor-pointer shadow-2xs"
-                      >
-                        {action.label}
-                      </button>
-                    ))}
+                    {actionPills.map((action) => {
+                      const isTourTarget = tourStep === 'hypothesis' && action.id === 'hypothesis';
+                      return (
+                        <button
+                          key={action.id}
+                          onClick={() => setActiveAction(action.note)}
+                          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs font-semibold transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                            isTourTarget
+                              ? 'border-[#4ADE80] ring-2 ring-[#4ADE80]/40 bg-[#DCE6D7] dark:bg-[#1D2D21] text-[#202920] dark:text-[#EDEAE2]'
+                              : 'border-[#E4DCCB] dark:border-[#233327] bg-white dark:bg-[#18231B] text-[#202920] dark:text-[#EDEAE2] hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:bg-[#F2EBDD] dark:hover:bg-[#1D2D21]'
+                          }`}
+                        >
+                          {action.label}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* Needs Your Attention Section Header */}
@@ -1682,10 +1737,15 @@ function WorkspaceSection() {
                       );
                     }).map((card) => {
                       const isSaved = savedCards[card.id]
+                      const isTourCard = tourStep === 'fellowship' && card.id === 'nsf'
                       return (
                         <div
                           key={card.id}
-                          className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#253629] rounded-xl p-5 hover:border-[#3E6248] dark:hover:border-[#4ADE80] transition-all flex flex-col justify-between shadow-xs group"
+                          className={`bg-white dark:bg-[#18231B] border rounded-xl p-5 transition-all flex flex-col justify-between shadow-xs group ${
+                            isTourCard
+                              ? 'border-[#4ADE80] ring-2 ring-[#4ADE80]/35 -translate-y-0.5 shadow-md'
+                              : 'border-[#E4DCCB] dark:border-[#253629] hover:border-[#3E6248] dark:hover:border-[#4ADE80]'
+                          }`}
                         >
                           <div>
                             {/* Type & Match Pills */}
@@ -1763,7 +1823,14 @@ function WorkspaceSection() {
                       <span className="font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#62685E] dark:text-[#A3B899]">
                         UPCOMING DEADLINES
                       </span>
-                      <Link href="/opportunities" className="text-[11px] text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] no-underline font-medium">
+                      <Link
+                        href="/opportunities"
+                        className={`text-[11px] no-underline font-medium px-1.5 py-0.5 rounded transition-all ${
+                          tourStep === 'calendar'
+                            ? 'text-[#3E6248] dark:text-[#4ADE80] bg-[#DCE6D7] dark:bg-[#1D2D21] ring-1 ring-[#4ADE80]'
+                            : 'text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2]'
+                        }`}
+                      >
                         Calendar →
                       </Link>
                     </div>
@@ -1876,7 +1943,7 @@ function WorkspaceSection() {
               </aside>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   )
@@ -2019,7 +2086,7 @@ function ActivitySection() {
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
           {/* Left Column: Generous Narrative & UI/UX Value Proposition */}
-          <div className="lg:col-span-5 flex flex-col justify-center">
+          <ScrollReveal variant="slide-left" className="lg:col-span-5 flex flex-col justify-center">
             <div className="inline-flex items-center gap-2 font-mono text-xs text-[#3E6248] dark:text-[#4ADE80] font-bold tracking-wider uppercase mb-4">
               <span className="w-2 h-2 rounded-full bg-[#3E6248] dark:bg-[#4ADE80] animate-pulse" />
               04 / Verified Scholarly Cadence
@@ -2054,10 +2121,10 @@ function ActivitySection() {
                 <span className="text-[#62685E] dark:text-[#A3B899]">Biological cambium growth layer tessellation</span>
               </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Right Column: Panoramic Continuous Honeycomb Cadence Card */}
-          <div className="lg:col-span-7 w-full overflow-hidden">
+          <ScrollReveal variant="pop-scale" delayMs={120} className="lg:col-span-7 w-full overflow-hidden">
             <HexContributionGraph
               fillSampleData={true}
               year={2026}
@@ -2067,7 +2134,7 @@ function ActivitySection() {
               showDayLabels={false}
               subtext="Monthly-separated flat-topped honeycomb tessellation (Biological Growth Layer)"
             />
-          </div>
+          </ScrollReveal>
         </div>
       </div>
     </section>
@@ -3031,19 +3098,22 @@ function EcosystemMapSection() {
   return (
     <section id="ecosystem" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '112px 24px', position: 'relative' }}>
       <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center' }}>
-        <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80]" />
-          KNOWLEDGE TOPOLOGY · INTERCONNECTED RESEARCH
-        </div>
-        <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-4xl md:text-6xl font-normal leading-[1.08] tracking-[-0.03em] text-[#F5F4F0] mb-4">
-          Everything connects.
-        </h2>
-        <p className="text-[17px] text-[rgba(250,249,246,0.72)] mb-12 max-w-[660px] mx-auto leading-relaxed">
-          In botanical nature, the cambium layer is the living meristem of the tree — dividing cells to form annual growth rings and pumping nutrient-rich sap outward to nourish the entire canopy. Cambium Research works identically: nourishing your ideas, linking your artifacts, and expanding your scholarly horizon year after year.
-        </p>
+        <ScrollReveal variant="fade-up">
+          <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80]" />
+            KNOWLEDGE TOPOLOGY · INTERCONNECTED RESEARCH
+          </div>
+          <h2 style={{ fontFamily: "'Source Serif 4', serif" }} className="text-4xl md:text-6xl font-normal leading-[1.08] tracking-[-0.03em] text-[#F5F4F0] mb-4">
+            Everything connects.
+          </h2>
+          <p className="text-[17px] text-[rgba(250,249,246,0.72)] mb-12 max-w-[660px] mx-auto leading-relaxed">
+            In botanical nature, the cambium layer is the living meristem of the tree — dividing cells to form annual growth rings and pumping nutrient-rich sap outward to nourish the entire canopy. Cambium Research works identically: nourishing your ideas, linking your artifacts, and expanding your scholarly horizon year after year.
+          </p>
+        </ScrollReveal>
 
         {/* Enlarged Botanical Cut-Tree Stem Wood Cross-Section Graphic (7 Growth Orbits & 16 Scholarly Nodes) */}
-        <div style={{ maxWidth: 1020, margin: '0 auto', position: 'relative' }}>
+        <ScrollReveal variant="pop-scale" delayMs={110}>
+          <div style={{ maxWidth: 1020, margin: '0 auto', position: 'relative' }}>
           <svg
             viewBox="0 0 1040 840"
             style={{ width: '100%', height: 'auto', maxHeight: 820, overflow: 'visible' }}
@@ -3369,7 +3439,8 @@ function EcosystemMapSection() {
               </div>
             )}
           </div>
-        </div>
+          </div>
+        </ScrollReveal>
 
         {/* Botanical Dendrochronology Legend (Connecting nature's tree growth to Cambium research) */}
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3 max-w-[920px] mx-auto text-xs">
@@ -3447,10 +3518,10 @@ function TestimonialsSection() {
         {/* 3-Column Testimonial Cards Grid (Photo 5 Match) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {testimonials.map(({ initials, quote, name, role }, idx) => (
-            <div
-              key={name}
-              className="bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl p-8 shadow-xs hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group relative"
-            >
+            <ScrollReveal key={name} variant="pop-scale" delayMs={idx * 95} className="h-full">
+              <div
+                className="h-full bg-white dark:bg-[#18231B] border border-[#E4DCCB] dark:border-[#233327] rounded-2xl p-8 shadow-xs hover:border-[#3E6248] dark:hover:border-[#4ADE80] hover:shadow-md hover:-translate-y-1 active:scale-[0.99] transition-all duration-300 flex flex-col justify-between group relative"
+              >
               {/* Card Header: Quotation Symbol & Micro-Actions */}
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -3501,7 +3572,8 @@ function TestimonialsSection() {
                   </div>
                 </div>
               </div>
-            </div>
+              </div>
+            </ScrollReveal>
           ))}
         </div>
 
@@ -3642,10 +3714,18 @@ function CTASection() {
       {/* Full-bleed subtle perimeter network animation across the entire section */}
       <CtaBackgroundConstellation />
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 10 }}>
-        <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-7">
+      <ScrollReveal variant="pop-scale" className="max-w-[1280px] mx-auto text-center relative z-10">
+        <div className="inline-flex items-center gap-2 font-mono text-xs font-bold tracking-wider uppercase text-[#4ADE80] mb-7 min-h-[18px]">
           <span className="w-5 h-[1px] bg-[#4ADE80] inline-block" />
-          CAMBIUM RESEARCH
+          <TypedPhrase
+            phrases={[
+              "CAMBIUM RESEARCH · START FREE",
+              "EVERY CITATION COMPOUNDS TOGETHER",
+              "BUILT FOR SCHOLARS & INSTITUTIONS",
+            ]}
+            typingSpeedMs={32}
+            pauseMs={2800}
+          />
           <span className="w-5 h-[1px] bg-[#4ADE80] inline-block" />
         </div>
 
@@ -3660,19 +3740,19 @@ function CTASection() {
         <div className="flex gap-3.5 justify-center flex-wrap items-center">
           <Link
             href="/sign-up"
-            className="text-[15px] font-semibold text-white bg-[#3E6248] hover:bg-[#293E30] px-8 py-4 rounded-xl shadow-md hover:shadow-lg transition-all no-underline inline-block border border-[#66866A]/40"
+            className="text-[15px] font-semibold text-white bg-[#3E6248] hover:bg-[#293E30] hover:-translate-y-0.5 active:scale-95 px-8 py-4 rounded-xl shadow-md hover:shadow-lg transition-all no-underline inline-block border border-[#66866A]/40"
           >
             Create your research identity
           </Link>
           <Link
             href="/discover"
-            className="text-[15px] font-medium text-white bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/40 px-8 py-4 rounded-xl transition-all inline-flex items-center gap-2 no-underline"
+            className="text-[15px] font-medium text-white bg-white/10 hover:bg-white/15 hover:-translate-y-0.5 active:scale-95 border border-white/20 hover:border-white/40 px-8 py-4 rounded-xl transition-all inline-flex items-center gap-2 no-underline"
           >
             Explore Cambium
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 7h8M8 4l3 3-3 3" /></svg>
           </Link>
         </div>
-      </div>
+      </ScrollReveal>
     </section>
   )
 }
@@ -3777,6 +3857,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] text-[#202920] dark:text-[#EDEAE2] transition-colors duration-200" style={{ fontFamily: "var(--font-sans), 'Instrument Sans', system-ui, sans-serif" }}>
+      <ScrollProgressBar />
       <CambiumIntroPreloader
         key={replayIntro ? "intro-replay" : "intro-initial"}
         forceShow={replayIntro}

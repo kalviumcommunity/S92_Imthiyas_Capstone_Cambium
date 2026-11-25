@@ -3,7 +3,7 @@
 // Enterprise PWA Caching & Field Researcher Offline Strategy
 // ====================================================================
 
-const CACHE_NAME = "cambium-cache-v10-collage-wings";
+const CACHE_NAME = "cambium-cache-v11-scroll-choreography";
 const STATIC_ASSETS = [
   "/favicon.svg",
   "/favicon-light.svg",

@@ -22,6 +22,11 @@ import {
   Type,
   Underline,
 } from "lucide-react";
+import {
+  CountUpMetric,
+  ScrollReveal,
+  TypedPhrase,
+} from "@/components/landing/MotionPrimitives";
 
 interface ProposalSectionItem {
   id: string;
@@ -173,10 +178,19 @@ export function PlatformCollageSection() {
 
       <div className="relative z-10 px-5 sm:px-8">
         {/* Centered Symmetrical Section Heading Using Exact Cambium Typography */}
-        <div className="text-center max-w-3xl mx-auto mb-14 sm:mb-20">
+        <ScrollReveal variant="fade-up" className="text-center max-w-3xl mx-auto mb-14 sm:mb-20">
           <div className="inline-flex items-center gap-2 font-mono text-[11px] font-semibold tracking-[0.14em] uppercase text-[#4ADE80] mb-4 drop-shadow-[0_1px_8px_rgba(0,0,0,0.9)]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#4ADE80] animate-pulse" />
-            INSIDE CAMBIUM · THE RESEARCH OPERATING SYSTEM
+            INSIDE CAMBIUM ·{" "}
+            <TypedPhrase
+              phrases={[
+                "THE RESEARCH OPERATING SYSTEM",
+                "PROPOSALS, PEER REVIEW & AUDIT",
+                "GROUNDED CITATION TELEMETRY",
+              ]}
+              typingSpeedMs={32}
+              pauseMs={2600}
+            />
           </div>
           <h2 className="font-serif text-3xl sm:text-5xl lg:text-[54px] font-normal leading-[1.08] tracking-[-0.03em] text-[#FAF7F0] mb-5 drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">
             Built for individual scholars.
@@ -186,7 +200,7 @@ export function PlatformCollageSection() {
           <p className="font-sans text-sm sm:text-base text-[#DCE6D7] max-w-2xl mx-auto leading-relaxed drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
             Every proposal draft, citation graph, peer-review ledger, AI paper audit, and grant compliance trail — running in one connected workspace. Click any surface to inspect it live.
           </p>
-        </div>
+        </ScrollReveal>
 
         {/* ── CENTERED CORE 7-PANEL SHOWCASE (100% Uncropped) + FLANKING EDGE-BLEED AMBIENT WINGS ── */}
         <div className="relative max-w-[1220px] mx-auto">
@@ -250,7 +264,7 @@ export function PlatformCollageSection() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 lg:gap-6 items-start">
             {/* LEFT COLUMN (Cols 1-4): Proposal Drafts Desk + Rich Text Citation Editor */}
-            <div className="lg:col-span-4 flex flex-col gap-6 lg:mt-10">
+            <ScrollReveal variant="pop-scale" delayMs={60} className="lg:col-span-4 flex flex-col gap-6 lg:mt-10">
               {/* Panel 1: Proposal Drafts Desk (/workspace) */}
               <div className="rounded-2xl bg-[#111A14]/95 border border-[#283B2D] shadow-[0_38px_95px_rgba(0,0,0,0.9),0_0_0_1px_rgba(74,222,128,0.12)] p-4 sm:p-5 transition-transform duration-300 hover:-translate-y-1">
                 <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-[#1D2D21]">
@@ -418,10 +432,10 @@ export function PlatformCollageSection() {
                   </p>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
 
             {/* CENTER COLUMN (Cols 5-8): Institutional OS Telemetry + RAG Engine Code + 3 Visual Route Cards */}
-            <div className="lg:col-span-4 flex flex-col gap-6">
+            <ScrollReveal variant="pop-scale" delayMs={150} className="lg:col-span-4 flex flex-col gap-6">
               {/* Panel 2: Institutional Research OS (/os) */}
               <div className="rounded-2xl bg-[#111A14]/95 border border-[#283B2D] shadow-[0_40px_100px_rgba(0,0,0,0.92),0_0_0_1px_rgba(74,222,128,0.14)] p-4 sm:p-5 transition-transform duration-300 hover:-translate-y-1">
                 <div className="flex items-center justify-between gap-2 mb-3">
@@ -444,7 +458,7 @@ export function PlatformCollageSection() {
                       </span>
                     </div>
                     <div className="font-sans text-xl font-bold text-[#FAF7F0] tracking-tight">
-                      57 Routes
+                      <CountUpMetric target={57} /> Routes
                     </div>
                     <svg viewBox="0 0 120 26" className="w-full h-5 mt-1.5 overflow-visible">
                       <path
@@ -465,7 +479,7 @@ export function PlatformCollageSection() {
                       </span>
                     </div>
                     <div className="font-sans text-xl font-bold text-[#FAF7F0] tracking-tight">
-                      100%
+                      <CountUpMetric target={100} suffix="%" />
                     </div>
                     <svg viewBox="0 0 120 26" className="w-full h-5 mt-1.5 overflow-visible">
                       <path
@@ -590,10 +604,10 @@ export function PlatformCollageSection() {
                   );
                 })}
               </div>
-            </div>
+            </ScrollReveal>
 
             {/* RIGHT COLUMN (Cols 9-12): AI Paper Reader Split Preview + COPE Peer Review & Audit Ledger */}
-            <div className="lg:col-span-4 flex flex-col gap-6 lg:mt-6">
+            <ScrollReveal variant="pop-scale" delayMs={240} className="lg:col-span-4 flex flex-col gap-6 lg:mt-6">
               {/* Panel 4: AI Paper Reader Split-Pane Preview (/agent-reader) */}
               <div className="rounded-2xl bg-[#111A14]/95 border border-[#283B2D] shadow-[0_38px_95px_rgba(0,0,0,0.9),0_0_0_1px_rgba(74,222,128,0.12)] p-4 sm:p-5 relative transition-transform duration-300 hover:-translate-y-1">
                 <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-[#1D2D21]">
@@ -732,7 +746,7 @@ export function PlatformCollageSection() {
                   </Link>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           </div>
         </div>
       </div>
