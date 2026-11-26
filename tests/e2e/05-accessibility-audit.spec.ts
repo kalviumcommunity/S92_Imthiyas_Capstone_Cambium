@@ -1,10 +1,16 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { authenticateAsActor } from "./helpers/auth-session";
 
 test.describe("05: WCAG 2.2 Level AA Automated Accessibility Audits (Axe-Core)", () => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    if (!testInfo.title.includes("'/'") && !testInfo.title.includes("'/sign-in'")) {
+      await authenticateAsActor(page);
+    }
+  });
   test("Landing Page ('/') should satisfy WCAG 2.2 AA standards with zero critical violations", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -16,7 +22,7 @@ test.describe("05: WCAG 2.2 Level AA Automated Accessibility Audits (Axe-Core)",
 
   test("Authentication Portal ('/sign-in') should satisfy WCAG 2.2 AA standards", async ({ page }) => {
     await page.goto("/sign-in");
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -28,7 +34,7 @@ test.describe("05: WCAG 2.2 Level AA Automated Accessibility Audits (Axe-Core)",
 
   test("Scholar Dashboard ('/dashboard') should satisfy WCAG 2.2 AA standards", async ({ page }) => {
     await page.goto("/dashboard");
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -40,7 +46,7 @@ test.describe("05: WCAG 2.2 Level AA Automated Accessibility Audits (Axe-Core)",
 
   test("Opportunities Catalog ('/opportunities') should satisfy WCAG 2.2 AA standards", async ({ page }) => {
     await page.goto("/opportunities");
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -52,7 +58,7 @@ test.describe("05: WCAG 2.2 Level AA Automated Accessibility Audits (Axe-Core)",
 
   test("Constellation Graph Workspace ('/graph') should satisfy WCAG 2.2 AA standards", async ({ page }) => {
     await page.goto("/graph");
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -64,7 +70,7 @@ test.describe("05: WCAG 2.2 Level AA Automated Accessibility Audits (Axe-Core)",
 
   test("Agentic Reader Desk ('/agent-reader') should satisfy WCAG 2.2 AA standards", async ({ page }) => {
     await page.goto("/agent-reader");
-    await page.waitForLoadState("domcontentloaded");
+    await page.waitForLoadState("networkidle");
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])

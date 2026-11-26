@@ -133,7 +133,7 @@ export function EvidenceBasedContributions({
         ]);
         if (active) {
           setSummary(sumRes);
-          setItems(itemsRes);
+          setItems(Array.isArray(itemsRes) ? itemsRes : []);
           onSummaryLoaded?.(sumRes);
         }
       } catch (err: unknown) {
@@ -157,8 +157,9 @@ export function EvidenceBasedContributions({
   };
 
   // Filter items for inspected date
+  const safeItems = useMemo(() => (Array.isArray(items) ? items : []), [items]);
   const inspectedItems = inspectedDate
-    ? items.filter((item) => item.occurredAt.slice(0, 10) === inspectedDate)
+    ? safeItems.filter((item) => item.occurredAt.slice(0, 10) === inspectedDate)
     : [];
 
   // Group heatmap cells into 52 weeks x 7 days
@@ -166,7 +167,7 @@ export function EvidenceBasedContributions({
   const hexDays: HexContributionDay[] = useMemo(() => {
     // Map items by date to collect distinct categories for that day
     const dayCategoriesMap = new Map<string, Set<string>>();
-    for (const it of items) {
+    for (const it of safeItems) {
       if (it?.occurredAt) {
         const d = it.occurredAt.slice(0, 10);
         if (!dayCategoriesMap.has(d)) {
@@ -182,7 +183,7 @@ export function EvidenceBasedContributions({
       level: c.level,
       categories: Array.from(dayCategoriesMap.get(c.date) || []),
     }));
-  }, [summary, items]);
+  }, [summary, safeItems]);
 
   return (
     <div className="bg-white border border-[#E4DCCB] rounded-3xl p-6 sm:p-7 shadow-2xs">
@@ -258,7 +259,7 @@ export function EvidenceBasedContributions({
           </div>
           <div className="my-2.5">
             <div className="font-serif text-3xl font-normal text-[#202920]">
-              {loading ? "…" : summary?.metrics.totalContributions ?? 0}
+              {loading ? "…" : summary?.metrics?.totalContributions ?? 0}
             </div>
             <div className="text-xs font-semibold text-[#3E6248] mt-0.5">
               Eligible Research Events
@@ -279,7 +280,7 @@ export function EvidenceBasedContributions({
           </div>
           <div className="my-2.5">
             <div className="font-serif text-3xl font-normal text-[#202920]">
-              {loading ? "…" : summary?.metrics.activeDays ?? 0}
+              {loading ? "…" : summary?.metrics?.activeDays ?? 0}
             </div>
             <div className="text-xs font-semibold text-[#3E6248] mt-0.5">
               Active Research Days
@@ -300,7 +301,7 @@ export function EvidenceBasedContributions({
           </div>
           <div className="my-2.5">
             <div className="font-serif text-3xl font-normal text-[#202920]">
-              {loading ? "…" : summary?.metrics.distinctOutputs ?? 0}
+              {loading ? "…" : summary?.metrics?.distinctOutputs ?? 0}
             </div>
             <div className="text-xs font-semibold text-[#3E6248] mt-0.5">
               Distinct Research Outputs
@@ -321,10 +322,10 @@ export function EvidenceBasedContributions({
           </div>
           <div className="my-2.5">
             <div className="font-serif text-3xl font-normal text-[#202920]">
-              {loading ? "…" : summary?.impact.totalCitations ?? 420}+
+              {loading ? "…" : summary?.impact?.totalCitations ?? 420}+
             </div>
             <div className="text-xs font-semibold text-[#8A5A12] mt-0.5">
-              Citations · h-Index {loading ? "…" : summary?.impact.hIndex ?? 11}
+              Citations · h-Index {loading ? "…" : summary?.impact?.hIndex ?? 11}
             </div>
           </div>
           <div className="text-[11px] text-[#85877B] leading-tight">
@@ -353,7 +354,7 @@ export function EvidenceBasedContributions({
               : "text-[#62685E] hover:text-[#202920] hover:bg-[#FAF7F0]"
           }`}
         >
-          Monthly Aggregation ({summary?.monthlyTotals.length || 0} mos)
+          Monthly Aggregation ({summary?.monthlyTotals?.length || 0} mos)
         </button>
         <button
           onClick={() => setActiveTab("categories")}
@@ -412,7 +413,7 @@ export function EvidenceBasedContributions({
       {/* ── TAB 2: Monthly Aggregation ── */}
       {activeTab === "monthly" && (
         <div className="space-y-3 py-2">
-          {summary?.monthlyTotals.map((m) => (
+          {summary?.monthlyTotals?.map((m) => (
             <div
               key={m.month}
               className="p-3.5 rounded-xl bg-[#FAF7F0] border border-[#E4DCCB] flex items-center justify-between text-xs"
@@ -475,7 +476,7 @@ export function EvidenceBasedContributions({
               </span>
             </div>
             <p className="text-[11px] text-[#62685E] mt-0.5 m-0 max-w-xl font-sans">
-              {summary?.githubIntegration.message ||
+              {summary?.githubIntegration?.message ||
                 "No external GitHub repository connected. Connect an institutional or personal GitHub account in Settings to sync tagged software releases and research code milestones."}
             </p>
           </div>
