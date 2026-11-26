@@ -2,11 +2,24 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Quote, Calendar, FileEdit, ArrowUpRight, ShieldCheck } from "lucide-react";
-import CitationExportModal, { CitationItem } from "@/components/CitationExportModal";
-import { GrantEligibilityCheckerModal, GrantOpportunitySummary } from "@/components/opportunities/GrantEligibilityCheckerModal";
+import type { CitationItem } from "@/components/CitationExportModal";
+import type { GrantOpportunitySummary } from "@/components/opportunities/GrantEligibilityCheckerModal";
+
+const CitationExportModal = dynamic(() => import("@/components/CitationExportModal"), {
+  ssr: false,
+});
+
+const GrantEligibilityCheckerModal = dynamic(
+  () =>
+    import("@/components/opportunities/GrantEligibilityCheckerModal").then(
+      (m) => m.GrantEligibilityCheckerModal,
+    ),
+  { ssr: false },
+);
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { fetchScholarlyWorks } from "@/lib/scholarly-api";
 import { InvertedIndex, SearchableDocument } from "@/lib/search/inverted-index";
@@ -1306,7 +1319,7 @@ function OpportunityHubContent() {
     queryKey: ["opportunities", activeTab, searchQuery],
     queryFn: async () => {
       try {
-        const url = `${API_BASE}/opportunities?category=${activeTab}&search=${encodeURIComponent(searchQuery)}`;
+        const url = `${API_BASE}/opportunities?category=${activeTab}&search=${encodeURIComponent(searchQuery)}&limit=25&page=1`;
         const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
         if (res.ok) {
           const json = await res.json();
@@ -1963,23 +1976,27 @@ function OpportunityHubContent() {
         />
       )}
 
-      {/* Citation export modal */}
-      <CitationExportModal
-        isOpen={showCitationModal}
-        onClose={() => setShowCitationModal(false)}
-        item={citationItem}
-      />
+      {/* Citation export modal (mounted dynamically on demand) */}
+      {showCitationModal && (
+        <CitationExportModal
+          isOpen={showCitationModal}
+          onClose={() => setShowCitationModal(false)}
+          item={citationItem}
+        />
+      )}
 
-      {/* Grant eligibility checker modal */}
-      <GrantEligibilityCheckerModal
-        isOpen={showEligibilityModal}
-        onClose={() => setShowEligibilityModal(false)}
-        opportunity={eligibilityOpp}
-        onInjectProposal={(attestation) => {
-          localStorage.setItem("cambium_injected_eligibility", attestation);
-          handleToast("Eligibility attestation injected into active proposal draft ✓");
-        }}
-      />
+      {/* Grant eligibility checker modal (mounted dynamically on demand) */}
+      {showEligibilityModal && (
+        <GrantEligibilityCheckerModal
+          isOpen={showEligibilityModal}
+          onClose={() => setShowEligibilityModal(false)}
+          opportunity={eligibilityOpp}
+          onInjectProposal={(attestation) => {
+            localStorage.setItem("cambium_injected_eligibility", attestation);
+            handleToast("Eligibility attestation injected into active proposal draft ✓");
+          }}
+        />
+      )}
 
       {/* Toast notifications */}
       {toast && (

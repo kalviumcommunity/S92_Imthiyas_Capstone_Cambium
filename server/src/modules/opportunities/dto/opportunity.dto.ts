@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsArray, IsDateString, IsUrl } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsArray, IsDateString, IsInt, Min, Max } from 'class-validator';
 import { OpportunityType } from '../entities/research-opportunity.entity';
 
 export class CreateOpportunityDto {
@@ -93,6 +94,26 @@ export class FilterOpportunityDto {
   @IsOptional()
   @IsString()
   tag?: string;
+
+  @ApiPropertyOptional({ description: '1-based page index for offset pagination', default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @ApiPropertyOptional({ description: 'Maximum records per page (1-100)', default: 25 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number;
+
+  @ApiPropertyOptional({ description: 'Keyset cursor token for deterministic seek pagination' })
+  @IsOptional()
+  @IsString()
+  cursor?: string;
 }
 
 export class RecommendationQueryDto {
