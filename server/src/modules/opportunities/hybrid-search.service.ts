@@ -56,7 +56,8 @@ export class HybridSearchService {
     count: number;
     results: ScoredOpportunity[];
   }> {
-    const { query, limit = 20, type, funder } = options;
+    const { query, type, funder } = options;
+    const limit = Math.min(Math.max(Number(options.limit) || 20, 1), 50);
     const cleanQuery = query.trim();
 
     if (!cleanQuery) {
@@ -150,9 +151,11 @@ export class HybridSearchService {
       const qb = this.oppRepo
         .createQueryBuilder('opp')
         .leftJoinAndSelect('opp.tags', 'tag')
-        .leftJoinAndSelect('opp.createdBy', 'creator')
+        .leftJoin('opp.createdBy', 'creator')
+        .addSelect(['creator.id', 'creator.fullName', 'creator.organization'])
         .where('opp.embedding IS NOT NULL')
-        .addSelect(`opp.embedding <=> '${vectorLiteral}'::vector`, 'rawDistance')
+        .addSelect('opp.embedding <=> :vectorLiteral::vector', 'rawDistance')
+        .setParameter('vectorLiteral', vectorLiteral)
         .orderBy('rawDistance', 'ASC')
         .take(limit);
 
@@ -182,11 +185,15 @@ export class HybridSearchService {
   ): Promise<(ResearchOpportunity & { rawDistance?: string })[]> {
     try {
       const queryVec: number[] = JSON.parse(vectorLiteral);
+      const boundedFallbackCap = Math.min(Math.max(limit * 10, 50), 200);
       const qb = this.oppRepo
         .createQueryBuilder('opp')
         .leftJoinAndSelect('opp.tags', 'tag')
-        .leftJoinAndSelect('opp.createdBy', 'creator')
-        .where('opp.embedding IS NOT NULL');
+        .leftJoin('opp.createdBy', 'creator')
+        .addSelect(['creator.id', 'creator.fullName', 'creator.organization'])
+        .where('opp.embedding IS NOT NULL')
+        .orderBy('opp.createdAt', 'DESC')
+        .take(boundedFallbackCap);
 
       if (type) qb.andWhere('opp.type = :type', { type });
       if (funder) qb.andWhere('opp.organization ILIKE :funder', { funder: `%${funder}%` });
@@ -245,13 +252,29 @@ export class HybridSearchService {
       const qb = this.oppRepo
         .createQueryBuilder('opp')
         .leftJoinAndSelect('opp.tags', 'tag')
-        .leftJoinAndSelect('opp.createdBy', 'creator')
-        .where(
+        .leftJoin('opp.createdBy', 'creator')
+        .addSelect(['creator.id', 'creator.fullName', 'creator.organization']);
+
+      if (query.length >= 3) {
+        qb.where(
+          `(to_tsvector('english', COALESCE(opp.title, '') || ' ' || COALESCE(opp.organization, '') || ' ' || COALESCE(opp.description, '')) @@ plainto_tsquery('english', :ftsQuery) OR tag.name ILIKE :q)`,
+          { ftsQuery: query, q: `%${query}%` },
+        )
+          .addSelect(
+            `ts_rank(to_tsvector('english', COALESCE(opp.title, '') || ' ' || COALESCE(opp.organization, '') || ' ' || COALESCE(opp.description, '')), plainto_tsquery('english', :ftsQuery))`,
+            'ftsRank',
+          )
+          .orderBy('ftsRank', 'DESC')
+          .addOrderBy('opp.createdAt', 'DESC')
+          .take(limit);
+      } else {
+        qb.where(
           `(opp.title ILIKE :q OR opp.description ILIKE :q OR opp.organization ILIKE :q OR tag.name ILIKE :q)`,
           { q: `%${query}%` },
         )
-        .orderBy('opp.createdAt', 'DESC')
-        .take(limit);
+          .orderBy('opp.createdAt', 'DESC')
+          .take(limit);
+      }
 
       if (type) {
         qb.andWhere('opp.type = :type', { type });

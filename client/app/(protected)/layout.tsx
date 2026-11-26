@@ -2,11 +2,9 @@ import React from "react";
 import GlobalSidebar from "@/components/GlobalSidebar";
 import MobileNavigation from "@/components/MobileNavigation";
 import OfflineBanner from "@/components/OfflineBanner";
-import { CommandPalette } from "@/components/ui/command-palette";
-import { ShortcutsModal } from "@/components/ui/shortcuts-modal";
 import { ToastProvider } from "@/components/ui/toast";
-import { GlobalRagAssistant } from "@/components/ai/GlobalRagAssistant";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { ProtectedOverlays } from "@/components/ui/protected-overlays";
 
 export default function ProtectedLayout({
   children,
@@ -29,10 +27,8 @@ export default function ProtectedLayout({
             {children}
           </div>
 
-          {/* Global Overlays, Floating AI & Modals */}
-          <CommandPalette />
-          <ShortcutsModal />
-          <GlobalRagAssistant />
+          {/* Global Overlays, Floating AI & Modals (Code-Split Lazy Client Island) */}
+          <ProtectedOverlays />
         </div>
       </AuthGuard>
     </ToastProvider>
