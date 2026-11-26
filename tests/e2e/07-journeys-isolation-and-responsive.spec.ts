@@ -61,7 +61,14 @@ test.describe("07: Real Auth Guarding, Workspace Persistence & Responsive Viewpo
       await expect(passwordInput).toHaveValue("StrongPass123!", { timeout: 1000 });
     }).toPass({ timeout: 15000 });
 
-    await page.click("button[type='submit']");
+    const consentBtn = page
+      .locator("aside[aria-label='Privacy and Cookie Preferences'] button")
+      .first();
+    if (await consentBtn.isVisible()) {
+      await consentBtn.click();
+    }
+
+    await passwordInput.press("Enter");
 
     await page.waitForURL("**/dashboard", { timeout: 10000 });
     await expect(page).toHaveURL(/\/dashboard/);
