@@ -57,7 +57,7 @@ test.describe("01: Researcher Auth & Dashboard Navigation", () => {
       await consentBtn.click();
     }
 
-    await page.click("button[type='submit']");
+    await passwordInput.press("Enter");
 
     // Expect authentic navigation to /dashboard (never swallow failed login redirects)
     await page.waitForURL("**/dashboard", { timeout: 10000 });
