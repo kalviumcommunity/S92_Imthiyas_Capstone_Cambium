@@ -13,6 +13,7 @@ export class GeminiEmbeddingService {
   private readonly logger = new Logger(GeminiEmbeddingService.name);
   private readonly defaultModel = 'gemini-embedding-001';
   private readonly targetDimension = 768;
+  private readonly requestTimeoutMs = 8000;
 
   private getApiKey(): string | undefined {
     return process.env.GEMINI_API_KEY;
@@ -25,7 +26,7 @@ export class GeminiEmbeddingService {
    */
   async generateEmbedding(text: string): Promise<EmbeddingResult> {
     const apiKey = this.getApiKey();
-    const cleanText = text.trim();
+    const cleanText = text.trim().slice(0, 8000);
 
     if (!cleanText) {
       return {
@@ -37,11 +38,14 @@ export class GeminiEmbeddingService {
     }
 
     if (apiKey && apiKey !== 'your_google_gemini_api_key_here' && apiKey.length > 10) {
+      const controller = new AbortController();
+      const timeoutTimer = setTimeout(() => controller.abort(), this.requestTimeoutMs);
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.defaultModel}:embedContent?key=${apiKey}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
           body: JSON.stringify({
             model: `models/${this.defaultModel}`,
             content: {
@@ -50,6 +54,7 @@ export class GeminiEmbeddingService {
             outputDimensionality: this.targetDimension,
           }),
         });
+        clearTimeout(timeoutTimer);
 
         if (response.ok) {
           const data = await response.json();
@@ -67,7 +72,8 @@ export class GeminiEmbeddingService {
           this.logger.warn(`Gemini API returned status ${response.status}: ${errorText}. Using deterministic fallback.`);
         }
       } catch (err: any) {
-        this.logger.warn(`Gemini API connection error: ${err.message}. Using deterministic fallback.`);
+        clearTimeout(timeoutTimer);
+        this.logger.warn(`Gemini API connection/timeout error: ${err.message}. Using deterministic fallback.`);
       }
     }
 
@@ -81,12 +87,13 @@ export class GeminiEmbeddingService {
   }
 
   /**
-   * Batch generation with rate-limiting support.
+   * Batch generation bounded cleanly to prevent upstream quota spikes or heap bursts.
    */
-  async generateBatchEmbeddings(texts: string[], concurrency = 5): Promise<EmbeddingResult[]> {
+  async generateBatchEmbeddings(texts: string[], concurrency = 4): Promise<EmbeddingResult[]> {
+    const safeConcurrency = Math.min(Math.max(Number(concurrency) || 4, 1), 6);
     const results: EmbeddingResult[] = [];
-    for (let i = 0; i < texts.length; i += concurrency) {
-      const chunk = texts.slice(i, i + concurrency);
+    for (let i = 0; i < texts.length; i += safeConcurrency) {
+      const chunk = texts.slice(i, i + safeConcurrency);
       const chunkResults = await Promise.all(chunk.map((t) => this.generateEmbedding(t)));
       results.push(...chunkResults);
     }

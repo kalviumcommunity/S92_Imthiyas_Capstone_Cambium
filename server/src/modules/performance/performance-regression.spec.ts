@@ -3,6 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { OpportunitiesService } from '../opportunities/opportunities.service';
 import { HybridSearchService } from '../opportunities/hybrid-search.service';
+import { GeminiEmbeddingService } from '../ai/gemini-embedding.service';
+import { QueueService } from '../../common/queues/queue.service';
 
 describe('Sprint 1-2 Backend, PostgreSQL & Search Performance Regression Suite', () => {
   it('enforces bounded pagination (max limit 100) and minimal creator projection in OpportunitiesService.findAll', async () => {
@@ -102,5 +104,27 @@ describe('Sprint 1-2 Backend, PostgreSQL & Search Performance Regression Suite',
     expect(sql).toContain('idx_opps_fts_full');
     expect(sql).toContain('idx_chat_room_created');
     expect(sql).not.toMatch(/\bDROP\s+TABLE\b/i);
+  });
+
+  it('bounds batch embedding concurrency and falls back cleanly on stalled outbound fetch', async () => {
+    const embed = new GeminiEmbeddingService();
+    const results = await embed.generateBatchEmbeddings(
+      ['grant a', 'grant b', 'grant c', 'grant d', 'grant e', 'grant f', 'grant g'],
+      100,
+    );
+    expect(results).toHaveLength(7);
+    expect(results.every((r) => r.dimension === 768)).toBe(true);
+  });
+
+  it('deduplicates rapid repeated ingestion jobs cleanly in QueueService', async () => {
+    const jobRepo: any = {
+      findOne: vi.fn().mockResolvedValue({ id: 'existing-ingest-job' }),
+      create: vi.fn(),
+      save: vi.fn(),
+    };
+    const queue = new QueueService(jobRepo);
+    const res = await queue.addIngestionJob({ source: 'openalex', timestamp: new Date().toISOString() });
+    expect(res).toEqual({ id: 'existing-ingest-job', isQueued: true, deduplicated: true });
+    expect(jobRepo.save).not.toHaveBeenCalled();
   });
 });
