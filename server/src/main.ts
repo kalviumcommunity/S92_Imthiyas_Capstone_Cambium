@@ -9,6 +9,10 @@ import * as dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { RedisIoAdapter } from './common/adapters/redis-io.adapter';
+import {
+  assertValidProductionEnv,
+  registerGracefulShutdown,
+} from './config/env.validation';
 
 // Clean environment initialization
 const localEnv = path.resolve(process.cwd(), '.env');
@@ -22,6 +26,7 @@ if (fs.existsSync(localEnv)) {
 }
 
 async function bootstrap() {
+  assertValidProductionEnv(process.env);
   const app = await NestFactory.create(AppModule);
   const expressApp = app.getHttpAdapter().getInstance() as {
     set?: (k: string, v: unknown) => void;
@@ -127,6 +132,8 @@ async function bootstrap() {
     httpServer.headersTimeout = 66000;
     httpServer.requestTimeout = 30000;
   }
+
+  registerGracefulShutdown(app, httpServer);
 
   console.log(`Cambium NestJS API running on http://localhost:${port}`);
   console.log(`OpenAPI / Swagger documentation at http://localhost:${port}/api/docs`);
