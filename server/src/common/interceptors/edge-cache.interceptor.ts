@@ -41,7 +41,19 @@ export class EdgeCacheInterceptor implements NestInterceptor {
     const maxAge = options.maxAge ?? 3600;
     const sMaxAge = options.sMaxAge ?? 86400;
     const swr = options.staleWhileRevalidate ?? 86400;
-    const isPublic = options.public !== false;
+    const hasAuthCredentials = Boolean(
+      req.headers?.authorization || req.headers?.cookie,
+    );
+    const isPublic = options.public !== false && !hasAuthCredentials;
+
+    res.setHeader('Vary', 'Authorization, Accept-Encoding');
+
+    if (hasAuthCredentials) {
+      res.setHeader('Cache-Control', 'private, no-store');
+      res.setHeader('CDN-Cache-Control', 'no-store');
+      res.setHeader('Cloudflare-CDN-Cache-Control', 'no-store');
+      return next.handle();
+    }
 
     const cacheControlValue = [
       isPublic ? 'public' : 'private',

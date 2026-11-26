@@ -21,6 +21,7 @@ export class MultiTierCacheService {
 
   // L1 In-Memory High-Speed Cache: key -> L1CacheEntry
   private readonly l1Cache = new Map<string, L1CacheEntry<any>>();
+  private readonly inflightFactories = new Map<string, Promise<any>>();
   private readonly maxL1Entries = 1000;
 
   // Performance telemetry counters
@@ -38,10 +39,12 @@ export class MultiTierCacheService {
   async get<T>(key: string): Promise<T | null> {
     const now = Date.now();
 
-    // 1. Check L1 Memory Cache (Sub-millisecond)
+    // 1. Check L1 Memory Cache (Sub-millisecond) + LRU touch promotion
     const l1Entry = this.l1Cache.get(key);
     if (l1Entry) {
       if (now < l1Entry.expiresAt) {
+        this.l1Cache.delete(key);
+        this.l1Cache.set(key, l1Entry);
         this.hitsCount++;
         return l1Entry.value as T;
       }
@@ -92,7 +95,7 @@ export class MultiTierCacheService {
   }
 
   /**
-   * Wrap an expensive query/factory with automatic multi-tier caching
+   * Wrap an expensive query/factory with automatic multi-tier caching and singleflight coalescing
    */
   async wrap<T>(
     key: string,
@@ -105,9 +108,23 @@ export class MultiTierCacheService {
       return cached;
     }
 
-    const fresh = await factory();
-    await this.set(key, fresh, ttlSeconds, tags);
-    return fresh;
+    const inflight = this.inflightFactories.get(key);
+    if (inflight) {
+      return inflight as Promise<T>;
+    }
+
+    const work = (async () => {
+      try {
+        const fresh = await factory();
+        await this.set(key, fresh, ttlSeconds, tags);
+        return fresh;
+      } finally {
+        this.inflightFactories.delete(key);
+      }
+    })();
+
+    this.inflightFactories.set(key, work);
+    return work;
   }
 
   /**
@@ -135,11 +152,26 @@ export class MultiTierCacheService {
       }
     }
 
-    // Invalidate L2
+    // Invalidate L2 via non-blocking cursor SCAN when supported
     if (this.redisService) {
       try {
         const client = (this.redisService as any).client;
-        if (client && client.keys) {
+        if (client && typeof client.scan === 'function') {
+          let cursor = '0';
+          do {
+            const [nextCursor, matchedKeys]: [string, string[]] = await client.scan(
+              cursor,
+              'MATCH',
+              `${prefix}*`,
+              'COUNT',
+              100,
+            );
+            cursor = nextCursor;
+            if (matchedKeys.length > 0) {
+              await Promise.all(matchedKeys.map((k) => this.redisService!.del(k)));
+            }
+          } while (cursor !== '0');
+        } else if (client && typeof client.keys === 'function') {
           const keys: string[] = await client.keys(`${prefix}*`);
           if (keys.length > 0) {
             await Promise.all(keys.map((k) => this.redisService!.del(k)));
