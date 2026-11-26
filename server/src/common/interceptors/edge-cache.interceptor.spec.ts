@@ -98,4 +98,18 @@ describe('EdgeCacheInterceptor', () => {
       expect(res.setHeader).not.toHaveBeenCalled();
     });
   });
+
+  it('should enforce private no-store cache headers when Authorization credentials are present', () => {
+    const { context, res } = createMockContext('GET', {
+      authorization: 'Bearer secret-scholar-jwt',
+    });
+    const next = { handle: () => of({ privateUserProfile: true }) };
+
+    interceptor.intercept(context, next).subscribe((result) => {
+      expect(result).toEqual({ privateUserProfile: true });
+      expect(res.setHeader).toHaveBeenCalledWith('Vary', 'Authorization, Accept-Encoding');
+      expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'private, no-store');
+      expect(res.setHeader).toHaveBeenCalledWith('CDN-Cache-Control', 'no-store');
+    });
+  });
 });
