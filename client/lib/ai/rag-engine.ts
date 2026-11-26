@@ -28,6 +28,8 @@ export interface KnowledgeChunk {
   embedding?: number[];
 }
 
+import { apiFetch } from "../http-client";
+
 export interface RagCitation {
   chunkId: string;
   title: string;
@@ -40,11 +42,15 @@ export interface RagCitation {
 
 export interface RagResponse {
   answer: string;
-  source: "gemini-flash" | "offline-grounded-rag";
+  source: "backend-assistant" | "offline-grounded-rag" | "abstained";
   modelUsed: string;
   citations: RagCitation[];
   latencyMs: number;
   persona: string;
+  abstained?: boolean;
+  uncertaintyNote?: string;
+  promptVersion?: string;
+  conversationId?: string;
 }
 
 export type ScholarPersona =
@@ -331,12 +337,74 @@ export async function queryRagEngine(options: {
   query: string;
   persona?: ScholarPersona;
   contextOpportunityId?: string;
+  opportunityId?: string;
+  conversationId?: string;
+  workspaceId?: string;
+  documentSnippet?: string;
   topK?: number;
 }): Promise<RagResponse> {
   const startTime = Date.now();
   const query = options.query.trim();
   const persona = options.persona || "General Assistant";
   const topK = options.topK || 3;
+  const resolvedOppId = options.opportunityId || options.contextOpportunityId;
+
+  // Prefer authenticated server-side AI orchestration (/api/v1/assistant/chat)
+  const hasAuthToken =
+    typeof window !== "undefined" &&
+    Boolean(
+      localStorage.getItem("cambium_token") || localStorage.getItem("cambium_access_token"),
+    );
+
+  if (hasAuthToken) {
+    try {
+      const response = await apiFetch("/assistant/chat", {
+        method: "POST",
+        timeoutMs: 15000,
+        body: JSON.stringify({
+          ...(options.conversationId ? { conversationId: options.conversationId } : {}),
+          messages: [{ role: "user", content: query }],
+          context: {
+            persona,
+            ...(options.workspaceId ? { workspaceId: options.workspaceId } : {}),
+            ...(resolvedOppId ? { opportunityId: resolvedOppId } : {}),
+            ...(options.documentSnippet ? { documentSnippet: options.documentSnippet } : {}),
+          },
+        }),
+      });
+
+      if (response.ok) {
+        const json = await response.json();
+        const backendCitations: RagCitation[] = Array.isArray(json?.evidenceCitations)
+          ? json.evidenceCitations.map((c: any, idx: number) => ({
+              chunkId: String(c.sourceId || `srv-${idx + 1}`),
+              title: String(c.title || "Verified Research Source"),
+              section: String(c.section || c.funder || c.sourceType || "Verified Evidence"),
+              page: typeof c.page === "number" ? c.page : 1,
+              line: String(c.relevance || "Verified Match"),
+              snippet: String(c.funder || c.title || ""),
+              similarity: 1,
+            }))
+          : [];
+
+        const abstained = Boolean(json?.abstained);
+        return {
+          answer: String(json?.reply || "No verified response returned."),
+          source: abstained ? "abstained" : "backend-assistant",
+          modelUsed: String(json?.modelUsed || "Cambium Grounded Assistant"),
+          citations: backendCitations,
+          latencyMs: Date.now() - startTime,
+          persona,
+          abstained,
+          uncertaintyNote: json?.uncertaintyNote ? String(json.uncertaintyNote) : undefined,
+          promptVersion: json?.promptVersion ? String(json.promptVersion) : undefined,
+          conversationId: json?.conversationId ? String(json.conversationId) : options.conversationId,
+        };
+      }
+    } catch {
+      // Gracefully degrade to local air-gapped retriever below
+    }
+  }
 
   const retriever = getRetriever();
   const retrieved = retriever.search(query, topK);
@@ -351,78 +419,26 @@ export async function queryRagEngine(options: {
     similarity,
   }));
 
-  // Build grounded context snippet
-  const contextText = retrieved
-    .map(
-      (r, i) =>
-        `[Document ${i + 1}]: "${r.chunk.title}" (${r.chunk.section}, p. ${r.chunk.page || 1}, ${r.chunk.lines || "L1"}):\n${r.chunk.content}`
-    )
-    .join("\n\n");
-
-  const systemPrompt = getSystemPrompt(persona);
-
-  // Attempt Google Gemini Flash API call (via client key or backend proxy)
-  const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-
-  if (geminiKey && geminiKey !== "your_gemini_api_key_here" && geminiKey.length > 15) {
-    const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash"];
-
-    for (const model of modelsToTry) {
-      try {
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [
-                {
-                  role: "user",
-                  parts: [
-                    {
-                      text: `${systemPrompt}\n\nGrounding Context:\n${contextText}\n\nScholar Question: ${query}\n\nProvide a precise, grounded answer citing the specific document sections provided above.`,
-                    },
-                  ],
-                },
-              ],
-            }),
-          }
-        );
-
-        if (response.ok) {
-          const json = await response.json();
-          const generatedText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (generatedText) {
-            return {
-              answer: generatedText,
-              source: "gemini-flash",
-              modelUsed: model,
-              citations,
-              latencyMs: Date.now() - startTime,
-              persona,
-            };
-          }
-        }
-      } catch {
-        // Fallback to next model or offline engine
-      }
-    }
-  }
-
-  // High-Fidelity Grounded Offline RAG Synthesis
   const offlineAnswer = synthesizeOfflineRag({
     query,
     persona,
     retrieved,
   });
 
+  const abstained = retrieved.length === 0;
   return {
     answer: offlineAnswer,
-    source: "offline-grounded-rag",
-    modelUsed: "Cambium In-Process Semantic RAG Engine",
+    source: abstained ? "abstained" : "offline-grounded-rag",
+    modelUsed: "Cambium Local Semantic Index",
     citations,
     latencyMs: Date.now() - startTime,
     persona,
+    abstained,
+    uncertaintyNote: abstained
+      ? "Insufficient evidence matched local indexed entries; sign in for server PGVector + hybrid research synthesis."
+      : hasAuthToken
+        ? "Server AI assistant unavailable; synthesized locally from cached scholarly corpus."
+        : "Unauthenticated local mode: grounded only in bundled reference corpus.",
   };
 }
 
@@ -437,52 +453,45 @@ function synthesizeOfflineRag(args: {
   const { query, persona, retrieved } = args;
 
   if (retrieved.length === 0) {
-    return `### 🔍 Cambium Research Intelligence Query
-No direct semantic vectors matched your query: **"${query}"**.
+    return `### Insufficient Evidence in Local Knowledge Index
+No local indexed entries matched **"${query}"** reliably enough to synthesize a grounded response.
 
 **Suggested Actions:**
-1. Try querying specific funding agencies: *Horizon Europe, NSF, NIH R01*.
-2. Try research keywords: *quantum coherence, neuromorphic computing, transformer attention, treewidth invariance*.
-3. Check platform compliance guides: *SMART IRB reliance, FAIR data standards, COPE double-blind review*.`;
+1. Sign in to run server-side PGVector document retrieval and verified opportunity matching.
+2. Query indexed funding agencies (*Horizon Europe, NSF, NIH R01*) or compliance guides (*SMART IRB, FAIR data, COPE review*).`;
   }
 
   const primary = retrieved[0].chunk;
   const secondary = retrieved[1]?.chunk;
 
-  let text = `### 🧠 Cambium ${persona} Synthesis\n\n`;
-  text += `Based on dense semantic retrieval against the indexed scholarly knowledge base (vector similarity: **${(retrieved[0].similarity * 100).toFixed(1)}%**):\n\n`;
+  let text = `### Cambium ${persona} Synthesis (Local Index)\n\n`;
+  text += `Matched local reference documents (cosine score: **${(retrieved[0].similarity * 100).toFixed(1)}%**):\n\n`;
 
-  text += `#### 1. Grounded Analysis — *${primary.title}*\n`;
+  text += `#### 1. Grounded Excerpt — *${primary.title}*\n`;
   text += `> **Source Citation:** [${primary.section}, p. ${primary.page || 1}, ${primary.lines || "L1"}]\n\n`;
   text += `${primary.content}\n\n`;
 
   if (secondary) {
-    text += `#### 2. Cross-Disciplinary Corroboration — *${secondary.title}*\n`;
+    text += `#### 2. Related Entry — *${secondary.title}*\n`;
     text += `> **Source Citation:** [${secondary.section}, p. ${secondary.page || 1}, ${secondary.lines || "L1"}]\n\n`;
     text += `${secondary.content}\n\n`;
   }
 
-  // Persona-specific insights
   if (persona === "Methodology Auditor") {
-    text += `#### 🛡️ Methodological Integrity Checklist:\n`;
-    text += `- **Internal Validity:** Control conditions and baseline datasets conform to institutional protocol standards.\n`;
-    text += `- **Sampling & Randomization:** Verify cohort selection against confounding demographic or computational variables.\n`;
-    text += `- **Action Item:** Ensure pre-registration DOI is deposited prior to journal submission.\n`;
+    text += `#### Methodological Integrity Checklist (Advisory):\n`;
+    text += `- **Internal Validity:** Review control conditions and baseline datasets against protocol standards.\n`;
+    text += `- **Sampling & Randomization:** Verify cohort selection against confounding variables.\n`;
+    text += `- **Pre-registration:** Confirm pre-registration DOI or protocol record before submission.\n`;
   } else if (persona === "Statistical Rigor") {
-    text += `#### 📊 Statistical Rigor & Power Bounds:\n`;
-    text += `- **Asymptotic Complexity:** Formulations bounded within polynomial guarantees $\\mathcal{O}(N \\log N)$.\n`;
-    text += `- **Hypothesis Testing:** Apply Benjamini-Hochberg False Discovery Rate (FDR) adjustments for multi-parameter benchmarks.\n`;
-    text += `- **Power Calculation:** Ensure minimum sample size satisfies $1 - \\beta \\ge 0.80$ at $\\alpha = 0.05$.\n`;
+    text += `#### Statistical Rigor Checklist (Advisory):\n`;
+    text += `- **Asymptotic Complexity & Scaling:** Verify empirical runtime complexity against stated theoretical bounds.\n`;
+    text += `- **Hypothesis Testing:** Apply Benjamini-Hochberg False Discovery Rate (FDR) adjustments where testing multiple hypotheses.\n`;
+    text += `- **Power Analysis:** Confirm sample-size assumptions are documented alongside effect sizes.\n`;
   } else if (persona === "Reproducibility Engine") {
-    text += `#### ⚙️ Computational Reproducibility Parameters:\n`;
-    text += `- **FAIR Ingestion:** Deposit open raw artifacts to Zenodo / Dryad under CC-BY 4.0.\n`;
-    text += `- **Deterministic Seeds:** Fixed random seeds enforced across PyTorch/JAX execution graphs.\n`;
-    text += `- **Environment Lock:** Provide full Docker/Singularity container definitions with CUDA driver versions.\n`;
-  } else {
-    text += `#### 📋 Next Steps & Workspace Actions:\n`;
-    text += `1. Bookmark this opportunity or manuscript to your personal **Scholar OS**.\n`;
-    text += `2. Export citation records as BibTeX or sync with **IRB Compliance Workspace**.\n`;
-    text += `3. Launch collaborative proposal drafting in the **Scholar Workspace**.\n`;
+    text += `#### Computational Reproducibility Parameters (Advisory):\n`;
+    text += `- **FAIR Ingestion:** Deposit open raw artifacts to Zenodo / Dryad under explicit licensing.\n`;
+    text += `- **Deterministic Seeds:** Document random seed configuration across training/evaluation scripts.\n`;
+    text += `- **Environment Lock:** Include pinned container or lockfile definitions for independent replication.\n`;
   }
 
   return text;
