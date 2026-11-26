@@ -43,7 +43,21 @@ describe('AppController', () => {
     expect(probe.status).toBe('ok');
     expect(probe.database).toBe('connected');
     expect(probe.redis).toBe('connected');
+    expect(['configured', 'degraded_offline']).toContain(probe.aiProvider);
     expect(probe.uptime).toBeGreaterThanOrEqual(0);
+  });
+
+  it('should redact internal database target metadata in production root health output', () => {
+    const prevEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      const prodHealth = controller.getHealth() as Record<string, any>;
+      expect(prodHealth.targetDb).toBeUndefined();
+      expect(prodHealth.schema).toBeUndefined();
+      expect(prodHealth.documentation).toBeUndefined();
+    } finally {
+      process.env.NODE_ENV = prevEnv;
+    }
   });
 
   it('should report Redis fallback as degraded', async () => {
