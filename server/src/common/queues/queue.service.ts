@@ -139,7 +139,7 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
         async (job) => {
           return processor({ id: job.id || `job-${Date.now()}`, name: job.name, data: job.data });
         },
-        { connection: this.redisClient },
+        { connection: this.redisClient, concurrency: 4 },
       );
 
       worker.on('failed', (job, err) => {
@@ -256,8 +256,18 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
           continue;
         }
 
+        let jobTimeoutTimer: NodeJS.Timeout | undefined;
         try {
-          await processor({ id: job.id, name: job.jobName, data: job.payload });
+          await Promise.race([
+            processor({ id: job.id, name: job.jobName, data: job.payload }),
+            new Promise<never>((_, reject) => {
+              jobTimeoutTimer = setTimeout(
+                () => reject(new Error(`Background job "${job.jobName}" timed out after 30000ms`)),
+                30_000,
+              );
+              jobTimeoutTimer.unref?.();
+            }),
+          ]);
           job.status = 'COMPLETED';
           job.completedAt = new Date();
           job.lastError = null;
@@ -273,6 +283,8 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
             job.runAt = new Date(Date.now() + backoffMs);
           }
           await this.jobRepo.save(job);
+        } finally {
+          if (jobTimeoutTimer) clearTimeout(jobTimeoutTimer);
         }
       }
 
@@ -291,10 +303,12 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
       });
       return { id: job.id || `ingest-${Date.now()}`, isQueued: true };
     }
+    const dedupeBucket = Math.floor(Date.now() / (15 * 60 * 1000));
     return this.enqueueDurableJob({
       queueName: QUEUE_NAMES.INGESTION,
       jobName,
       payload: data as any,
+      idempotencyKey: `ingest:${data.source}:${data.limit || 'default'}:${dedupeBucket}`,
     });
   }
 

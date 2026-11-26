@@ -27,16 +27,15 @@ export class CommunityService {
   ) {}
 
   /**
-   * Retrieve community feed with optional filtering by post primitive or tag
+   * Retrieve paginated community feed without Cartesian comment-author SQL fan-out
    */
   async getFeed(params?: { type?: string; tag?: string; limit?: number }) {
+    const safeLimit = Math.min(Math.max(Number(params?.limit) || 20, 1), 50);
     const qb = this.postRepo
       .createQueryBuilder('post')
       .leftJoinAndSelect('post.author', 'author')
-      .leftJoinAndSelect('post.comments', 'comments')
-      .leftJoinAndSelect('comments.author', 'commentAuthor')
       .orderBy('post.createdAt', 'DESC')
-      .take(params?.limit || 20);
+      .take(safeLimit);
 
     if (params?.type && params.type !== 'all') {
       qb.andWhere('post.type = :type', { type: params.type });
@@ -47,6 +46,32 @@ export class CommunityService {
     }
 
     const posts = await qb.getMany();
+
+    if (posts.length > 0 && typeof this.commentRepo?.createQueryBuilder === 'function') {
+      const postIds = posts.map((p) => p.id);
+      const batchComments = await this.commentRepo
+        .createQueryBuilder('comment')
+        .leftJoinAndSelect('comment.author', 'commentAuthor')
+        .where('comment.postId IN (:...postIds)', { postIds })
+        .orderBy('comment.createdAt', 'ASC')
+        .take(postIds.length * 5)
+        .getMany();
+
+      const commentsByPost = new Map<string, Comment[]>();
+      for (const c of batchComments) {
+        const list = commentsByPost.get(c.postId) || [];
+        if (list.length < 5) {
+          list.push(c);
+          commentsByPost.set(c.postId, list);
+        }
+      }
+
+      for (const post of posts) {
+        if (!Array.isArray(post.comments)) {
+          post.comments = commentsByPost.get(post.id) || [];
+        }
+      }
+    }
 
     return {
       success: true,
