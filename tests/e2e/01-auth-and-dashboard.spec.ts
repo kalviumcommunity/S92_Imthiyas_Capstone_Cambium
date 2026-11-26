@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import { authenticateAsActor, buildE2ETestToken } from "./helpers/auth-session";
+import { SYNTHETIC_ACTORS } from "../fixtures/synthetic-actors";
 
 test.describe("01: Researcher Auth & Dashboard Navigation", () => {
   test("should display Living Materials landing page with brand assets", async ({ page }) => {
@@ -15,28 +17,50 @@ test.describe("01: Researcher Auth & Dashboard Navigation", () => {
   });
 
   test("should authenticate scholar and navigate to /dashboard", async ({ page }) => {
-    await page.goto("/sign-in");
+    const token = buildE2ETestToken(SYNTHETIC_ACTORS.RESEARCHER_A);
+    const mockUser = {
+      id: SYNTHETIC_ACTORS.RESEARCHER_A.id,
+      username: "researcher_a",
+      email: SYNTHETIC_ACTORS.RESEARCHER_A.email,
+      fullName: SYNTHETIC_ACTORS.RESEARCHER_A.fullName,
+      role: SYNTHETIC_ACTORS.RESEARCHER_A.role,
+    };
+
+    await page.route("**/api/**/auth/login", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ success: true, token, user: mockUser }),
+      });
+    });
+
+    await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
 
     // Check auth page title & Living Materials form elements
-    await expect(page.locator("text=Sign In").first()).toBeVisible();
+    await expect(page.locator("text=Sign in").first()).toBeVisible();
 
-    // Click demo ORCID login
-    const orcidBtn = page.locator("button:has-text('Continue with ORCID'), button:has-text('ORCID')").first();
-    if (await orcidBtn.isVisible()) {
-      await orcidBtn.click();
-    } else {
-      // Fallback: fill email form
-      await page.fill("input[type='email']", "scholar@cambium.edu");
-      await page.fill("input[type='password']", "password123");
-      await page.click("button[type='submit']");
+    const emailInput = page.locator("#sign-in-email");
+    const passwordInput = page.locator("input[type='password']");
+    await expect(async () => {
+      await emailInput.fill(SYNTHETIC_ACTORS.RESEARCHER_A.email);
+      await passwordInput.fill("StrongPass123!");
+      await expect(
+        page.getByText(/Identity Provider Verified|Standard Research Email Recognized/i).first(),
+      ).toBeVisible({ timeout: 1000 });
+      await expect(passwordInput).toHaveValue("StrongPass123!", { timeout: 1000 });
+    }).toPass({ timeout: 15000 });
+
+    const consentBtn = page
+      .locator("aside[aria-label='Privacy and Cookie Preferences'] button")
+      .first();
+    if (await consentBtn.isVisible()) {
+      await consentBtn.click();
     }
 
-    // Expect navigation to /dashboard
-    try {
-      await page.waitForURL("**/dashboard", { timeout: 6000 });
-    } catch {
-      await page.goto("/dashboard");
-    }
+    await page.click("button[type='submit']");
+
+    // Expect authentic navigation to /dashboard (never swallow failed login redirects)
+    await page.waitForURL("**/dashboard", { timeout: 10000 });
     await expect(page).toHaveURL(/.*dashboard/);
 
     // Verify top sidebar navigation item is explicitly labeled "Dashboard"
@@ -49,7 +73,8 @@ test.describe("01: Researcher Auth & Dashboard Navigation", () => {
   });
 
   test("should open global command palette via search trigger", async ({ page }) => {
-    await page.goto("/dashboard");
+    await authenticateAsActor(page, SYNTHETIC_ACTORS.RESEARCHER_A);
+    await page.goto("/dashboard", { waitUntil: "networkidle" });
 
     // Click global command palette search trigger
     const searchTrigger = page.locator("button:has-text('Search Cambium'), aside button:has(svg.lucide-search)").first();

@@ -701,11 +701,11 @@ export default function ResearchPortfolioPage() {
             {/* Quick Metrics Bar (GitHub & LinkedIn Style) */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-6 pt-5 border-t border-[#E4DCCB]">
               {[
-                { label: "Distinct Works", value: String(summaryState?.metrics.distinctOutputs ?? 4), sub: "Unique artifacts & DOIs" },
+                { label: "Distinct Works", value: String(summaryState?.metrics?.distinctOutputs ?? 4), sub: "Unique artifacts & DOIs" },
                 { label: "Citations", value: "420+", sub: "Across Google Scholar" },
                 { label: "h-Index", value: "11", sub: "Scholarly impact" },
-                { label: "Total Milestones", value: String(summaryState?.metrics.totalContributions ?? 6), sub: "Attributable events" },
-                { label: "Active Days", value: String(summaryState?.metrics.activeDays ?? 5), sub: "Verified activity" },
+                { label: "Total Milestones", value: String(summaryState?.metrics?.totalContributions ?? 6), sub: "Attributable events" },
+                { label: "Active Days", value: String(summaryState?.metrics?.activeDays ?? 5), sub: "Verified activity" },
               ].map((m) => (
                 <div key={m.label} className="p-3 rounded-xl bg-[#FAF7F0]/60 border border-[#E4DCCB]/60 text-center">
                   <div className="font-serif text-xl sm:text-2xl font-normal text-[#202920] m-0">

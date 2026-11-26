@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
+import { authenticateAsActor } from "./helpers/auth-session";
 
 test.describe("02: Semantic Hybrid Search & Opportunity Bookmarking", () => {
   test.beforeEach(async ({ page }) => {
+    await authenticateAsActor(page);
     // Navigate to opportunities catalog
     await page.goto("/opportunities");
     await page.waitForLoadState("domcontentloaded");
@@ -19,15 +21,14 @@ test.describe("02: Semantic Hybrid Search & Opportunity Bookmarking", () => {
 
   test("should filter opportunities when keyword is entered", async ({ page }) => {
     const searchInput = page.locator("input[placeholder*='Search']").first();
-    await searchInput.fill("Quantum");
-    await page.waitForTimeout(500);
-
-    // Verify search value persisted in input
-    await expect(searchInput).toHaveValue("Quantum");
+    await expect(async () => {
+      await searchInput.fill("Quantum");
+      await expect(searchInput).toHaveValue("Quantum", { timeout: 1000 });
+    }).toPass({ timeout: 10000 });
 
     // Clear input to restore full list
     await searchInput.fill("");
-    await page.waitForTimeout(300);
+    await expect(searchInput).toHaveValue("");
   });
 
   test("should switch category filter tabs smoothly", async ({ page }) => {

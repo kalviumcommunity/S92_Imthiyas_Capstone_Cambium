@@ -1,12 +1,14 @@
 import { test, expect } from "@playwright/test";
+import { authenticateAsActor } from "./helpers/auth-session";
 
 test.describe("03: Gemini Agentic RAG Assistant & Auditor Personas", () => {
   test.beforeEach(async ({ page }) => {
+    await authenticateAsActor(page);
     page.on("pageerror", (err) => console.log(">>> BROWSER PAGE ERROR:", err.message));
     page.on("console", (msg) => {
       if (msg.type() === "error") console.log(">>> BROWSER CONSOLE ERROR:", msg.text());
     });
-    await page.goto("/agent-reader", { waitUntil: "networkidle" });
+    await page.goto("/agent-reader", { waitUntil: "domcontentloaded" });
   });
 
   test("should render the Agentic Reader desk and agent auditor personas", async ({ page }) => {

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { authenticateAsActor } from './helpers/auth-session';
 
 /**
  * ==============================================================================
@@ -9,6 +10,11 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('Workstream 7: Post-Deployment Smoke Probes', () => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    if (!testInfo.title.includes('Probe 1:') && !testInfo.title.includes('Probe 2:')) {
+      await authenticateAsActor(page);
+    }
+  });
 
   test('Probe 1: Landing Page Zero-FOUC & Editorial Typography', async ({ page }) => {
     await page.goto('/');
