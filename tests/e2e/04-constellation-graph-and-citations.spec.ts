@@ -1,6 +1,11 @@
 import { test, expect } from "@playwright/test";
+import { authenticateAsActor } from "./helpers/auth-session";
 
 test.describe("04: Constellation Graph Physics & Academic Citation Export", () => {
+  test.beforeEach(async ({ page }) => {
+    await authenticateAsActor(page);
+  });
+
   test("should render the 2D Constellation Knowledge Graph with controls", async ({ page }) => {
     await page.goto("/graph");
     await page.waitForLoadState("domcontentloaded");

@@ -20,6 +20,7 @@
     "test": "npm --prefix server run test",
     "test:jest": "jest --runInBand",
     "test:e2e": "playwright test",
+    "test:all": "npm --prefix server run build && npm --prefix server run test && npm run test:jest && npm --prefix client run lint && npm --prefix client run build && npm run test:e2e",
     "verify:env": "node scripts/verify-env.mjs",
     "verify:env:prod": "node scripts/verify-env.mjs --production",
     "verify:db": "node scripts/verify-db.mjs",
