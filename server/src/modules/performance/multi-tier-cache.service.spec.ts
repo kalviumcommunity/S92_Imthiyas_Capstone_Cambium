@@ -57,4 +57,23 @@ describe('MultiTierCacheService', () => {
     expect(await service.get('opp:2')).toBeNull();
     expect(await service.get('user:1')).toEqual({ name: 'Scholar' });
   });
+
+  it('should coalesce concurrent cache misses for the same key via singleflight', async () => {
+    let resolver: (val: any) => void = () => {};
+    const pending = new Promise((res) => {
+      resolver = res;
+    });
+    const factory = vi.fn(() => pending);
+
+    const calls = Promise.all([
+      service.wrap('hot:stats', factory, 60),
+      service.wrap('hot:stats', factory, 60),
+      service.wrap('hot:stats', factory, 60),
+    ]);
+    resolver({ ok: true });
+    const results = await calls;
+
+    expect(factory).toHaveBeenCalledTimes(1);
+    expect(results).toEqual([{ ok: true }, { ok: true }, { ok: true }]);
+  });
 });
