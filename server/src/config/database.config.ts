@@ -86,7 +86,9 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
       process.env.DB_SSL !== 'false' &&
       masterHost !== 'localhost' &&
       masterHost !== '127.0.0.1');
-  const sslOption = isSsl ? { rejectUnauthorized: false } : false;
+  const sslOption = isSsl
+    ? { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true' }
+    : false;
 
   const entities = [
     User,

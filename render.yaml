@@ -13,8 +13,8 @@ services:
     plan: starter
     rootDir: server
     buildCommand: npm install && npm run build
-    startCommand: (npm run schema:apply || true) && npm run start:prod
-    healthCheckPath: /health
+    startCommand: npm run db:migrate && npm run start:prod
+    healthCheckPath: /api/v1/health/liveness
     autoDeploy: true
     envVars:
       - key: NODE_ENV
@@ -34,7 +34,7 @@ services:
       - key: DB_SYNCHRONIZE
         value: "false"
       - key: CORS_ORIGIN
-        value: "https://cambium-research.vercel.app,https://cambium.onrender.com,http://localhost:3000"
+        value: "https://cambium-research.vercel.app,https://cambium-api-ufj3.onrender.com,http://localhost:3000"
       - key: COOKIE_SAME_SITE
         value: "none"
       - key: GEMINI_API_KEY
