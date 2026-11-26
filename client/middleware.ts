@@ -33,7 +33,12 @@ const PROTECTED_PREFIXES = [
 export function sanitizeInternalRedirect(raw: string | null): string {
   if (!raw || typeof raw !== "string") return "/dashboard";
   const trimmed = raw.trim();
-  if (!trimmed.startsWith("/") || trimmed.startsWith("//") || trimmed.startsWith("/\\")) {
+  if (
+    !trimmed.startsWith("/") ||
+    trimmed.startsWith("//") ||
+    trimmed.startsWith("/\\") ||
+    /[\r\n\0]/.test(trimmed)
+  ) {
     return "/dashboard";
   }
   return trimmed;
