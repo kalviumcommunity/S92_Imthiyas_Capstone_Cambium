@@ -148,15 +148,19 @@ async function runHealthProbes() {
 
   // 3. PostgreSQL Schema & Table Check if online
   console.log(`\n${c.cyan}${c.bold}3. Database Subsystem Health${c.reset}`);
-  if (Client) {
-    const dbClient = new Client({
-      host: process.env.POSTGRES_HOST || 'localhost',
-      port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
-      user: process.env.POSTGRES_USER || 'postgres',
-      password: process.env.POSTGRES_PASSWORD || '2Live&letLive',
-      database: process.env.POSTGRES_DB || 'cambium',
-      connectionTimeoutMillis: 2000,
-    });
+  if (Client && (process.env.DATABASE_URL || process.env.POSTGRES_PASSWORD)) {
+    const dbClient = new Client(
+      process.env.DATABASE_URL
+        ? { connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 2000 }
+        : {
+            host: process.env.POSTGRES_HOST || 'localhost',
+            port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
+            user: process.env.POSTGRES_USER || 'postgres',
+            password: process.env.POSTGRES_PASSWORD,
+            database: process.env.POSTGRES_DB || 'cambium',
+            connectionTimeoutMillis: 2000,
+          },
+    );
 
     try {
       await dbClient.connect();

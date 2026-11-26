@@ -13,10 +13,15 @@ param (
     [string]$PostgresPort = $(if ($env:POSTGRES_PORT) { $env:POSTGRES_PORT } else { "5432" }),
     [string]$PostgresDb = $(if ($env:POSTGRES_DB) { $env:POSTGRES_DB } else { "cambium" }),
     [string]$PostgresUser = $(if ($env:POSTGRES_USER) { $env:POSTGRES_USER } else { "postgres" }),
-    [string]$PostgresPassword = $(if ($env:POSTGRES_PASSWORD) { $env:POSTGRES_PASSWORD } else { "2Live&letLive" })
+    [string]$PostgresPassword = $env:POSTGRES_PASSWORD
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $PostgresPassword) {
+    Write-Error "[Cambium Restore ERROR] POSTGRES_PASSWORD environment variable or -PostgresPassword parameter is required."
+    exit 1
+}
 
 if (-not (Test-Path $BackupFile)) {
     Write-Error "[Cambium Restore ERROR] Backup file not found: $BackupFile"
