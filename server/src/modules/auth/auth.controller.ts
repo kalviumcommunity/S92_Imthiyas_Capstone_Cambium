@@ -45,10 +45,6 @@ export class AuthController {
     });
   }
 
-  @Post('register')
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Register a new user account with rotating refresh cookie' })
-  @ApiResponse({ status: 201, description: 'User registered with JWT and HttpOnly refresh cookie' })
   private sanitizeAuthResponse<T extends { refreshToken?: string }>(result: T): Omit<T, 'refreshToken'> {
     const safe = { ...result };
     delete safe.refreshToken;
