@@ -56,11 +56,17 @@ function getDbConfig() {
     } catch {}
   }
 
+  const password = process.env.POSTGRES_PASSWORD;
+  if (!password) {
+    console.error(`${c.crimson}[ERROR] DATABASE_URL or POSTGRES_PASSWORD must be set in environment.${c.reset}`);
+    process.exit(1);
+  }
+
   return {
     host: process.env.POSTGRES_HOST || 'localhost',
     port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
     user: process.env.POSTGRES_USER || 'postgres',
-    password: process.env.POSTGRES_PASSWORD || '2Live&letLive',
+    password,
     database: process.env.POSTGRES_DB || 'cambium',
     ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
   };
