@@ -1,5 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { AutocompleteDto } from './dto/autocomplete.dto';
+import { AiModelRegistry } from './ai-model-registry';
+import { AiPromptRegistry } from './ai-prompt-registry';
+import { GeminiProviderService } from './gemini-provider.service';
 
 export interface AutocompleteResult {
   prefix: string;
@@ -117,10 +120,22 @@ const SCHOLARLY_COPILOT_SENTENCES: Record<string, string[]> = {
 @Injectable()
 export class LlmAutocompleteService {
   private readonly logger = new Logger(LlmAutocompleteService.name);
-  private readonly geminiModel = 'gemini-1.5-flash';
+  private readonly registry: AiModelRegistry;
+  private readonly promptRegistry: AiPromptRegistry;
+  private readonly provider: GeminiProviderService;
 
-  private getApiKey(): string | undefined {
-    return process.env.GEMINI_API_KEY;
+  constructor(
+    @Optional() registry?: AiModelRegistry,
+    @Optional() promptRegistry?: AiPromptRegistry,
+    @Optional() provider?: GeminiProviderService,
+  ) {
+    this.registry = registry || new AiModelRegistry();
+    this.promptRegistry = promptRegistry || new AiPromptRegistry();
+    this.provider = provider || new GeminiProviderService(this.registry);
+  }
+
+  private get geminiModel(): string {
+    return this.registry.getSpec('autocomplete').modelId;
   }
 
   /**
@@ -145,22 +160,36 @@ export class LlmAutocompleteService {
       };
     }
 
-    const apiKey = this.getApiKey();
-
-    // 1. Attempt Live LLM Generation via Google Gemini 1.5 Flash
-    if (apiKey && apiKey !== 'your_google_gemini_api_key_here' && apiKey.length > 10) {
+    // 1. Attempt Live LLM Generation via centralized Provider & Prompt Registry
+    if (this.provider.isConfigured()) {
       try {
-        const geminiResult = await this.queryGeminiLlm(prefix, context, mode, limit, apiKey);
-        if (geminiResult && geminiResult.suggestions.length > 0) {
-          const latencyMs = Date.now() - startTime;
-          return {
-            prefix,
-            completion: geminiResult.completion,
-            suggestions: geminiResult.suggestions.slice(0, limit),
-            source: 'gemini-1.5-flash',
-            latencyMs,
-            model: this.geminiModel,
-          };
+        const promptObj = this.promptRegistry.buildAutocompletePrompt({
+          prefix,
+          context,
+          mode,
+          limit,
+        });
+        const providerRes = await this.provider.generateText({
+          task: 'autocomplete',
+          prompt: promptObj.fullText,
+          responseMimeType: 'application/json',
+        });
+
+        if (providerRes.ok && providerRes.text) {
+          const parsed = JSON.parse(providerRes.text);
+          const suggestions = Array.isArray(parsed?.suggestions)
+            ? parsed.suggestions.filter((s: unknown) => typeof s === 'string').slice(0, limit)
+            : [];
+          if (suggestions.length > 0) {
+            return {
+              prefix,
+              completion: typeof parsed?.completion === 'string' ? parsed.completion : '',
+              suggestions,
+              source: 'gemini-1.5-flash',
+              latencyMs: Date.now() - startTime,
+              model: providerRes.modelUsed,
+            };
+          }
         }
       } catch (err: any) {
         this.logger.warn(`Gemini autocomplete query failed: ${err.message}. Engaging Cambium Scholarly RAG fallback.`);
@@ -179,72 +208,6 @@ export class LlmAutocompleteService {
       latencyMs,
       model: 'cambium-scholarly-rag',
     };
-  }
-
-  /**
-   * Dispatches structured prompt to Google Gemini 1.5 Flash endpoint
-   */
-  private async queryGeminiLlm(
-    prefix: string,
-    context: string,
-    mode: 'search' | 'copilot' | 'keywords',
-    limit: number,
-    apiKey: string
-  ): Promise<{ completion: string; suggestions: string[] } | null> {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:generateContent?key=${apiKey}`;
-
-    let prompt = '';
-    if (mode === 'copilot') {
-      prompt = `You are Cambium's AI Research Copilot. Complete the academic sentence or paragraph seamlessly.
-Context: "${context}"
-User wrote so far: "${prefix}"
-Rules:
-1. Provide a primary high-quality scholarly continuation.
-2. Provide up to ${limit} alternative natural completions.
-3. Return ONLY valid JSON in this exact structure:
-{"completion": "<immediate inline continuation without repeating prefix>", "suggestions": ["<full completion 1>", "<full completion 2>"]}`;
-    } else {
-      prompt = `You are Cambium's Scholarly Search Engine autocomplete.
-User query prefix: "${prefix}"
-Context/Domain: "${context}"
-Rules:
-1. Suggest up to ${limit} rigorous, modern academic research search queries that complete this prefix.
-2. Return ONLY valid JSON in this exact structure:
-{"completion": "<best inline continuation text>", "suggestions": ["<full query 1>", "<full query 2>"]}`;
-    }
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2000); // 2-second aggressive deadline for autocomplete UX
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.2, // low temperature for precise, deterministic completions
-            maxOutputTokens: 256,
-            responseMimeType: 'application/json',
-          },
-        }),
-      });
-
-      if (!response.ok) return null;
-
-      const data = await response.json();
-      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!rawText) return null;
-
-      const parsed = JSON.parse(rawText);
-      return {
-        completion: parsed.completion || '',
-        suggestions: Array.isArray(parsed.suggestions) ? parsed.suggestions : [],
-      };
-    } finally {
-      clearTimeout(timeout);
-    }
   }
 
   /**

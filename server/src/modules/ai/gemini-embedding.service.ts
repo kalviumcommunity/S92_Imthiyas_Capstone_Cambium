@@ -1,30 +1,48 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { createHash } from 'crypto';
+import { AiModelRegistry } from './ai-model-registry';
 
 export interface EmbeddingResult {
   embedding: number[];
   dimension: number;
   model: string;
+  embeddingVersion: string;
   isMockFallback: boolean;
 }
 
 @Injectable()
 export class GeminiEmbeddingService {
   private readonly logger = new Logger(GeminiEmbeddingService.name);
-  private readonly defaultModel = 'gemini-embedding-001';
-  private readonly targetDimension = 768;
+  private readonly registry: AiModelRegistry;
+
+  constructor(@Optional() registry?: AiModelRegistry) {
+    this.registry = registry || new AiModelRegistry();
+  }
+
+  private get defaultModel(): string {
+    return this.registry.getSpec('embedding').modelId;
+  }
+
+  private get embeddingVersion(): string {
+    return this.registry.getSpec('embedding').version;
+  }
+
+  private get targetDimension(): number {
+    return this.registry.getSpec('embedding').embeddingDimensions || 768;
+  }
 
   private getApiKey(): string | undefined {
     return process.env.GEMINI_API_KEY;
   }
 
   /**
-   * Generates a 768-dimensional normalized embedding for text using Google Gemini gemini-embedding-001.
-   * If GEMINI_API_KEY is not configured or in offline test environments, gracefully falls back
-   * to a deterministic, L2-normalized 768-dim pseudo-embedding generated from SHA-256.
+   * Generates a 768-dimensional normalized embedding for text using Google Gemini.
+   * Enforces AbortController timeouts & dimension validation, falling back cleanly
+   * to a deterministic L2-normalized 768-dim vector when offline.
    */
   async generateEmbedding(text: string): Promise<EmbeddingResult> {
     const apiKey = this.getApiKey();
+    const spec = this.registry.getSpec('embedding');
     const cleanText = text.trim();
 
     if (!cleanText) {
@@ -32,24 +50,29 @@ export class GeminiEmbeddingService {
         embedding: new Array(this.targetDimension).fill(0),
         dimension: this.targetDimension,
         model: this.defaultModel,
+        embeddingVersion: this.embeddingVersion,
         isMockFallback: true,
       };
     }
 
     if (apiKey && apiKey !== 'your_google_gemini_api_key_here' && apiKey.length > 10) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), spec.timeoutMs);
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.defaultModel}:embedContent?key=${apiKey}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          signal: controller.signal,
           body: JSON.stringify({
             model: `models/${this.defaultModel}`,
             content: {
-              parts: [{ text: cleanText }],
+              parts: [{ text: cleanText.slice(0, spec.maxInputTokens * 4) }],
             },
             outputDimensionality: this.targetDimension,
           }),
         });
+        clearTimeout(timer);
 
         if (response.ok) {
           const data = await response.json();
@@ -59,15 +82,23 @@ export class GeminiEmbeddingService {
               embedding: values,
               dimension: this.targetDimension,
               model: this.defaultModel,
+              embeddingVersion: this.embeddingVersion,
               isMockFallback: false,
             };
           }
+          this.logger.warn(
+            `Embedding vector dimension mismatch (expected ${this.targetDimension}, got ${values.length}). Falling back cleanly.`,
+          );
         } else {
-          const errorText = await response.text();
-          this.logger.warn(`Gemini API returned status ${response.status}: ${errorText}. Using deterministic fallback.`);
+          this.logger.warn(
+            `Gemini Embedding API returned status ${response.status}. Using deterministic fallback.`,
+          );
         }
       } catch (err: any) {
-        this.logger.warn(`Gemini API connection error: ${err.message}. Using deterministic fallback.`);
+        clearTimeout(timer);
+        this.logger.warn(
+          `Gemini Embedding API connection error (${err?.name === 'AbortError' ? 'timeout' : 'network'}). Using deterministic fallback.`,
+        );
       }
     }
 
@@ -76,6 +107,7 @@ export class GeminiEmbeddingService {
       embedding: this.generateDeterministicVector(cleanText, this.targetDimension),
       dimension: this.targetDimension,
       model: `${this.defaultModel}-deterministic-fallback`,
+      embeddingVersion: this.embeddingVersion,
       isMockFallback: true,
     };
   }
