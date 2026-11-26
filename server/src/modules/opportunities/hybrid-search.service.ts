@@ -152,7 +152,8 @@ export class HybridSearchService {
         .leftJoinAndSelect('opp.tags', 'tag')
         .leftJoinAndSelect('opp.createdBy', 'creator')
         .where('opp.embedding IS NOT NULL')
-        .addSelect(`opp.embedding <=> '${vectorLiteral}'::vector`, 'rawDistance')
+        .addSelect('opp.embedding <=> :vectorLiteral::vector', 'rawDistance')
+        .setParameter('vectorLiteral', vectorLiteral)
         .orderBy('rawDistance', 'ASC')
         .take(limit);
 
@@ -186,7 +187,9 @@ export class HybridSearchService {
         .createQueryBuilder('opp')
         .leftJoinAndSelect('opp.tags', 'tag')
         .leftJoinAndSelect('opp.createdBy', 'creator')
-        .where('opp.embedding IS NOT NULL');
+        .where('opp.embedding IS NOT NULL')
+        .orderBy('opp.createdAt', 'DESC')
+        .take(200);
 
       if (type) qb.andWhere('opp.type = :type', { type });
       if (funder) qb.andWhere('opp.organization ILIKE :funder', { funder: `%${funder}%` });

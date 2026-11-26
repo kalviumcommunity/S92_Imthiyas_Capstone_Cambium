@@ -21,6 +21,7 @@ import {
   RagResponse,
   RagCitation,
 } from "@/lib/ai/rag-engine";
+import { useAuthStore } from "@/lib/store/useAuthStore";
 
 interface ChatMessage {
   id: string;
@@ -29,36 +30,50 @@ interface ChatMessage {
   persona?: ScholarPersona;
   citations?: RagCitation[];
   timestamp: string;
-  source?: "gemini-flash" | "offline-grounded-rag";
+  source?: "backend-assistant" | "offline-grounded-rag" | "abstained";
   modelUsed?: string;
+  abstained?: boolean;
+  uncertaintyNote?: string;
+  promptVersion?: string;
 }
 
+const INITIAL_WELCOME_MESSAGE: ChatMessage = {
+  id: "welcome-1",
+  sender: "ai",
+  persona: "General Assistant",
+  text: "Welcome to **Cambium Scholarly RAG Copilot**. Responses cite retrieved opportunities, authorized workspace chunks, and compliance standards or abstain when evidence is insufficient.",
+  citations: [],
+  timestamp: "",
+};
+
 export function GlobalRagAssistant() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [activePersona, setActivePersona] = useState<ScholarPersona>("General Assistant");
+  const [conversationId, setConversationId] = useState<string | undefined>(undefined);
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
-      id: "welcome-1",
-      sender: "ai",
-      persona: "General Assistant",
-      text: "Welcome to **Cambium Scholarly RAG Copilot**. I am grounded in your active research opportunities, preprints, IRB compliance protocols, and FAIR data standards. How may I assist your scholarship today?",
-      citations: [
-        {
-          chunkId: "kb-plat-1",
-          title: "Cambium Enterprise Research OS Architecture",
-          section: "§1 Modular Architecture",
-          page: 1,
-          line: "L1-L25",
-          snippet: "Next.js 15, React 19, NestJS 10, PostgreSQL 16 pgvector...",
-          similarity: 0.95,
-        },
-      ],
+      ...INITIAL_WELCOME_MESSAGE,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
+
+  const wasAuthenticatedRef = useRef(isAuthenticated);
+  useEffect(() => {
+    if (wasAuthenticatedRef.current && !isAuthenticated) {
+      setConversationId(undefined);
+      setMessages([
+        {
+          ...INITIAL_WELCOME_MESSAGE,
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+    }
+    wasAuthenticatedRef.current = isAuthenticated;
+  }, [isAuthenticated]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -111,7 +126,12 @@ export function GlobalRagAssistant() {
         query: q,
         persona: activePersona,
         topK: 3,
+        conversationId,
       });
+
+      if (ragRes.conversationId) {
+        setConversationId(ragRes.conversationId);
+      }
 
       const aiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
@@ -121,6 +141,9 @@ export function GlobalRagAssistant() {
         citations: ragRes.citations,
         source: ragRes.source,
         modelUsed: ragRes.modelUsed,
+        abstained: ragRes.abstained,
+        uncertaintyNote: ragRes.uncertaintyNote,
+        promptVersion: ragRes.promptVersion,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
 
@@ -139,7 +162,7 @@ export function GlobalRagAssistant() {
     } finally {
       setIsLoading(false);
     }
-  }, [activePersona, isLoading, query]);
+  }, [activePersona, conversationId, isLoading, query]);
 
   useEffect(() => {
     handleSendRef.current = handleSend;
@@ -259,6 +282,14 @@ export function GlobalRagAssistant() {
                       <div className="whitespace-pre-wrap leading-relaxed font-sans">
                         {m.text}
                       </div>
+
+                      {/* Grounding / Uncertainty Notice */}
+                      {(m.abstained || m.uncertaintyNote) && (
+                        <div className="mt-2 px-2 py-1.5 rounded bg-[#FAF7F0] dark:bg-[#121B14] border border-[#E4DCCB] dark:border-[#28382C] text-[10px] font-mono text-[#62685E] dark:text-[#A3B899]">
+                          {m.abstained ? "Abstention Guard: " : "Verification Notice: "}
+                          {m.uncertaintyNote || "Insufficient evidence in authorized sources."}
+                        </div>
+                      )}
 
                       {/* Evidence Citations */}
                       {m.citations && m.citations.length > 0 && (
