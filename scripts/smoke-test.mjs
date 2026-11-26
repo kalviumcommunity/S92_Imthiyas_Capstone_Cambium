@@ -33,12 +33,20 @@ const c = {
 const args = process.argv.slice(2);
 let targetBaseUrl = process.env.SMOKE_TARGET_URL || 'http://localhost:3000';
 let apiBaseUrl = process.env.SMOKE_API_URL || 'http://localhost:5000';
+let defaultTimeoutMs = parseInt(process.env.SMOKE_TIMEOUT_MS || '15000', 10);
+const strictMode = args.includes('--strict');
+const insecureLocal = args.includes('--insecure-local');
 
 for (const arg of args) {
   if (arg.startsWith('--target=')) {
     targetBaseUrl = arg.split('=')[1].replace(/\/+$/, '');
   } else if (arg.startsWith('--api=')) {
     apiBaseUrl = arg.split('=')[1].replace(/\/+$/, '');
+  } else if (arg.startsWith('--timeout=')) {
+    const parsed = parseInt(arg.split('=')[1], 10);
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      defaultTimeoutMs = parsed;
+    }
   }
 }
 
@@ -69,8 +77,8 @@ function requestProbe(urlStr, options = {}) {
             Accept: options.accept || 'text/html,application/xhtml+xml,application/json,*/*',
             ...(options.headers || {}),
           },
-          timeout: options.timeout || 5000,
-          rejectUnauthorized: false, // Allows self-signed test certs in dev/staging
+          timeout: options.timeout || defaultTimeoutMs,
+          rejectUnauthorized: !insecureLocal,
         },
         (res) => {
           let body = '';
@@ -244,29 +252,47 @@ async function runProbes() {
     res8.latency
   );
 
-  // Optional Direct Backend API Probe
+  // Backend API Liveness, Readiness, Auth Guard & Opportunities Checks
   console.log(`${c.canopy}${c.bold}════════════════════════════════════════════════════════════════════════════════${c.reset}`);
-  console.log(`${c.cyan}${c.bold}SUPPLEMENTARY: Backend API Health Probe (${apiBaseUrl})${c.reset}`);
-  const apiRes = await requestProbe(`${apiBaseUrl}/api/v1/opportunities`);
-  if (apiRes.ok) {
-    console.log(`  ${c.emerald}[ONLINE]${c.reset} Core API Gateway responding at ${apiBaseUrl} (HTTP ${apiRes.status}, ${apiRes.latency}ms)`);
-  } else {
-    console.log(`  ${c.amber}[STANDBY]${c.reset} Backend API at ${apiBaseUrl} (${apiRes.error || apiRes.status}). Standby mode during offline builds.`);
+  console.log(`${c.cyan}${c.bold}BACKEND API VERIFICATION (${apiBaseUrl})${c.reset}`);
+
+  const livenessRes = await requestProbe(`${apiBaseUrl}/api/v1/health/liveness`);
+  const readinessRes = await requestProbe(`${apiBaseUrl}/api/v1/health/readiness`);
+  const authGuardRes = await requestProbe(`${apiBaseUrl}/api/v1/auth/me`);
+  const oppRes = await requestProbe(`${apiBaseUrl}/api/v1/opportunities`);
+
+  const apiChecks = [
+    { name: 'API Liveness (/api/v1/health/liveness)', passed: livenessRes.status === 200, res: livenessRes },
+    { name: 'API Readiness (/api/v1/health/readiness)', passed: readinessRes.status === 200, res: readinessRes },
+    { name: 'Auth Guard Unauth Enforcement (/api/v1/auth/me -> 401)', passed: authGuardRes.status === 401, res: authGuardRes },
+    { name: 'Opportunities API (/api/v1/opportunities -> 200)', passed: oppRes.status === 200, res: oppRes },
+  ];
+
+  for (const check of apiChecks) {
+    const label = check.passed ? `${c.emerald}[PASS]${c.reset}` : `${c.crimson}[FAIL]${c.reset}`;
+    console.log(
+      `  ${label} ${c.bold}${check.name}${c.reset} (${check.res.error || `HTTP ${check.res.status}`}, ${check.res.latency}ms)`,
+    );
   }
 
   // Final Summary
-  const passedCount = probeResults.filter(p => p.passed).length;
+  const passedCount = probeResults.filter((p) => p.passed).length;
   const totalCount = probeResults.length;
+  const apiPassedCount = apiChecks.filter((a) => a.passed).length;
 
   console.log(`\n${c.canopy}${c.bold}════════════════════════════════════════════════════════════════════════════════${c.reset}`);
-  console.log(`${c.bold}SMOKE TEST PROTOCOL SUMMARY: ${passedCount}/${totalCount} PROBES ACTIVE${c.reset}`);
+  console.log(
+    `${c.bold}SMOKE TEST SUMMARY: Frontend ${passedCount}/${totalCount} | Backend ${apiPassedCount}/${apiChecks.length}${c.reset}`,
+  );
 
-  if (passedCount === totalCount) {
-    console.log(`${c.emerald}${c.bold}STATUS: ALL 8 SMOKE PROBES VERIFIED! SYSTEM READY FOR LIVE TRAFFIC.${c.reset}`);
+  if (passedCount === totalCount && apiPassedCount === apiChecks.length) {
+    console.log(`${c.emerald}${c.bold}STATUS: ALL FRONTEND & BACKEND SMOKE PROBES VERIFIED.${c.reset}`);
     process.exit(0);
+  } else if (strictMode) {
+    console.error(`${c.crimson}${c.bold}STATUS: STRICT VERIFICATION FAILED (${totalCount - passedCount} frontend / ${apiChecks.length - apiPassedCount} backend failures).${c.reset}`);
+    process.exit(1);
   } else {
-    console.log(`${c.parchment}Note: For live testing against production, pass --target=https://<your-domain>${c.reset}`);
-    console.log(`${c.gray}Example: npm run smoke -- --target=https://cambium.edu${c.reset}\n`);
+    console.log(`${c.parchment}Note: Non-strict mode exited 0. Pass --strict to enforce hard failure exit codes in CI/releases.${c.reset}\n`);
     process.exit(0);
   }
 }

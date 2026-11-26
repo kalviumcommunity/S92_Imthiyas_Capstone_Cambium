@@ -11,7 +11,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   # ============================================================================
@@ -94,7 +94,7 @@ jobs:
       - name: Run TypeScript Typecheck
         run: npx tsc --noEmit
 
-      - name: Build Next.js 16 Production Chunks (54 Routes)
+      - name: Build Next.js 16 Production Chunks
         run: |
           npm run build 2>&1 | tee build.log || {
             echo "::error::Next.js production build failed"
@@ -214,11 +214,65 @@ jobs:
           retention-days: 7
 
   # ============================================================================
+  # 5b. PostgreSQL 16 + pgvector Idempotent Migration Check
+  # ============================================================================
+  database-migration-check:
+    name: Database Migration Validation (PG16 + pgvector)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_pg_validation_password
+          POSTGRES_DB: cambium_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d cambium_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install Server Dependencies
+        run: npm ci
+
+      - name: Verify Migration Ordering & Integrity Offline
+        run: npm run db:migrate:verify
+
+      - name: Apply Baseline Schema & Ordered Migrations (First Pass + Idempotency Pass)
+        run: |
+          npm run db:migrate
+          npm run db:migrate
+          npm run db:migrate:status
+        env:
+          NODE_ENV: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_pg_validation_password
+          POSTGRES_DB: cambium_ci
+
+  # ============================================================================
   # 6. Docker Container Build Verification
   # ============================================================================
   container-verification:
     name: Docker Multi-Stage Build Quality Gate
-    needs: [server-verification, client-verification, root-unit-tests, security-audit, e2e-verification]
+    needs: [server-verification, client-verification, root-unit-tests, security-audit, e2e-verification, database-migration-check]
     runs-on: ubuntu-latest
 
     steps:

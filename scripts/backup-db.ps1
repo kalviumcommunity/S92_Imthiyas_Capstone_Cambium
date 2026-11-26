@@ -11,13 +11,18 @@ param (
     [string]$PostgresPort = $(if ($env:POSTGRES_PORT) { $env:POSTGRES_PORT } else { "5432" }),
     [string]$PostgresDb = $(if ($env:POSTGRES_DB) { $env:POSTGRES_DB } else { "cambium" }),
     [string]$PostgresUser = $(if ($env:POSTGRES_USER) { $env:POSTGRES_USER } else { "postgres" }),
-    [string]$PostgresPassword = $(if ($env:POSTGRES_PASSWORD) { $env:POSTGRES_PASSWORD } else { "2Live&letLive" }),
+    [string]$PostgresPassword = $env:POSTGRES_PASSWORD,
     [string]$BackupDir = "./backups",
     [int]$RetentionDays = 7,
     [string]$S3Bucket = $(if ($env:S3_BUCKET) { $env:S3_BUCKET } else { "" })
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $PostgresPassword) {
+    Write-Error "[Cambium Backup ERROR] POSTGRES_PASSWORD environment variable or -PostgresPassword parameter is required."
+    exit 1
+}
 
 Write-Host "[Cambium Backup] Initializing automated database snapshot..." -ForegroundColor Yellow
 Write-Host "[Cambium Backup] Host: ${PostgresHost}:${PostgresPort} | Database: ${PostgresDb}" -ForegroundColor Yellow
