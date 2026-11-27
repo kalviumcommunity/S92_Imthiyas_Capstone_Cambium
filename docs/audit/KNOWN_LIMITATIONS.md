@@ -28,12 +28,12 @@ To ensure that Cambium installs, compiles, and runs out-of-the-box across develo
 
 ### 1.4 PDF OCR & Ingestion (`server/src/modules/upload/ocr/pdf-ocr.service.ts`)
 - **Current Default**: Extracts text layers using native PDF parser. For scanned non-searchable PDFs, if native worker threads are unavailable, it uses sandboxed synchronous text extraction.
-- **Production Action**: In heavy production workloads processing thousands of scanned scanned archival papers daily, provision an external Celery/BullMQ worker cluster with dedicated OCR engines.
+- **Production Action**: In heavy production workloads processing thousands of scanned archival papers daily, provision an external BullMQ worker cluster with dedicated OCR engines.
 
 ---
 
 ## 2. Scalability Boundaries & Guidance
 
-- **Database Concurrency**: The default PostgreSQL pool handles up to 100 concurrent connection leases. For institutional deployments exceeding 10,000 active researchers, deploy PgBouncer connection pooling and configure read replicas for `GET /opportunities` and `GET /publications`.
+- **Database Concurrency**: The default PostgreSQL pool in `database.config.ts` bounds each API process to `DB_POOL_MAX = 20` connections (`statement_timeout = 15000ms`). When scaling beyond a single Node instance or high concurrency, enable PgBouncer transaction pooling (`POSTGRES_PGBOUNCER_PORT`) and configure `POSTGRES_REPLICA_HOST` for read-heavy endpoints.
 - **Vector Embedding Latency**: High-volume batch ingestion of >10,000 papers should be scheduled during off-peak hours using the background job processor to avoid rate-limiting on Gemini embedding endpoints.
 

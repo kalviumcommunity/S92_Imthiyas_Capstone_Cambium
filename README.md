@@ -14,12 +14,12 @@
 [![Live App](https://img.shields.io/badge/Live%20Platform-cambium--research.vercel.app-4ADE80?style=for-the-badge&logo=vercel&logoColor=black)](https://cambium-research.vercel.app)
 [![API Status](https://img.shields.io/badge/API%20Gateway-cambium--api--ufj3.onrender.com-202920?style=for-the-badge&logo=render&logoColor=white)](https://cambium-api-ufj3.onrender.com/health)
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-3%2F3%20Quality%20Gates%20Passing-202920?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/shaikimthiyas/cambium-research/actions)
-[![Next.js](https://img.shields.io/badge/Next.js-15.5%20App%20Router-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.4%20App%20Router-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0-202920?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
-[![NestJS](https://img.shields.io/badge/NestJS-10.4-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17%20+%20pgvector-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://github.com/pgvector/pgvector)
+[![NestJS](https://img.shields.io/badge/NestJS-12.0-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%20+%20pgvector-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://github.com/pgvector/pgvector)
 [![Live Scholarly APIs](https://img.shields.io/badge/Scholarly%20APIs-OpenAlex%20%7C%20arXiv%20%7C%20Crossref%20%7C%20DOAJ-FF8C00?style=for-the-badge&logo=book&logoColor=white)](https://openalex.org)
-[![Unit Tests](https://img.shields.io/badge/Unit%20Tests-204%2F204%20Passing-4ADE80?style=for-the-badge&logo=jest&logoColor=black)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-Jest%20%2B%20Vitest%20Verified-4ADE80?style=for-the-badge&logo=jest&logoColor=black)](docs/testing/test-strategy.md)
 [![WCAG](https://img.shields.io/badge/WCAG-2.2%20Level%20AA%20Pass-4ADE80?style=for-the-badge&logo=w3c&logoColor=black)](https://www.w3.org/WAI/WCAG22/quickref/)
 [![License](https://img.shields.io/badge/License-MIT-805B43?style=for-the-badge)](LICENSE)
 
@@ -60,8 +60,8 @@ For local development, run `npm run dev` once from the repository root to start 
 
 | Resource | Environment | Endpoint / URL | Status |
 | :--- | :--- | :--- | :--- |
-| **Frontend Web Application** | Next.js 15 (App Router) | [cambium-research.vercel.app](https://cambium-research.vercel.app) | 🟢 Live / Operational |
-| **Backend REST & SSE API** | NestJS 10 + TypeORM | [cambium-api-ufj3.onrender.com](https://cambium-api-ufj3.onrender.com) | 🟢 Live / Operational |
+| **Frontend Web Application** | Next.js 16 (App Router) | [cambium-research.vercel.app](https://cambium-research.vercel.app) | Live / Deployed |
+| **Backend REST & SSE API** | NestJS 12 + TypeORM | [cambium-api-ufj3.onrender.com](https://cambium-api-ufj3.onrender.com) | Live / Deployed |
 | **Interactive OpenAPI Docs** | Swagger / OpenAPI 3.0 | [cambium-api-ufj3.onrender.com/api/docs](https://cambium-api-ufj3.onrender.com/api/docs) | 🟢 Documented |
 | **System Health Check Probe** | Distributed Liveness | [cambium-api-ufj3.onrender.com/health](https://cambium-api-ufj3.onrender.com/health) | 🟢 200 OK |
 | **Live Scholarly Data Fabric** | OpenAlex, arXiv, Crossref, DOAJ | Ingestion Engine (`/api/ingestion`) | 🟢 Integrated |
