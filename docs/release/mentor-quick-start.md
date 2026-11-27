@@ -20,8 +20,8 @@ Welcome, Evaluators! This guide is designed for the technical evaluation panel t
 1. Navigate to [https://cambium-research.vercel.app/sign-up](https://cambium-research.vercel.app/sign-up).
 2. Enter your name, institutional email (e.g. `mentor@university.edu`), and a password ($\ge 8$ characters).
 3. Click **"Create Scholar Identity"**.
-4. **Result**: Your account is permanently created in the connected **Supabase PostgreSQL database** (table `users`), returning cryptographic JWT access and HttpOnly refresh tokens.
-5. You are seamlessly transitioned to the **Scholar Onboarding Wizard** (`/welcome`).
+4. **Result**: Your account is persisted in the PostgreSQL database (`users` table), issuing a JWT access token and HttpOnly refresh cookie.
+5. You are redirected to the **Scholar Onboarding Wizard** (`/welcome`).
 
 #### 2. Profile Setup & ORCID Verification
 1. On the onboarding page, select your primary research disciplines (e.g. *Artificial Intelligence*, *Quantum Computing*, *Bioinformatics*).
@@ -30,7 +30,7 @@ Welcome, Evaluators! This guide is designed for the technical evaluation panel t
 
 #### 3. Real-Data Research Opportunity Discovery
 1. Navigate to **Research Opportunities** (`/opportunities` or `/discover`).
-2. Search across **580+ persistent database opportunities** with real-time BM25 lexical ranking and pgvector semantic embeddings.
+2. Search across seeded & ingested database opportunities with real-time PostgreSQL GIN full-text search (`idx_opps_fts`) and `pgvector` semantic embeddings fused via RRF.
 3. Test filter pills: *Grants*, *CFPs*, *Journals*, *Research Proposals*.
 4. Open any opportunity card to view detailed funding agencies (NIH, NSF, Simons Foundation, DARPA), deadlines, eligibility criteria, and award budgets.
 
@@ -63,8 +63,9 @@ If you prefer not to create a new account, you may use this pre-seeded evaluatio
 ---
 
 ### 📊 Technical Architecture Highlights for Mentors
-- **Frontend**: Next.js 16.4 App Router + React 19 Server/Client Components + Living Materials Design Tokens (WCAG 2.2 AA compliant).
-- **Backend**: NestJS 10 Enterprise API with TypeORM, PgBouncer pool sizing, and Redlock distributed mutex.
-- **Database**: PostgreSQL 17 + `pgvector` 0.7.0 HNSW vector cosine search over 768-dimensional text embeddings.
-- **Resilience**: SRE Circuit Breakers (`CLOSED`/`OPEN`/`HALF_OPEN`) with graceful degradation and `X-Cambium-Incident-Code` telemetry.
-- **Performance**: Keyset cursor pagination ($O(1)$ seek) and multi-tier L1 memory LRU cache.
+- **Frontend**: Next.js 16 App Router + React 19 + Living Materials Design Tokens (`WCAG` guidelines targeted; full accessibility sweep scheduled in Program 14).
+- **Backend**: NestJS 12 Modular Monolith with TypeORM (`DB_POOL_MAX = 20`) and Redlock / optional Redis adapters.
+- **Database**: PostgreSQL 16 + `pgvector` HNSW vector cosine search over `768`-dimensional text embeddings (`gemini-embedding-001`) + GIN full-text index.
+- **Resilience**: SRE Circuit Breakers (`CLOSED`/`OPEN`/`HALF_OPEN`), `AbortSignal.timeout` on external fetches, and graceful degradation.
+- **Performance**: Keyset cursor pagination and L1/optional-Redis caching (`MultiTierCacheService`).
+- **Further Evaluation Reading**: [`docs/institutional/institutional-readiness-package.md`](../institutional/institutional-readiness-package.md) & [`docs/institutional/technical-viva-and-demo-script.md`](../institutional/technical-viva-and-demo-script.md).

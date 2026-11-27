@@ -52,6 +52,12 @@
 | **[`performance/final-performance-report.md`](performance/final-performance-report.md)** | Performance & Capacity | Reproducible baselines, PG `EXPLAIN (ANALYZE, BUFFERS)` index audit, caching/job bounds, and scaling roadmap. |
 | **[`audit/PRODUCTION_READINESS_CHECKLIST.md`](audit/PRODUCTION_READINESS_CHECKLIST.md)** | Deployment Readiness Plan | Canonical prioritized milestones, no-go gates, verification evidence, environment checks, and rollout sequence. |
 | **[`operations/deployment-runbook.md`](operations/deployment-runbook.md)** | Operational Deployment | Multi-environment deployment runbooks and orchestration blueprints (Render, Vercel, Docker Compose). |
+| **[`operations/operational-runbooks-and-troubleshooting.md`](operations/operational-runbooks-and-troubleshooting.md)** | Incident Runbooks (10 Scenarios) | Triage, diagnostics, recovery & verification across deployment, DB pool, OAuth/SAML, Gemini & backup restores. |
+| **[`development/local-setup-and-architecture-guide.md`](development/local-setup-and-architecture-guide.md)** | DevEx & Extension Guide | Prerequisites, reproducible local setup, and step-by-step developer guides for frontend, API, DB & jobs. |
+| **[`development/agent-and-ai-development-guide.md`](development/agent-and-ai-development-guide.md)** | AI & Agent Guidelines | Spec precedence, AI/RAG safeguards, prompt delimiting, and deterministic fallback contracts. |
+| **[`product/researcher-and-admin-user-guide.md`](product/researcher-and-admin-user-guide.md)** | Researcher & Admin User Guide | End-to-end scholar workflows plus honest inventory of administrative capabilities & manual gaps. |
+| **[`institutional/institutional-readiness-package.md`](institutional/institutional-readiness-package.md)** | Institutional Readiness Brief | Pilot onboarding, security/privacy boundary disclosures, availability model, and evaluator scenarios. |
+| **[`institutional/technical-viva-and-demo-script.md`](institutional/technical-viva-and-demo-script.md)** | Technical Viva & Demo Script | Live feature demo sequence and grounded architectural trade-off Q&A. |
 | **[`DISASTER_RECOVERY_PLAYBOOK.md`](DISASTER_RECOVERY_PLAYBOOK.md)** | Reliability & Recovery | Backup/restore scripts (`backup-db.mjs` / `restore-db.mjs`), failover procedures, and data integrity verification. |
 
 ---
