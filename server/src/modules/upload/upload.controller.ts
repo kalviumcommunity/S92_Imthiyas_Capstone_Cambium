@@ -4,6 +4,7 @@ import {
   Get,
   Delete,
   Param,
+  Body,
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
@@ -26,7 +27,7 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import * as fs from 'fs';
-import { UploadService, UploadedArtifactMetadata } from './upload.service';
+import { DataClassification, UploadService, UploadedArtifactMetadata } from './upload.service';
 import { PdfOcrService } from './ocr/pdf-ocr.service';
 import { JwtAuthGuard, AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -71,12 +72,31 @@ export class UploadController {
   async uploadSingle(
     @UploadedFile() file: any,
     @CurrentUser() user: AuthenticatedUser,
+    @Body('dataClassification') dataClassification?: string,
+    @Body('workspaceId') workspaceId?: string,
+    @Body('aiProcessingAllowed') aiProcessingAllowed?: string,
   ): Promise<{ success: boolean; data: UploadedArtifactMetadata }> {
     if (!file) {
       throw new BadRequestException('Form field "file" is required');
     }
 
-    const saved = await this.uploadService.saveArtifact(file, user.id);
+    const allowedClasses = new Set<DataClassification>([
+      'PUBLIC',
+      'INTERNAL',
+      'CONFIDENTIAL',
+      'RESTRICTED',
+    ]);
+    const normalizedClass: DataClassification = allowedClasses.has(
+      (dataClassification || '').toUpperCase() as DataClassification,
+    )
+      ? ((dataClassification || '').toUpperCase() as DataClassification)
+      : 'CONFIDENTIAL';
+
+    const saved = await this.uploadService.saveArtifact(file, user.id, {
+      dataClassification: normalizedClass,
+      workspaceId: workspaceId?.trim() || undefined,
+      aiProcessingAllowed: aiProcessingAllowed === 'true',
+    });
     return {
       success: true,
       data: {
