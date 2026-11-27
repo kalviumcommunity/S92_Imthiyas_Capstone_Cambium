@@ -29,6 +29,7 @@ import { NetworkModule } from './modules/network/network.module';
 import { ResilienceModule } from './common/resilience/resilience.module';
 import { PerformanceModule } from './modules/performance/performance.module';
 import { InstitutionModule } from './modules/institution/institution.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { TelemetryInterceptor } from './common/telemetry/telemetry.interceptor';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
@@ -69,6 +70,7 @@ import { DatabaseDiagnosticService } from './database/database-diagnostic.servic
     ResilienceModule,
     PerformanceModule,
     InstitutionModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [

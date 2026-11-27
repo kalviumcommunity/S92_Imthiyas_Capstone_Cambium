@@ -3,6 +3,7 @@ import {
   BadRequestException,
   UnauthorizedException,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -16,6 +17,7 @@ import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { GoogleLoginDto } from './dto/google-login.dto';
 import { RedisService } from '../../common/redis/redis.service';
 import { getJwtSecret, getJwtRefreshSecret } from './jwt.config';
+import { ProductAnalyticsService } from '../analytics/product-analytics.service';
 
 export interface TokenPair {
   accessToken: string;
@@ -49,6 +51,8 @@ export class AuthService {
     @InjectRepository(ResearchInterest)
     private readonly interestRepo: Repository<ResearchInterest>,
     private readonly redisService: RedisService,
+    @Optional()
+    private readonly productAnalytics?: ProductAnalyticsService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -87,6 +91,15 @@ export class AuthService {
       saved.organizationId,
       saved.departmentId,
     );
+
+    void this.productAnalytics?.recordBackendEvent({
+      eventName: 'user.signup.completed',
+      actorId: saved.id,
+      actorEmail: saved.email,
+      organizationId: saved.organizationId || null,
+      idempotencyKey: `signup:${saved.id}`,
+      properties: { role: saved.role },
+    });
 
     return {
       success: true,
@@ -157,11 +170,25 @@ export class AuthService {
     }
 
     if (!user || !user.passwordHash) {
+      void this.productAnalytics?.recordBackendEvent({
+        eventName: 'user.login.failed',
+        actorEmail: identifier,
+        outcome: 'FAILURE',
+        properties: { reason: 'user_not_found' },
+      });
       throw new UnauthorizedException(`Invalid credentials. ${lockoutCheck.remaining} attempts remaining.`);
     }
 
     const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
     if (!isMatch) {
+      void this.productAnalytics?.recordBackendEvent({
+        eventName: 'user.login.failed',
+        actorId: user.id,
+        actorEmail: user.email,
+        organizationId: user.organizationId || null,
+        outcome: 'FAILURE',
+        properties: { reason: 'invalid_password' },
+      });
       throw new UnauthorizedException(`Invalid credentials. ${lockoutCheck.remaining} attempts remaining.`);
     }
 
@@ -180,6 +207,14 @@ export class AuthService {
       user.organizationId,
       user.departmentId,
     );
+
+    void this.productAnalytics?.recordBackendEvent({
+      eventName: 'user.login.completed',
+      actorId: user.id,
+      actorEmail: user.email,
+      organizationId: user.organizationId || null,
+      properties: { method: 'password', role: user.role },
+    });
 
     return {
       success: true,
