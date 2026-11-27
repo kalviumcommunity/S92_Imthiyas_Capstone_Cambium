@@ -1,0 +1,19 @@
+name: Feature or Documentation Request
+description: Propose a grounded enhancement or documentation improvement
+title: "[Enhancement]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User / Scholar Problem
+      description: Describe the scholarly, operational, or developer problem being solved.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution & Specification Alignment
+      description: Reference PRD/Architecture/Security impact if applicable.
+    validations:
+      required: true
