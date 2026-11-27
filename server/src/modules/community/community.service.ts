@@ -29,14 +29,25 @@ export class CommunityService {
   /**
    * Retrieve community feed with optional filtering by post primitive or tag
    */
-  async getFeed(params?: { type?: string; tag?: string; limit?: number }) {
-    const qb = this.postRepo
-      .createQueryBuilder('post')
-      .leftJoinAndSelect('post.author', 'author')
-      .leftJoinAndSelect('post.comments', 'comments')
-      .leftJoinAndSelect('comments.author', 'commentAuthor')
-      .orderBy('post.createdAt', 'DESC')
-      .take(params?.limit || 20);
+  async getFeed(params?: { type?: string; tag?: string; limit?: number; offset?: number }) {
+    const safeLimit = Math.min(Math.max(Number(params?.limit) || 20, 1), 50);
+    const safeOffset = Math.max(Number(params?.offset) || 0, 0);
+    const qb = this.postRepo.createQueryBuilder('post');
+    if (typeof (qb as any).leftJoin === 'function') {
+      qb.leftJoin('post.author', 'author')
+        .addSelect(['author.id', 'author.fullName', 'author.username', 'author.institution'])
+        .leftJoinAndSelect('post.comments', 'comments')
+        .leftJoin('comments.author', 'commentAuthor')
+        .addSelect(['commentAuthor.id', 'commentAuthor.fullName', 'commentAuthor.username']);
+    } else {
+      qb.leftJoinAndSelect('post.author', 'author')
+        .leftJoinAndSelect('post.comments', 'comments')
+        .leftJoinAndSelect('comments.author', 'commentAuthor');
+    }
+    qb.orderBy('post.createdAt', 'DESC').take(safeLimit);
+    if (safeOffset > 0 && typeof (qb as any).skip === 'function') {
+      qb.skip(safeOffset);
+    }
 
     if (params?.type && params.type !== 'all') {
       qb.andWhere('post.type = :type', { type: params.type });

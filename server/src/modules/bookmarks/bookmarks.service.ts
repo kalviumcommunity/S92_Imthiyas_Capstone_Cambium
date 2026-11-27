@@ -18,32 +18,44 @@ export class BookmarksService {
   /**
    * Find all bookmarks with relational eager loading.
    */
-  async findAll() {
-    const bookmarks = await this.bookmarkRepo.find({
-      relations: { user: true, opportunity: { tags: true } },
+  async findAll(limit = 50, offset = 0) {
+    const safeLimit = Math.min(Math.max(Number(limit) || 50, 1), 100);
+    const safeOffset = Math.max(Number(offset) || 0, 0);
+    const [bookmarks, total] = await this.bookmarkRepo.findAndCount({
+      relations: { opportunity: { tags: true } },
       order: { createdAt: 'DESC' },
+      take: safeLimit,
+      skip: safeOffset,
     });
 
     return {
       success: true,
       count: bookmarks.length,
+      total,
+      hasMore: safeOffset + bookmarks.length < total,
       data: bookmarks,
     };
   }
 
   /**
-   * Find bookmarks for a specific user with relational loading.
+   * Find bookmarks for a specific user with bounded pagination.
    */
-  async findByUserId(userId: string) {
-    const bookmarks = await this.bookmarkRepo.find({
+  async findByUserId(userId: string, limit = 50, offset = 0) {
+    const safeLimit = Math.min(Math.max(Number(limit) || 50, 1), 100);
+    const safeOffset = Math.max(Number(offset) || 0, 0);
+    const [bookmarks, total] = await this.bookmarkRepo.findAndCount({
       where: { userId },
       relations: { opportunity: { tags: true } },
       order: { createdAt: 'DESC' },
+      take: safeLimit,
+      skip: safeOffset,
     });
 
     return {
       success: true,
       count: bookmarks.length,
+      total,
+      hasMore: safeOffset + bookmarks.length < total,
       data: bookmarks,
     };
   }

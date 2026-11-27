@@ -217,6 +217,7 @@ Quote exact appendix benchmarks and parameter settings (e.g. [Appendix C.4, L310
                     { role: 'user', parts: [{ text: delimitedPrompt }] },
                   ],
                 }),
+                signal: AbortSignal.timeout(10000),
               },
             );
 

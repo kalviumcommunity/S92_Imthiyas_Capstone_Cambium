@@ -5,6 +5,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   HttpCode,
   HttpStatus,
   UseGuards,
@@ -25,15 +26,23 @@ export class BookmarksController {
   @Get()
   @ApiOperation({ summary: 'Get bookmarks for authenticated scholar' })
   @ApiResponse({ status: 200, description: 'List of user bookmarks' })
-  async getBookmarks(@CurrentUser() user: AuthenticatedUser) {
-    return this.bookmarksService.findByUserId(user.id);
+  async getBookmarks(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ) {
+    return this.bookmarksService.findByUserId(user.id, limit, offset);
   }
 
   @Get('my/list')
   @ApiOperation({ summary: 'Get bookmarks for current authenticated user' })
   @ApiResponse({ status: 200, description: 'Current user bookmarks' })
-  async getMyBookmarks(@CurrentUser() user: AuthenticatedUser) {
-    return this.bookmarksService.findByUserId(user.id);
+  async getMyBookmarks(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('limit') limit?: number,
+    @Query('offset') offset?: number,
+  ) {
+    return this.bookmarksService.findByUserId(user.id, limit, offset);
   }
 
   @Post()

@@ -5,7 +5,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import {
   ResearchOpportunity,
   OpportunityType,
@@ -18,6 +18,7 @@ import {
   RecommendationQueryDto,
 } from './dto/opportunity.dto';
 import { MultiTierCacheService } from '../performance/multi-tier-cache.service';
+import { CursorPaginationUtil } from '../performance/cursor-pagination.util';
 
 @Injectable()
 export class OpportunitiesService {
@@ -32,36 +33,85 @@ export class OpportunitiesService {
   ) {}
 
   /**
-   * Find all opportunities with TypeORM QueryBuilder and relational joins.
+   * Find opportunities with bounded pagination (default 25, max 100), optional keyset cursor,
+   * trimmed creator projection, and L1/L2 public catalog caching.
    */
   async findAll(filters: FilterOpportunityDto) {
-    const qb = this.oppRepo
-      .createQueryBuilder('opp')
-      .leftJoinAndSelect('opp.tags', 'tag')
-      .leftJoinAndSelect('opp.createdBy', 'creator')
-      .orderBy('opp.createdAt', 'DESC');
+    const limit = Math.min(Math.max(Number(filters.limit) || 25, 1), 100);
+    const offset = Math.max(Number(filters.offset) || 0, 0);
 
-    if (filters.type) {
-      qb.andWhere('opp.type = :type', { type: filters.type });
-    }
+    const runQuery = async () => {
+      const qb = this.oppRepo
+        .createQueryBuilder('opp')
+        .leftJoinAndSelect('opp.tags', 'tag');
+      if (typeof (qb as any).leftJoin === 'function') {
+        qb.leftJoin('opp.createdBy', 'creator').addSelect([
+          'creator.id',
+          'creator.username',
+          'creator.fullName',
+        ]);
+      } else {
+        qb.leftJoinAndSelect('opp.createdBy', 'creator');
+      }
 
-    if (filters.tag) {
-      qb.andWhere('tag.name ILIKE :tag', { tag: `%${filters.tag}%` });
-    }
+      if (filters.type) {
+        qb.andWhere('opp.type = :type', { type: filters.type });
+      }
 
-    if (filters.search) {
-      qb.andWhere(
-        '(opp.title ILIKE :search OR opp.organization ILIKE :search OR opp.description ILIKE :search)',
-        { search: `%${filters.search}%` },
-      );
-    }
+      if (filters.tag) {
+        qb.andWhere('tag.name ILIKE :tag', { tag: `%${filters.tag}%` });
+      }
 
-    const [data, count] = await qb.getManyAndCount();
-    return {
-      success: true,
-      count,
-      data,
+      if (filters.search) {
+        qb.andWhere(
+          '(opp.title ILIKE :search OR opp.organization ILIKE :search OR opp.description ILIKE :search)',
+          { search: `%${filters.search}%` },
+        );
+      }
+
+      if (filters.cursor) {
+        const paged = await CursorPaginationUtil.paginate(qb, {
+          cursor: filters.cursor,
+          limit,
+          sortField: 'createdAt',
+          sortOrder: 'DESC',
+        });
+        return {
+          success: true,
+          count: paged.items.length,
+          hasMore: paged.hasMore,
+          nextCursor: paged.nextCursor,
+          limit,
+          data: paged.items,
+        };
+      }
+
+      qb.orderBy('opp.createdAt', 'DESC').take(limit).skip(offset);
+      const [data, total] = await qb.getManyAndCount();
+      return {
+        success: true,
+        count: data.length,
+        total,
+        hasMore: offset + data.length < total,
+        limit,
+        offset,
+        data,
+      };
     };
+
+    const isCacheablePublicSlice =
+      this.cacheService &&
+      !filters.cursor &&
+      offset === 0 &&
+      !filters.search &&
+      !filters.tag;
+
+    if (isCacheablePublicSlice) {
+      const cacheKey = `public:opp:list:${filters.type || 'all'}:limit=${limit}`;
+      return this.cacheService!.wrap(cacheKey, runQuery, 60, ['opportunities']);
+    }
+
+    return runQuery();
   }
 
   /**
@@ -119,12 +169,14 @@ export class OpportunitiesService {
   /**
    * Get upcoming deadlines using SQL timestamptz predicate.
    */
-  async getUpcomingDeadlines() {
+  async getUpcomingDeadlines(limit = 50) {
+    const safeLimit = Math.min(Math.max(Number(limit) || 50, 1), 100);
     const opportunities = await this.oppRepo
       .createQueryBuilder('opp')
       .leftJoinAndSelect('opp.tags', 'tag')
       .where('opp.deadline >= CURRENT_TIMESTAMP')
       .orderBy('opp.deadline', 'ASC')
+      .take(safeLimit)
       .getMany();
 
     return {
@@ -191,6 +243,7 @@ export class OpportunitiesService {
     });
 
     const saved = await this.oppRepo.save(opp);
+    await this.invalidateOpportunityCache();
     return {
       success: true,
       message: 'Research opportunity created successfully',
@@ -231,6 +284,7 @@ export class OpportunitiesService {
       }
 
       await queryRunner.commitTransaction();
+      await this.invalidateOpportunityCache();
       return {
         success: true,
         count: createdEntities.length,
@@ -270,6 +324,7 @@ export class OpportunitiesService {
     }
 
     const updated = await this.oppRepo.save(opp);
+    await this.invalidateOpportunityCache();
     return {
       success: true,
       message: 'Research opportunity updated successfully',
@@ -316,6 +371,7 @@ export class OpportunitiesService {
     }
 
     await this.oppRepo.remove(opp);
+    await this.invalidateOpportunityCache();
     return {
       success: true,
       message: 'Research opportunity deleted successfully',
@@ -323,24 +379,45 @@ export class OpportunitiesService {
     };
   }
 
+  private async invalidateOpportunityCache(): Promise<void> {
+    if (!this.cacheService) return;
+    await Promise.all([
+      this.cacheService.invalidateByPrefix('public:opp:'),
+      this.cacheService.invalidate('opp:stats:global'),
+    ]);
+  }
+
   /**
-   * Helper: Resolves, normalizes, and deduplicates taxonomy tags in the database.
+   * Helper: Batch-resolves, normalizes, and deduplicates taxonomy tags without N+1 queries.
    */
   private async resolveTags(rawTags?: string[]): Promise<Tag[]> {
     if (!rawTags || !Array.isArray(rawTags) || rawTags.length === 0) {
       return [];
     }
 
-    const resolved: Tag[] = [];
-    for (const raw of rawTags) {
-      const trimmed = raw.trim();
-      if (!trimmed) continue;
+    const cleanNames = Array.from(
+      new Set(rawTags.map((t) => (typeof t === 'string' ? t.trim() : '')).filter(Boolean)),
+    );
+    if (cleanNames.length === 0) return [];
 
-      let tag = await this.tagRepo.findOne({ where: { name: trimmed } });
+    const existingTags: Tag[] =
+      typeof this.tagRepo.find === 'function'
+        ? await this.tagRepo.find({ where: { name: In(cleanNames) } })
+        : [];
+    const byName = new Map(existingTags.map((t) => [t.name, t]));
+
+    const resolved: Tag[] = [...existingTags];
+    for (const trimmed of cleanNames) {
+      if (byName.has(trimmed)) continue;
+      let tag =
+        typeof this.tagRepo.find === 'function'
+          ? null
+          : await this.tagRepo.findOne({ where: { name: trimmed } });
       if (!tag) {
         tag = this.tagRepo.create({ name: trimmed });
         tag = await this.tagRepo.save(tag);
       }
+      byName.set(trimmed, tag);
       resolved.push(tag);
     }
 

@@ -1,10 +1,14 @@
 import { Controller, Get, Post, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { monitorEventLoopDelay } from 'perf_hooks';
 import { MultiTierCacheService } from './multi-tier-cache.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/entities/user.entity';
+
+const eventLoopHistogram = monitorEventLoopDelay({ resolution: 20 });
+eventLoopHistogram.enable();
 
 @ApiTags('Performance Engineering')
 @ApiBearerAuth()
@@ -35,6 +39,10 @@ export class PerformanceController {
         heapTotalMb: Math.round(mem.heapTotal / (1024 * 1024)),
         heapUsedMb: Math.round(mem.heapUsed / (1024 * 1024)),
         externalMb: Math.round(mem.external / (1024 * 1024)),
+      },
+      eventLoop: {
+        meanLagMs: Number((eventLoopHistogram.mean / 1e6).toFixed(2)) || 0,
+        p95LagMs: Number((eventLoopHistogram.percentile(95) / 1e6).toFixed(2)) || 0,
       },
       optimizationTier: {
         pgvectorIndex: 'HNSW Cosine Distance (M=16, efConstruction=64)',

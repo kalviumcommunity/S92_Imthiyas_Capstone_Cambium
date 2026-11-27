@@ -34,6 +34,7 @@ import { IdempotencyInterceptor } from './common/interceptors/idempotency.interc
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { EtagInterceptor } from './modules/network/etag.interceptor';
 import { GracefulDegradationInterceptor } from './common/resilience/graceful-degradation.interceptor';
+import { RequestTimeoutInterceptor } from './common/interceptors/request-timeout.interceptor';
 import { NetworkRateLimiterGuard } from './modules/network/network-rate-limiter.guard';
 
 import { DatabaseDiagnosticService } from './database/database-diagnostic.service';
@@ -96,6 +97,10 @@ import { DatabaseDiagnosticService } from './database/database-diagnostic.servic
     {
       provide: APP_INTERCEPTOR,
       useClass: GracefulDegradationInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RequestTimeoutInterceptor,
     },
   ],
   exports: [DatabaseDiagnosticService],

@@ -39,17 +39,18 @@ export class NotificationsService {
       where.type = options.type;
     }
 
-    const [notifications, total] = await this.notifRepo.findAndCount({
-      where,
-      relations: { opportunity: true },
-      order: { createdAt: 'DESC' },
-      take: limit,
-      skip: offset,
-    });
-
-    const unreadCount = await this.notifRepo.count({
-      where: { userId, isRead: false },
-    });
+    const [[notifications, total], unreadCount] = await Promise.all([
+      this.notifRepo.findAndCount({
+        where,
+        relations: { opportunity: true },
+        order: { createdAt: 'DESC' },
+        take: limit,
+        skip: offset,
+      }),
+      this.notifRepo.count({
+        where: { userId, isRead: false },
+      }),
+    ]);
 
     return {
       success: true,

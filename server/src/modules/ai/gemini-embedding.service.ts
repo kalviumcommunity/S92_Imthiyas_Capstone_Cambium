@@ -49,6 +49,7 @@ export class GeminiEmbeddingService {
             },
             outputDimensionality: this.targetDimension,
           }),
+          signal: AbortSignal.timeout(8000),
         });
 
         if (response.ok) {

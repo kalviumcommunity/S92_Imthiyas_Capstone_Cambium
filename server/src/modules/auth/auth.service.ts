@@ -215,6 +215,7 @@ export class AuthService {
       try {
         const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${token}` },
+          signal: AbortSignal.timeout(6000),
         });
         if (userInfoRes.ok) {
           const gData = await userInfoRes.json();
