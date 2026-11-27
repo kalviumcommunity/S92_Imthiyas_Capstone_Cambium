@@ -42,11 +42,40 @@ export class AuditInterceptor implements NestInterceptor {
     }
 
     const user = req.user;
-    const body = { ...req.body };
-    // Redact sensitive credential fields before auditing
-    delete body.password;
-    delete body.refreshToken;
-    delete body.token;
+    const rawBody = req.body && typeof req.body === 'object' ? req.body : {};
+    const REDACTED_KEYS = new Set([
+      'password',
+      'passwordHash',
+      'refreshToken',
+      'token',
+      'secret',
+      'apiKey',
+      'documentSnippet',
+      'messages',
+      'content',
+      'abstract',
+      'text',
+      'comment',
+      'details',
+      'email',
+      'phone',
+      'address',
+    ]);
+    const safeKeys: string[] = [];
+    let redactedFieldCount = 0;
+    for (const key of Object.keys(rawBody)) {
+      if (REDACTED_KEYS.has(key)) {
+        redactedFieldCount++;
+      } else {
+        safeKeys.push(key);
+      }
+    }
+    const body = {
+      id: rawBody.id,
+      fieldKeys: safeKeys.slice(0, 20),
+      redactedFieldCount,
+      payloadSha256: createHash('sha256').update(JSON.stringify(rawBody)).digest('hex'),
+    };
 
     return next.handle().pipe(
       tap({

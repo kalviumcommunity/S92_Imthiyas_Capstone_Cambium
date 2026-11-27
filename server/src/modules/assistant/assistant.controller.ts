@@ -2,7 +2,8 @@ import { Controller, Post, Body, HttpCode, HttpStatus, Inject, UseGuards, Sse } 
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { Observable } from 'rxjs';
 import { AssistantService, AssistantChatRequest } from './assistant.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard, AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { SubscriptionGuard, RequiresSubscription } from '../auth/guards/subscription.guard';
 
 interface MessageEvent {
@@ -52,19 +53,25 @@ export class AssistantController {
     },
   })
   @ApiResponse({ status: 200, description: 'Scholar assistant reply with executed tools and grounded citations' })
-  async chat(@Body() body: AssistantChatRequest) {
-    return this.assistantService.chat(body);
+  async chat(
+    @Body() body: AssistantChatRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.assistantService.chat(body, user);
   }
 
   @Post('stream')
   @Sse()
   @RequiresSubscription('pro')
   @ApiOperation({ summary: 'Stream Agentic RAG responses token-by-token via Server-Sent Events (SSE)' })
-  streamChat(@Body() body: AssistantChatRequest): Observable<MessageEvent> {
+  streamChat(
+    @Body() body: AssistantChatRequest,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Observable<MessageEvent> {
     return new Observable<MessageEvent>((subscriber) => {
       (async () => {
         try {
-          for await (const chunk of this.assistantService.streamChat(body)) {
+          for await (const chunk of this.assistantService.streamChat(body, user)) {
             subscriber.next({ data: chunk.data });
           }
           subscriber.complete();
