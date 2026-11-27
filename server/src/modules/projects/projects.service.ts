@@ -23,6 +23,7 @@ import { OutboxService } from '../../common/outbox/outbox.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { EventsService } from '../events/events.service';
 import { ChatGateway } from '../chat/chat.gateway';
+import { ProductAnalyticsService } from '../analytics/product-analytics.service';
 
 @Injectable()
 export class ProjectsService {
@@ -50,6 +51,8 @@ export class ProjectsService {
     private readonly chatGateway?: ChatGateway,
     @Optional()
     private readonly dataSource?: DataSource,
+    @Optional()
+    private readonly productAnalytics?: ProductAnalyticsService,
   ) {}
 
   private async runInTransaction<T>(
@@ -150,6 +153,16 @@ export class ProjectsService {
         message: `Research workspace "${savedProject.title}" is live.`,
         projectId: savedProject.id,
       },
+    });
+
+    void this.productAnalytics?.recordBackendEvent({
+      eventName: 'workspace.created',
+      actorId: ownerId,
+      actorEmail: owner.email,
+      organizationId: owner.organizationId || null,
+      workspaceId: savedProject.id,
+      idempotencyKey: `workspace_created:${savedProject.id}`,
+      properties: { visibility: savedProject.visibility },
     });
 
     return {
@@ -397,6 +410,14 @@ export class ProjectsService {
       status: 'INVITED',
     });
 
+    void this.productAnalytics?.recordBackendEvent({
+      eventName: 'workspace.member.invited',
+      actorId: requesterId,
+      workspaceId: projectId,
+      idempotencyKey: `invite:${projectId}:${dto.userId}`,
+      properties: { creditRole: newMember.creditRole },
+    });
+
     return {
       success: true,
       message: `Invitation dispatched to ${invitee.fullName}.`,
@@ -468,6 +489,18 @@ export class ProjectsService {
       event: eventType,
       userId,
       status: nextStatus,
+    });
+
+    void this.productAnalytics?.recordBackendEvent({
+      eventName: accept
+        ? 'collaboration.invitation.accepted'
+        : 'collaboration.invitation.declined',
+      actorId: userId,
+      actorEmail: member.user?.email,
+      organizationId: member.user?.organizationId || null,
+      workspaceId: projectId,
+      idempotencyKey: `invite_resp:${projectId}:${userId}:${nextStatus}`,
+      properties: { creditRole: member.creditRole },
     });
 
     return {

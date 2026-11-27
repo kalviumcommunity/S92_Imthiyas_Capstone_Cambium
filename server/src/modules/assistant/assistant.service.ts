@@ -1,6 +1,7 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef, Optional } from '@nestjs/common';
 import { HybridSearchService } from '../opportunities/hybrid-search.service';
 import { OpportunitiesService } from '../opportunities/opportunities.service';
+import { AiObservabilityService } from '../analytics/ai-observability.service';
 
 export interface AssistantChatMessage {
   role: 'user' | 'assistant' | 'system';
@@ -44,6 +45,8 @@ export class AssistantService {
     private readonly hybridSearch: HybridSearchService,
     @Inject(forwardRef(() => OpportunitiesService))
     private readonly oppService: OpportunitiesService,
+    @Optional()
+    private readonly aiObservability?: AiObservabilityService,
   ) {}
 
   private getApiKey(): string | undefined {
@@ -123,6 +126,8 @@ export class AssistantService {
    * Orchestrates the agent conversation with tool calling
    */
   async chat(request: AssistantChatRequest): Promise<AssistantChatResponse> {
+    const startMs = Date.now();
+    let retrievalDurationMs = 0;
     const lastUserMessage = request.messages.filter((m) => m.role === 'user').pop()?.content || '';
     const apiKey = this.getApiKey();
     const toolCallsExecuted: Array<{ name: string; args: any; result: any }> = [];
@@ -138,10 +143,12 @@ export class AssistantService {
       lowerQuery.includes('call') ||
       lowerQuery.includes('cfp')
     ) {
+      const retrievalStartMs = Date.now();
       const searchRes = await this.hybridSearch.search({
         query: lastUserMessage,
         limit: 3,
       });
+      retrievalDurationMs = Date.now() - retrievalStartMs;
       grantSearchResults = searchRes.results;
       toolCallsExecuted.push({
         name: 'find_matching_grants',
@@ -204,6 +211,7 @@ Quote exact appendix benchmarks and parameter settings (e.g. [Appendix C.4, L310
 
         const modelsToTry = ['gemini-2.0-flash', 'gemini-1.5-flash'];
         let generatedText: string | null = null;
+        let usedModel = modelsToTry[0];
 
         for (const model of modelsToTry) {
           try {
@@ -223,7 +231,10 @@ Quote exact appendix benchmarks and parameter settings (e.g. [Appendix C.4, L310
             if (response.ok) {
               const json = await response.json();
               generatedText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (generatedText) break;
+              if (generatedText) {
+                usedModel = model;
+                break;
+              }
             }
           } catch {
             // try next model
@@ -231,14 +242,29 @@ Quote exact appendix benchmarks and parameter settings (e.g. [Appendix C.4, L310
         }
 
         if (generatedText) {
+          const citations = grantSearchResults?.map((r: any) => ({
+            title: r.opportunity.title,
+            funder: r.opportunity.organization,
+            relevance: `RRF Score: ${r.rrfScore.toFixed(4)}`,
+          }));
+          void this.aiObservability?.recordAiInteraction({
+            provider: 'gemini',
+            model: usedModel,
+            requestType: 'chat',
+            inputChars: delimitedPrompt.length,
+            outputChars: generatedText.length,
+            latencyMs: Date.now() - startMs,
+            retrievalDurationMs,
+            chunksRetrieved: grantSearchResults?.length || 0,
+            citationCount: citations?.length || 0,
+            toolSuccessCount: toolCallsExecuted.length,
+            outcome: 'SUCCESS',
+            isLiveProviderCall: true,
+          });
           return {
             reply: generatedText,
             toolCallsExecuted,
-            evidenceCitations: grantSearchResults?.map((r: any) => ({
-              title: r.opportunity.title,
-              funder: r.opportunity.organization,
-              relevance: `RRF Score: ${r.rrfScore.toFixed(4)}`,
-            })),
+            evidenceCitations: citations,
           };
         }
       } catch (err: any) {
@@ -265,14 +291,32 @@ Quote exact appendix benchmarks and parameter settings (e.g. [Appendix C.4, L310
 
     reply += `Would you like me to extract the specific milestone deliverables or generate a compliant 1-page preliminary proposal outline for your review?`;
 
+    const citations = grantSearchResults?.map((r: any) => ({
+      title: r.opportunity.title,
+      funder: r.opportunity.organization,
+      relevance: `RRF Score: ${r.rrfScore.toFixed(4)}`,
+    }));
+
+    void this.aiObservability?.recordAiInteraction({
+      provider: 'local-fallback',
+      model: 'gemini-offline-fallback',
+      requestType: 'chat',
+      inputChars: lastUserMessage.length,
+      outputChars: reply.length,
+      latencyMs: Date.now() - startMs,
+      retrievalDurationMs,
+      chunksRetrieved: grantSearchResults?.length || 0,
+      citationCount: citations?.length || 0,
+      toolSuccessCount: toolCallsExecuted.length,
+      outcome: 'FALLBACK',
+      failureCategory: apiKey ? 'upstream_unavailable' : 'offline_mode',
+      isLiveProviderCall: false,
+    });
+
     return {
       reply,
       toolCallsExecuted,
-      evidenceCitations: grantSearchResults?.map((r: any) => ({
-        title: r.opportunity.title,
-        funder: r.opportunity.organization,
-        relevance: `RRF Score: ${r.rrfScore.toFixed(4)}`,
-      })),
+      evidenceCitations: citations,
     };
   }
 

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from "react";
 import Link from "next/link";
+import { reportClientError } from "@/lib/api";
 
 interface Node {
   x: number;
@@ -117,6 +118,12 @@ export default function Error({
   useEffect(() => {
     // Log the error to an error reporting service
     console.error(error);
+    void reportClientError({
+      route: typeof window !== "undefined" ? window.location.pathname : "/root",
+      errorName: error?.name || "RootRouteError",
+      errorDigest: error?.digest,
+      message: error?.message,
+    });
   }, [error]);
 
   return (

@@ -11,6 +11,8 @@ export interface DatabaseDiagnosticReport {
     maxClients: number;
     activeConnections: number;
     idleConnections: number;
+    waitingLocksCount?: number;
+    slowQueriesCount?: number;
     pgbouncerConfigured: boolean;
   };
   vectorEngine: {
@@ -65,6 +67,8 @@ export class DatabaseDiagnosticService {
     let pgVersion = 'PostgreSQL 16.2 (Debian 16.2-1.pgdg120+2) with pgvector 0.7.0';
     let activeConnections = 3;
     let idleConnections = 5;
+    let waitingLocksCount = 0;
+    let slowQueriesCount = 0;
     let hnswSize = 1048576; // 1MB nominal
 
     if (isConnected) {
@@ -80,6 +84,17 @@ export class DatabaseDiagnosticService {
         for (const row of connRes) {
           if (row.state === 'active') activeConnections = parseInt(row.count, 10);
           if (row.state === 'idle') idleConnections = parseInt(row.count, 10);
+        }
+
+        const lockSlowRes = await this.dataSource.query(
+          `SELECT
+             COUNT(*) FILTER (WHERE wait_event_type = 'Lock')::int AS waiting_locks,
+             COUNT(*) FILTER (WHERE state = 'active' AND now() - query_start > interval '1 second')::int AS slow_queries
+           FROM pg_stat_activity WHERE datname = current_database()`,
+        );
+        if (lockSlowRes && lockSlowRes[0]) {
+          waitingLocksCount = Number(lockSlowRes[0].waiting_locks || 0);
+          slowQueriesCount = Number(lockSlowRes[0].slow_queries || 0);
         }
 
         const sizeRes = await this.dataSource.query(
@@ -134,6 +149,8 @@ export class DatabaseDiagnosticService {
         maxClients: parseInt(process.env.DB_POOL_MAX || '50', 10),
         activeConnections,
         idleConnections,
+        waitingLocksCount,
+        slowQueriesCount,
         pgbouncerConfigured: !!process.env.POSTGRES_PGBOUNCER_PORT,
       },
       vectorEngine: {
