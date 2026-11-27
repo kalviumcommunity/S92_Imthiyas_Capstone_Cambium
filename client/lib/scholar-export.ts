@@ -64,20 +64,13 @@ export function exportScholarArchiveJson(scholarInfo: {
       name: scholarInfo.name,
       email: scholarInfo.email,
       institution: scholarInfo.institution,
-      role: scholarInfo.role || "Principal Investigator",
-      orcid: scholarInfo.orcid || "0000-0002-1825-0097",
+      role: scholarInfo.role || "Researcher",
+      ...(scholarInfo.orcid ? { orcid: scholarInfo.orcid } : {}),
     },
     bookmarks,
     artifacts,
-    activeSessions: [
-      {
-        device: "MacBook Pro — Chrome 130",
-        location: "Cambridge, MA, USA",
-        lastActivity: new Date().toISOString(),
-        status: "Active / Current Session",
-      },
-    ],
-    digitalSignature: `SHA256:${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`,
+    activeSessions: [],
+    digitalSignature: "local-browser-archive-unsigned",
   };
 
   downloadFile(
