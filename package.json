@@ -23,6 +23,7 @@
     "verify:env": "node scripts/verify-env.mjs",
     "verify:env:prod": "node scripts/verify-env.mjs --production",
     "verify:db": "node scripts/verify-db.mjs",
+    "verify:docs": "node scripts/docs/verify-docs.mjs",
     "docker:up": "docker-compose up -d --build",
     "docker:down": "docker-compose down",
     "verify:proxy": "node scripts/verify-proxy.mjs",

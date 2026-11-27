@@ -49,7 +49,7 @@
 | **[`database.md`](database.md)** | PostgreSQL & pgvector Schema | Schema & TypeORM entities (`31` registered entities on `main`), `768`-dim HNSW vector index, GIN FTS, and migrations. |
 | **[`api-guide.md`](api-guide.md)** | REST API Reference | Active controller endpoints across Auth, Users, Opportunities, Bookmarks, Community, Projects, Upload, Institution, Performance, and Ingestion. |
 | **[`testing/test-strategy.md`](testing/test-strategy.md)** | Unified Test Pyramid | Jest unit suites (`npm run test:jest`), NestJS Vitest suites (`npm --prefix server test`), and Playwright E2E specs. |
-| **[`performance/final-performance-report.md`](performance/final-performance-report.md)** | Performance & Capacity | Reproducible baselines, PG `EXPLAIN (ANALYZE, BUFFERS)` index audit, caching/job bounds, and scaling roadmap. |
+| **[`engineering/sprint-05-performance-engineering.md`](engineering/sprint-05-performance-engineering.md)** | Performance & Capacity | Cache architecture, keyset pagination, pgvector indexing, and scalability boundaries. |
 | **[`audit/PRODUCTION_READINESS_CHECKLIST.md`](audit/PRODUCTION_READINESS_CHECKLIST.md)** | Deployment Readiness Plan | Canonical prioritized milestones, no-go gates, verification evidence, environment checks, and rollout sequence. |
 | **[`operations/deployment-runbook.md`](operations/deployment-runbook.md)** | Operational Deployment | Multi-environment deployment runbooks and orchestration blueprints (Render, Vercel, Docker Compose). |
 | **[`operations/operational-runbooks-and-troubleshooting.md`](operations/operational-runbooks-and-troubleshooting.md)** | Incident Runbooks (10 Scenarios) | Triage, diagnostics, recovery & verification across deployment, DB pool, OAuth/SAML, Gemini & backup restores. |

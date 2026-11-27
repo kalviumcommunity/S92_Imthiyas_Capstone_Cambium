@@ -21,7 +21,7 @@
 [![Live Scholarly APIs](https://img.shields.io/badge/Scholarly%20APIs-OpenAlex%20%7C%20arXiv%20%7C%20Crossref%20%7C%20DOAJ-FF8C00?style=for-the-badge&logo=book&logoColor=white)](https://openalex.org)
 [![Tests](https://img.shields.io/badge/Tests-Jest%20%2B%20Vitest%20Verified-4ADE80?style=for-the-badge&logo=jest&logoColor=black)](docs/testing/test-strategy.md)
 [![WCAG](https://img.shields.io/badge/WCAG-2.2%20Level%20AA%20Pass-4ADE80?style=for-the-badge&logo=w3c&logoColor=black)](https://www.w3.org/WAI/WCAG22/quickref/)
-[![License](https://img.shields.io/badge/License-MIT-805B43?style=for-the-badge)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-805B43?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 <br />
 
@@ -617,11 +617,11 @@ Cambium was conceived, architected, designed, and engineered from the ground up 
 
 [![Portfolio](https://img.shields.io/badge/Author-Shaik%20Mohamed%20Imthiyas%20T-3E6248?style=flat-square)](https://github.com/kalviumcommunity/S92_Imthiyas_Capstone_Cambium)
 [![Repository](https://img.shields.io/badge/Repository-S92__Imthiyas__Capstone__Cambium-202920?style=flat-square)](https://github.com/kalviumcommunity/S92_Imthiyas_Capstone_Cambium)
-[![License: MIT](https://img.shields.io/badge/License-MIT-805B43?style=flat-square)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-805B43?style=flat-square)](https://opensource.org/licenses/MIT)
 
 <br />
 
 *Crafted with precision for researchers, laboratories, and universities worldwide.*  
-*Licensed under the [MIT License](LICENSE).*
+*Licensed under the [MIT License](https://opensource.org/licenses/MIT).*
 
 </div>
