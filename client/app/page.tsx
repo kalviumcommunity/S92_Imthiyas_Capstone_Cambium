@@ -719,21 +719,23 @@ function KnowledgeGraphSection() {
 
   return (
     <section id="knowledge-network" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '96px 24px', position: 'relative', overflow: 'hidden' }}>
-      {/* Reversible Forest Canopy Backdrop (remove these two layers to revert to plain dark backdrop) */}
+      {/* Reversible Koi Pond Canvas Backdrop (remove these two layers to revert to plain dark backdrop) */}
       <div
         className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-opacity duration-700"
         style={{
-          backgroundImage: "url('/backgrounds/cambium-connections-canopy.jpg')",
+          backgroundImage: "url('/backgrounds/cambium-connections-koi-pond.jpg')",
+          transform: 'scale(1.06)',
+          transformOrigin: 'top left',
           opacity: 1,
         }}
       />
-      {/* Crisp Deep Chiaroscuro Edge Vignette for Header Contrast */}
+      {/* Crisp Teal-Forest Chiaroscuro Edge Vignette for Header Contrast */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background: `
-            linear-gradient(to bottom, rgba(5,9,6,0.68) 0%, rgba(5,9,6,0.28) 32%, rgba(5,9,6,0.22) 72%, rgba(5,9,6,0.62) 100%),
-            radial-gradient(ellipse at 50% 52%, rgba(5,9,6,0.14) 0%, rgba(5,9,6,0.36) 62%, rgba(4,7,5,0.72) 100%)
+            linear-gradient(to bottom, rgba(8,20,16,0.72) 0%, rgba(8,20,16,0.26) 34%, rgba(8,20,16,0.24) 72%, rgba(6,16,12,0.68) 100%),
+            radial-gradient(ellipse at 50% 52%, rgba(6,16,12,0.12) 0%, rgba(6,16,12,0.34) 64%, rgba(4,12,9,0.72) 100%)
           `,
         }}
       />
