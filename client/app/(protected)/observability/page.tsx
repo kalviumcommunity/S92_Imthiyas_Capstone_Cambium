@@ -65,7 +65,7 @@ export default function ObservabilityPage() {
   ];
 
   return (
-    <div className="flex-1 min-w-0 min-h-screen bg-[#FAF7F0] dark:bg-[#0E140F] text-[#202920] dark:text-[#EDEAE2] p-6 sm:p-8 font-sans">
+    <div className="flex-1 min-w-0 h-full overflow-y-auto bg-[#FAF7F0] dark:bg-[#0E140F] text-[#202920] dark:text-[#EDEAE2] p-6 sm:p-8 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E4DCCB] dark:border-[#28382C] pb-5">
           <div className="space-y-1">
