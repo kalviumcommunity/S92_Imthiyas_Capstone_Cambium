@@ -44,6 +44,9 @@ import { ExpenseRequest } from '../modules/institution/entities/expense-request.
 import { ProjectMilestone } from '../modules/institution/entities/project-milestone.entity';
 import { ProjectRisk } from '../modules/institution/entities/project-risk.entity';
 import { ComplianceProtocol } from '../modules/institution/entities/compliance-protocol.entity';
+import { AnalyticsEvent } from '../modules/analytics/entities/analytics-event.entity';
+import { AiTelemetryEvent } from '../modules/analytics/entities/ai-telemetry-event.entity';
+import { ClientErrorEvent } from '../modules/analytics/entities/client-error-event.entity';
 
 export const getDatabaseConfig = (): TypeOrmModuleOptions => {
   const isProd = process.env.NODE_ENV === 'production';
@@ -120,6 +123,9 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
     ProjectMilestone,
     ProjectRisk,
     ComplianceProtocol,
+    AnalyticsEvent,
+    AiTelemetryEvent,
+    ClientErrorEvent,
   ];
 
   // Connection pool & query timeout sizing (safe for managed free-tier PG / PgBouncer)

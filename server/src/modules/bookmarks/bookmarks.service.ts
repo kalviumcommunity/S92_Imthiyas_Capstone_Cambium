@@ -2,17 +2,21 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Optional,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Bookmark } from './entities/bookmark.entity';
 import { CreateBookmarkDto } from './dto/bookmark.dto';
+import { ProductAnalyticsService } from '../analytics/product-analytics.service';
 
 @Injectable()
 export class BookmarksService {
   constructor(
     @InjectRepository(Bookmark)
     private readonly bookmarkRepo: Repository<Bookmark>,
+    @Optional()
+    private readonly productAnalytics?: ProductAnalyticsService,
   ) {}
 
   /**
@@ -67,6 +71,13 @@ export class BookmarksService {
 
     const saved = await this.bookmarkRepo.save(bookmark);
 
+    void this.productAnalytics?.recordBackendEvent({
+      eventName: 'opportunity.saved',
+      actorId: dto.user,
+      idempotencyKey: `opp_saved:${dto.user}:${dto.opportunity}`,
+      properties: { opportunityId: dto.opportunity },
+    });
+
     return {
       success: true,
       message: 'Opportunity bookmarked successfully',
@@ -85,6 +96,12 @@ export class BookmarksService {
     }
 
     await this.bookmarkRepo.remove(bookmark);
+
+    void this.productAnalytics?.recordBackendEvent({
+      eventName: 'opportunity.removed',
+      actorId: bookmark.userId,
+      properties: { opportunityId: bookmark.opportunityId },
+    });
 
     return {
       success: true,
@@ -106,6 +123,12 @@ export class BookmarksService {
     }
 
     await this.bookmarkRepo.remove(bookmark);
+
+    void this.productAnalytics?.recordBackendEvent({
+      eventName: 'opportunity.removed',
+      actorId: userId,
+      properties: { opportunityId },
+    });
 
     return {
       success: true,

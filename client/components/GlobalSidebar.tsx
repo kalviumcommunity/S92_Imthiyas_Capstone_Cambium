@@ -31,6 +31,7 @@ import {
   UploadCloud,
   MessageSquare,
   LogOut,
+  Activity,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/store/useAuthStore";
 import { useSubscriptionStore } from "@/lib/store/useSubscriptionStore";
@@ -68,6 +69,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "FAIR Data Bridge", href: "/data-management", icon: Database, i18nKey: "nav.data_management" },
   { label: "Lab Workspace", href: "/lab", icon: Building2, i18nKey: "nav.lab" },
   { label: "Security & Audit", href: "/audit", icon: KeyRound, i18nKey: "nav.audit" },
+  { label: "Observability", href: "/observability", icon: Activity, badge: "OPS" },
   { label: "Publications", href: "/publications", icon: BookOpen, hasChevron: true, i18nKey: "nav.publications" },
   { label: "Portfolio", href: "/portfolio", icon: Briefcase },
   { label: "Notifications", href: "/notifications", icon: Bell },

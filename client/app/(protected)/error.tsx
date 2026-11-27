@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { AlertCircle, RefreshCw, Home, Layers } from "lucide-react";
+import { reportClientError } from "@/lib/api";
 
 export default function ProtectedRouteError({
   error,
@@ -13,6 +14,12 @@ export default function ProtectedRouteError({
 }) {
   useEffect(() => {
     console.error("[Cambium Protected Route Exception]", error);
+    void reportClientError({
+      route: typeof window !== "undefined" ? window.location.pathname : "/protected",
+      errorName: error?.name || "ProtectedRouteError",
+      errorDigest: error?.digest,
+      message: error?.message,
+    });
   }, [error]);
 
   return (
