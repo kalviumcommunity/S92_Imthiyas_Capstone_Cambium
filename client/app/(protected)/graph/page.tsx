@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import {
   Share2,
@@ -27,9 +28,23 @@ import {
   RefreshCw,
   Loader2,
 } from "lucide-react";
-import RelationalKnowledgeNetwork from "@/components/intelligence/RelationalKnowledgeNetwork";
-import { ResearchLandscapeExplorer } from "@/components/graph/ResearchLandscapeExplorer";
 import { fetchScholarlyWorks, ScholarlyWork } from "@/lib/scholarly-api";
+
+const RelationalKnowledgeNetwork = dynamic(
+  () => import("@/components/intelligence/RelationalKnowledgeNetwork"),
+  {
+    ssr: false,
+    loading: () => <div className="min-h-[500px] w-full rounded-2xl bg-[#E4DCCB]/30 animate-pulse" />,
+  },
+);
+
+const ResearchLandscapeExplorer = dynamic(
+  () => import("@/components/graph/ResearchLandscapeExplorer").then((m) => m.ResearchLandscapeExplorer),
+  {
+    ssr: false,
+    loading: () => <div className="min-h-[500px] w-full rounded-2xl bg-[#E4DCCB]/30 animate-pulse" />,
+  },
+);
 
 interface GraphNode {
   id: string;

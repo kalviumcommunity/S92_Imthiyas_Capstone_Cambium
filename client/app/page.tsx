@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useRef, useSyncExternalStore } from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import CambiumLogo from '@/components/CambiumLogo'
 import { ArrowUpRight, User, AlertCircle, Sparkles, Check, Flame, Bookmark, FileText, Compass, Search, ExternalLink, ShieldCheck, Bell, Calendar as CalendarIcon, Plus, LayoutGrid, Shield, Database, Building2, Key, BookOpen, MessageSquare, HelpCircle, Settings, Share2, Heart } from 'lucide-react'
 import { CambiumIntroPreloader } from '@/components/landing/CambiumIntroPreloader'
-import { PlatformCollageSection } from '@/components/landing/PlatformCollageSection'
 import {
   CountUpMetric,
   GuidedDeskPointer,
@@ -17,9 +17,24 @@ import {
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useTheme } from '@/lib/theme-provider'
 import { getNaturalScholarContributionLevel, getScholarContributionDetails, SCHOLAR_ACTIVITY_BADGES } from '@/lib/scholarHeatmap'
-import { HexContributionGraph } from '@/components/portfolio/HexContributionGraph'
 import { fetchScholarlyWorks, fetchScholarlyResearchers, fetchTrendingTopics, type ScholarlyWork } from '@/lib/scholarly-api'
 import { useAuthStore } from '@/lib/store/useAuthStore'
+
+const PlatformCollageSection = dynamic(
+  () => import('@/components/landing/PlatformCollageSection').then((m) => m.PlatformCollageSection),
+  {
+    ssr: true,
+    loading: () => <div className="min-h-[680px] w-full bg-[#131C15]/40 animate-pulse" />,
+  },
+)
+
+const HexContributionGraph = dynamic(
+  () => import('@/components/portfolio/HexContributionGraph').then((m) => m.HexContributionGraph),
+  {
+    ssr: false,
+    loading: () => <div className="min-h-[260px] w-full rounded-xl bg-[#E4DCCB]/30 animate-pulse" />,
+  },
+)
 
 // ─── Design System Tokens (Cambium Master Living Materials System) ────────────
 // ─── Design System Tokens (Cambium Master Living Materials System — 10/10 Production) ───

@@ -15,7 +15,8 @@ const nextConfig: NextConfig = {
   trailingSlash: false,
   outputFileTracingRoot: tracingRoot,
   images: {
-    unoptimized: true,
+    unoptimized: process.env.VERCEL !== "1",
+    formats: ["image/avif", "image/webp"],
   },
   async redirects() {
     return [
@@ -87,6 +88,16 @@ const nextConfig: NextConfig = {
           {
             key: "Cache-Control",
             value: "public, max-age=0, must-revalidate",
+          },
+        ],
+      },
+      {
+        // Immutable CDN/browser caching for heavy canvas background assets
+        source: "/backgrounds/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },

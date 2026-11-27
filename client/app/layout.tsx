@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import OfflineSyncBanner from "@/components/OfflineSyncBanner";
 import { CookieConsent } from "@/components/CookieConsent";
+import { WebVitalsReporter } from "@/components/WebVitalsReporter";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -216,6 +217,7 @@ export default function RootLayout({
                 {children}
                 <OfflineSyncBanner />
                 <CookieConsent />
+                <WebVitalsReporter />
               </GoogleOAuthProvider>
             </ThemeProvider>
           </LanguageProvider>
