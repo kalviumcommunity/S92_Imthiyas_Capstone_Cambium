@@ -718,12 +718,28 @@ function KnowledgeGraphSection() {
   const [graphCategory, setGraphCategory] = useState('all')
 
   return (
-    <section id="knowledge-network" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '96px 24px', position: 'relative' }}>
-      {/* Subtle organic ambient glow */}
-      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_25%,rgba(46,204,113,0.06)_0%,transparent_70%)]" />
+    <section id="knowledge-network" style={{ background: C.darkBg, borderTop: '1px solid rgba(46,125,79,0.35)', borderBottom: '1px solid rgba(46,125,79,0.35)', padding: '96px 24px', position: 'relative', overflow: 'hidden' }}>
+      {/* Reversible Forest Canopy Backdrop (remove these two layers to revert to plain dark backdrop) */}
+      <div
+        className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-opacity duration-700"
+        style={{
+          backgroundImage: "url('/backgrounds/cambium-connections-canopy.jpg')",
+          opacity: 1,
+        }}
+      />
+      {/* Crisp Deep Chiaroscuro Edge Vignette for Header Contrast */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `
+            linear-gradient(to bottom, rgba(5,9,6,0.68) 0%, rgba(5,9,6,0.28) 32%, rgba(5,9,6,0.22) 72%, rgba(5,9,6,0.62) 100%),
+            radial-gradient(ellipse at 50% 52%, rgba(5,9,6,0.14) 0%, rgba(5,9,6,0.36) 62%, rgba(4,7,5,0.72) 100%)
+          `,
+        }}
+      />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]">
           <div>
             <div className="inline-flex items-center gap-2 font-mono text-xs text-[#4ADE80] font-bold tracking-wider uppercase mb-3">
               <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
