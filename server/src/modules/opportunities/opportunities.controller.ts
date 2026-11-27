@@ -12,6 +12,8 @@ import {
   UseGuards,
   UseInterceptors,
   Inject,
+  Optional,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
 import { OpportunitiesService } from './opportunities.service';
@@ -28,6 +30,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { EdgeCache } from '../../common/decorators/edge-cache.decorator';
 import { EdgeCacheInterceptor } from '../../common/interceptors/edge-cache.interceptor';
 import { CloudflarePurgeService } from '../../common/services/cloudflare-purge.service';
+import { ProductAnalyticsService } from '../analytics/product-analytics.service';
 
 @ApiTags('Research Opportunities')
 @Controller(['api/research-opportunities', 'api/v1/research-opportunities', 'api/opportunities', 'api/v1/opportunities'])
@@ -39,6 +42,8 @@ export class OpportunitiesController {
     private readonly hybridSearchService: HybridSearchService,
     @Inject(CloudflarePurgeService)
     private readonly cloudflarePurge: CloudflarePurgeService,
+    @Optional()
+    private readonly productAnalytics?: ProductAnalyticsService,
   ) {}
 
   @Get('hybrid')
@@ -51,13 +56,22 @@ export class OpportunitiesController {
     @Query('limit') limit?: number,
     @Query('type') type?: OpportunityType,
     @Query('funder') funder?: string,
+    @Req() req?: any,
   ) {
-    return this.hybridSearchService.search({
+    const res = await this.hybridSearchService.search({
       query: q,
       limit: limit ? Number(limit) : 20,
       type,
       funder,
     });
+    if (q && q.trim().length > 0) {
+      void this.productAnalytics?.recordBackendEvent({
+        eventName: 'opportunity.search.completed',
+        actorId: req?.user?.id || null,
+        properties: { mode: 'hybrid', resultCount: res.count, hasFilter: Boolean(type || funder) },
+      });
+    }
+    return res;
   }
 
   @Get()

@@ -13,6 +13,7 @@ import {
   BadRequestException,
   UseGuards,
   ParseUUIDPipe,
+  Optional,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -31,6 +32,7 @@ import { PdfOcrService } from './ocr/pdf-ocr.service';
 import { JwtAuthGuard, AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../users/entities/user.entity';
+import { ProductAnalyticsService } from '../analytics/product-analytics.service';
 
 @ApiTags('Research Artifacts & File Uploads')
 @ApiBearerAuth()
@@ -40,6 +42,8 @@ export class UploadController {
   constructor(
     private readonly uploadService: UploadService,
     private readonly ocrService: PdfOcrService,
+    @Optional()
+    private readonly productAnalytics?: ProductAnalyticsService,
   ) {}
 
   private isAdmin(user: AuthenticatedUser): boolean {
@@ -76,14 +80,34 @@ export class UploadController {
       throw new BadRequestException('Form field "file" is required');
     }
 
-    const saved = await this.uploadService.saveArtifact(file, user.id);
-    return {
-      success: true,
-      data: {
-        ...saved,
-        filePath: undefined as any, // Sanitize response
-      },
-    };
+    try {
+      const saved = await this.uploadService.saveArtifact(file, user.id);
+      void this.productAnalytics?.recordBackendEvent({
+        eventName: 'document.upload.completed',
+        actorId: user.id,
+        actorEmail: user.email,
+        organizationId: user.organizationId || null,
+        idempotencyKey: `doc_upload:${saved.id}`,
+        properties: { mimeType: saved.mimeType, sizeBytes: saved.sizeBytes },
+      });
+      return {
+        success: true,
+        data: {
+          ...saved,
+          filePath: undefined as any, // Sanitize response
+        },
+      };
+    } catch (err: any) {
+      void this.productAnalytics?.recordBackendEvent({
+        eventName: 'document.upload.failed',
+        actorId: user.id,
+        actorEmail: user.email,
+        organizationId: user.organizationId || null,
+        outcome: 'FAILURE',
+        properties: { reason: err?.name || 'UploadRejected' },
+      });
+      throw err;
+    }
   }
 
   @Post('batch')
@@ -171,6 +195,14 @@ export class UploadController {
     }
 
     const extraction = await this.ocrService.extractPdfTablesAndText(buffer);
+    void this.productAnalytics?.recordBackendEvent({
+      eventName: 'document.ocr.completed',
+      actorId: user.id,
+      actorEmail: user.email,
+      organizationId: user.organizationId || null,
+      idempotencyKey: `doc_ocr:${id}`,
+      properties: { mimeType: meta.mimeType },
+    });
     return {
       success: true,
       artifactId: id,

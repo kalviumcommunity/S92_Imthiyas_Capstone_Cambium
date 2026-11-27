@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { createHash } from 'crypto';
+import { AiObservabilityService } from '../analytics/ai-observability.service';
 
 export interface EmbeddingResult {
   embedding: number[];
@@ -14,6 +15,11 @@ export class GeminiEmbeddingService {
   private readonly defaultModel = 'gemini-embedding-001';
   private readonly targetDimension = 768;
 
+  constructor(
+    @Optional()
+    private readonly aiObservability?: AiObservabilityService,
+  ) {}
+
   private getApiKey(): string | undefined {
     return process.env.GEMINI_API_KEY;
   }
@@ -24,6 +30,7 @@ export class GeminiEmbeddingService {
    * to a deterministic, L2-normalized 768-dim pseudo-embedding generated from SHA-256.
    */
   async generateEmbedding(text: string): Promise<EmbeddingResult> {
+    const startMs = Date.now();
     const apiKey = this.getApiKey();
     const cleanText = text.trim();
 
@@ -55,6 +62,16 @@ export class GeminiEmbeddingService {
           const data = await response.json();
           const values: number[] = data?.embedding?.values || [];
           if (values.length === this.targetDimension) {
+            void this.aiObservability?.recordAiInteraction({
+              provider: 'gemini',
+              model: this.defaultModel,
+              requestType: 'embedding',
+              inputChars: cleanText.length,
+              outputChars: 0,
+              latencyMs: Date.now() - startMs,
+              outcome: 'SUCCESS',
+              isLiveProviderCall: true,
+            });
             return {
               embedding: values,
               dimension: this.targetDimension,
@@ -72,6 +89,17 @@ export class GeminiEmbeddingService {
     }
 
     // Deterministic mathematical fallback for offline/development mode
+    void this.aiObservability?.recordAiInteraction({
+      provider: 'local-fallback',
+      model: `${this.defaultModel}-deterministic-fallback`,
+      requestType: 'embedding',
+      inputChars: cleanText.length,
+      outputChars: 0,
+      latencyMs: Date.now() - startMs,
+      outcome: 'FALLBACK',
+      failureCategory: apiKey ? 'upstream_unavailable' : 'offline_mode',
+      isLiveProviderCall: false,
+    });
     return {
       embedding: this.generateDeterministicVector(cleanText, this.targetDimension),
       dimension: this.targetDimension,
