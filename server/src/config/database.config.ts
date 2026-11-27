@@ -44,6 +44,9 @@ import { ExpenseRequest } from '../modules/institution/entities/expense-request.
 import { ProjectMilestone } from '../modules/institution/entities/project-milestone.entity';
 import { ProjectRisk } from '../modules/institution/entities/project-risk.entity';
 import { ComplianceProtocol } from '../modules/institution/entities/compliance-protocol.entity';
+import { UserPrivacyPreference } from '../modules/privacy/entities/user-privacy-preference.entity';
+import { ConsentRecord } from '../modules/privacy/entities/consent-record.entity';
+import { PrivacyRequest } from '../modules/privacy/entities/privacy-request.entity';
 
 export const getDatabaseConfig = (): TypeOrmModuleOptions => {
   const isProd = process.env.NODE_ENV === 'production';
@@ -120,6 +123,9 @@ export const getDatabaseConfig = (): TypeOrmModuleOptions => {
     ProjectMilestone,
     ProjectRisk,
     ComplianceProtocol,
+    UserPrivacyPreference,
+    ConsentRecord,
+    PrivacyRequest,
   ];
 
   // Connection pool & query timeout sizing (safe for managed free-tier PG / PgBouncer)
