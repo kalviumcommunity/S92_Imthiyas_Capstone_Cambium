@@ -11,6 +11,14 @@ import * as path from 'path';
 import * as crypto from 'crypto';
 import { randomUUID } from 'crypto';
 
+export type DataClassification = 'PUBLIC' | 'INTERNAL' | 'CONFIDENTIAL' | 'RESTRICTED';
+
+export interface ArtifactGovernanceOptions {
+  dataClassification?: DataClassification;
+  workspaceId?: string;
+  aiProcessingAllowed?: boolean;
+}
+
 export interface UploadedArtifactMetadata {
   id: string;
   originalName: string;
@@ -21,6 +29,9 @@ export interface UploadedArtifactMetadata {
   sha256Hash: string;
   uploadedAt: string;
   uploaderId?: string;
+  dataClassification?: DataClassification;
+  workspaceId?: string;
+  aiProcessingAllowed?: boolean;
   filePath: string;
 }
 
@@ -186,6 +197,7 @@ export class UploadService {
   async saveArtifact(
     file: { originalname: string; buffer: Buffer; size: number; mimetype: string },
     uploaderId?: string,
+    governance: ArtifactGovernanceOptions = {},
   ): Promise<UploadedArtifactMetadata> {
     this.validateFile(file);
 
@@ -197,6 +209,9 @@ export class UploadService {
     const storedFileName = `${id}-${sanitizedName}`;
     const destinationPath = path.join(this.uploadDir, storedFileName);
     const sha256Hash = this.calculateHash(file.buffer);
+    const classification: DataClassification = governance.dataClassification || 'CONFIDENTIAL';
+    const aiAllowed =
+      classification === 'RESTRICTED' ? false : Boolean(governance.aiProcessingAllowed);
 
     // Write file atomically to disk
     await fs.promises.writeFile(destinationPath, file.buffer);
@@ -211,6 +226,9 @@ export class UploadService {
       sha256Hash,
       uploadedAt: new Date().toISOString(),
       uploaderId: uploaderId || 'system-internal',
+      dataClassification: classification,
+      workspaceId: governance.workspaceId,
+      aiProcessingAllowed: aiAllowed,
       filePath: destinationPath,
     };
 
@@ -268,5 +286,24 @@ export class UploadService {
     this.logger.log(`Artifact removed [ID: ${id}]`);
 
     return { success: true, id };
+  }
+
+  /**
+   * Cascades erasure across all uploaded artifacts owned by a specific researcher
+   */
+  async deleteArtifactsByOwner(
+    ownerId: string,
+  ): Promise<{ deletedCount: number; deletedIds: string[] }> {
+    const owned = Array.from(this.metadataStore.values()).filter(
+      (item) => item.uploaderId === ownerId,
+    );
+    const deletedIds: string[] = [];
+
+    for (const artifact of owned) {
+      await this.deleteArtifact(artifact.id, ownerId, true);
+      deletedIds.push(artifact.id);
+    }
+
+    return { deletedCount: deletedIds.length, deletedIds };
   }
 }
