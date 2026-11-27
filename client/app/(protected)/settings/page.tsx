@@ -1711,11 +1711,12 @@ function DataPortabilitySection({ showToast }: { showToast: (m: string) => void 
     } else {
       exportScholarArchiveJson({
         name: scholarName,
-        email: user?.email || "scholar@cambium.mit.edu",
-        institution: user?.institution || "MIT CSAIL",
-        role: user?.role || "Principal Investigator",
+        email: user?.email || "",
+        institution: user?.institution || "",
+        role: user?.role || "Researcher",
+        orcid: user?.orcid,
       });
-      showToast("Exported complete Knowledge Graph & Scholar Corpus (.json).");
+      showToast("Exported local Knowledge Graph & Scholar Corpus (.json).");
     }
   };
 
