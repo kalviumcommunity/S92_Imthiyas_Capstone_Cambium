@@ -6,6 +6,7 @@ import { ClientErrorEvent } from './entities/client-error-event.entity';
 import { ProductAnalyticsService } from './product-analytics.service';
 import { AiObservabilityService } from './ai-observability.service';
 import { AlertEvaluatorService } from './alert-evaluator.service';
+import { AnalyticsController } from './analytics.controller';
 import { StructuredLoggerService } from '../../common/logging/structured-logger.service';
 
 @Global()
@@ -13,6 +14,7 @@ import { StructuredLoggerService } from '../../common/logging/structured-logger.
   imports: [
     TypeOrmModule.forFeature([AnalyticsEvent, AiTelemetryEvent, ClientErrorEvent]),
   ],
+  controllers: [AnalyticsController],
   providers: [
     ProductAnalyticsService,
     AiObservabilityService,

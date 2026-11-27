@@ -6,7 +6,12 @@ import {
   AnalyticsActorKind,
   AnalyticsOutcome,
 } from './entities/analytics-event.entity';
-import { CANONICAL_EVENT_NAME_REGEX, RecordClientEventDto } from './dto/analytics.dto';
+import { ClientErrorEvent } from './entities/client-error-event.entity';
+import {
+  CANONICAL_EVENT_NAME_REGEX,
+  RecordClientErrorDto,
+  RecordClientEventDto,
+} from './dto/analytics.dto';
 import { StructuredLoggerService } from '../../common/logging/structured-logger.service';
 
 export interface BackendEventInput {
@@ -53,6 +58,9 @@ export class ProductAnalyticsService {
     private readonly eventRepo?: Repository<AnalyticsEvent>,
     @Optional()
     private readonly structuredLogger?: StructuredLoggerService,
+    @Optional()
+    @InjectRepository(ClientErrorEvent)
+    private readonly clientErrorRepo?: Repository<ClientErrorEvent>,
   ) {}
 
   classifyActor(actorId?: string | null, actorEmail?: string | null): AnalyticsActorKind {
@@ -383,5 +391,102 @@ export class ProductAnalyticsService {
       take: 10000,
     });
     return this.computeProductMetricsFromEvents(events, new Date(), windowDays);
+  }
+
+  computeInstitutionalUsage(
+    events: AnalyticsEvent[],
+    organizationId: string,
+    now = new Date(),
+    windowDays = 30,
+  ) {
+    const MIN_COHORT_SIZE = 3;
+    const cutoff = new Date(now.getTime() - windowDays * 86_400_000);
+    const orgEvents = events.filter(
+      (e) =>
+        e.actorKind === 'HUMAN' &&
+        e.organizationId === organizationId &&
+        new Date(e.occurredAt) >= cutoff,
+    );
+
+    const activeActors = new Set(orgEvents.map((e) => e.actorId).filter(Boolean) as string[]);
+    const suppressed = activeActors.size < MIN_COHORT_SIZE;
+
+    const countBy = (name: string) =>
+      orgEvents.filter((e) => e.eventName === name && e.outcome === 'SUCCESS').length;
+
+    return {
+      organizationId,
+      windowDays,
+      minCohortThreshold: MIN_COHORT_SIZE,
+      activeResearchersCount: activeActors.size,
+      privacySuppressed: suppressed,
+      suppressionReason: suppressed
+        ? `Detailed institutional breakdowns require at least ${MIN_COHORT_SIZE} distinct active researchers to prevent individual attribution.`
+        : null,
+      summary: suppressed
+        ? null
+        : {
+            totalDomainEvents: orgEvents.length,
+            opportunitiesSearched: countBy('opportunity.search.completed'),
+            opportunitiesSaved: countBy('opportunity.saved'),
+            workspacesCreated: countBy('workspace.created'),
+            collaborationsAccepted: countBy('collaboration.invitation.accepted'),
+            documentsUploaded: countBy('document.upload.completed'),
+            aiWorkflowsCompleted: countBy('ai.assistant.responded'),
+          },
+    };
+  }
+
+  async getInstitutionalUsageSummary(organizationId: string, windowDays = 30) {
+    if (!this.eventRepo) {
+      return this.computeInstitutionalUsage([], organizationId, new Date(), windowDays);
+    }
+    const events = await this.eventRepo.find({
+      where: { organizationId },
+      order: { occurredAt: 'DESC' },
+      take: 5000,
+    });
+    return this.computeInstitutionalUsage(events, organizationId, new Date(), windowDays);
+  }
+
+  async recordClientError(dto: RecordClientErrorDto): Promise<ClientErrorEvent | null> {
+    const cleanRoute = this.structuredLogger
+      ? this.structuredLogger.scrubString(dto.route).slice(0, 120)
+      : dto.route.slice(0, 120);
+    const cleanMessage = this.structuredLogger
+      ? this.structuredLogger.scrubString(dto.message).slice(0, 240)
+      : dto.message.slice(0, 240);
+
+    this.structuredLogger?.emit({
+      severity: 'ERROR',
+      operation: 'client.route_error',
+      errorCategory: dto.errorName,
+      message: cleanMessage,
+      context: { route: cleanRoute, digest: dto.errorDigest || 'none' },
+    });
+
+    if (!this.clientErrorRepo) return null;
+    try {
+      const entity = this.clientErrorRepo.create({
+        route: cleanRoute,
+        errorName: dto.errorName.slice(0, 80),
+        errorDigest: dto.errorDigest ? dto.errorDigest.slice(0, 64) : null,
+        sanitizedMessage: cleanMessage,
+      });
+      return await this.clientErrorRepo.save(entity);
+    } catch {
+      return null;
+    }
+  }
+
+  async getRecentClientErrors(limit = 20) {
+    if (!this.clientErrorRepo) return { countLast24h: 0, recent: [] };
+    const recent = await this.clientErrorRepo.find({
+      order: { occurredAt: 'DESC' },
+      take: Math.min(50, Math.max(1, limit)),
+    });
+    const cutoff = Date.now() - 86_400_000;
+    const countLast24h = recent.filter((e) => new Date(e.occurredAt).getTime() >= cutoff).length;
+    return { countLast24h, recent };
   }
 }
