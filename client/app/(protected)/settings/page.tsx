@@ -44,7 +44,14 @@ import {
   exportScholarArchiveJson,
   exportScholarBibtex,
   exportScholarRis,
+  downloadFile,
 } from "@/lib/scholar-export";
+import {
+  getPrivacyPreferences,
+  updatePrivacyPreferences,
+  exportPersonalPrivacyArchive,
+  executeAccountErasure,
+} from "@/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type NavItem = {
@@ -605,38 +612,110 @@ function NotificationsSection({ showToast }: { showToast: (m: string) => void })
 function PrivacySection({ showToast }: { showToast: (m: string) => void }) {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const [s, setS] = useState({
     profilePublic: true,
     showInstitution: true,
     showPublications: false,
     allowSearch: true,
+    aiProcessingConsent: false,
+    optionalAnalyticsConsent: false,
   });
+  const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [erasing, setErasing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [deleteInput, setDeleteInput] = useState("");
+  const [retentionNotice, setRetentionNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getPrivacyPreferences()
+      .then((prefs) => {
+        if (!active || !prefs) return;
+        setS({
+          profilePublic: Boolean(prefs.profilePublic),
+          showInstitution: Boolean(prefs.showInstitution),
+          showPublications: Boolean(prefs.showPublications),
+          allowSearch: Boolean(prefs.allowSearch),
+          aiProcessingConsent: Boolean(prefs.aiProcessingConsent),
+          optionalAnalyticsConsent: Boolean(prefs.optionalAnalyticsConsent),
+        });
+      })
+      .catch(() => {
+        // Offline/dev fallback preserves safe opt-out defaults
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const set = (k: keyof typeof s) => (v: boolean) =>
     setS((p) => ({ ...p, [k]: v }));
 
-  const handleExportArchive = () => {
-    exportScholarArchiveJson({
-      name: user?.name || "Dr. Scholar",
-      email: user?.email || "scholar@cambium.mit.edu",
-      institution: user?.institution || "MIT CSAIL",
-      role: user?.role || "Principal Investigator",
-    });
-    showToast("Scholarly archive exported (GDPR Article 20 compliant).");
+  const handleSavePreferences = async () => {
+    setSaving(true);
+    try {
+      await updatePrivacyPreferences({
+        ...s,
+        noticeVersion: "v2026-11",
+        sourceInterface: "settings_privacy",
+      });
+      showToast("Privacy preferences and consent ledger updated.");
+    } catch (err: any) {
+      showToast(err?.message || "Unable to persist privacy preferences to backend.");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDecommissionAccount = () => {
+  const handleExportArchive = async () => {
+    setExporting(true);
+    try {
+      const serverExport = await exportPersonalPrivacyArchive();
+      const timestamp = new Date().toISOString().split("T")[0];
+      downloadFile(
+        JSON.stringify(serverExport, null, 2),
+        `cambium-personal-export-${timestamp}.json`,
+        "application/json",
+      );
+      showToast("Authorized personal archive exported (caller-scoped JSON).");
+    } catch {
+      exportScholarArchiveJson({
+        name: user?.name || user?.fullName || "Scholar",
+        email: user?.email || "",
+        institution: user?.institution || "",
+        role: user?.role || "Researcher",
+        orcid: user?.orcid,
+      });
+      showToast("Exported local browser archive only (backend unavailable).");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleDecommissionAccount = async () => {
     if (deleteInput.trim().toUpperCase() !== "DELETE") {
-      showToast("Type DELETE to confirm account decommission.");
+      showToast("Type DELETE to confirm account erasure.");
       return;
     }
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("cambium_token");
-      localStorage.removeItem("cambium_bookmarks");
-      localStorage.removeItem("cambium_workspace_artifacts");
+    setErasing(true);
+    try {
+      const result = await executeAccountErasure(
+        "DELETE",
+        "Self-service erasure request via Settings",
+      );
+      setRetentionNotice(result?.retentionExceptionReason || null);
+      logout();
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("cambium_bookmarks");
+        localStorage.removeItem("cambium_workspace_artifacts");
+      }
       router.replace("/sign-in?decommissioned=true");
+    } catch (err: any) {
+      showToast(err?.message || "Account erasure request could not be completed.");
+    } finally {
+      setErasing(false);
     }
   };
 
@@ -644,11 +723,11 @@ function PrivacySection({ showToast }: { showToast: (m: string) => void }) {
     <div className="animate-fade-in">
       <SectionTitle
         title="Privacy & Data Sovereignty"
-        subtitle="Decide what scholarly peers and institutional networks can see about your research."
+        subtitle="Manage profile visibility, explicit AI/analytics consent, personal data exports, and account erasure."
       />
       <ToggleRow
         label="Public researcher profile"
-        description="Anyone within the Cambium network can view your public scholar profile."
+        description="Allow authenticated peers within Cambium to view your public scholar profile."
         checked={s.profilePublic}
         onChange={set("profilePublic")}
       />
@@ -666,44 +745,61 @@ function PrivacySection({ showToast }: { showToast: (m: string) => void }) {
       />
       <ToggleRow
         label="Appear in researcher discovery"
-        description="Let other scholars discover and cite your profile via graph search."
+        description="Let other scholars discover your public profile via search."
         checked={s.allowSearch}
         onChange={set("allowSearch")}
       />
+      <ToggleRow
+        label="External AI research assistant processing (Opt-In)"
+        description="Allow bounded prompt/snippet dispatch to the configured Google Gemini API when assisting on non-restricted artifacts. Defaults to Off."
+        checked={s.aiProcessingConsent}
+        onChange={set("aiProcessingConsent")}
+      />
+      <ToggleRow
+        label="Optional product analytics (Opt-In)"
+        description="Permit optional workflow telemetry in addition to essential authentication and error logs. Defaults to Off."
+        checked={s.optionalAnalyticsConsent}
+        onChange={set("optionalAnalyticsConsent")}
+      />
       <div className="flex justify-end mb-7 mt-4">
         <Button
-          onClick={() => showToast("Privacy settings saved.")}
+          onClick={() => void handleSavePreferences()}
+          disabled={saving}
           className="bg-[#3E6248] hover:bg-[#293E30] text-white text-xs font-mono uppercase tracking-wider rounded-full px-5 h-9 border-none shadow-sm cursor-pointer"
         >
-          Save changes →
+          {saving ? "Saving..." : "Save changes →"}
         </Button>
       </div>
       <Divider />
       <div className="flex flex-col gap-4">
         <div className="p-4 rounded-xl border border-[#E4DCCB] bg-white shadow-sm">
           <div className="mb-1 text-sm font-semibold text-[#202920]">
-            Export Your Research Corpus (GDPR Article 20)
+            Export Your Personal Data & Owned Metadata
           </div>
           <div className="mb-3 text-xs leading-relaxed text-[#62685E]">
-            Download a verified JSON/BibTeX archive of your Cambium corpus including notes, saved papers, synthesis drafts, and activity history.
+            Downloads a caller-scoped JSON export containing your account profile, consent history, preferences, bookmarks, and owned workspace/artifact metadata (secrets and peer data excluded).
           </div>
           <Button
             variant="outline"
             size="sm"
-            onClick={handleExportArchive}
+            disabled={exporting}
+            onClick={() => void handleExportArchive()}
             className="border-[#E4DCCB] text-[#202920] hover:bg-[#FAF7F0] rounded-full text-xs font-mono uppercase tracking-wider h-8 cursor-pointer"
           >
             <Download size={13} className="mr-1.5 text-[#3E6248]" />
-            Download Complete Archive (.json)
+            {exporting ? "Generating..." : "Download Personal Archive (.json)"}
           </Button>
         </div>
         <div className="p-4 rounded-xl border border-red-200 bg-red-50/40">
           <div className="mb-1 text-sm font-semibold text-red-700">
-            Decommission Scholar Account (GDPR Article 17)
+            Request Account & Owned Artifact Erasure
           </div>
           <div className="mb-3 text-xs leading-relaxed text-[#62685E]">
-            Permanently removes your researcher identity and all associated private workspaces. This action cannot be reversed.
+            Deletes your account profile, active sessions, and uploaded artifacts. Immutable cryptographic security audit logs and time-bound database backups remain under documented retention windows.
           </div>
+          {retentionNotice && (
+            <p className="text-xs text-[#62685E] mb-2">{retentionNotice}</p>
+          )}
           {!isConfirmingDelete ? (
             <Button
               variant="outline"
@@ -717,7 +813,7 @@ function PrivacySection({ showToast }: { showToast: (m: string) => void }) {
           ) : (
             <div className="mt-3 p-3 rounded-lg bg-white border border-red-300 space-y-2">
               <p className="text-xs text-red-700 font-sans m-0">
-                Type <strong>DELETE</strong> below to permanently erase your account and encrypted artifacts:
+                Type <strong>DELETE</strong> below to confirm account and owned artifact erasure:
               </p>
               <div className="flex items-center gap-2">
                 <input
@@ -729,10 +825,11 @@ function PrivacySection({ showToast }: { showToast: (m: string) => void }) {
                 />
                 <Button
                   size="sm"
-                  onClick={handleDecommissionAccount}
+                  disabled={erasing}
+                  onClick={() => void handleDecommissionAccount()}
                   className="bg-red-600 hover:bg-red-700 text-white text-xs font-mono uppercase tracking-wider h-8 rounded cursor-pointer"
                 >
-                  Confirm Purge
+                  {erasing ? "Erasing..." : "Confirm Purge"}
                 </Button>
                 <Button
                   size="sm"
@@ -1614,11 +1711,12 @@ function DataPortabilitySection({ showToast }: { showToast: (m: string) => void 
     } else {
       exportScholarArchiveJson({
         name: scholarName,
-        email: user?.email || "scholar@cambium.mit.edu",
-        institution: user?.institution || "MIT CSAIL",
-        role: user?.role || "Principal Investigator",
+        email: user?.email || "",
+        institution: user?.institution || "",
+        role: user?.role || "Researcher",
+        orcid: user?.orcid,
       });
-      showToast("Exported complete Knowledge Graph & Scholar Corpus (.json).");
+      showToast("Exported local Knowledge Graph & Scholar Corpus (.json).");
     }
   };
 

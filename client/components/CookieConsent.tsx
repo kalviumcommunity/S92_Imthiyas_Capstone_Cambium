@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ShieldCheck, X } from "lucide-react";
+import { recordPrivacyConsent } from "@/lib/api";
+
+export const CONSENT_NOTICE_VERSION = "v2026-11";
 
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
@@ -11,7 +14,6 @@ export function CookieConsent() {
     try {
       const consent = localStorage.getItem("cambium-cookie-consent");
       if (!consent) {
-        // Small delay so it smoothly slides in after initial paint
         const timer = setTimeout(() => setIsVisible(true), 1200);
         return () => clearTimeout(timer);
       }
@@ -20,14 +22,25 @@ export function CookieConsent() {
     }
   }, []);
 
-  const handleConsent = (level: "all" | "essential") => {
+  const handleConsent = async (level: "all" | "essential") => {
+    const payload = {
+      level,
+      noticeVersion: CONSENT_NOTICE_VERSION,
+      optionalAnalytics: level === "all",
+      timestamp: new Date().toISOString(),
+    };
     try {
-      localStorage.setItem(
-        "cambium-cookie-consent",
-        JSON.stringify({ level, timestamp: new Date().toISOString() })
-      );
+      localStorage.setItem("cambium-cookie-consent", JSON.stringify(payload));
+      if (localStorage.getItem("cambium_token")) {
+        await recordPrivacyConsent({
+          purpose: "OPTIONAL_ANALYTICS",
+          action: level === "all" ? "GRANTED" : "WITHDRAWN",
+          noticeVersion: CONSENT_NOTICE_VERSION,
+          sourceInterface: "cookie_banner",
+        }).catch(() => {});
+      }
     } catch {
-      // Ignore storage errors
+      // Ignore storage/network errors on unauthenticated browsing
     }
     setIsVisible(false);
   };
@@ -47,23 +60,29 @@ export function CookieConsent() {
           </div>
           <div className="space-y-1.5 flex-1 min-w-0">
             <h3 className="font-serif text-[15px] font-semibold text-[#202920] dark:text-[#EDEAE2] m-0">
-              Privacy & Open Scholarship
+              Privacy & Cookie Notice ({CONSENT_NOTICE_VERSION})
             </h3>
             <p className="text-xs text-[#62685E] dark:text-[#9DA39A] leading-relaxed m-0 font-sans">
-              Cambium uses functional cookies and privacy-preserving telemetry to support authenticated workspace sessions and real-time citation synchronization. Zero commercial ad trackers.
+              Essential cookies are required for authentication security. Optional product analytics remain off unless you opt in below. You can change or withdraw this anytime in Settings.
             </p>
-            <div className="pt-0.5">
+            <div className="pt-0.5 flex items-center gap-3">
               <Link
                 href="/privacy"
                 className="text-[11px] font-mono text-[#3E6248] dark:text-[#4ADE80] hover:underline"
               >
-                Read Privacy & Data Governance Policy →
+                Privacy Policy →
+              </Link>
+              <Link
+                href="/settings"
+                className="text-[11px] font-mono text-[#62685E] dark:text-[#9DA39A] hover:underline"
+              >
+                Privacy Controls
               </Link>
             </div>
           </div>
           <button
             type="button"
-            onClick={() => handleConsent("essential")}
+            onClick={() => void handleConsent("essential")}
             className="text-[#85877B] hover:text-[#202920] dark:hover:text-[#EDEAE2] p-1 rounded-lg transition-colors cursor-pointer border-0 bg-transparent shrink-0"
             aria-label="Close cookie banner"
           >
@@ -74,21 +93,20 @@ export function CookieConsent() {
         <div className="mt-4 pt-3 border-t border-[#E4DCCB]/60 dark:border-[#28382C]/60 flex items-center justify-end gap-2.5">
           <button
             type="button"
-            onClick={() => handleConsent("essential")}
+            onClick={() => void handleConsent("essential")}
             className="px-3 py-1.5 rounded-lg text-xs font-sans font-medium text-[#62685E] dark:text-[#9DA39A] hover:text-[#202920] dark:hover:text-white hover:bg-[#F2EBDD] dark:hover:bg-[#202E24] transition-colors cursor-pointer border-0 bg-transparent"
           >
             Essential Only
           </button>
           <button
             type="button"
-            onClick={() => handleConsent("all")}
+            onClick={() => void handleConsent("all")}
             className="px-3.5 py-1.5 rounded-lg text-xs font-sans font-semibold bg-[#3E6248] hover:bg-[#2E4B36] dark:bg-[#4ADE80] dark:hover:bg-[#38C86E] text-white dark:text-[#121B13] transition-colors cursor-pointer border-0 shadow-xs"
           >
-            Accept All
+            Accept Optional Analytics
           </button>
         </div>
       </div>
     </aside>
   );
 }
-
