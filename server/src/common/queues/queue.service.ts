@@ -365,16 +365,23 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
     }
 
     if (this.jobRepo) {
-      const [queued, running, completed, dead] = await Promise.all([
+      const [queued, running, completed, dead, oldestQueued] = await Promise.all([
         this.jobRepo.count({ where: { status: 'QUEUED' } }),
         this.jobRepo.count({ where: { status: 'RUNNING' } }),
         this.jobRepo.count({ where: { status: 'COMPLETED' } }),
         this.jobRepo.count({ where: { status: 'DEAD' } }),
+        this.jobRepo.findOne({
+          where: { status: 'QUEUED' },
+          order: { createdAt: 'ASC' },
+        }),
       ]);
+      const oldestPendingAgeSeconds = oldestQueued
+        ? Math.max(0, Math.floor((Date.now() - new Date(oldestQueued.createdAt).getTime()) / 1000))
+        : 0;
       return {
         mode: 'postgres-durable-queue',
         isRedisAvailable: false,
-        summary: { queued, running, completed, dead },
+        summary: { queued, running, completed, dead, oldestPendingAgeSeconds },
         queues: this.inMemoryMetrics,
       };
     }
@@ -382,6 +389,7 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
     return {
       mode: 'in-memory-dispatcher',
       isRedisAvailable: false,
+      summary: { queued: 0, running: 0, completed: 0, dead: 0, oldestPendingAgeSeconds: 0 },
       queues: this.inMemoryMetrics,
     };
   }

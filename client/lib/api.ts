@@ -1055,3 +1055,105 @@ export async function updateProposal(id: string, payload: Record<string, any>): 
   }
   return json.data;
 }
+
+// =========================================================================
+// Product Analytics & Application Observability (Program 09)
+// =========================================================================
+
+export function hasOptionalAnalyticsConsent(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const raw = localStorage.getItem("cambium-cookie-consent");
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    return parsed?.level === "all" || parsed?.optionalAnalytics === true;
+  } catch {
+    return false;
+  }
+}
+
+export function sanitizeClientErrorPayload(input: {
+  route: string;
+  errorName?: string;
+  errorDigest?: string;
+  message?: string;
+}) {
+  const cleanMessage = (input.message || "Unexpected rendering exception")
+    .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, "Bearer [REDACTED]")
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[REDACTED_EMAIL]")
+    .slice(0, 240);
+  return {
+    route: (input.route || "/unknown").split("?")[0].slice(0, 120),
+    errorName: (input.errorName || "RenderError").slice(0, 80),
+    ...(input.errorDigest ? { errorDigest: input.errorDigest.slice(0, 64) } : {}),
+    message: cleanMessage,
+  };
+}
+
+export async function reportClientError(input: {
+  route: string;
+  errorName?: string;
+  errorDigest?: string;
+  message?: string;
+}): Promise<void> {
+  try {
+    const payload = sanitizeClientErrorPayload(input);
+    const endpoint = `${resolveApiV1Base()}/observability/client-errors`;
+    await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    });
+  } catch {
+    // Non-blocking error telemetry must never cascade
+  }
+}
+
+export async function trackOptionalClientEvent(input: {
+  eventName: string;
+  workspaceId?: string;
+  properties?: Record<string, unknown>;
+  idempotencyKey?: string;
+}): Promise<{ dispatched: boolean }> {
+  if (!hasOptionalAnalyticsConsent()) {
+    return { dispatched: false };
+  }
+  try {
+    const res = await apiFetch(`${resolveApiV1Base()}/analytics/client-events`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-cambium-analytics-consent": "granted",
+      },
+      body: JSON.stringify(input),
+    });
+    return { dispatched: res.ok };
+  } catch {
+    return { dispatched: false };
+  }
+}
+
+export async function getProductAnalyticsDashboard(windowDays = 30) {
+  const res = await apiFetch(`${resolveApiV1Base()}/analytics/dashboards/product?windowDays=${windowDays}`);
+  if (!res.ok) throw new Error(`Product analytics HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function getEngineeringHealthDashboard() {
+  const res = await apiFetch(`${resolveApiV1Base()}/analytics/dashboards/engineering`);
+  if (!res.ok) throw new Error(`Engineering telemetry HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function getAiObservabilityDashboard(windowHours = 24) {
+  const res = await apiFetch(`${resolveApiV1Base()}/analytics/dashboards/ai?windowHours=${windowHours}`);
+  if (!res.ok) throw new Error(`AI observability HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function getInstitutionUsageDashboard(windowDays = 30) {
+  const res = await apiFetch(`${resolveApiV1Base()}/analytics/dashboards/institution?windowDays=${windowDays}`);
+  if (!res.ok) throw new Error(`Institution telemetry HTTP ${res.status}`);
+  return res.json();
+}
