@@ -97,7 +97,9 @@ CREATE TABLE IF NOT EXISTS research_opportunities (
 );
 
 CREATE INDEX IF NOT EXISTS idx_opps_type ON research_opportunities(type);
+CREATE INDEX IF NOT EXISTS idx_opps_type_created_at ON research_opportunities(type, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_opps_deadline ON research_opportunities(deadline);
+CREATE INDEX IF NOT EXISTS idx_opps_upcoming_deadline ON research_opportunities(deadline ASC) WHERE deadline IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_opps_created_by ON research_opportunities(created_by_id);
 
 -- HNSW Vector Cosine Distance Index for pgvector Semantic Search

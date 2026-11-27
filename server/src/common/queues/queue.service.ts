@@ -197,6 +197,26 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Recover background jobs stuck in RUNNING past staleAfterMs (e.g., after worker restart).
+   */
+  async recoverStaleRunningJobs(staleAfterMs = 300_000): Promise<number> {
+    if (!this.dataSource || !this.dataSource.isInitialized) return 0;
+    try {
+      const cutoff = new Date(Date.now() - staleAfterMs);
+      const result = await this.dataSource
+        .createQueryBuilder()
+        .update(BackgroundJob)
+        .set({ status: 'QUEUED', lastError: 'Recovered after stale lock timeout' })
+        .where('status = :status', { status: 'RUNNING' })
+        .andWhere('started_at < :cutoff', { cutoff })
+        .execute();
+      return result.affected || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
    * Claim and run due PostgreSQL background jobs with SKIP LOCKED and exponential backoff
    */
   async processPendingDatabaseJobs(limit = this.maxConcurrentPgJobs): Promise<number> {
@@ -204,6 +224,7 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
     this.isPollingPgJobs = true;
 
     try {
+      await this.recoverStaleRunningJobs();
       let claimed: BackgroundJob[] = [];
       const now = new Date();
 

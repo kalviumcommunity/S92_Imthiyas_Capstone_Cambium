@@ -22,6 +22,7 @@ export class MultiTierCacheService {
   // L1 In-Memory High-Speed Cache: key -> L1CacheEntry
   private readonly l1Cache = new Map<string, L1CacheEntry<any>>();
   private readonly maxL1Entries = 1000;
+  private readonly maxPayloadBytes = 256 * 1024; // 256KB ceiling prevents cache thrashing from oversized blobs
 
   // Performance telemetry counters
   private hitsCount = 0;
@@ -151,7 +152,37 @@ export class MultiTierCacheService {
     return count;
   }
 
+  /**
+   * Tenant/user-safe cache wrapper enforcing explicit namespace isolation (`public:*`, `user:{id}:*`, `org:{id}:*`).
+   */
+  async wrapScoped<T>(
+    scope: { kind: 'public' } | { kind: 'user'; userId: string } | { kind: 'org'; orgId: string },
+    keySuffix: string,
+    factory: () => Promise<T>,
+    ttlSeconds = 120,
+    tags: string[] = [],
+  ): Promise<T> {
+    const prefix =
+      scope.kind === 'public'
+        ? 'public:'
+        : scope.kind === 'user'
+          ? `user:${scope.userId}:`
+          : `org:${scope.orgId}:`;
+    const scopedKey = `${prefix}${keySuffix}`;
+    return this.wrap(scopedKey, factory, ttlSeconds, tags);
+  }
+
   private setL1<T>(key: string, value: T, ttlSeconds: number, tags: string[]) {
+    try {
+      const approxBytes = Buffer.byteLength(JSON.stringify(value), 'utf8');
+      if (approxBytes > this.maxPayloadBytes) {
+        this.logger.warn(`Skipping L1 cache for oversized key [${key}] (${approxBytes} bytes)`);
+        return;
+      }
+    } catch {
+      return;
+    }
+
     // Enforce size bound: evict oldest entry if limit reached
     if (this.l1Cache.size >= this.maxL1Entries) {
       const oldestKey = this.l1Cache.keys().next().value;

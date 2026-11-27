@@ -149,10 +149,19 @@ export class HybridSearchService {
     try {
       const qb = this.oppRepo
         .createQueryBuilder('opp')
-        .leftJoinAndSelect('opp.tags', 'tag')
-        .leftJoinAndSelect('opp.createdBy', 'creator')
-        .where('opp.embedding IS NOT NULL')
-        .addSelect(`opp.embedding <=> '${vectorLiteral}'::vector`, 'rawDistance')
+        .leftJoinAndSelect('opp.tags', 'tag');
+      if (typeof (qb as any).leftJoin === 'function') {
+        qb.leftJoin('opp.createdBy', 'creator').addSelect([
+          'creator.id',
+          'creator.username',
+          'creator.fullName',
+        ]);
+      } else {
+        qb.leftJoinAndSelect('opp.createdBy', 'creator');
+      }
+      qb.where('opp.embedding IS NOT NULL')
+        .addSelect('opp.embedding <=> :vectorLiteral::vector', 'rawDistance')
+        .setParameter('vectorLiteral', vectorLiteral)
         .orderBy('rawDistance', 'ASC')
         .take(limit);
 
@@ -185,8 +194,9 @@ export class HybridSearchService {
       const qb = this.oppRepo
         .createQueryBuilder('opp')
         .leftJoinAndSelect('opp.tags', 'tag')
-        .leftJoinAndSelect('opp.createdBy', 'creator')
-        .where('opp.embedding IS NOT NULL');
+        .where('opp.embedding IS NOT NULL')
+        .orderBy('opp.createdAt', 'DESC')
+        .take(250); // Bound event-loop fallback memory & CPU work under offline conditions
 
       if (type) qb.andWhere('opp.type = :type', { type });
       if (funder) qb.andWhere('opp.organization ILIKE :funder', { funder: `%${funder}%` });
@@ -241,14 +251,43 @@ export class HybridSearchService {
     type?: OpportunityType,
     funder?: string,
   ): Promise<ResearchOpportunity[]> {
+    const clean = query.trim();
+    if (!clean) return [];
+
+    // Prefer PostgreSQL GIN FTS index (idx_opps_fts) on terms >= 3 chars for fast indexed matching
+    if (clean.length >= 3) {
+      try {
+        const ftsQb = this.oppRepo
+          .createQueryBuilder('opp')
+          .leftJoinAndSelect('opp.tags', 'tag')
+          .where(
+            `(to_tsvector('english', opp.title || ' ' || COALESCE(opp.description, '')) @@ websearch_to_tsquery('english', :query) OR opp.organization ILIKE :likeQ OR tag.name ILIKE :likeQ)`,
+            { query: clean, likeQ: `%${clean}%` },
+          )
+          .orderBy(
+            `ts_rank(to_tsvector('english', opp.title || ' ' || COALESCE(opp.description, '')), websearch_to_tsquery('english', :rankQuery))`,
+            'DESC',
+          )
+          .setParameter('rankQuery', clean)
+          .take(limit);
+
+        if (type) ftsQb.andWhere('opp.type = :type', { type });
+        if (funder) ftsQb.andWhere('opp.organization ILIKE :funder', { funder: `%${funder}%` });
+
+        const ftsResults = await ftsQb.getMany();
+        if (ftsResults.length > 0) return ftsResults;
+      } catch (err: any) {
+        this.logger.debug(`GIN FTS fallback to ILIKE: ${err.message}`);
+      }
+    }
+
     try {
       const qb = this.oppRepo
         .createQueryBuilder('opp')
         .leftJoinAndSelect('opp.tags', 'tag')
-        .leftJoinAndSelect('opp.createdBy', 'creator')
         .where(
           `(opp.title ILIKE :q OR opp.description ILIKE :q OR opp.organization ILIKE :q OR tag.name ILIKE :q)`,
-          { q: `%${query}%` },
+          { q: `%${clean}%` },
         )
         .orderBy('opp.createdAt', 'DESC')
         .take(limit);
