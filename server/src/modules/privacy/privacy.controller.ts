@@ -4,16 +4,19 @@ import {
   Put,
   Post,
   Body,
+  Req,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { JwtAuthGuard, AuthenticatedUser } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PrivacyService } from './privacy.service';
 import {
   CreatePrivacyRequestDto,
+  ExecuteErasureDto,
   RecordConsentDto,
   UpdatePrivacyPreferencesDto,
 } from './dto/privacy.dto';
@@ -78,5 +81,29 @@ export class PrivacyController {
   ) {
     const data = await this.privacyService.submitRequest(user.id, dto);
     return { success: true, data };
+  }
+
+  @Get('export')
+  @ApiOperation({ summary: 'Export strictly caller-scoped personal data and owned artifact metadata' })
+  @ApiResponse({ status: 200, description: 'Authorized personal privacy export payload' })
+  async exportMyData(@CurrentUser() user: AuthenticatedUser) {
+    const data = await this.privacyService.exportPersonalData(user.id);
+    return { success: true, data };
+  }
+
+  @Post('erasure')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Execute cascading account and artifact erasure with retention disclosure' })
+  @ApiResponse({ status: 200, description: 'Account erasure status and documented retention exceptions' })
+  async eraseMyAccount(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: ExecuteErasureDto,
+  ) {
+    return this.privacyService.executeAccountErasure(
+      user.id,
+      dto.confirmationText,
+      dto.reason,
+      user.jti,
+    );
   }
 }

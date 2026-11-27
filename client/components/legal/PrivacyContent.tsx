@@ -26,12 +26,11 @@ export function PrivacyContent() {
           1. Who is responsible for your data?
         </h2>
         <div className="bg-white rounded-xl p-5 border border-[#E4DCCB] shadow-2xs space-y-2 font-sans text-sm text-[#202920] mb-4">
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Data Controller:</strong> <span className="text-[#202920] font-medium">Cambium Research Intelligence Technologies Inc. (Cambium Scholarly Trust)</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Global Headquarters:</strong> <span className="text-[#202920]">77 Massachusetts Avenue, Cambridge, MA 02139, USA</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">EU/UK Representative (GDPR Art. 27):</strong> <span className="text-[#202920]">Cambium Trust Europe Ltd., 2 Hume Street, Dublin 2, Ireland</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Data Protection Officer (DPO):</strong> <span className="text-[#3E6248] font-mono">dpo@cambium.mit.edu</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Privacy & Security Operations:</strong> <span className="text-[#3E6248] font-mono">privacy@cambium.mit.edu</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Institutional Support:</strong> <span className="text-[#3E6248] font-mono">support@cambium.mit.edu</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Data Fiduciary / Operator:</strong> <span className="text-[#202920] font-medium">[OPERATOR_LEGAL_ENTITY_NAME — Pending Deployment Configuration]</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Registered Jurisdiction & Address:</strong> <span className="text-[#202920]">[REGISTERED_OFFICE_ADDRESS_INDIA — Pending Deployment Configuration]</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Grievance / Data Protection Officer:</strong> <span className="text-[#3E6248] font-mono">[GRIEVANCE_OFFICER_EMAIL — Pending Configuration]</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Privacy Requests Desk:</strong> <span className="text-[#3E6248] font-mono">[PRIVACY_CONTACT_EMAIL — Pending Configuration]</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Institutional Support:</strong> <span className="text-[#3E6248] font-mono">[INSTITUTIONAL_SUPPORT_EMAIL — Pending Configuration]</span></div>
         </div>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90 mb-3">
           In this Policy, “Cambium,” “we,” “us,” and “our” refer to the operator identified above.
@@ -417,7 +416,7 @@ export function PrivacyContent() {
           Some rights are subject to legal exceptions and verification requirements.
         </p>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90 mb-4">
-          To submit a request, contact <strong className="font-mono text-[#3E6248]">privacy@cambium.mit.edu</strong>. We may ask for information reasonably necessary to verify your identity and protect your account. We will respond within the period required by applicable law.
+          To submit a request, use your account Settings privacy controls or contact <strong className="font-mono text-[#3E6248]">[PRIVACY_CONTACT_EMAIL]</strong>. We may ask for information reasonably necessary to verify your identity and protect your account. We will respond within the period required by applicable law.
         </p>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90">
           If your request concerns data controlled by a third-party publisher, repository, funder, or external website, we may direct you to that source or assist where reasonably possible. Cambium cannot guarantee that it can modify records controlled independently by another provider.
@@ -433,7 +432,7 @@ export function PrivacyContent() {
           Where account-management features are available, you may be able to update your profile and preferences directly.
         </p>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90 mb-4">
-          For access, correction, deletion, or other privacy requests, contact <span className="font-mono text-[#3E6248]">privacy@cambium.mit.edu</span> if the required control is not available within the Service.
+          For access, correction, deletion, or other privacy requests, contact <span className="font-mono text-[#3E6248]">[PRIVACY_CONTACT_EMAIL]</span> if the required control is not available within the Service.
         </p>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90 mb-4">
           Deleting an account may result in the removal of associated profile information, saved items, preferences, and other account-linked content, subject to applicable law, legitimate retention requirements, technical constraints, and any applicable institutional agreement.
@@ -480,7 +479,7 @@ export function PrivacyContent() {
           If applicable law requires parental or guardian consent, age verification, or additional protections, those requirements must be satisfied before the relevant processing occurs.
         </p>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90">
-          If you believe a child has provided personal data in circumstances that violate applicable law or this Policy, contact <span className="font-mono text-[#3E6248]">privacy@cambium.mit.edu</span>.
+          If you believe a child has provided personal data in circumstances that violate applicable law or this Policy, contact <span className="font-mono text-[#3E6248]">[PRIVACY_CONTACT_EMAIL]</span>.
         </p>
       </section>
 
@@ -544,25 +543,25 @@ export function PrivacyContent() {
           For questions, requests, or complaints about privacy, contact:
         </p>
         <div className="bg-white rounded-xl p-5 border border-[#E4DCCB] shadow-2xs space-y-2 font-sans text-sm text-[#202920] mb-4">
-          <div className="font-semibold text-base font-serif text-[#202920]">Cambium Global Privacy & Compliance Bureau</div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Privacy Email:</strong> <span className="text-[#3E6248] font-mono">privacy@cambium.mit.edu</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">DPO Direct:</strong> <span className="text-[#3E6248] font-mono">dpo@cambium.mit.edu</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Security Escalations:</strong> <span className="text-[#3E6248] font-mono">security@cambium.mit.edu</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Operator:</strong> <span className="text-[#202920]">Cambium Research Intelligence Technologies Inc.</span></div>
-          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Mailing Address:</strong> <span className="text-[#202920]">77 Massachusetts Avenue, Cambridge, MA 02139, USA</span></div>
+          <div className="font-semibold text-base font-serif text-[#202920]">Privacy & Grievance Contact (Placeholder Configuration)</div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Privacy Email:</strong> <span className="text-[#3E6248] font-mono">[PRIVACY_CONTACT_EMAIL]</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Grievance / DPO Officer:</strong> <span className="text-[#3E6248] font-mono">[GRIEVANCE_OFFICER_EMAIL]</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Security Escalations:</strong> <span className="text-[#3E6248] font-mono">[SECURITY_CONTACT_EMAIL]</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Operator:</strong> <span className="text-[#202920]">[OPERATOR_LEGAL_ENTITY_NAME]</span></div>
+          <div><strong className="text-[#62685E] font-mono text-xs uppercase tracking-wider">Mailing Address:</strong> <span className="text-[#202920]">[REGISTERED_OFFICE_ADDRESS]</span></div>
         </div>
         <p className="font-serif text-[16px] leading-[1.8] text-[#202920]/90">
-          If applicable law provides a right to complain to a data protection authority, you may exercise that right through the appropriate authority in your jurisdiction (e.g., the Irish Data Protection Commission for EU/EEA users, the UK Information Commissioner's Office, or state attorneys general).
+          If applicable law provides a right to lodge a complaint with a supervisory body (such as the Data Protection Board of India under the Digital Personal Data Protection Act, 2023 once commenced for that right, or an applicable EEA/UK authority where jurisdiction applies), you may exercise that right directly.
         </p>
       </section>
 
-      {/* Enterprise Trust & Compliance Attestation */}
+      {/* India DPDP Phased Readiness & Honest Governance Notice */}
       <div className="pt-8 border-t border-[#E4DCCB]">
         <div className="rounded-xl p-4 bg-[#FAF7F0] border border-[#3E6248]/30 text-xs font-sans text-[#202920] leading-relaxed flex items-start gap-3">
           <ShieldCheck size={20} className="text-[#3E6248] shrink-0 mt-0.5" />
           <div>
-            <strong className="text-[#202920] font-semibold block mb-0.5">Enterprise Compliance & Regulatory Alignment</strong>
-            This Privacy Policy is certified under GDPR (EU 2016/679), UK-GDPR, California Consumer Privacy Act (CCPA/CPRA), and the Family Educational Rights and Privacy Act (FERPA 34 CFR Part 99). Zero researcher manuscripts or proprietary grant drafts are ever ingested or utilized for public LLM training.
+            <strong className="text-[#202920] font-semibold block mb-0.5">Regulatory Readiness Disclosure (Notice {`v2026-11`})</strong>
+            Technical controls on Cambium are engineered to prepare for India&apos;s Digital Personal Data Protection Act, 2023 and DPDP Rules, 2025 phased commencement schedule (one-year rules commenced November 2026; principal obligations scheduled May 2027 subject to Gazette notifications). Implementation of engineering controls does not itself constitute legal certification; institutional legal review governs deployment-specific compliance.
           </div>
         </div>
       </div>

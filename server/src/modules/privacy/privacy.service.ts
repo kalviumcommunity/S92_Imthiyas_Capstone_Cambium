@@ -7,9 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import {
-  UserPrivacyPreference,
-} from './entities/user-privacy-preference.entity';
+import { UserPrivacyPreference } from './entities/user-privacy-preference.entity';
 import {
   ConsentRecord,
   ConsentPurpose,
@@ -25,6 +23,13 @@ import {
   RecordConsentDto,
   UpdatePrivacyPreferencesDto,
 } from './dto/privacy.dto';
+import { User } from '../users/entities/user.entity';
+import { Bookmark } from '../bookmarks/entities/bookmark.entity';
+import { Notification } from '../notifications/entities/notification.entity';
+import { GroupProject } from '../projects/entities/group-project.entity';
+import { UploadService } from '../upload/upload.service';
+import { RedisService } from '../../common/redis/redis.service';
+import { MultiTierCacheService } from '../performance/multi-tier-cache.service';
 
 export const CURRENT_PRIVACY_NOTICE_VERSION = 'v2026-11';
 
@@ -50,6 +55,24 @@ export class PrivacyService {
     private readonly consentRepo: Repository<ConsentRecord>,
     @InjectRepository(PrivacyRequest)
     private readonly requestRepo: Repository<PrivacyRequest>,
+    @Optional()
+    @InjectRepository(User)
+    private readonly userRepo?: Repository<User>,
+    @Optional()
+    @InjectRepository(Bookmark)
+    private readonly bookmarkRepo?: Repository<Bookmark>,
+    @Optional()
+    @InjectRepository(Notification)
+    private readonly notificationRepo?: Repository<Notification>,
+    @Optional()
+    @InjectRepository(GroupProject)
+    private readonly projectRepo?: Repository<GroupProject>,
+    @Optional()
+    private readonly uploadService?: UploadService,
+    @Optional()
+    private readonly redisService?: RedisService,
+    @Optional()
+    private readonly cacheService?: MultiTierCacheService,
   ) {}
 
   private defaultPreferences(userId: string): EffectivePrivacyPreferences {
@@ -239,22 +262,143 @@ export class PrivacyService {
     });
   }
 
-  async updateRequestStatus(
-    requestId: string,
+  /**
+   * Produces a strictly caller-scoped personal export excluding secrets and third-party data.
+   */
+  async exportPersonalData(userId: string) {
+    const user = this.userRepo ? await this.userRepo.findOne({ where: { id: userId } }) : null;
+    if (this.userRepo && !user) {
+      throw new NotFoundException('Authenticated user record not found for export');
+    }
+
+    const safeAccount = user
+      ? {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          fullName: user.fullName,
+          role: user.role,
+          institution: user.institution || null,
+          organizationId: user.organizationId || null,
+          departmentId: user.departmentId || null,
+          createdAt: user.createdAt,
+        }
+      : { id: userId };
+
+    const preferences = await this.getPreferences(userId);
+    const consentHistory = await this.listConsents(userId);
+
+    const bookmarks = this.bookmarkRepo
+      ? await this.bookmarkRepo.find({ where: { userId } })
+      : [];
+
+    const ownedWorkspaces = this.projectRepo
+      ? (await this.projectRepo.find({ where: { ownerId: userId } })).map((p) => ({
+          id: p.id,
+          title: p.title,
+          visibility: p.visibility,
+          status: p.status,
+          linkedDois: p.linkedDois,
+          createdAt: p.createdAt,
+        }))
+      : [];
+
+    const ownedArtifacts = this.uploadService
+      ? this.uploadService.listArtifacts(userId, false)
+      : [];
+
+    const exportRequest = await this.requestRepo.save(
+      this.requestRepo.create({
+        userId,
+        requestType: PrivacyRequestType.EXPORT,
+        status: PrivacyRequestStatus.COMPLETED,
+        resolutionSummary: 'Caller-scoped personal archive generated (secrets & peer data excluded).',
+      }),
+    );
+
+    return {
+      schemaVersion: 'cambium-privacy-export-v1',
+      exportRequestId: exportRequest.id,
+      exportedAt: new Date().toISOString(),
+      noticeVersion: CURRENT_PRIVACY_NOTICE_VERSION,
+      scopeDisclosure:
+        'Includes strictly caller-owned account, preference, consent, bookmark, workspace metadata, and uploaded artifact metadata. Secrets and third-party collaborator data are excluded.',
+      account: safeAccount,
+      privacyPreferences: preferences,
+      consentHistory,
+      bookmarks,
+      ownedWorkspaces,
+      ownedArtifacts,
+    };
+  }
+
+  /**
+   * Executes caller account and owned artifact erasure with honest audit/backup retention disclosure.
+   */
+  async executeAccountErasure(
     userId: string,
-    status: PrivacyRequestStatus,
-    resolutionSummary?: string,
-    retentionExceptionReason?: string,
-  ): Promise<PrivacyRequest> {
-    const req = await this.requestRepo.findOne({ where: { id: requestId, userId } });
-    if (!req) {
-      throw new NotFoundException('Privacy request not found for this account');
+    confirmationText: string,
+    reason?: string,
+    tokenJti?: string,
+  ) {
+    if ((confirmationText || '').trim().toUpperCase() !== 'DELETE') {
+      throw new BadRequestException('Explicit confirmation text "DELETE" is required for erasure');
     }
-    req.status = status;
-    if (resolutionSummary !== undefined) req.resolutionSummary = resolutionSummary;
-    if (retentionExceptionReason !== undefined) {
-      req.retentionExceptionReason = retentionExceptionReason;
+
+    const request = await this.requestRepo.save(
+      this.requestRepo.create({
+        userId,
+        requestType: PrivacyRequestType.ERASURE,
+        status: PrivacyRequestStatus.DELETION_IN_PROGRESS,
+        details: reason ? reason.trim().slice(0, 500) : 'User-initiated account erasure',
+      }),
+    );
+
+    const artifactCleanup = this.uploadService
+      ? await this.uploadService.deleteArtifactsByOwner(userId)
+      : { deletedCount: 0, deletedIds: [] };
+
+    if (this.bookmarkRepo) {
+      await this.bookmarkRepo.delete({ userId });
     }
-    return this.requestRepo.save(req);
+    if (this.notificationRepo) {
+      await this.notificationRepo.delete({ userId });
+    }
+    await this.prefRepo.delete({ userId });
+
+    let accountDeleted = false;
+    if (this.userRepo) {
+      const targetUser = await this.userRepo.findOne({ where: { id: userId } });
+      if (targetUser) {
+        await this.userRepo.remove(targetUser);
+        accountDeleted = true;
+      }
+    }
+
+    if (tokenJti && this.redisService) {
+      await this.redisService.blacklistJti(tokenJti, 86400).catch(() => {});
+    }
+    if (this.cacheService) {
+      await this.cacheService.invalidateByPrefix(`user:${userId}`).catch(() => {});
+    }
+
+    const retentionException =
+      'Immutable cryptographic security audit_logs entries and scheduled PostgreSQL disaster-recovery backups are retained only under applicable security/backup retention windows and cannot be rewritten synchronously.';
+
+    request.status = PrivacyRequestStatus.PARTIALLY_COMPLETED;
+    request.resolutionSummary = `Account removed (${accountDeleted}), uploaded artifacts deleted (${artifactCleanup.deletedCount}), active preferences/bookmarks cleared.`;
+    request.retentionExceptionReason = retentionException;
+    const finalized = await this.requestRepo.save(request);
+
+    return {
+      success: true,
+      requestId: finalized.id,
+      status: finalized.status,
+      accountDeleted,
+      deletedArtifactsCount: artifactCleanup.deletedCount,
+      deletedArtifactIds: artifactCleanup.deletedIds,
+      retentionExceptionReason: finalized.retentionExceptionReason,
+      completedAt: new Date().toISOString(),
+    };
   }
 }

@@ -1055,3 +1055,79 @@ export async function updateProposal(id: string, payload: Record<string, any>): 
   }
   return json.data;
 }
+
+// Privacy & Data Governance API
+export interface PrivacyPreferencesPayload {
+  profilePublic: boolean;
+  showInstitution: boolean;
+  showPublications: boolean;
+  allowSearch: boolean;
+  aiProcessingConsent: boolean;
+  optionalAnalyticsConsent: boolean;
+  updatedAt?: string;
+}
+
+export async function getPrivacyPreferences(): Promise<PrivacyPreferencesPayload> {
+  const res = await apiFetch(`${resolveApiV1Base()}/privacy/preferences`, { method: "GET" });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to load privacy preferences");
+  return json.data;
+}
+
+export async function updatePrivacyPreferences(
+  patch: Partial<PrivacyPreferencesPayload> & { noticeVersion?: string; sourceInterface?: string },
+): Promise<PrivacyPreferencesPayload> {
+  const res = await apiFetch(`${resolveApiV1Base()}/privacy/preferences`, {
+    method: "PUT",
+    body: JSON.stringify(patch),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to update privacy preferences");
+  return json.data;
+}
+
+export async function recordPrivacyConsent(payload: {
+  purpose: "ESSENTIAL_AUTH" | "OPTIONAL_ANALYTICS" | "AI_RESEARCH_ASSISTANT" | "EMAIL_NOTIFICATIONS";
+  action: "GRANTED" | "WITHDRAWN";
+  noticeVersion: string;
+  noticeLanguage?: string;
+  sourceInterface?: string;
+}): Promise<any> {
+  const res = await apiFetch(`${resolveApiV1Base()}/privacy/consents`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to record consent decision");
+  return json.data;
+}
+
+export async function exportPersonalPrivacyArchive(): Promise<any> {
+  const res = await apiFetch(`${resolveApiV1Base()}/privacy/export`, { method: "GET" });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to generate personal data export");
+  return json.data;
+}
+
+export async function executeAccountErasure(confirmationText: string, reason?: string): Promise<any> {
+  const res = await apiFetch(`${resolveApiV1Base()}/privacy/erasure`, {
+    method: "POST",
+    body: JSON.stringify({ confirmationText, reason }),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to execute account erasure");
+  return json;
+}
+
+export async function submitPrivacyRequest(payload: {
+  requestType: "ACCESS" | "CORRECTION" | "ERASURE" | "EXPORT" | "WITHDRAWAL" | "GRIEVANCE";
+  details?: string;
+}): Promise<any> {
+  const res = await apiFetch(`${resolveApiV1Base()}/privacy/requests`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.message || "Failed to submit privacy request");
+  return json.data;
+}
