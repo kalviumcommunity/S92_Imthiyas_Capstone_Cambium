@@ -11,17 +11,17 @@
 - **Status**: `ENFORCED DATABASE BASELINE`
 - **Current Version**: `2.0.0`
 - **Primary Engine**: PostgreSQL 16.x + `pgvector` Extension
-- **ORM Framework**: TypeORM 0.3.x with TypeScript Strict Mode
+- **ORM Framework**: TypeORM `1.x` (`typeorm ^1.1.1`) with TypeScript Strict Mode
 - **Repository**: `S92_Imthiyas_Capstone_Cambium`
 
 ---
 
 ## 1. Database Architecture Overview
 
-Cambium utilizes **PostgreSQL 16** as its unified relational and vector data store. Rather than maintaining separate databases for tabular business data and high-dimensional vector embeddings, Cambium integrates the open-source **`pgvector`** extension directly within PostgreSQL.
+Cambium utilizes **PostgreSQL 16** as its unified relational and vector data store (`31` registered TypeORM entities on `main`). Rather than maintaining separate databases for tabular business data and high-dimensional vector embeddings, Cambium integrates the open-source **`pgvector`** extension directly within PostgreSQL.
 
 ### Key Architectural Advantages
-1. **Single Source of Truth (SSOT)**: Relational metadata (grants, scholar profiles, peer reviews) and semantic embeddings (`vector(1536)`) reside in the same transaction boundaries.
+1. **Single Source of Truth (SSOT)**: Relational metadata (grants, scholar profiles, institutional records) and semantic embeddings (`vector(768)` via `gemini-embedding-001`) reside in the same transaction boundaries.
 2. **ACID Guarantees**: Opportunity updates, bookmark actions, and audit logs are committed atomically without distributed two-phase commit overhead.
 3. **Transactional Outbox Pattern**: Asynchronous crawler tasks and notification dispatches write to an `outbox_events` table within the same transaction as the business entity, guaranteeing zero event loss even during worker restarts.
 
@@ -149,12 +149,20 @@ erDiagram
 - **`notifications`**: User event stream (collaboration requests, deadline alerts, citation updates).
 - **`audit_logs`**: Append-only cryptographic ledger with `previousHash` and `hash` fields.
 - **`outbox_events`**: Guaranteed transactional message publishing queue.
+- **`background_jobs`**: Durable `SKIP LOCKED` job queue for ingestion, embeddings, and email dispatch.
+- **`workspace_comments` & `chat_messages`**: Collaborative project discussion threads and real-time room messages.
+
+### 3.4 Institutional Research OS Domain (`server/src/modules/institution/entities/`)
+- `organizations`, `departments` (organizational multi-tenant hierarchy)
+- `proposals`, `proposal_revisions`, `proposal_reviews` (grant proposal lifecycle)
+- `funding_accounts`, `budget_line_items`, `expense_requests` (fiscal controls)
+- `project_milestones`, `project_risks`, `compliance_protocols` (IRB/IACUC & execution tracking)
 
 ---
 
 ## 4. Vector Retrieval & pgvector Configuration
 
-Research opportunity descriptions and research interest profiles are vectorized using standard text embedding dimensions (`1536`).
+Research opportunity descriptions are vectorized into `768`-dimensional embeddings (`gemini-embedding-001`) indexed by `idx_opps_embedding_hnsw` alongside full-text GIN index `idx_opps_fts`.
 
 ### 4.1 Extension Setup
 ```sql
@@ -190,14 +198,17 @@ LIMIT 10;
 
 ## 5. Seeding & Database Operations
 
+Verified scripts defined in [`server/package.json`](file:///d:/01_PROJECTS/ACTIVE/S92_Imthiyas_Capstone_Cambium/server/package.json):
+
 ```bash
-# 1. Run database migrations
-npm --prefix server run typeorm:migration:run
+# 1. Initialize database schema & pgvector extension (run-schema / schema.sql)
+npm run init:db
+npm run schema:apply
 
-# 2. Seed development dataset with sample grants and scholars
-npm --prefix server run seed
+# 2. Seed sample grants, organizations, and scholar profiles
+npm run seed
 
-# 3. Create fresh schema migration from entities
-npm --prefix server run typeorm:migration:generate -- -n InitialSchema
+# 3. Verify live database connectivity & run health diagnostics
+npm run verify:db
 ```
 

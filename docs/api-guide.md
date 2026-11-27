@@ -12,9 +12,9 @@
 - **Current Version**: `2.0.0`
 - **Protocol**: HTTP/1.1 and HTTP/2 over TLS 1.3
 - **Base URLs**:
-  - **Local Development**: `http://localhost:5000/api`
-  - **Frontend Proxy**: `http://localhost:3000/api`
-  - **Production Edge**: `https://api.cambium.research/api`
+  - **Local Development**: `http://localhost:5000/api/v1`
+  - **Production Edge (Render)**: `https://cambium-api-ufj3.onrender.com/api/v1`
+  - **Interactive OpenAPI / Swagger**: `http://localhost:5000/api/docs` (local) / `https://cambium-api-ufj3.onrender.com/api/docs` (live)
 - **Bruno Collection**: Available at [`bruno/`](file:///d:/01_PROJECTS/ACTIVE/S92_Imthiyas_Capstone_Cambium/bruno/)
 
 ---
@@ -61,8 +61,9 @@ When an error occurs, the server responds with an RFC 7807 compliant JSON struct
 | `401 Unauthorized` | Missing/invalid token | Unauthenticated request to protected endpoint |
 | `403 Forbidden` | Insufficient role | Student fellow trying to execute PI compliance action |
 | `404 Not Found` | Entity missing | Requested opportunity, post, or user does not exist |
-| `429 Too Many Requests` | Rate limit exceeded | Exceeded 60 req/min threshold on public endpoint |
+| `429 Too Many Requests` | Rate limit exceeded | Exceeded default `120 req/min` threshold enforced by `NetworkRateLimiterGuard` |
 | `500 Server Error` | Unhandled exception | Sanitized internal error; logged to audit trail |
+| `504 Gateway Timeout` | Execution budget exceeded | Route exceeded `API_REQUEST_TIMEOUT_MS` (default `20000ms` via `RequestTimeoutInterceptor`) |
 
 ---
 
@@ -175,8 +176,20 @@ When an error occurs, the server responds with an RFC 7807 compliant JSON struct
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/audit/logs` | Compliance / Admin | Query tamper-evident audit logs with actor and date filters. |
 | `POST` | `/api/audit/verify` | Compliance / Admin | Cryptographically verify SHA-256 blockchain-style hash chain integrity. |
-| `GET` | `/api/health` | Public | Liveness and readiness health probe returning database and Redis statuses. |
-| `GET` | `/api/telemetry/metrics` | Internal / Admin | Prometheus metrics export (HTTP latencies, crawler queue size). |
+| `GET` | `/api/health` | Public | Liveness and readiness health probe returning database status (`AppController`). |
+| `GET` | `/api/telemetry/metrics` | Compliance / Leadership / Admin | HTTP latency percentiles (`p50`, `p90`, `p95`, `p99`) and request/error counts. |
+
+---
+
+### 2.10 Institutional, AI Assistant, Upload & Performance Endpoints
+
+| Method | Endpoint | Access | Controller & Notes |
+| :--- | :--- | :--- | :--- |
+| `GET/POST` | `/api/v1/institution`, `/api/v1/proposals`, `/api/v1/funding` | RBAC Scoped (`PI`, `DEPARTMENT_HEAD`, `FINANCE_OFFICER`, `RD_DIRECTOR`, `ADMIN`) | Institutional Research OS (`InstitutionController`, `ProposalsController`, `FundingController`, `ExecutionComplianceController`) |
+| `POST/GET/DELETE` | `/api/v1/upload`, `/api/v1/upload/:id/ocr` | Authenticated Owner / Admin | `UploadController` — 50MB cap, magic-byte checks, SHA-256 verification, sandboxed PDF OCR |
+| `POST` | `/api/v1/assistant/chat`, `/api/v1/ai/*` | Authenticated / Rate-limited | `AssistantController` & `AiAutocompleteController` (with offline deterministic fallback) |
+| `GET/POST` | `/api/v1/performance/metrics`, `/api/v1/performance/cache/purge` | `SUPER_ADMIN` | `PerformanceController` — L1/L2 cache hit ratio, RSS/heap, event-loop lag |
+| `GET` | `/api/v1/network/*`, `/api/v1/outbox/*` | Public / Admin | `NetworkDiagnosticsController`, `OutboxController` |
 
 ---
 
