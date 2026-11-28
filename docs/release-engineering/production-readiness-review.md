@@ -11,10 +11,10 @@
 | **Client Bundle Secret Hygiene** | `PASS` | `scripts/verify-client-bundle-secrets.mjs` executed locally & wired into CI `security-audit`. |
 | **Versioned SQL Migration Runner** | `PASS` (Local/CI) | `server/scripts/run-migrations.js` tracks `schema_migrations` with SHA-256 checksums + rollback; `render.yaml` `\|\| true` removed; PG16+pgvector job added to `.github/workflows/ci.yml`. |
 | **CI Supply-Chain Hardening** | `PASS` | All GitHub Actions in `ci.yml` and `release-verify.yml` pinned to verified commit SHAs; `permissions: contents: read`. |
-| **Post-Deploy Strict Smoke Suite** | `PASS` | `scripts/smoke-test.mjs --strict` exits non-zero on failure; `.github/workflows/release-verify.yml` added. |
+| **Post-Deploy Strict Smoke Suite** | `PASS` | `scripts/smoke-test.mjs --strict --require-api` verified `8/8` live Vercel probes + live Render `https://cambium-api-ufj3.onrender.com/health` (`database: connected`); `.github/workflows/release-verify.yml` added. |
 | **Release Documentation & Changelog** | `PASS` | `CHANGELOG.md` + 9 documents in `docs/release-engineering/`. |
 | **GitHub Branch Protection (`main`)** | `PARTIAL` | Documented in `branching-strategy.md`; requires maintainer toggle in GitHub repository settings. |
-| **Render Live Backend & Supabase PITR** | `PARTIAL` | `render.yaml` hardened in repo; live Render/Supabase dashboard verification depends on hosted account credentials. |
+| **Render Live API & Supabase Connection** | `PASS` (Health) / `PARTIAL` (PITR) | `https://cambium-api-ufj3.onrender.com/health` verified `HTTP 200 OK` (`database: "connected"`, live `gitSha`); Supabase PITR backup schedule requires dashboard confirmation. |
 
 ## 2. Production Risk Register
 

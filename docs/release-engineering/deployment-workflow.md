@@ -22,5 +22,5 @@
 
 After production deploys complete, trigger `.github/workflows/release-verify.yml` (automatically triggered on `v*` tags or manually via `workflow_dispatch`):
 ```bash
-node scripts/smoke-test.mjs --strict --target=https://cambium-research.vercel.app --api=https://cambium-api.onrender.com --require-api
+node scripts/smoke-test.mjs --strict --target=https://cambium-research.vercel.app --api=https://cambium-api-ufj3.onrender.com --require-api
 ```

@@ -13,7 +13,7 @@ on:
       api_url:
         description: Target Render backend API URL
         required: false
-        default: https://cambium-api.onrender.com
+        default: https://cambium-api-ufj3.onrender.com
       require_api:
         description: Fail verification if backend /health probe fails
         type: boolean
@@ -40,7 +40,7 @@ jobs:
       - name: Run Strict Live Smoke Suite
         env:
           FRONTEND_URL: ${{ inputs.frontend_url || vars.CAMBIUM_PROD_FRONTEND_URL || 'https://cambium-research.vercel.app' }}
-          API_URL: ${{ inputs.api_url || vars.CAMBIUM_PROD_API_URL || 'https://cambium-api.onrender.com' }}
+          API_URL: ${{ inputs.api_url || vars.CAMBIUM_PROD_API_URL || 'https://cambium-api-ufj3.onrender.com' }}
           REQUIRE_API: ${{ inputs.require_api || 'false' }}
         run: |
           ARGS="--strict --target=${FRONTEND_URL} --api=${API_URL}"
