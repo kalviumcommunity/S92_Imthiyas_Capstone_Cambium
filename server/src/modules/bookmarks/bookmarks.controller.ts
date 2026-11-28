@@ -49,11 +49,14 @@ export class BookmarksController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete bookmark by ID' })
+  @ApiOperation({ summary: 'Delete caller-owned bookmark by ID' })
   @ApiParam({ name: 'id', description: 'Bookmark UUID' })
   @ApiResponse({ status: 200, description: 'Bookmark removed successfully' })
-  async deleteBookmark(@Param('id') id: string) {
-    return this.bookmarksService.remove(id);
+  async deleteBookmark(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.bookmarksService.remove(id, user.id);
   }
 
   @Delete('opportunity/:opportunityId')

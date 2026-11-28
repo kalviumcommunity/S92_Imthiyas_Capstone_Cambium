@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -75,13 +76,17 @@ export class BookmarksService {
   }
 
   /**
-   * Deletes a bookmark. Foreign keys handle referential integrity automatically.
+   * Deletes a caller-owned bookmark. Foreign keys handle referential integrity automatically.
    */
-  async remove(id: string) {
+  async remove(id: string, requesterId?: string) {
     const bookmark = await this.bookmarkRepo.findOne({ where: { id } });
 
     if (!bookmark) {
       throw new NotFoundException('Bookmark not found');
+    }
+
+    if (requesterId && bookmark.userId !== requesterId) {
+      throw new ForbiddenException('You do not have permission to delete another user bookmark');
     }
 
     await this.bookmarkRepo.remove(bookmark);
