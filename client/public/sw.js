@@ -3,7 +3,7 @@
 // Enterprise PWA Caching & Field Researcher Offline Strategy
 // ====================================================================
 
-const CACHE_NAME = "cambium-cache-v14-koi-pond";
+const CACHE_NAME = "cambium-cache-v15-koi-scroll";
 const STATIC_ASSETS = [
   "/favicon.svg",
   "/favicon-light.svg",

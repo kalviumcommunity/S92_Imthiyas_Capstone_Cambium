@@ -741,7 +741,7 @@ function KnowledgeGraphSection() {
       />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]">
+        <ScrollReveal variant="fade-up" className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 drop-shadow-[0_2px_10px_rgba(0,0,0,0.75)]">
           <div>
             <div className="inline-flex items-center gap-2 font-mono text-xs text-[#4ADE80] font-bold tracking-wider uppercase mb-3">
               <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
@@ -767,49 +767,51 @@ function KnowledgeGraphSection() {
               </Link>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Integrated Relational Node Graph Exhibition Canvas (Sandal/Sand Box) */}
-        <div className="w-full rounded-2xl border border-[#E4DCCB] bg-[#FAF7F0] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.45),0_4px_16px_rgba(0,0,0,0.2)] p-4 md:p-8 relative overflow-hidden transition-colors">
-          <div className="flex flex-wrap items-center justify-between pb-4 mb-4 border-b border-[#E4DCCB] gap-3 px-2">
-            <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#3E6248] animate-pulse" />
-              <span className="font-mono text-xs uppercase tracking-wider text-[#202920] font-bold">Relational Knowledge Network · Live Graph</span>
+        <ScrollReveal variant="pop-scale" delayMs={110} className="pb-2">
+          <div className="w-full rounded-2xl border border-[#E4DCCB] bg-[#FAF7F0] shadow-[0_36px_90px_-14px_rgba(3,12,8,0.82),0_16px_38px_-8px_rgba(3,12,8,0.58),0_0_0_1px_rgba(250,247,240,0.18)] p-4 md:p-8 relative overflow-hidden transition-colors">
+            <div className="flex flex-wrap items-center justify-between pb-4 mb-4 border-b border-[#E4DCCB] gap-3 px-2">
+              <div className="flex items-center gap-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#3E6248] animate-pulse" />
+                <span className="font-mono text-xs uppercase tracking-wider text-[#202920] font-bold">Relational Knowledge Network · Live Graph</span>
+              </div>
+
+              {/* Interactive Category Filter Pills */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {[
+                  { id: 'all', label: 'All (20)' },
+                  { id: 'scholar', label: 'Scholars' },
+                  { id: 'paper', label: 'Papers' },
+                  { id: 'grant', label: 'Grants' },
+                  { id: 'topic', label: 'Topics' },
+                  { id: 'lab', label: 'Labs' },
+                ].map(({ id, label }) => (
+                  <button
+                    key={id}
+                    onClick={() => setGraphCategory(id)}
+                    className={`text-[11px] font-sans px-3.5 py-1.5 min-h-[28px] rounded-full border transition-all cursor-pointer inline-flex items-center justify-center ${
+                      graphCategory === id
+                        ? 'bg-[#254A34] text-[#FAF7F0] border-[#254A34] font-semibold shadow-xs'
+                        : 'bg-[#FAF7F0] text-[#62685E] border-[#E4DCCB] hover:border-[#3E6248] hover:text-[#202920]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <span className="font-mono text-xs text-[#62685E] hidden md:inline">
+                Active Research Topics: 20 · Cross-Discipline Links: 28
+              </span>
             </div>
 
-            {/* Interactive Category Filter Pills */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {[
-                { id: 'all', label: 'All (20)' },
-                { id: 'scholar', label: 'Scholars' },
-                { id: 'paper', label: 'Papers' },
-                { id: 'grant', label: 'Grants' },
-                { id: 'topic', label: 'Topics' },
-                { id: 'lab', label: 'Labs' },
-              ].map(({ id, label }) => (
-                <button
-                  key={id}
-                  onClick={() => setGraphCategory(id)}
-                  className={`text-[11px] font-sans px-3.5 py-1.5 min-h-[28px] rounded-full border transition-all cursor-pointer inline-flex items-center justify-center ${
-                    graphCategory === id
-                      ? 'bg-[#254A34] text-[#FAF7F0] border-[#254A34] font-semibold shadow-xs'
-                      : 'bg-[#FAF7F0] text-[#62685E] border-[#E4DCCB] hover:border-[#3E6248] hover:text-[#202920]'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+            <div className="h-[460px] md:h-[540px] w-full">
+              <EcosystemGraph selectedCategory={graphCategory} />
             </div>
-
-            <span className="font-mono text-xs text-[#62685E] hidden md:inline">
-              Active Research Topics: 20 · Cross-Discipline Links: 28
-            </span>
           </div>
-
-          <div className="h-[460px] md:h-[540px] w-full">
-            <EcosystemGraph selectedCategory={graphCategory} />
-          </div>
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   )
