@@ -15,10 +15,10 @@ concurrency:
 
 jobs:
   # ============================================================================
-  # 1. Server Quality Gate: Lint, TypeCheck, Unit Tests (Vitest)
+  # 1. Server Quality Gate: TypeCheck, Unit Tests (Vitest), Security Suite
   # ============================================================================
   server-verification:
-    name: Backend API Verification (NestJS 10)
+    name: Backend API Verification (NestJS)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -36,10 +36,10 @@ jobs:
 
     steps:
       - name: Checkout Code Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js 20.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20
           cache: npm
@@ -48,7 +48,7 @@ jobs:
       - name: Install Server Dependencies
         run: npm ci
 
-      - name: TypeScript Static Typecheck
+      - name: TypeScript Static Typecheck & Build
         run: npm run build
 
       - name: Execute Server Unit Test Suite (Vitest)
@@ -65,7 +65,81 @@ jobs:
           JWT_SECRET: ci_test_jwt_secret_key_2026
 
   # ============================================================================
-  # 2. Client Quality Gate: Lint, TypeCheck, Next.js 16 Static Build
+  # 2. Database Migration Gate: PostgreSQL 16 + pgvector + Idempotency
+  # ============================================================================
+  database-migration-verification:
+    name: Database Schema & Migration Gate (PG16 + pgvector)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_postgres_password
+          POSTGRES_DB: cambium
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d cambium"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install Server Dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Apply Base Schema (schema.sql)
+        working-directory: server
+        run: npm run schema:apply
+        env:
+          NODE_ENV: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_postgres_password
+          POSTGRES_DB: cambium
+          DB_SSL: "false"
+
+      - name: Apply Versioned SQL Migrations (Pass 1)
+        working-directory: server
+        run: npm run migrate:up
+        env:
+          NODE_ENV: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_postgres_password
+          POSTGRES_DB: cambium
+          DB_SSL: "false"
+
+      - name: Verify Migration Idempotency & Status (Pass 2)
+        working-directory: server
+        run: |
+          npm run migrate:up
+          npm run migrate:status
+        env:
+          NODE_ENV: test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci_postgres_password
+          POSTGRES_DB: cambium
+          DB_SSL: "false"
+
+  # ============================================================================
+  # 3. Client Quality Gate: Lint, TypeCheck, Next.js 16 Static Build
   # ============================================================================
   client-verification:
     name: Frontend UI Verification (Next.js 16)
@@ -76,10 +150,10 @@ jobs:
 
     steps:
       - name: Checkout Code Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js 20.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20
           cache: npm
@@ -94,7 +168,7 @@ jobs:
       - name: Run TypeScript Typecheck
         run: npx tsc --noEmit
 
-      - name: Build Next.js 16 Production Chunks (54 Routes)
+      - name: Build Next.js 16 Production Chunks
         run: |
           npm run build 2>&1 | tee build.log || {
             echo "::error::Next.js production build failed"
@@ -109,7 +183,7 @@ jobs:
           NEXT_PUBLIC_API_URL: http://localhost:5000
 
   # ============================================================================
-  # 3. Root Unit Test Gate: Jest
+  # 4. Root Unit Test Gate: Jest
   # ============================================================================
   root-unit-tests:
     name: Root Unit Tests (Jest)
@@ -117,10 +191,10 @@ jobs:
 
     steps:
       - name: Checkout Code Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js 20.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20
           cache: npm
@@ -133,27 +207,32 @@ jobs:
         run: npm run test:jest
 
   # ============================================================================
-  # 4. Zero-Vulnerability Production Dependency & Secret Audit Gate
+  # 5. Dependency, Secret Hygiene & Env Template Audit Gate
   # ============================================================================
   security-audit:
-    name: Production Dependency & Secret Security Audit
+    name: Production Dependency, Secret & Env Audit
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
       - name: Scan Repository History for Leaked Secrets (Gitleaks)
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@dcedce43c6f43de0b836d1fe38946645c9c638dc # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js 20.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20
+
+      - name: Verify Client Bundle & Env Secret Hygiene
+        run: |
+          node scripts/verify-client-bundle-secrets.mjs
+          node scripts/verify-env.mjs --templates
 
       - name: Audit Client Production Dependencies (0 High/Critical Allowed)
         run: npm --prefix client audit --omit=dev
@@ -165,19 +244,19 @@ jobs:
         run: npm audit --omit=dev
 
   # ============================================================================
-  # 5. Playwright E2E & WCAG 2.2 AA Smoke Gate
+  # 6. Playwright E2E & WCAG 2.2 AA Smoke Gate
   # ============================================================================
   e2e-verification:
-    name: Playwright E2E & Accessibility Suite (26 Tests)
+    name: Playwright E2E & Accessibility Suite
     runs-on: ubuntu-latest
     needs: [client-verification]
 
     steps:
       - name: Checkout Code Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js 20.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20
           cache: npm
@@ -207,29 +286,29 @@ jobs:
 
       - name: Upload Playwright Test Report on Failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
 
   # ============================================================================
-  # 6. Docker Container Build Verification
+  # 7. Docker Container Build Verification
   # ============================================================================
   container-verification:
     name: Docker Multi-Stage Build Quality Gate
-    needs: [server-verification, client-verification, root-unit-tests, security-audit, e2e-verification]
+    needs: [server-verification, database-migration-verification, client-verification, root-unit-tests, security-audit, e2e-verification]
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: Validate Server Docker Build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           context: ./server
           file: ./server/Dockerfile
@@ -237,7 +316,7 @@ jobs:
           tags: cambium/server:ci-test
 
       - name: Validate Client Docker Build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           context: ./client
           file: ./client/Dockerfile
