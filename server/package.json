@@ -15,6 +15,8 @@
     "start:prod": "node dist/src/main.js",
     "init:db": "node scripts/init-db.js",
     "schema:apply": "node scripts/run-schema.js",
+    "migrate:up": "node scripts/run-migrations.js",
+    "migrate:status": "node scripts/run-migrations.js --status",
     "seed": "tsx src/database/seeds/seed.ts",
     "test": "vitest run --pool=threads",
     "test:watch": "vitest"

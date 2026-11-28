@@ -12,8 +12,8 @@ services:
     runtime: node
     plan: starter
     rootDir: server
-    buildCommand: npm install && npm run build
-    startCommand: (npm run schema:apply || true) && npm run start:prod
+    buildCommand: npm ci && npm run build
+    startCommand: npm run schema:apply && npm run migrate:up && npm run start:prod
     healthCheckPath: /health
     autoDeploy: true
     envVars:

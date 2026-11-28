@@ -361,53 +361,10 @@ export async function queryRagEngine(options: {
 
   const systemPrompt = getSystemPrompt(persona);
 
-  // Attempt Google Gemini Flash API call (via client key or backend proxy)
-  const geminiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-
-  if (geminiKey && geminiKey !== "your_gemini_api_key_here" && geminiKey.length > 15) {
-    const modelsToTry = ["gemini-1.5-flash", "gemini-2.0-flash"];
-
-    for (const model of modelsToTry) {
-      try {
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [
-                {
-                  role: "user",
-                  parts: [
-                    {
-                      text: `${systemPrompt}\n\nGrounding Context:\n${contextText}\n\nScholar Question: ${query}\n\nProvide a precise, grounded answer citing the specific document sections provided above.`,
-                    },
-                  ],
-                },
-              ],
-            }),
-          }
-        );
-
-        if (response.ok) {
-          const json = await response.json();
-          const generatedText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (generatedText) {
-            return {
-              answer: generatedText,
-              source: "gemini-flash",
-              modelUsed: model,
-              citations,
-              latencyMs: Date.now() - startTime,
-              persona,
-            };
-          }
-        }
-      } catch {
-        // Fallback to next model or offline engine
-      }
-    }
-  }
+  // Server-side AI proxy handles live Gemini calls; client uses grounded offline RAG synthesis
+  // so no AI API keys are ever exposed in browser bundles.
+  void systemPrompt;
+  void contextText;
 
   // High-Fidelity Grounded Offline RAG Synthesis
   const offlineAnswer = synthesizeOfflineRag({
