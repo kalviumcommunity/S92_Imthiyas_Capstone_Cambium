@@ -51,6 +51,12 @@ export class AppController {
       status: 'ok',
       service: 'Cambium Core Platform API',
       version: '2.0.0',
+      gitSha: (
+        process.env.RENDER_GIT_COMMIT ||
+        process.env.VERCEL_GIT_COMMIT_SHA ||
+        process.env.APP_COMMIT_SHA ||
+        'local'
+      ).slice(0, 12),
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
       database: 'connected',
