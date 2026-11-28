@@ -1,0 +1,54 @@
+name: Post-Deployment Release Verification
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      frontend_url:
+        description: Target Vercel frontend URL
+        required: false
+        default: https://cambium-research.vercel.app
+      api_url:
+        description: Target Render backend API URL
+        required: false
+        default: https://cambium-api-ufj3.onrender.com
+      require_api:
+        description: Fail verification if backend /health probe fails
+        type: boolean
+        required: false
+        default: false
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  live-smoke-verification:
+    name: Live Release Smoke Verification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Release Revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+
+      - name: Run Strict Live Smoke Suite
+        env:
+          FRONTEND_URL: ${{ inputs.frontend_url || vars.CAMBIUM_PROD_FRONTEND_URL || 'https://cambium-research.vercel.app' }}
+          API_URL: ${{ inputs.api_url || vars.CAMBIUM_PROD_API_URL || 'https://cambium-api-ufj3.onrender.com' }}
+          REQUIRE_API: ${{ inputs.require_api || 'false' }}
+        run: |
+          ARGS="--strict --target=${FRONTEND_URL} --api=${API_URL}"
+          if [ "${REQUIRE_API}" = "true" ]; then
+            ARGS="${ARGS} --require-api"
+          fi
+          node scripts/smoke-test.mjs ${ARGS} | tee smoke-report.txt
+          echo "### Post-Deployment Smoke Verification (${GITHUB_REF_NAME})" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat smoke-report.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY

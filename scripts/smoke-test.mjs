@@ -33,6 +33,8 @@ const c = {
 const args = process.argv.slice(2);
 let targetBaseUrl = process.env.SMOKE_TARGET_URL || 'http://localhost:3000';
 let apiBaseUrl = process.env.SMOKE_API_URL || 'http://localhost:5000';
+const strictMode = args.includes('--strict') || process.env.SMOKE_STRICT === 'true';
+const requireApi = args.includes('--require-api');
 
 for (const arg of args) {
   if (arg.startsWith('--target=')) {
@@ -247,26 +249,39 @@ async function runProbes() {
   // Optional Direct Backend API Probe
   console.log(`${c.canopy}${c.bold}════════════════════════════════════════════════════════════════════════════════${c.reset}`);
   console.log(`${c.cyan}${c.bold}SUPPLEMENTARY: Backend API Health Probe (${apiBaseUrl})${c.reset}`);
-  const apiRes = await requestProbe(`${apiBaseUrl}/api/v1/opportunities`);
+  const apiRes = await requestProbe(`${apiBaseUrl}/health`, { accept: 'application/json' });
+  let apiHealthy = false;
   if (apiRes.ok) {
-    console.log(`  ${c.emerald}[ONLINE]${c.reset} Core API Gateway responding at ${apiBaseUrl} (HTTP ${apiRes.status}, ${apiRes.latency}ms)`);
+    let releaseMeta = '';
+    try {
+      const parsed = JSON.parse(apiRes.body);
+      releaseMeta = parsed.gitSha ? ` [version=${parsed.version || '2.0.0'}, sha=${parsed.gitSha}]` : '';
+    } catch {
+      // Non-JSON response still ok if 2xx
+    }
+    apiHealthy = true;
+    console.log(`  ${c.emerald}[ONLINE]${c.reset} Core API Health responding at ${apiBaseUrl}/health (HTTP ${apiRes.status}, ${apiRes.latency}ms)${releaseMeta}`);
   } else {
-    console.log(`  ${c.amber}[STANDBY]${c.reset} Backend API at ${apiBaseUrl} (${apiRes.error || apiRes.status}). Standby mode during offline builds.`);
+    console.log(`  ${c.amber}[STANDBY]${c.reset} Backend API at ${apiBaseUrl}/health (${apiRes.error || apiRes.status}).`);
   }
 
   // Final Summary
   const passedCount = probeResults.filter(p => p.passed).length;
   const totalCount = probeResults.length;
+  const allProbesPassed = passedCount === totalCount && (!requireApi || apiHealthy);
 
   console.log(`\n${c.canopy}${c.bold}════════════════════════════════════════════════════════════════════════════════${c.reset}`);
   console.log(`${c.bold}SMOKE TEST PROTOCOL SUMMARY: ${passedCount}/${totalCount} PROBES ACTIVE${c.reset}`);
 
-  if (passedCount === totalCount) {
-    console.log(`${c.emerald}${c.bold}STATUS: ALL 8 SMOKE PROBES VERIFIED! SYSTEM READY FOR LIVE TRAFFIC.${c.reset}`);
+  if (allProbesPassed) {
+    console.log(`${c.emerald}${c.bold}STATUS: ALL SMOKE PROBES VERIFIED! SYSTEM READY FOR LIVE TRAFFIC.${c.reset}`);
     process.exit(0);
+  } else if (strictMode) {
+    console.error(`${c.crimson}${c.bold}STRICT SMOKE CHECK FAILED: ${totalCount - passedCount} frontend probes failed${requireApi && !apiHealthy ? ' or API health probe failed' : ''}.${c.reset}`);
+    process.exit(1);
   } else {
-    console.log(`${c.parchment}Note: For live testing against production, pass --target=https://<your-domain>${c.reset}`);
-    console.log(`${c.gray}Example: npm run smoke -- --target=https://cambium.edu${c.reset}\n`);
+    console.log(`${c.parchment}Note: For live testing against production, pass --strict --target=https://<your-domain>${c.reset}`);
+    console.log(`${c.gray}Example: npm run smoke -- --strict --target=https://cambium-research.vercel.app${c.reset}\n`);
     process.exit(0);
   }
 }
