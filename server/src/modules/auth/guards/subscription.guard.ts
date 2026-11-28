@@ -1,9 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException, SetMetadata } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 export const SUBSCRIPTION_KEY = 'subscription_tier';
 export const RequiresSubscription = (tier: string) =>
-  Reflect.metadata(SUBSCRIPTION_KEY, tier);
+  SetMetadata(SUBSCRIPTION_KEY, tier);
 
 @Injectable()
 export class SubscriptionGuard implements CanActivate {
