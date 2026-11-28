@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { resolveApiBase } from "@/lib/http-client";
 
 export interface UserProfile {
   id: string;
@@ -113,6 +114,15 @@ export const useAuthStore = create<AuthState>((set) => {
     },
     logout: () => {
       if (typeof window !== "undefined") {
+        const activeToken =
+          localStorage.getItem("cambium_token") || localStorage.getItem("cambium_access_token");
+        // Best-effort backend session revocation (blacklists JWT & clears HttpOnly refresh cookie)
+        fetch(`${resolveApiBase()}/auth/logout`, {
+          method: "POST",
+          credentials: "include",
+          headers: activeToken ? { Authorization: `Bearer ${activeToken}` } : {},
+        }).catch(() => {});
+
         localStorage.removeItem("cambium_token");
         localStorage.removeItem("cambium_access_token");
         localStorage.removeItem("cambium_refresh_token");

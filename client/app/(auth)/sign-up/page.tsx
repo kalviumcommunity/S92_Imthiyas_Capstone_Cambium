@@ -162,18 +162,10 @@ export default function SignUpPage() {
         router.push("/welcome");
       }
     } catch (err: any) {
-      // Demo mode: if backend is unreachable, allow access for UI exploration
       if (err.message === "Failed to fetch" || err.message?.includes("fetch")) {
-        const displayName = email.split("@")[0].replace(/\./g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-        const demoUser = {
-          id: "demo-user-" + Date.now(),
-          username: email.split("@")[0],
-          email,
-          fullName: displayName,
-          institution: "Demo University",
-        };
-        setAuth(demoUser, "demo-token-" + Date.now());
-        router.push("/welcome");
+        setError(
+          "Unable to reach the Cambium registration service. Check your connection and retry.",
+        );
         return;
       }
       setError(err.message || "Registration failed. Please try again.");

@@ -12,73 +12,38 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setScreen("check");
-    }, 900);
-  };
-
-  const handleResend = () => {
-    setResent(true);
-    setTimeout(() => setResent(false), 3000);
+    setScreen("check");
   };
 
   if (screen === "check") {
     return (
-      <div className="w-full min-h-[440px] flex flex-col justify-center space-y-8 animate-in fade-in duration-200">
-        {/* Icon */}
-        <div className="w-14 h-14 rounded-full bg-[#DCE6D7] flex items-center justify-center">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M3 8L10.89 13.26C11.2187 13.4793 11.6049 13.5963 12 13.5963C12.3951 13.5963 12.7813 13.4793 13.11 13.26L21 8M5 19H19C19.5304 19 20.0391 18.7893 20.4142 18.4142C20.7893 18.0391 21 17.5304 21 17V7C21 6.46957 20.7893 5.96086 20.4142 5.58579C20.0391 5.21071 19.5304 5 19 5H5C4.46957 5 3.96086 5.21071 3.58579 5.58579C3.21071 5.96086 3 6.46957 3 7V17C3 17.5304 3.21071 18.0391 3.58579 18.4142C3.96086 18.7893 4.46957 19 5 19Z"
-              stroke="#3E6248"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-
+      <div className="w-full min-h-[440px] flex flex-col justify-center space-y-6 animate-in fade-in duration-200 font-sans">
         <div className="space-y-2">
-          <h2 className="font-serif text-[28px] font-normal text-[#202920] leading-tight">
-            Check your inbox
-          </h2>
-          <p className="text-sm text-[#62685E] font-sans leading-relaxed">
-            We sent a secure link to your email. Click the link to securely reset your credentials.
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <button
-            onClick={() => window.open("mailto:", "_blank")}
-            className="w-full rounded-lg border border-[#E4DCCB] bg-white px-4 py-2.5 text-sm font-semibold text-[#202920] transition-all hover:bg-[#F2EBDD] active:scale-[0.99]"
-          >
-            Open email app
-          </button>
-
-          <div className="text-center">
-            {resent ? (
-              <span className="text-sm text-[#3E6248] font-medium font-sans">Reset link sent!</span>
-            ) : (
-              <button
-                onClick={handleResend}
-                className="text-sm text-[#62685E] hover:text-[#202920] font-sans transition-colors underline underline-offset-2 decoration-[#E4DCCB]"
-              >
-                Didn't receive it? Click to resend.
-              </button>
-            )}
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#D97706]/30 bg-[#FEF3C7]/70 px-3 py-1 text-[11px] font-mono uppercase tracking-wider text-[#8A5A12]">
+            Controlled Pilot Support
           </div>
+          <h2 className="font-serif text-[28px] font-normal text-[#202920] leading-tight">
+            Coordinator-assisted password reset
+          </h2>
+          <p className="text-sm text-[#62685E] leading-relaxed">
+            Self-service automated email password reset is not enabled during the controlled mentor pilot. To reset credentials for{" "}
+            <span className="font-medium text-[#202920]">{email || "your account"}</span>, contact the Pilot Coordinator or sign in with Google / ORCID.
+          </p>
         </div>
 
-        <div className="flex items-start gap-3 rounded-lg border border-[#E4DCCB] bg-[#F2EBDD]/50 px-4 py-3">
-          <svg className="mt-0.5 shrink-0" width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <circle cx="7" cy="7" r="6" stroke="#62685E" strokeWidth="1.2" />
-            <path d="M7 6.5V9.5M7 4.5V5" stroke="#62685E" strokeWidth="1.2" strokeLinecap="round" />
-          </svg>
-          <p className="text-xs text-[#62685E] font-sans leading-relaxed">
-            The link expires in 30 minutes. Check your spam folder if it doesn't arrive within a few minutes.
-          </p>
+        <div className="space-y-3">
+          <a
+            href={`mailto:pilot-support@cambium.research?subject=Cambium%20Pilot%20Password%20Reset&body=Please%20reset%20pilot%20access%20for:%20${encodeURIComponent(email || "")}`}
+            className="w-full inline-flex items-center justify-center rounded-lg border border-[#E4DCCB] bg-white px-4 py-2.5 text-sm font-semibold text-[#202920] transition-all hover:bg-[#F2EBDD] no-underline"
+          >
+            Request reset from Pilot Coordinator
+          </a>
+          <Link
+            href="/sign-in"
+            className="w-full inline-flex items-center justify-center rounded-lg border border-[#3E6248]/30 bg-[#DCE6D7]/50 px-4 py-2.5 text-sm font-medium text-[#202920] hover:bg-[#DCE6D7] no-underline"
+          >
+            Return to sign in
+          </Link>
         </div>
       </div>
     );

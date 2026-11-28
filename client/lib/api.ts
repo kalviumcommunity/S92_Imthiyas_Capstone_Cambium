@@ -87,12 +87,14 @@ export async function chatWithAssistant(payload: {
   messages: Array<{ role: string; content: string }>;
   context?: any;
 }): Promise<any> {
-  const res = await fetch(`${API_BASE}/v1/assistant/chat`, {
+  const res = await apiFetch(`${API_BASE}/v1/assistant/chat`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Assistant chat failed");
+  if (!res.ok) {
+    const errJson = await res.json().catch(() => ({}));
+    throw new Error(errJson?.message || `Assistant request failed (HTTP ${res.status})`);
+  }
   return res.json();
 }
 
@@ -116,50 +118,44 @@ export async function createOpportunity(data: {
   link?: string;
   tags?: string[];
 }): Promise<ResearchOpportunity> {
-  const res = await fetch(`${API_BASE}/research-opportunities`, {
+  const res = await apiFetch(`${API_BASE}/research-opportunities`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify(data),
   });
-  const json = await res.json();
+  const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.message || "Failed to create opportunity");
   return json.data;
 }
 
 export async function deleteOpportunity(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/research-opportunities/${id}`, {
+  const res = await apiFetch(`${API_BASE}/research-opportunities/${id}`, {
     method: "DELETE",
-    headers: getAuthHeaders(),
   });
   if (!res.ok) throw new Error("Failed to delete opportunity");
 }
 
-// 2. Bookmarks API
+// 2. Bookmarks API (routed via apiFetch for credentials, X-Request-Id & token rotation)
 export async function getMyBookmarks(): Promise<BookmarkItem[]> {
-  const res = await fetch(`${API_BASE}/bookmarks/my/list`, {
-    headers: getAuthHeaders(),
-  });
+  const res = await apiFetch(`${API_BASE}/bookmarks/my/list`);
   if (!res.ok) return [];
   const json = await res.json();
   return json.data || [];
 }
 
 export async function toggleBookmark(opportunityId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/bookmarks`, {
+  const res = await apiFetch(`${API_BASE}/bookmarks`, {
     method: "POST",
-    headers: getAuthHeaders(),
     body: JSON.stringify({ opportunity: opportunityId }),
   });
   if (!res.ok) {
-    const json = await res.json();
+    const json = await res.json().catch(() => ({}));
     throw new Error(json.message || "Failed to bookmark");
   }
 }
 
 export async function removeBookmark(bookmarkId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/bookmarks/${bookmarkId}`, {
+  const res = await apiFetch(`${API_BASE}/bookmarks/${bookmarkId}`, {
     method: "DELETE",
-    headers: getAuthHeaders(),
   });
   if (!res.ok) throw new Error("Failed to remove bookmark");
 }
@@ -171,14 +167,15 @@ export async function loginUser(credentials: {
 }) {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "X-Request-Id": generateRequestId() },
+    credentials: "include",
     body: JSON.stringify({
       username: credentials.usernameOrEmail,
       email: credentials.usernameOrEmail,
       password: credentials.password,
     }),
   });
-  const json = await res.json();
+  const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.message || "Login failed");
   return json;
 }
@@ -193,10 +190,11 @@ export async function registerUser(data: {
 }) {
   const res = await fetch(`${API_BASE}/auth/register`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "X-Request-Id": generateRequestId() },
+    credentials: "include",
     body: JSON.stringify(data),
   });
-  const json = await res.json();
+  const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.message || "Registration failed");
   return json;
 }
@@ -204,9 +202,9 @@ export async function registerUser(data: {
 const api = {
   get: async (endpoint: string, config?: any) => {
     const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const res = await fetch(`${API_BASE}${formatted}`, {
+    const res = await apiFetch(`${API_BASE}${formatted}`, {
       method: "GET",
-      headers: { ...getAuthHeaders(), ...(config?.headers || {}) },
+      headers: config?.headers,
     });
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
@@ -217,9 +215,9 @@ const api = {
   },
   post: async (endpoint: string, body: any, config?: any) => {
     const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const res = await fetch(`${API_BASE}${formatted}`, {
+    const res = await apiFetch(`${API_BASE}${formatted}`, {
       method: "POST",
-      headers: { ...getAuthHeaders(), ...(config?.headers || {}) },
+      headers: config?.headers,
       body: JSON.stringify(body),
     });
     if (!res.ok) {
@@ -231,9 +229,23 @@ const api = {
   },
   put: async (endpoint: string, body: any, config?: any) => {
     const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const res = await fetch(`${API_BASE}${formatted}`, {
+    const res = await apiFetch(`${API_BASE}${formatted}`, {
       method: "PUT",
-      headers: { ...getAuthHeaders(), ...(config?.headers || {}) },
+      headers: config?.headers,
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw { response: { data: error, status: res.status } };
+    }
+    const data = await res.json();
+    return { data };
+  },
+  patch: async (endpoint: string, body: any, config?: any) => {
+    const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+    const res = await apiFetch(`${API_BASE}${formatted}`, {
+      method: "PATCH",
+      headers: config?.headers,
       body: JSON.stringify(body),
     });
     if (!res.ok) {
@@ -245,9 +257,9 @@ const api = {
   },
   delete: async (endpoint: string, config?: any) => {
     const formatted = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-    const res = await fetch(`${API_BASE}${formatted}`, {
+    const res = await apiFetch(`${API_BASE}${formatted}`, {
       method: "DELETE",
-      headers: { ...getAuthHeaders(), ...(config?.headers || {}) },
+      headers: config?.headers,
     });
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
@@ -291,46 +303,33 @@ export async function uploadArtifact(file: File): Promise<UploadedArtifact> {
       ? `${(file.size / 1024).toFixed(1)} KB`
       : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
 
-  try {
-    const res = await fetch(`${API_BASE}/upload`, {
-      method: "POST",
-      headers,
-      body: formData,
-    });
-    if (res.ok) {
-      const json = await res.json();
-      const serverData = json.data;
-      const artifact: UploadedArtifact = {
-        id: serverData.id,
-        originalName: serverData.originalName,
-        fileName: serverData.fileName,
-        mimeType: serverData.mimeType,
-        sizeBytes: serverData.sizeBytes,
-        sizeFormatted: serverData.sizeFormatted || sizeFormatted,
-        sha256Hash: serverData.sha256Hash,
-        uploadedAt: serverData.uploadedAt,
-        status: "verified",
-      };
-      persistLocalArtifact(artifact);
-      return artifact;
-    }
-  } catch (err) {
-    // Graceful offline fallback
+  const res = await apiFetch(`${API_BASE}/upload`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errJson = await res.json().catch(() => ({}));
+    throw new Error(
+      errJson?.message || `Upload rejected (HTTP ${res.status}). Check file type and 50 MB size limit.`,
+    );
   }
 
-  // Resilient offline/local storage
-  const mockArtifact: UploadedArtifact = {
-    id: `art-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-    originalName: file.name,
-    mimeType: file.type || "application/pdf",
-    sizeBytes: file.size,
-    sizeFormatted,
-    sha256Hash: Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join(""),
-    uploadedAt: new Date().toISOString(),
+  const json = await res.json();
+  const serverData = json.data;
+  const artifact: UploadedArtifact = {
+    id: serverData.id,
+    originalName: serverData.originalName,
+    fileName: serverData.fileName,
+    mimeType: serverData.mimeType,
+    sizeBytes: serverData.sizeBytes,
+    sizeFormatted: serverData.sizeFormatted || sizeFormatted,
+    sha256Hash: serverData.sha256Hash,
+    uploadedAt: serverData.uploadedAt,
     status: "verified",
   };
-  persistLocalArtifact(mockArtifact);
-  return mockArtifact;
+  persistLocalArtifact(artifact);
+  return artifact;
 }
 
 export async function uploadArtifactsBatch(files: File[]): Promise<UploadedArtifact[]> {

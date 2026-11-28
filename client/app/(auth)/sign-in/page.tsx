@@ -155,20 +155,13 @@ export default function SignInPage() {
         router.push(destination);
       }
     } catch (err: any) {
-      // Demo mode: if backend is unreachable, allow access for UI exploration
       if (err.message === "Failed to fetch" || err.message?.includes("fetch")) {
-        const demoUser = {
-          id: "demo-user-1",
-          username: email.split("@")[0],
-          email,
-          fullName: email.split("@")[0].replace(/\./g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-          institution: "Research Institute",
-        };
-        setAuth(demoUser, "demo-token-" + Date.now());
-        router.push(destination);
+        setError(
+          "Unable to reach the Cambium authentication server. Check your connection or try again in a moment.",
+        );
         return;
       }
-      setError(err.message || "Sign-in failed. Please try again.");
+      setError(err.message || "Sign-in failed. Please verify your credentials and try again.");
     } finally {
       setLoading(false);
     }
